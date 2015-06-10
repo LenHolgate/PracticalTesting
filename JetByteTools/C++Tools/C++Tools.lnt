@@ -1,0 +1,12 @@
+
+/* Generated from file: C++Tools.dsp */
+-i..\..\\
+-d_DEBUG
+-dJETBYTE_NO_PLATFORM_SDK
+-dUNICODE
+-d_UNICODE
+-d_LIB
+-dWIN32
+-d_MBCS
+-d_WIN32_WINNT=0x0400
+NodeList.cpp

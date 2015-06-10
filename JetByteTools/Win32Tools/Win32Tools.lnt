@@ -1,0 +1,20 @@
+
+/* Generated from file: Win32Tools.dsp */
+-i..\..\\
+-d_DEBUG
+-dJETBYTE_NO_PLATFORM_SDK
+-dUNICODE
+-d_UNICODE
+-d_LIB
+-dWIN32
+-d_MBCS
+-d_WIN32_WINNT=0x0400
+AutoResetEvent.cpp
+CallbackTimer.cpp
+CriticalSection.cpp
+Event.cpp
+Exception.cpp
+ManualResetEvent.cpp
+Thread.cpp
+Utils.cpp
+Win32Exception.cpp
