@@ -2,10 +2,10 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_TEST_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_TEST_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerTest.h 
+// File: LoggingCallbackTimerHandleCallback.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -43,34 +43,54 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\TestTools\TestLog.h"
+
+#include "..\CallbackTimer.h"
+#include "..\AutoResetEvent.h"
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
-namespace Test {
+namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerTest
+// CLoggingCallbackTimerHandleCallback
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCallbackTimerTest
+class CLoggingCallbackTimerHandleCallback : 
+   public JetByteTools::Test::CTestLog,
+   public CCallbackTimer::Handle::Callback
 {
    public :
 
-      static void TestAll();
+      CLoggingCallbackTimerHandleCallback();
+   
+      bool WaitForTimer(
+         DWORD timeoutMillis);
 
-      static void TestConstruct();
+   private :
 
-      static void TestTimer();
+      // Implement CCallbackTimer::Handle::Callback
+
+      virtual void OnTimer(
+         CCallbackTimer::Handle &hnd,
+         DWORD userData);
+
+      CAutoResetEvent m_event;
+
+      // No copies do not implement
+      CLoggingCallbackTimerHandleCallback(const CLoggingCallbackTimerHandleCallback &rhs);
+      CLoggingCallbackTimerHandleCallback &operator=(const CLoggingCallbackTimerHandleCallback &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Mock
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
@@ -81,8 +101,8 @@ class CCallbackTimerTest
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_TEST_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerTest.h
+// End of file: LoggingCallbackTimerHandleCallback.h
 ///////////////////////////////////////////////////////////////////////////////

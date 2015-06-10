@@ -34,7 +34,11 @@
 
 #include "..\CallbackTimer.h"
 
+#include "..\Mock\LoggingCallbackTimerHandleCallback.h"
+
 #include "JetByteTools\Win32Tools\Utils.h"
+
+#include "JetByteTools\TestTools\TestException.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -47,8 +51,12 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
+using JetByteTools::Test::CTestException;
+
 using JetByteTools::Win32::Output;
 using JetByteTools::Win32::_tstring;
+
+using JetByteTools::Win32::Mock::CLoggingCallbackTimerHandleCallback;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -65,6 +73,8 @@ namespace Test {
 void CCallbackTimerTest::TestAll()
 {
    TestConstruct();
+
+   TestTimer();
 }
 
 void CCallbackTimerTest::TestConstruct()
@@ -74,6 +84,27 @@ void CCallbackTimerTest::TestConstruct()
    Output(functionName + _T(" - start"));
 
    CCallbackTimer timer;
+
+   Output(functionName + _T(" - stop"));
+}
+
+void CCallbackTimerTest::TestTimer()
+{
+   const _tstring functionName = _T("CCallbackTimerTest::TestTimer");
+   
+   Output(functionName + _T(" - start"));
+
+   CCallbackTimer timer;
+
+   CLoggingCallbackTimerHandleCallback callback;
+
+   CCallbackTimer::Handle handle(callback);
+
+   timer.SetTimer(handle, 100, 1);
+
+   THROW_ON_FAILURE(functionName, true == callback.WaitForTimer(200));
+
+   callback.CheckResult(_T("|OnTimer: 1|"));
 
    Output(functionName + _T(" - stop"));
 }
