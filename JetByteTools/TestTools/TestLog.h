@@ -2,10 +2,10 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-#define JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+#ifndef JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
+#define JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: StringConverter.h
+// File: TestLog.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2003 JetByte Limited.
@@ -36,49 +36,79 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tstring.h"
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -save
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#pragma warning(disable : 4786)
+
+#include "JetByteTools\Win32Tools\tstring.h"
+#include "JetByteTools\Win32Tools\CriticalSection.h"
+
+#include <vector>
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Email::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CStringConverter
+// CTestLog
 ///////////////////////////////////////////////////////////////////////////////
 
-class CStringConverter
+class CTestLog 
 {
    public :
-      
-      static std::string TtoA(
-         const _tstring &input);
 
-      static std::wstring TtoW(
-         const _tstring &input);
+      void ClearLog();
 
-      static _tstring AtoT(
-         const std::string &input);
+      void LogMessage(
+         const JetByteTools::Win32::_tstring &message) const;
 
-      static std::wstring AtoW(
-         const std::string &input);
+      JetByteTools::Win32::_tstring GetMessages() const;
 
-      static _tstring WtoT(
-         const std::wstring &input);
+      JetByteTools::Win32::_tstring RemoveMessages();
+
+      void CheckResult(
+         const JetByteTools::Win32::_tstring &expectedResult, 
+         bool displayOnFailure = true);
+
+      void CheckResultA(
+         const std::string &expectedResult, 
+         bool displayOnFailure = true);
+
+   private :
+
+      mutable JetByteTools::Win32::CCriticalSection m_criticalSection;
+
+      typedef std::vector<JetByteTools::Win32::_tstring> Log;
+
+      mutable Log m_log;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Win32
+} // End of namespace Test
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -restore
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
+#endif // JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: StringConverter.h
+// End of file: CTestLog.h
 ///////////////////////////////////////////////////////////////////////////////
-

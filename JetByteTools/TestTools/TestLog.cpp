@@ -1,11 +1,5 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-#define JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
 ///////////////////////////////////////////////////////////////////////////////
-// File: StringConverter.h
+// File: TestLog.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2003 JetByte Limited.
@@ -36,49 +30,125 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tstring.h"
+#include "TestLog.h"
+#include "TestException.h"
+
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Lint options
+//
+//lint -save
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#include "JetByteTools\Win32Tools\Utils.h"
+#include "JetByteTools\Win32Tools\StringConverter.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using JetByteTools::Win32::Output;
+using JetByteTools::Win32::_tstring;
+using JetByteTools::Win32::CCriticalSection;
+using JetByteTools::Win32::CStringConverter;
+
+using std::string;
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Email::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CStringConverter
+// CTestLog
 ///////////////////////////////////////////////////////////////////////////////
 
-class CStringConverter
+void CTestLog::ClearLog()
 {
-   public :
-      
-      static std::string TtoA(
-         const _tstring &input);
+   CCriticalSection::Owner lock(m_criticalSection);
 
-      static std::wstring TtoW(
-         const _tstring &input);
+   m_log.clear();
+}
 
-      static _tstring AtoT(
-         const std::string &input);
+void CTestLog::LogMessage(
+   const _tstring &message) const
+{
+   CCriticalSection::Owner lock(m_criticalSection);
 
-      static std::wstring AtoW(
-         const std::string &input);
+   m_log.push_back(message);
+}
 
-      static _tstring WtoT(
-         const std::wstring &input);
-};
+_tstring CTestLog::GetMessages() const
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   _tstring result = _T("|");
+
+   for (Log::const_iterator it = m_log.begin(); it != m_log.end(); ++it)
+   {
+      result += *it;
+      result += _T("|");
+   }
+
+   return result;
+}
+
+_tstring CTestLog::RemoveMessages() 
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   _tstring result = GetMessages();
+   
+   m_log.clear();
+
+   return result;
+}
+
+void CTestLog::CheckResult(
+   const _tstring &expectedResult, 
+   bool displayOnFailure)
+{
+   const _tstring result = RemoveMessages();
+
+   if (result != expectedResult)
+   {
+      if (displayOnFailure)
+      {
+         Output(_T("result:   ") + result);
+         Output(_T("expected: ") + expectedResult);
+      }
+
+      throw CTestException(_T("CTestLog::CheckResult()"), _T("Log does not contain expected result"));
+   }
+}
+
+void CTestLog::CheckResultA(
+   const string &expectedResult, 
+   bool displayOnFailure)
+{
+   CheckResult(CStringConverter::AtoT(expectedResult), displayOnFailure);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Win32
+} // End of namespace Test
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -restore
+//
+///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: StringConverter.h
+// End of file: TestLog.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

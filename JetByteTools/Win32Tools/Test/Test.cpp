@@ -1,14 +1,8 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-#define JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
 ///////////////////////////////////////////////////////////////////////////////
-// File: StringConverter.h
+// File: Test.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -36,49 +30,97 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tstring.h"
+#include <iostream>
+
+#include "JetByteTools\TestTools\TestException.h"
+
+#include "CallbackTimerTest.h"
+
+#include "JetByteTools\Win32Tools\Exception.h"
+#include "JetByteTools\Win32Tools\SEHException.h"
+#include "JetByteTools\Win32Tools\StringConverter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Lint options
+//
+//lint -save
+//
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace JetByteTools {
-namespace Win32 {
-
 ///////////////////////////////////////////////////////////////////////////////
-// CStringConverter
+// Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-class CStringConverter
+using std::cout;
+using std::endl;
+using std::string;
+
+using JetByteTools::Win32::CException;
+using JetByteTools::Win32::CStringConverter;
+using JetByteTools::Win32::CSEHException;
+
+using JetByteTools::Test::CTestException;
+
+using namespace JetByteTools::Win32::Test;
+
+///////////////////////////////////////////////////////////////////////////////
+// Program Entry Point
+///////////////////////////////////////////////////////////////////////////////
+
+int main(int /*argc*/, char * /*argv[ ]*/)
 {
-   public :
+   CSEHException::Translator sehTranslator;
+
+   bool ok = false;
+
+   try
+   {
+      CCallbackTimerTest::TestAll();
       
-      static std::string TtoA(
-         const _tstring &input);
+      ok = true;
+   }
+   catch(const CTestException &e)
+   {
+      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
 
-      static std::wstring TtoW(
-         const _tstring &input);
+      ok = false;
+   }
+   catch(const CException &e)
+   {
+      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
 
-      static _tstring AtoT(
-         const std::string &input);
+      ok = false;
+   }
+   catch(const CSEHException &e)
+   {
+      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
 
-      static std::wstring AtoW(
-         const std::string &input);
+      ok = false;
+   }
+   catch(const char *p)
+   {
+      cout << "Exception: " << p << endl;
+   }
+   catch(...)
+   {
+      cout << "Unexpected exception" << endl;
 
-      static _tstring WtoT(
-         const std::wstring &input);
-};
+      ok = false;
+   }
+
+   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
+
+   return ok ? 0 : 1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Lint options
+//
+//lint -restore
+//
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Win32
-} // End of namespace JetByteTools 
-
-#endif // JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: StringConverter.h
+// End of file: Test.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

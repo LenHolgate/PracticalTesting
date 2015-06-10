@@ -2,10 +2,10 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-#define JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+#ifndef JETBYTE_TOOLS_TEST_TEST_EXCEPTION_INCLUDED__
+#define JETBYTE_TOOLS_TEST_TEST_EXCEPTION_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: StringConverter.h
+// File: TestException.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2003 JetByte Limited.
@@ -36,49 +36,67 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tstring.h"
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -save
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#pragma warning(disable : 4786)
+
+#include "JetByteTools\Win32Tools\Exception.h"
+
+#include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Email::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CStringConverter
+// CTestException
 ///////////////////////////////////////////////////////////////////////////////
 
-class CStringConverter
+class CTestException : public JetByteTools::Win32::CException
 {
    public :
-      
-      static std::string TtoA(
-         const _tstring &input);
 
-      static std::wstring TtoW(
-         const _tstring &input);
-
-      static _tstring AtoT(
-         const std::string &input);
-
-      static std::wstring AtoW(
-         const std::string &input);
-
-      static _tstring WtoT(
-         const std::wstring &input);
+      CTestException(
+         const JetByteTools::Win32::_tstring &where, 
+         const JetByteTools::Win32::_tstring &message);
 };
 
+#define THROW_ON_FAILURE(w, t) do{if(!(t)){throw CTestException(w, _T("Test Failed:")## _T(#t));}}while(0)
+
+#define THROW_ON_NO_EXCEPTION(w, e) do{try{e();throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("()"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
+#define THROW_ON_NO_EXCEPTION_1(w, e, p) do{try{e(p);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
+#define THROW_ON_NO_EXCEPTION_2(w, e, p1, p2) do{try{e(p1, p2);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
+#define THROW_ON_NO_EXCEPTION_3(w, e, p1, p2, p3) do{try{e(p1, p2, p3);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(", ") ## _T(#p3) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
+#define THROW_ON_NO_EXCEPTION_4(w, e, p1, p2, p3, p4) do{try{e(p1, p2, p3, p4);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(", ") ## _T(#p3) ## _T(", ") ## _T(#p4) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Win32
+} // End of namespace Test
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -restore
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // JETBYTE_TOOLS_TEST_TEST_EXCEPTION_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: StringConverter.h
+// End of file: TestException.h
 ///////////////////////////////////////////////////////////////////////////////
-

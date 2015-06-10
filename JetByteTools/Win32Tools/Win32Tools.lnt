@@ -18,3 +18,4 @@ ManualResetEvent.cpp
 Thread.cpp
 Utils.cpp
 Win32Exception.cpp
+SEHException.cpp

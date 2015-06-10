@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
-#define JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+#ifndef JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
+#define JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
 ///////////////////////////////////////////////////////////////////////////////
-// File: StringConverter.h
+// File: SEHException.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -36,7 +36,27 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -save
+//
+// No default constructor
+//lint -esym(1712, CSEHException)
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#pragma warning(disable: 4201)   // nameless struct/union
+
+#ifndef _WINDOWS_
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include "tstring.h"
+
+#pragma warning(default: 4201)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -46,27 +66,53 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CStringConverter
+// CSEHException
 ///////////////////////////////////////////////////////////////////////////////
 
-class CStringConverter
+class CSEHException 
+{
+   public : 
+
+      class Translator;
+
+      friend class Translator;
+
+      unsigned int GetCode() const;
+
+      _tstring GetWhere() const;
+
+      _tstring GetMessage() const; 
+
+   protected :
+      
+      const _tstring m_where;
+      const _tstring m_message;
+
+      const unsigned int m_code;
+
+   private :
+
+      CSEHException(
+         unsigned int code, 
+         EXCEPTION_POINTERS *pPointers);
+
+};
+
+class CSEHException::Translator
 {
    public :
-      
-      static std::string TtoA(
-         const _tstring &input);
+   
+      Translator();
+   
+      ~Translator();
 
-      static std::wstring TtoW(
-         const _tstring &input);
+   private :
 
-      static _tstring AtoT(
-         const std::string &input);
+      static void trans_func(
+         unsigned int code, 
+         EXCEPTION_POINTERS *pPointers); 
 
-      static std::wstring AtoW(
-         const std::string &input);
-
-      static _tstring WtoT(
-         const std::wstring &input);
+      _se_translator_function m_prev;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -76,9 +122,15 @@ class CStringConverter
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_STRING_CONVERTER__
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+//
+//lint -restore
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: StringConverter.h
+// End of file: SEHException.h
 ///////////////////////////////////////////////////////////////////////////////
-

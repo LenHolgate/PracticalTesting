@@ -15,6 +15,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "TestTools"=..\TestTools\TestTools.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "Win32Tools"=.\Win32Tools.dsp - Package Owner=<4>
 
 Package=<5>
@@ -23,6 +35,27 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "Win32ToolsTest"=.\Test\Win32ToolsTest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name C++Tools
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TestTools
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Win32Tools
+    End Project Dependency
 }}}
 
 ###############################################################################

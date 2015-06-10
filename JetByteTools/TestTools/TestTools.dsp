@@ -1,26 +1,26 @@
-# Microsoft Developer Studio Project File - Name="Win32Tools" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="TestTools" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=Win32Tools - Win32 Unicode Debug
+CFG=TestTools - Win32 Unicode Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "Win32Tools.mak".
+!MESSAGE NMAKE /f "TestTools.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Win32Tools.mak" CFG="Win32Tools - Win32 Unicode Debug"
+!MESSAGE NMAKE /f "TestTools.mak" CFG="TestTools - Win32 Unicode Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "Win32Tools - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "Win32Tools - Win32 Debug" (based on "Win32 (x86) Static Library")
-!MESSAGE "Win32Tools - Win32 Unicode Debug" (based on "Win32 (x86) Static Library")
-!MESSAGE "Win32Tools - Win32 Unicode Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "TestTools - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "TestTools - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "TestTools - Win32 Unicode Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "TestTools - Win32 Unicode Release" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -30,7 +30,7 @@ CFG=Win32Tools - Win32 Unicode Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "Win32Tools - Win32 Release"
+!IF  "$(CFG)" == "TestTools - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -54,7 +54,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "Win32Tools - Win32 Debug"
+!ELSEIF  "$(CFG)" == "TestTools - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -78,12 +78,12 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "Win32Tools - Win32 Unicode Debug"
+!ELSEIF  "$(CFG)" == "TestTools - Win32 Unicode Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Win32Tools___Win32_Unicode_Debug"
-# PROP BASE Intermediate_Dir "Win32Tools___Win32_Unicode_Debug"
+# PROP BASE Output_Dir "TestTools___Win32_Unicode_Debug"
+# PROP BASE Intermediate_Dir "TestTools___Win32_Unicode_Debug"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
@@ -102,12 +102,12 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "Win32Tools - Win32 Unicode Release"
+!ELSEIF  "$(CFG)" == "TestTools - Win32 Unicode Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Win32Tools___Win32_Unicode_Release"
-# PROP BASE Intermediate_Dir "Win32Tools___Win32_Unicode_Release"
+# PROP BASE Output_Dir "TestTools___Win32_Unicode_Release"
+# PROP BASE Intermediate_Dir "TestTools___Win32_Unicode_Release"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -130,52 +130,20 @@ LIB32=link.exe -lib
 
 # Begin Target
 
-# Name "Win32Tools - Win32 Release"
-# Name "Win32Tools - Win32 Debug"
-# Name "Win32Tools - Win32 Unicode Debug"
-# Name "Win32Tools - Win32 Unicode Release"
+# Name "TestTools - Win32 Release"
+# Name "TestTools - Win32 Debug"
+# Name "TestTools - Win32 Unicode Debug"
+# Name "TestTools - Win32 Unicode Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\AutoResetEvent.cpp
+SOURCE=.\TestException.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CallbackTimer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\CriticalSection.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Event.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Exception.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SEHException.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\StringConverter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Thread.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Utils.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Win32Exception.cpp
+SOURCE=.\TestLog.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -183,51 +151,11 @@ SOURCE=.\Win32Exception.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\AutoResetEvent.h
+SOURCE=.\TestException.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\CallbackTimer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CriticalSection.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Event.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Exception.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\SEHException.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\StringConverter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Thread.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Todo.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\tstring.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Utils.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Win32Exception.h
+SOURCE=.\TestLog.h
 # End Source File
 # End Group
 # Begin Group "Lint Options"
@@ -239,7 +167,7 @@ SOURCE=.\std.lnt
 # End Source File
 # Begin Source File
 
-SOURCE=.\Win32Tools.lnt
+SOURCE=".\TestTools.lnt"
 # End Source File
 # End Group
 # End Target
