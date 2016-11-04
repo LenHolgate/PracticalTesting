@@ -55,6 +55,10 @@ namespace Win32 {
 
 static const CTickCountProvider s_tickProvider;
 
+static const DWORD s_tickCountMax = 0xFFFFFFFF;
+
+static const DWORD s_timeoutMax = s_tickCountMax / 4 * 3;
+
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,7 +68,19 @@ CCallbackTimerQueue::CCallbackTimerQueue(
    :  m_tickProvider(tickProvider),
       m_pTimer(0),
       m_nextTimeout(0),
-      m_userData(0)
+      m_userData(0),
+      m_maxTimeout(s_timeoutMax)
+{   
+}
+
+CCallbackTimerQueue::CCallbackTimerQueue(
+   const DWORD maxTimeout,
+   const IProvideTickCount &tickProvider)
+   :  m_tickProvider(tickProvider),
+      m_pTimer(0),
+      m_nextTimeout(0),
+      m_userData(0),
+      m_maxTimeout(maxTimeout)
 {   
 }
 
@@ -72,7 +88,18 @@ CCallbackTimerQueue::CCallbackTimerQueue()
    :  m_tickProvider(s_tickProvider),
       m_pTimer(0),
       m_nextTimeout(0),
-      m_userData(0)
+      m_userData(0),
+      m_maxTimeout(s_timeoutMax)
+{
+}
+
+CCallbackTimerQueue::CCallbackTimerQueue(
+   const DWORD maxTimeout)
+   :  m_tickProvider(s_tickProvider),
+      m_pTimer(0),
+      m_nextTimeout(0),
+      m_userData(0),
+      m_maxTimeout(maxTimeout)
 {
 }
 
@@ -81,6 +108,11 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::SetTimer(
    const DWORD timeoutMillis,
    const UserData userData)
 {
+   if (timeoutMillis > m_maxTimeout)
+   {
+      throw CException(_T("CCallbackTimerQueue::SetTimer()"), _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
+   }
+
    const DWORD now = m_tickProvider.GetTickCount();
 
    m_pTimer = &timer;
@@ -117,15 +149,13 @@ DWORD CCallbackTimerQueue::GetNextTimeout() const
    {
       const DWORD now = m_tickProvider.GetTickCount();
 
-      if (now > m_nextTimeout)
+      timeout = m_nextTimeout - now;
+
+      if (timeout > s_timeoutMax)
       {
          timeout = 0;
       }
-      else
-      {
-         timeout = m_nextTimeout - now;
-      }
-   }
+   }  
 
    return timeout;
 }
@@ -134,9 +164,7 @@ void CCallbackTimerQueue::HandleTimeouts()
 {
    if (m_pTimer)
    {
-      const DWORD now = m_tickProvider.GetTickCount();
-
-      if (now >= m_nextTimeout)
+      if (0 == GetNextTimeout())
       {
          m_pTimer->OnTimer(m_userData);
 

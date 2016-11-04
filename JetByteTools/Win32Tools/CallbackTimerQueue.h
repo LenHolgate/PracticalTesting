@@ -79,6 +79,13 @@ class CCallbackTimerQueue
       CCallbackTimerQueue();
 
       explicit CCallbackTimerQueue(
+         const DWORD maxTimeout);
+
+      explicit CCallbackTimerQueue(
+         const IProvideTickCount &tickProvider);
+
+      CCallbackTimerQueue(
+         const DWORD maxTimeout,
          const IProvideTickCount &tickProvider);
 
       Handle SetTimer(
@@ -100,6 +107,8 @@ class CCallbackTimerQueue
       Timer *m_pTimer;
       DWORD m_nextTimeout;
       UserData m_userData;
+
+      const DWORD m_maxTimeout;
 
       // No copies do not implement
       CCallbackTimerQueue(const CCallbackTimerQueue &rhs);
