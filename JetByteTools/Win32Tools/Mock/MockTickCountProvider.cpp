@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerTest.cpp
+// File: MockTickCountProvider.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -30,16 +30,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CallbackTimerTest.h"
-
-#include "..\CallbackTimer.h"
-
-#include "..\Mock\LoggingCallbackTimerHandleCallback.h"
-#include "..\Mock\MockTickCountProvider.h"
+#include "MockTickCountProvider.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
-
-#include "JetByteTools\TestTools\TestException.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -52,85 +45,44 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-using JetByteTools::Test::CTestException;
-
-using JetByteTools::Win32::Output;
-using JetByteTools::Win32::_tstring;
-
-using JetByteTools::Win32::Mock::CLoggingCallbackTimerHandleCallback;
-using JetByteTools::Win32::Mock::CMockTickCountProvider;
+using JetByteTools::Win32::ToString;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
-namespace Test {
+namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerTest
+// CMockTickCountProvider
 ///////////////////////////////////////////////////////////////////////////////
 
-void CCallbackTimerTest::TestAll()
+CMockTickCountProvider::CMockTickCountProvider()
+   :  m_tickCount(0)
 {
-   TestConstruct();
 
-   TestTimer();
 }
 
-void CCallbackTimerTest::TestConstruct()
+void CMockTickCountProvider::SetTickCount(
+   const DWORD tickCount)
 {
-   const _tstring functionName = _T("CCallbackTimerTest::TestConstruct");
-   
-   Output(functionName + _T(" - start"));
-
-   CCallbackTimer timer;
-
-   CMockTickCountProvider tickProvider;
-
-   CCallbackTimer timer2(tickProvider);
-
-   Output(functionName + _T(" - stop"));
+   ::InterlockedExchange(reinterpret_cast<volatile long *>(&m_tickCount), tickCount);
 }
 
-void CCallbackTimerTest::TestTimer()
+DWORD CMockTickCountProvider::GetTickCount() const
 {
-   const _tstring functionName = _T("CCallbackTimerTest::TestTimer");
-   
-   Output(functionName + _T(" - start"));
+   LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
 
-   CMockTickCountProvider tickProvider;
-
-   CCallbackTimer timer(tickProvider);
-
-   CLoggingCallbackTimerHandleCallback callback;
-
-   CCallbackTimer::Handle handle(callback);
-
-   tickProvider.SetTickCount(1000);
-
-   timer.SetTimer(handle, 100, 1);
-
-   // Prove that time is standing still
-   THROW_ON_FAILURE(functionName, false == callback.WaitForTimer(1000));
-
-   callback.CheckResult(_T("|"));
-
-   tickProvider.SetTickCount(1100);
-
-   THROW_ON_FAILURE(functionName, true == callback.WaitForTimer(100));
-
-   callback.CheckResult(_T("|OnTimer: 1|"));
-
-   Output(functionName + _T(" - stop"));
+   return m_tickCount;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Mock
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
@@ -142,6 +94,6 @@ void CCallbackTimerTest::TestTimer()
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerTest.cpp
+// End of file: MockTickCountProvider.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

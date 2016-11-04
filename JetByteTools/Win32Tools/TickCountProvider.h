@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_CALLBACK_TIMER_INCLUDED__
-#define JETBYTE_TOOLS_CALLBACK_TIMER_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_TICK_COUNT_PROVIDER__
+#define JETBYTE_TOOLS_WIN32_TICK_COUNT_PROVIDER__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimer.h
+// File: IProvideTickCount.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2002 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -41,22 +41,9 @@
 //
 //lint -save
 //
-// Private copy constructor
-//lint -esym(1704, Handle::Handle)
-//
-// No default constructor   
-//lint -esym(1712, Handle)
-//
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CriticalSection.h"
-#include "AutoResetEvent.h"
-#include "Thread.h"
-#include "TODO.h"
-
-#include "JetByteTools\C++Tools\NodeList.h"
-
-#pragma TODO("BUG: - need to handle GetTickCount() wrap")
+#include "IProvideTickCount.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -66,132 +53,17 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Classes defined in other files...
+// CTickCountProvider
 ///////////////////////////////////////////////////////////////////////////////
 
-class IProvideTickCount;
-
-///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimer
-///////////////////////////////////////////////////////////////////////////////
-
-class CCallbackTimer : protected CThread 
+class CTickCountProvider: public IProvideTickCount
 {
-   public :
+   public : 
 
-      class Handle;
-
-      friend class Handle;
-
-      CCallbackTimer();
-
-      explicit CCallbackTimer(
-         const IProvideTickCount &tickProvider);
-
-      ~CCallbackTimer();
-
-      void SetTimer(
-         const Handle &hnd,
-         DWORD millisecondTimeout,
-         DWORD userData = 0);
-
-      bool CancelTimer(
-         const Handle &hnd);
-
-      void InitiateShutdown();
-
-   private :
-
-      // Implement CThread
-
-      virtual int Run();
-
-      void SignalStateChange();
-
-      class Node;
-
-      friend class Node;
-
-      void InsertNodeIntoPendingList(
-         Node *pNode,
-         DWORD millisecondTimeout,
-         DWORD userData);
-
-      DWORD HandleTimeouts() const;
-
-      void HandleTimeout(
-         Node *pNode) const;
-
-      bool CancelTimer(
-         Node *pNode);
-
-      TNodeList<Node> m_pendingList;
-
-      CCriticalSection m_criticalSection;
-      CAutoResetEvent m_stateChangeEvent;
-
-      volatile bool m_shutdown;
-
-      const IProvideTickCount &m_tickProvider;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimer::Handle
-///////////////////////////////////////////////////////////////////////////////
-
-class CCallbackTimer::Handle
-{
-   public :
-
-      class Callback
+      virtual DWORD GetTickCount() const
       {
-         public :
-
-            virtual void OnTimer(
-               Handle &hnd,
-               DWORD userData) = 0;
-
-            virtual ~Callback() {}
-      };
-
-      class Data;
-
-      explicit Handle(
-         Callback &callback);
-
-      explicit Handle(
-         Data *pData);
-      
-      Handle(
-         const Handle &rhs);
-
-      ~Handle();
-
-      Handle &operator =(const Handle &rhs);
-
-      bool operator ==(const Handle &rhs) const;
-      bool operator !=(const Handle &rhs) const;
-      bool operator <(const Handle &rhs) const;
-
-      Data *Detatch();
-
-//      void CancelTimer() const;
-
-   private :
-
-      friend class CCallbackTimer::Node;
-      friend class CCallbackTimer;
-
-      explicit Handle(
-         CCallbackTimer::Node *pNode);
-
-      static CCallbackTimer::Node *SafeAddRef(
-         CCallbackTimer::Node *pNode);
-
-      static CCallbackTimer::Node *SafeRelease(
-         CCallbackTimer::Node *pNode);
-
-      CCallbackTimer::Node *m_pNode;
+         return ::GetTickCount();
+      }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -208,8 +80,8 @@ class CCallbackTimer::Handle
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_CALLBACK_TIMER_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_TICK_COUNT_PROVIDER__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimer.h
+// End of file: TickCountProvider.h
 ///////////////////////////////////////////////////////////////////////////////

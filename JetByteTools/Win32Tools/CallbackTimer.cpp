@@ -33,6 +33,7 @@
 #include "CallbackTimer.h"
 #include "Utils.h"
 #include "Exception.h"
+#include "TickCountProvider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -74,6 +75,12 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
+// Constants
+///////////////////////////////////////////////////////////////////////////////
+
+static const CTickCountProvider s_tickProvider;
+
+///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimer::Node
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -110,8 +117,17 @@ class CCallbackTimer::Node : public CNodeList::Node
 // CCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
+CCallbackTimer::CCallbackTimer(
+   const IProvideTickCount &tickProvider)
+   :  m_shutdown(false),
+      m_tickProvider(tickProvider)
+{
+   Start();
+}
+
 CCallbackTimer::CCallbackTimer()
-   :  m_shutdown(false)
+   :  m_shutdown(false),
+      m_tickProvider(s_tickProvider)
 {
    Start();
 }
@@ -146,7 +162,7 @@ int CCallbackTimer::Run()
 
 DWORD CCallbackTimer::HandleTimeouts() const
 {
-   const DWORD now = ::GetTickCount();
+   const DWORD now = m_tickProvider.GetTickCount();
 
    Node *pNode = m_pendingList.Head();
    
@@ -203,7 +219,9 @@ void CCallbackTimer::InsertNodeIntoPendingList(
 
    pNewNode->RemoveFromList();
 
-   pNewNode->SetTimeout(millisecondTimeout, userData);
+   const DWORD absoluteTimeout = m_tickProvider.GetTickCount() + millisecondTimeout;
+
+   pNewNode->SetTimeout(absoluteTimeout, userData);
 
    pNewNode->AddRef();
 
@@ -401,11 +419,9 @@ CCallbackTimer::Node::Node(
 }
 
 void CCallbackTimer::Node::SetTimeout(
-   DWORD millisecondTimeout,
+   DWORD absoluteTimeout,
    DWORD userData)
 {
-   const DWORD absoluteTimeout = ::GetTickCount() + millisecondTimeout;
-
    m_millisecondTimeout = absoluteTimeout;
 
    m_userData = userData;

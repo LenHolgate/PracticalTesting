@@ -141,6 +141,10 @@ LIB32=link.exe -lib
 
 SOURCE=.\LoggingCallbackTimerHandleCallback.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\MockTickCountProvider.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -148,6 +152,10 @@ SOURCE=.\LoggingCallbackTimerHandleCallback.cpp
 # Begin Source File
 
 SOURCE=.\LoggingCallbackTimerHandleCallback.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MockTickCountProvider.h
 # End Source File
 # End Group
 # Begin Group "Lint Options"

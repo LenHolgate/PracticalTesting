@@ -215,6 +215,10 @@ SOURCE=.\Thread.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\TickCountProvider.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Todo.h
 # End Source File
 # Begin Source File
@@ -240,6 +244,14 @@ SOURCE=.\std.lnt
 # Begin Source File
 
 SOURCE=.\Win32Tools.lnt
+# End Source File
+# End Group
+# Begin Group "Interfaces"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\IProvideTickCount.h
 # End Source File
 # End Group
 # End Target
