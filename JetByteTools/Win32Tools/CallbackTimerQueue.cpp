@@ -76,7 +76,7 @@ CCallbackTimerQueue::CCallbackTimerQueue()
 {
 }
 
-void CCallbackTimerQueue::SetTimer(
+CCallbackTimerQueue::Handle CCallbackTimerQueue::SetTimer(
    Timer &timer,
    const DWORD timeoutMillis,
    const UserData userData)
@@ -88,6 +88,25 @@ void CCallbackTimerQueue::SetTimer(
    m_nextTimeout = now + timeoutMillis;
 
    m_userData = userData;
+
+   return reinterpret_cast<Handle>(m_pTimer);
+}
+
+bool CCallbackTimerQueue::CancelTimer(
+   Handle handle)
+{
+   bool wasPending = false;
+
+   if (m_pTimer != 0 && m_pTimer == reinterpret_cast<Timer *>(handle))
+   {
+      m_pTimer = 0;
+      m_nextTimeout = 0;
+      m_userData = 0;
+
+      wasPending = true;
+   }
+
+   return wasPending;
 }
 
 DWORD CCallbackTimerQueue::GetNextTimeout() const
