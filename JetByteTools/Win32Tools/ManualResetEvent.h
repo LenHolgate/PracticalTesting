@@ -1,8 +1,14 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_MANUAL_RESET_EVENT_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MANUAL_RESET_EVENT_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: TestLog.cpp
+// File: ManualResetEvent.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// Copyright 1997 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,116 +36,51 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TestLog.h"
-#include "TestException.h"
-
-#include <iostream>
-
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
 //lint -save
+//lint -esym(1704, CManualResetEvent::CManualResetEvent) private copy ctor
+//lint -esym(1712, CManualResetEvent)                    no default ctor
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "Event.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::Output;
-using JetByteTools::Win32::OutputEx;
-using JetByteTools::Win32::_tstring;
-using JetByteTools::Win32::CCriticalSection;
-using JetByteTools::Win32::CStringConverter;
-
-using std::string;
-
-///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Test {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CTestLog
+// CManualResetEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-void CTestLog::ClearLog()
+class CManualResetEvent : public CEvent
 {
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   m_log.clear();
-}
-
-void CTestLog::LogMessage(
-   const _tstring &message) const
-{
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   m_log.push_back(message);
-}
-
-_tstring CTestLog::GetMessages() const
-{
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   _tstring result = _T("|");
-
-   for (Log::const_iterator it = m_log.begin(); it != m_log.end(); ++it)
-   {
-      result += *it;
-      result += _T("|");
-   }
-
-   return result;
-}
-
-_tstring CTestLog::RemoveMessages() 
-{
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   _tstring result = GetMessages();
+   public :
    
-   m_log.clear();
+      explicit CManualResetEvent(
+         bool initialState = false);
+      
+      explicit CManualResetEvent(
+         const _tstring &name, 
+         bool initialState = false);
 
-   return result;
-}
+   private :
 
-void CTestLog::CheckResult(
-   const _tstring &expectedResult, 
-   bool displayOnFailure)
-{
-   const _tstring result = RemoveMessages();
-
-   if (result != expectedResult)
-   {
-      if (displayOnFailure)
-      {
-         OutputEx(_T("result:   ") + result);
-         OutputEx(_T("expected: ") + expectedResult);
-      }
-
-      throw CTestException(_T("CTestLog::CheckResult()"), _T("Log does not contain expected result"));
-   }
-}
-
-void CTestLog::CheckResultA(
-   const string &expectedResult, 
-   bool displayOnFailure)
-{
-   CheckResult(CStringConverter::AtoT(expectedResult), displayOnFailure);
-}
-
+      // No copies do not implement
+      CManualResetEvent(const CManualResetEvent &rhs);
+      CManualResetEvent &operator=(const CManualResetEvent &rhs);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -149,7 +90,9 @@ void CTestLog::CheckResultA(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#endif // JETBYTE_TOOLS_WIN32_MANUAL_RESET_EVENT_INCLUDED__
+
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: TestLog.cpp
+// End of file: ManualResetEvent.h
 ///////////////////////////////////////////////////////////////////////////////
 

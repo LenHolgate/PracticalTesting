@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: TestLog.cpp
+// File: WaitableCounter.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,10 +30,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TestLog.h"
-#include "TestException.h"
-
-#include <iostream>
+#include "WaitableCounter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -42,104 +39,102 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
-
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::Output;
-using JetByteTools::Win32::OutputEx;
-using JetByteTools::Win32::_tstring;
-using JetByteTools::Win32::CCriticalSection;
-using JetByteTools::Win32::CStringConverter;
-
-using std::string;
-
-///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Test {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CTestLog
+// CWaitableCounter
 ///////////////////////////////////////////////////////////////////////////////
 
-void CTestLog::ClearLog()
+CWaitableCounter::CWaitableCounter(
+   const long initialCount)
 {
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   m_log.clear();
+   SetValue(initialCount);
 }
 
-void CTestLog::LogMessage(
-   const _tstring &message) const
+void CWaitableCounter::WaitForZero() const
 {
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   m_log.push_back(message);
+   m_atZeroEvent.Wait();
 }
 
-_tstring CTestLog::GetMessages() const
+bool CWaitableCounter::WaitForZero(
+   DWORD timeoutMillis) const
 {
-   CCriticalSection::Owner lock(m_criticalSection);
-
-   _tstring result = _T("|");
-
-   for (Log::const_iterator it = m_log.begin(); it != m_log.end(); ++it)
-   {
-      result += *it;
-      result += _T("|");
-   }
-
-   return result;
+   return m_atZeroEvent.Wait(timeoutMillis);
 }
 
-_tstring CTestLog::RemoveMessages() 
+void CWaitableCounter::WaitForNonZero() const
+{
+   m_notAtZeroEvent.Wait();
+}
+
+bool CWaitableCounter::WaitForNonZero(
+   DWORD timeoutMillis) const
+{
+   return m_notAtZeroEvent.Wait(timeoutMillis);
+}
+
+void CWaitableCounter::SetValue(
+   const long value)
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
-   _tstring result = GetMessages();
+   m_count = value;
    
-   m_log.clear();
-
-   return result;
-}
-
-void CTestLog::CheckResult(
-   const _tstring &expectedResult, 
-   bool displayOnFailure)
-{
-   const _tstring result = RemoveMessages();
-
-   if (result != expectedResult)
+   if (value == 0)
    {
-      if (displayOnFailure)
-      {
-         OutputEx(_T("result:   ") + result);
-         OutputEx(_T("expected: ") + expectedResult);
-      }
-
-      throw CTestException(_T("CTestLog::CheckResult()"), _T("Log does not contain expected result"));
+      m_atZeroEvent.Set();
+      m_notAtZeroEvent.Reset();
    }
+   else
+   {
+      m_atZeroEvent.Reset();
+      m_notAtZeroEvent.Set();
+   }         
 }
 
-void CTestLog::CheckResultA(
-   const string &expectedResult, 
-   bool displayOnFailure)
+void CWaitableCounter::Increment()
 {
-   CheckResult(CStringConverter::AtoT(expectedResult), displayOnFailure);
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   if (0 == m_count)
+   {
+      m_atZeroEvent.Reset();
+      m_notAtZeroEvent.Set();
+   }         
+
+   m_count++;
 }
 
+void CWaitableCounter::Decrement()
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   m_count--;
+
+   if (0 == m_count)
+   {
+      m_atZeroEvent.Set();
+      m_notAtZeroEvent.Reset();
+   }         
+}
+
+long CWaitableCounter::GetValue() const
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   return m_count;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,6 +145,5 @@ void CTestLog::CheckResultA(
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: TestLog.cpp
+// End of file: Event.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

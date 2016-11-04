@@ -159,6 +159,10 @@ SOURCE=.\Exception.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ManualResetEvent.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SEHException.cpp
 # End Source File
 # Begin Source File
@@ -172,6 +176,10 @@ SOURCE=.\Thread.cpp
 # Begin Source File
 
 SOURCE=.\Utils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaitableCounter.cpp
 # End Source File
 # Begin Source File
 
@@ -203,6 +211,10 @@ SOURCE=.\Exception.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ManualResetEvent.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SEHException.h
 # End Source File
 # Begin Source File
@@ -228,6 +240,10 @@ SOURCE=.\tstring.h
 # Begin Source File
 
 SOURCE=.\Utils.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaitableCounter.h
 # End Source File
 # Begin Source File
 

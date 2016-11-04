@@ -60,10 +60,11 @@ class CCallbackTimerTest
    public :
 
       static void TestAll();
-
       static void TestConstruct();
-
       static void TestTimer();
+      static void TestMultipleTimers();
+      static void TestCancelTimer();
+      static void TestTickCountWrap();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

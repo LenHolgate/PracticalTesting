@@ -76,7 +76,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
    try
    {
       CCallbackTimerTest::TestAll();
-      
+
       ok = true;
    }
    catch(const CTestException &e)
