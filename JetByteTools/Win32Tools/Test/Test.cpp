@@ -75,7 +75,11 @@ int main(int /*argc*/, char * /*argv[ ]*/)
 
    try
    {
-      CCallbackTimerTest::TestAll();
+      for (size_t i = 0; i < 1000; ++i)
+      {
+         cout << i << endl;
+         CCallbackTimerTest::TestAll();
+      }
 
       ok = true;
    }

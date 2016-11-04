@@ -290,8 +290,9 @@ void CCallbackTimerTest::TestTickCountWrap()
    Output(functionName + _T(" - start"));
 
    const DWORD rollOver = 0;
-   const DWORD justBeforeRollOver = rollOver - 1;
    const DWORD beforeRollOver = rollOver - 1000;
+   const DWORD justBeforeRollOver = rollOver - 1;
+   const DWORD justAfterRollOver = rollOver + 1;
 
    CTestCallbackTimer timer(beforeRollOver, s_delay);
 
@@ -321,11 +322,48 @@ void CCallbackTimerTest::TestTickCountWrap()
    handle2.CheckTimerExpired(2, s_delay);
    handle3.CheckTimerNotExpired();
 
+   timer.SetTickCountAndWait(justAfterRollOver, true);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+
    timer.SetTickCountAndWait(2000, false);
 
    handle1.CheckTimerNotExpired();
    handle2.CheckTimerNotExpired();
    handle3.CheckTimerExpired(3, s_delay);
+
+   // now, lets see what happens if we step over the rollover point. 
+
+   const DWORD wayBeforeRollOver = rollOver - 100000;
+
+   timer.SetTickCount(wayBeforeRollOver);
+
+   // Since there are 99999 ticks to go until roll over the timer loop wont 
+   // spin and block, it will wait on the event...
+
+   timer.SetTimerAndWait(handle1, 100001, 1, false);
+   timer.SetTimerAndWait(handle2, 101000, 2, false);
+   timer.SetTimerAndWait(handle3, 102000, 2, false);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+
+   const DWORD wayAfterRollOver = rollOver + 100000;
+
+   // the timer loop is still waiting on the event, we've moved time faster than normal,
+   // so we need to force the loop to check the time again early, we do this by cancelling
+   // a new timer.
+
+   timer.SetTickCount(wayAfterRollOver);
+
+   timer.CancelTimer(handle3);
+
+   handle1.CheckTimerExpired(1, s_delay);
+   handle2.CheckTimerExpired(2, s_delay);
+   handle2.CheckTimerNotExpired();
 
    Output(functionName + _T(" - stop"));
 }

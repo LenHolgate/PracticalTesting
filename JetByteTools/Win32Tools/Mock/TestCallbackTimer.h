@@ -71,10 +71,17 @@ class CTestCallbackTimer :
 
       ~CTestCallbackTimer();
 
+      bool CancelTimer(
+         CCallbackTimer::Handle &handle);
+
       void SetTimerAndWait(
          CCallbackTimer::Handle &handle,
          const DWORD timeoutMillis,
-         const DWORD userData);
+         const DWORD userData,
+         const bool waitForBlock = true);
+
+      void SetTickCount(
+         const DWORD tickCount);
 
       void SetTickCountAndWait(
          const DWORD tickCount,

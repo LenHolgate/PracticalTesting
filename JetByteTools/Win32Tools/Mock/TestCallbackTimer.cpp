@@ -71,6 +71,7 @@ CTestCallbackTimer::CTestCallbackTimer(
    m_tickCountAsString = ToString(tickCount);
 
    const _tstring expectedResult = _T("|GetTickCount: Another Thread: ") + m_tickCountAsString + _T("|");
+//   const _tstring expectedResult = _T("|GetTickCount: Main Thread: ") + m_tickCountAsString + _T("|GetTickCount: Another Thread: ") + m_tickCountAsString + _T("|");
 
    CheckResult(expectedResult);
 }
@@ -83,7 +84,8 @@ CTestCallbackTimer::~CTestCallbackTimer()
 void CTestCallbackTimer::SetTimerAndWait(
    CCallbackTimer::Handle &handle,
    const DWORD timeoutMillis,
-   const DWORD userData)
+   const DWORD userData,
+   const bool waitForBlock)
 {
    SetTimer(handle, timeoutMillis, userData);
 
@@ -92,7 +94,7 @@ void CTestCallbackTimer::SetTimerAndWait(
       throw CException(_T("CTestCallbackTimer::SetTimerAndWait()"), _T("AllowCalls() failed"));
    }
    
-   if (!WaitForBlockedCall(m_operationTimeoutMillis))
+   if (waitForBlock && !WaitForBlockedCall(m_operationTimeoutMillis))
    {
       throw CException(_T("CTestCallbackTimer::SetTimerAndWait()"), _T("WaitForBlockedCall() failed"));
    }
@@ -102,13 +104,38 @@ void CTestCallbackTimer::SetTimerAndWait(
    CheckResult(expectedResult);
 }
 
+bool CTestCallbackTimer::CancelTimer(
+   CCallbackTimer::Handle &handle)
+{
+   const bool wasPending = CCallbackTimer::CancelTimer(handle);
+
+   if (!AllowCalls(1, m_operationTimeoutMillis))
+   {
+      throw CException(_T("CTestCallbackTimer::CancelTimer()"), _T("AllowCalls() failed"));
+   }
+
+   const _tstring expectedResult = _T("|GetTickCount: Another Thread: " + m_tickCountAsString + _T("|"));
+
+   CheckResult(expectedResult);
+
+   return wasPending;
+}
+
+void CTestCallbackTimer::SetTickCount(
+   const DWORD tickCount)
+{
+   m_tickCountAsString = ToString(tickCount);
+
+   CMockTickCountProvider::SetTickCount(tickCount);
+}
+
 void CTestCallbackTimer::SetTickCountAndWait(
    const DWORD tickCount,
    const bool waitForBlock)
 {
    m_tickCountAsString = ToString(tickCount);
 
-   SetTickCount(tickCount);
+   CMockTickCountProvider::SetTickCount(tickCount);
 
    if (!AllowCalls(1, m_operationTimeoutMillis))
    {

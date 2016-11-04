@@ -117,7 +117,7 @@ class CCallbackTimer : protected CThread
          DWORD millisecondTimeout,
          DWORD userData);
 
-      DWORD HandleTimeouts() const;
+      DWORD HandleTimeouts();
 
       void HandleTimeout(
          Node *pNode) const;
@@ -133,6 +133,14 @@ class CCallbackTimer : protected CThread
       volatile bool m_shutdown;
 
       const IProvideTickCount &m_tickProvider;
+
+      class WrapNode;
+
+      friend class WrapNode;
+
+      WrapNode *m_pWrapNode;
+
+      DWORD m_lastTick;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

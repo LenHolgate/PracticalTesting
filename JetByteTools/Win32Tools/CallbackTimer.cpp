@@ -80,6 +80,8 @@ namespace Win32 {
 
 static const CTickCountProvider s_tickProvider;
 
+static const DWORD s_tickCountMax = 0xFFFFFFFF;
+
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimer::Node
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,20 +116,46 @@ class CCallbackTimer::Node : public CNodeList::Node
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimer::WrapNode
+///////////////////////////////////////////////////////////////////////////////
+
+class CCallbackTimer::WrapNode : 
+   public CCallbackTimer::Node, 
+   private CCallbackTimer::Handle::Callback
+{
+   public :
+
+      WrapNode() : Node(static_cast<CCallbackTimer::Handle::Callback &>(*this)) 
+      {
+         SetTimeout(0, 0);
+      }
+
+      void OnTimer(
+         Handle &hnd,
+         DWORD userData)
+      {
+      }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimer::CCallbackTimer(
    const IProvideTickCount &tickProvider)
    :  m_shutdown(false),
-      m_tickProvider(tickProvider)
-{
+      m_tickProvider(tickProvider),
+      m_pWrapNode(new WrapNode()),
+      m_lastTick(0)
+{   
    Start();
 }
 
 CCallbackTimer::CCallbackTimer()
    :  m_shutdown(false),
-      m_tickProvider(s_tickProvider)
+      m_tickProvider(s_tickProvider),
+      m_pWrapNode(new WrapNode()),
+      m_lastTick(0)
 {
    Start();
 }
@@ -137,6 +165,10 @@ CCallbackTimer::~CCallbackTimer()
    InitiateShutdown();
 
    Wait();
+
+   m_pWrapNode->RemoveFromList();
+
+   delete m_pWrapNode;
 
    Node *pNode = m_pendingList.Head();
 
@@ -160,9 +192,11 @@ int CCallbackTimer::Run()
    return 0;
 }
 
-DWORD CCallbackTimer::HandleTimeouts() const
+DWORD CCallbackTimer::HandleTimeouts()
 {
    const DWORD now = m_tickProvider.GetTickCount();
+
+   DWORD timeout = INFINITE;
 
    CCriticalSection::Owner lock(m_criticalSection);
 
@@ -170,19 +204,45 @@ DWORD CCallbackTimer::HandleTimeouts() const
    
    while (pNode)
    {
-      if (pNode->m_millisecondTimeout > now)
+      const DWORD thisTimeout = pNode->m_millisecondTimeout;
+
+      if (thisTimeout > now)
+      {   
+         timeout = thisTimeout - now;
+         break;
+      }
+      else if (pNode != m_pWrapNode)
       {
-         return pNode->m_millisecondTimeout - now;
+         HandleTimeout(pNode);
+      }
+      else if (now < m_lastTick)
+      {
+         pNode = m_pendingList.Next(pNode);
+
+         m_pWrapNode->RemoveFromList();
+         
+         while (pNode && pNode->Next())
+         {
+            pNode = m_pendingList.Next(pNode);
+         }
+
+         if (pNode)
+         {
+            m_pendingList.InsertAfter(pNode, m_pWrapNode);
+         }
       }
       else
       {
-         HandleTimeout(pNode);
+         timeout = s_tickCountMax - now;
+         break;
       }
 
       pNode = m_pendingList.Head();
    }
+   
+   m_lastTick = now;
 
-   return INFINITE;
+   return timeout;
 }
 
 void CCallbackTimer::HandleTimeout(
@@ -221,7 +281,9 @@ void CCallbackTimer::InsertNodeIntoPendingList(
 
    pNewNode->RemoveFromList();
 
-   const DWORD absoluteTimeout = m_tickProvider.GetTickCount() + millisecondTimeout;
+   const DWORD now = m_tickProvider.GetTickCount();
+
+   const DWORD absoluteTimeout = now + millisecondTimeout;
 
    pNewNode->SetTimeout(absoluteTimeout, userData);
 
@@ -233,7 +295,24 @@ void CCallbackTimer::InsertNodeIntoPendingList(
 
    Node *pNode = m_pendingList.Head();
 
-   while (pNode && pNode->m_millisecondTimeout < pNewNode->m_millisecondTimeout)
+   if (!pNode)
+   {
+      // this will be the only node in the list, so we need to add the 'wrap node'
+      m_pendingList.PushNode(m_pWrapNode);
+   
+      pNode = m_pWrapNode;
+   }
+   
+   if (absoluteTimeout < now)
+   {
+      // step past the wrap node...
+
+      pPrev = m_pWrapNode;
+
+      pNode = m_pendingList.Next(m_pWrapNode);
+   }
+
+   while (pNode && pNode->m_millisecondTimeout < pNewNode->m_millisecondTimeout && pNode != m_pWrapNode)
    {
       pPrev = pNode;
 
