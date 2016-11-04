@@ -1,5 +1,11 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockTickCountProvider.cpp
+// File: TestCallbackTimer.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -30,10 +36,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "MockTickCountProvider.h"
-
-#include "JetByteTools\Win32Tools\Utils.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
@@ -41,11 +43,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
+#include "MockTickCountProvider.h"
 
-using JetByteTools::Win32::ToString;
+#include "..\CallbackTimer.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -56,94 +56,40 @@ namespace Win32 {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CMockTickCountProvider
+// CTestCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
-CMockTickCountProvider::CMockTickCountProvider()
-   :  m_tickCount(0),
-      m_mainThreadId(::GetCurrentThreadId())
+class CTestCallbackTimer : 
+   public CMockTickCountProvider,
+   public CCallbackTimer
 {
-   m_blockedCallEvent.Reset();
-}
+   public :
 
-CMockTickCountProvider::CMockTickCountProvider(
-   const DWORD tickCount)
-   :  m_tickCount(tickCount),
-      m_mainThreadId(::GetCurrentThreadId())
-{
-   m_blockedCallEvent.Reset();
-}
+      explicit CTestCallbackTimer(
+         const DWORD tickCount,
+         const DWORD operationTimeoutMillis);
 
+      ~CTestCallbackTimer();
 
-void CMockTickCountProvider::AllowCalls(
-   const size_t numCalls)
-{
-   m_counter.SetValue(numCalls);
-}
+      void SetTimerAndWait(
+         CCallbackTimer::Handle &handle,
+         const DWORD timeoutMillis,
+         const DWORD userData);
 
-bool CMockTickCountProvider::AllowCalls(
-   const size_t numCalls,
-   const DWORD timeoutMillis)
-{
-   AllowCalls(numCalls);
+      void SetTickCountAndWait(
+         const DWORD tickCount,
+         const bool waitForBlock);
 
-   return m_counter.WaitForZero(timeoutMillis);
-}
+   private :
 
-bool CMockTickCountProvider::WaitForBlockedCall(
-   const DWORD timeoutMillis)
-{
-   return m_blockedCallEvent.Wait(timeoutMillis);
-}
+      const DWORD m_operationTimeoutMillis;
 
-void CMockTickCountProvider::SetTickCount(
-   const DWORD tickCount)
-{
-   ::InterlockedExchange(reinterpret_cast<volatile long *>(&m_tickCount), tickCount);
-}
+      _tstring m_tickCountAsString;
 
-DWORD CMockTickCountProvider::GetTickCount() const
-{
-   if (m_mainThreadId != ::GetCurrentThreadId())
-   {
-      CCriticalSection::Owner lock(m_criticalSection);
-
-      if (0 == m_counter.GetValue())
-      {
-         m_blockedCallEvent.Set();
-      }
-
-      m_counter.WaitForNonZero();
-
-      m_blockedCallEvent.Reset();
-
-      LogMessage(_T("GetTickCount: Another Thread: ") + ToString(m_tickCount));
-
-      m_counter.Decrement();
-   }
-   else
-   {
-      LogMessage(_T("GetTickCount: Main Thread: ") + ToString(m_tickCount));
-   }
-   
-   return m_tickCount;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CMockTickCountProvider::AutoRelease
-///////////////////////////////////////////////////////////////////////////////
-
-CMockTickCountProvider::AutoRelease::AutoRelease(
-   CMockTickCountProvider &timer)
-   :  m_timer(timer)
-{
-
-}
-
-CMockTickCountProvider::AutoRelease::~AutoRelease()
-{
-   m_timer.AllowCalls(1000);
-}
+      // No copies do not implement
+      CTestCallbackTimer(const CTestCallbackTimer &rhs);
+      CTestCallbackTimer &operator=(const CTestCallbackTimer &rhs);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -160,7 +106,8 @@ CMockTickCountProvider::AutoRelease::~AutoRelease()
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// End of file: MockTickCountProvider.cpp
-///////////////////////////////////////////////////////////////////////////////
+#endif // JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_INCLUDED__
 
+///////////////////////////////////////////////////////////////////////////////
+// End of file: TestCallbackTimer.h
+///////////////////////////////////////////////////////////////////////////////

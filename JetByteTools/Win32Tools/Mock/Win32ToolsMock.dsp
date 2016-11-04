@@ -139,11 +139,19 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\LoggingCallbackTimerHandle.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\LoggingCallbackTimerHandleCallback.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\MockTickCountProvider.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TestCallbackTimer.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -151,11 +159,19 @@ SOURCE=.\MockTickCountProvider.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\LoggingCallbackTimerHandle.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\LoggingCallbackTimerHandleCallback.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\MockTickCountProvider.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TestCallbackTimer.h
 # End Source File
 # End Group
 # Begin Group "Lint Options"

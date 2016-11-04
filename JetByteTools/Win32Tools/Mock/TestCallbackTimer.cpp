@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockTickCountProvider.cpp
+// File: TestCallbackTimer.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -30,9 +30,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "MockTickCountProvider.h"
+#pragma warning(disable: 4355)   // 'this' used in base member initialiser list
 
-#include "JetByteTools\Win32Tools\Utils.h"
+#include "TestCallbackTimer.h"
+
+#include "..\Exception.h"
+#include "..\Utils.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -40,12 +43,6 @@
 //lint -save
 //
 ///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::ToString;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -56,93 +53,76 @@ namespace Win32 {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CMockTickCountProvider
+// CTestCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
-CMockTickCountProvider::CMockTickCountProvider()
-   :  m_tickCount(0),
-      m_mainThreadId(::GetCurrentThreadId())
+CTestCallbackTimer::CTestCallbackTimer(
+   const DWORD tickCount,
+   const DWORD operationTimeoutMillis)
+   :  CMockTickCountProvider(tickCount),
+      CCallbackTimer(static_cast<IProvideTickCount &>(*this)),
+      m_operationTimeoutMillis(operationTimeoutMillis)
 {
-   m_blockedCallEvent.Reset();
-}
-
-CMockTickCountProvider::CMockTickCountProvider(
-   const DWORD tickCount)
-   :  m_tickCount(tickCount),
-      m_mainThreadId(::GetCurrentThreadId())
-{
-   m_blockedCallEvent.Reset();
-}
-
-
-void CMockTickCountProvider::AllowCalls(
-   const size_t numCalls)
-{
-   m_counter.SetValue(numCalls);
-}
-
-bool CMockTickCountProvider::AllowCalls(
-   const size_t numCalls,
-   const DWORD timeoutMillis)
-{
-   AllowCalls(numCalls);
-
-   return m_counter.WaitForZero(timeoutMillis);
-}
-
-bool CMockTickCountProvider::WaitForBlockedCall(
-   const DWORD timeoutMillis)
-{
-   return m_blockedCallEvent.Wait(timeoutMillis);
-}
-
-void CMockTickCountProvider::SetTickCount(
-   const DWORD tickCount)
-{
-   ::InterlockedExchange(reinterpret_cast<volatile long *>(&m_tickCount), tickCount);
-}
-
-DWORD CMockTickCountProvider::GetTickCount() const
-{
-   if (m_mainThreadId != ::GetCurrentThreadId())
+   if (!AllowCalls(1, m_operationTimeoutMillis))
    {
-      CCriticalSection::Owner lock(m_criticalSection);
-
-      if (0 == m_counter.GetValue())
-      {
-         m_blockedCallEvent.Set();
-      }
-
-      m_counter.WaitForNonZero();
-
-      m_blockedCallEvent.Reset();
-
-      LogMessage(_T("GetTickCount: Another Thread: ") + ToString(m_tickCount));
-
-      m_counter.Decrement();
+      throw CException(_T("CTestCallbackTimer::CTestCallbackTimer()"), _T("AllowCalls() failed"));
    }
-   else
+
+   m_tickCountAsString = ToString(tickCount);
+
+   const _tstring expectedResult = _T("|GetTickCount: Another Thread: ") + m_tickCountAsString + _T("|");
+
+   CheckResult(expectedResult);
+}
+
+CTestCallbackTimer::~CTestCallbackTimer()
+{
+   AllowCalls(1000);      
+}
+
+void CTestCallbackTimer::SetTimerAndWait(
+   CCallbackTimer::Handle &handle,
+   const DWORD timeoutMillis,
+   const DWORD userData)
+{
+   SetTimer(handle, timeoutMillis, userData);
+
+   if (!AllowCalls(1, m_operationTimeoutMillis))
    {
-      LogMessage(_T("GetTickCount: Main Thread: ") + ToString(m_tickCount));
+      throw CException(_T("CTestCallbackTimer::SetTimerAndWait()"), _T("AllowCalls() failed"));
    }
    
-   return m_tickCount;
+   if (!WaitForBlockedCall(m_operationTimeoutMillis))
+   {
+      throw CException(_T("CTestCallbackTimer::SetTimerAndWait()"), _T("WaitForBlockedCall() failed"));
+   }
+
+   const _tstring expectedResult = _T("|GetTickCount: Main Thread: ") + m_tickCountAsString + _T("|GetTickCount: Another Thread: " + m_tickCountAsString + _T("|"));
+
+   CheckResult(expectedResult);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CMockTickCountProvider::AutoRelease
-///////////////////////////////////////////////////////////////////////////////
-
-CMockTickCountProvider::AutoRelease::AutoRelease(
-   CMockTickCountProvider &timer)
-   :  m_timer(timer)
+void CTestCallbackTimer::SetTickCountAndWait(
+   const DWORD tickCount,
+   const bool waitForBlock)
 {
+   m_tickCountAsString = ToString(tickCount);
 
-}
+   SetTickCount(tickCount);
 
-CMockTickCountProvider::AutoRelease::~AutoRelease()
-{
-   m_timer.AllowCalls(1000);
+   if (!AllowCalls(1, m_operationTimeoutMillis))
+   {
+      throw CException(_T("CTestCallbackTimer::SetTickCountAndWait()"), _T("AllowCalls() failed"));
+   }
+
+   const _tstring expectedResult = _T("|GetTickCount: Another Thread: ") + m_tickCountAsString + _T("|");
+
+   CheckResult(expectedResult);
+
+   if (waitForBlock && !WaitForBlockedCall(m_operationTimeoutMillis))
+   {
+      throw CException(_T("CTestCallbackTimer::SetTickCountAndWait()"), _T("WaitForBlockedCall() failed"));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,6 +141,6 @@ CMockTickCountProvider::AutoRelease::~AutoRelease()
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: MockTickCountProvider.cpp
+// End of file: TestCallbackTimer.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

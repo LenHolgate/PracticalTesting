@@ -34,8 +34,9 @@
 
 #include "..\CallbackTimer.h"
 
-#include "..\Mock\LoggingCallbackTimerHandleCallback.h"
+#include "..\Mock\LoggingCallbackTimerHandle.h"
 #include "..\Mock\MockTickCountProvider.h"
+#include "..\Mock\TestCallbackTimer.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 
@@ -57,8 +58,9 @@ using JetByteTools::Test::CTestException;
 using JetByteTools::Win32::Output;
 using JetByteTools::Win32::_tstring;
 
-using JetByteTools::Win32::Mock::CLoggingCallbackTimerHandleCallback;
+using JetByteTools::Win32::Mock::CLoggingCallbackTimerHandle;
 using JetByteTools::Win32::Mock::CMockTickCountProvider;
+using JetByteTools::Win32::Mock::CTestCallbackTimer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -84,8 +86,8 @@ void CCallbackTimerTest::TestAll()
    TestConstruct();
    TestTimer();
    TestMultipleTimers();
-//   TestCancelTimer();
-//   TestTickCountWrap();
+   TestCancelTimer();
+   TestTickCountWrap();
 }
 
 void CCallbackTimerTest::TestConstruct()
@@ -102,6 +104,8 @@ void CCallbackTimerTest::TestConstruct()
 
    THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
 
+   CTestCallbackTimer timer3(1000, s_delay);
+
    Output(functionName + _T(" - stop"));
 }
 
@@ -111,46 +115,22 @@ void CCallbackTimerTest::TestTimer()
    
    Output(functionName + _T(" - start"));
 
-   CMockTickCountProvider tickProvider;
+   CTestCallbackTimer timer(1000, s_delay);
 
-   tickProvider.SetTickCount(1000);
+   CLoggingCallbackTimerHandle handle;
 
-   CCallbackTimer timer(tickProvider);
-
-   CMockTickCountProvider::AutoRelease releaser(tickProvider);
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   CLoggingCallbackTimerHandleCallback callback;
-
-   CCallbackTimer::Handle handle(callback);
-
-   timer.SetTimer(handle, 100, 1);
-
-   tickProvider.CheckResult(_T("|GetTickCount: Main Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
+   timer.SetTimerAndWait(handle, 100, 1);
 
    // Prove that time is standing still
-   THROW_ON_FAILURE(functionName, false == callback.WaitForTimer(0));
+   THROW_ON_FAILURE(functionName, false == handle.WaitForTimer(0));
 
-   callback.CheckResult(_T("|"));
+   handle.CheckResult(_T("|"));
 
-   tickProvider.SetTickCount(1100);
+   timer.SetTickCountAndWait(1100, false);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
+   THROW_ON_FAILURE(functionName, true == handle.WaitForTimer(s_delay));
 
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1100|"));
-
-   THROW_ON_FAILURE(functionName, true == callback.WaitForTimer(s_delay));
-
-   callback.CheckResult(_T("|OnTimer: 1|"));
+   handle.CheckResult(_T("|OnTimer: 1|"));
 
    Output(functionName + _T(" - stop"));
 }
@@ -161,138 +141,191 @@ void CCallbackTimerTest::TestMultipleTimers()
    
    Output(functionName + _T(" - start"));
 
-   CMockTickCountProvider tickProvider;
+   CTestCallbackTimer timer(1000, s_delay);
 
-   tickProvider.SetTickCount(1000);
+   CLoggingCallbackTimerHandle handle1;
+   CLoggingCallbackTimerHandle handle2;
+   CLoggingCallbackTimerHandle handle3;
+   CLoggingCallbackTimerHandle handle4;
+   CLoggingCallbackTimerHandle handle5;
+   CLoggingCallbackTimerHandle handle6;
 
-   CCallbackTimer timer(tickProvider);
-
-   CMockTickCountProvider::AutoRelease releaser(tickProvider);
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   CLoggingCallbackTimerHandleCallback callback1;
-
-   CCallbackTimer::Handle handle1(callback1);
-
-   timer.SetTimer(handle1, 100, 1);
-
-   tickProvider.CheckResult(_T("|GetTickCount: Main Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
-///
-   CLoggingCallbackTimerHandleCallback callback2;
-
-   CCallbackTimer::Handle handle2(callback2);
-
-   timer.SetTimer(handle2, 200, 2);
-
-   tickProvider.CheckResult(_T("|GetTickCount: Main Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
-///
-   CLoggingCallbackTimerHandleCallback callback3;
-
-   CCallbackTimer::Handle handle3(callback3);
-
-   timer.SetTimer(handle3, 150, 3);
-
-   tickProvider.CheckResult(_T("|GetTickCount: Main Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
-
-   CLoggingCallbackTimerHandleCallback callback4;
-
-   CCallbackTimer::Handle handle4(callback4);
-
-   timer.SetTimer(handle4, 150, 4);
-
-   tickProvider.CheckResult(_T("|GetTickCount: Main Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
-
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1000|"));
-
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
+   timer.SetTimerAndWait(handle1, 300, 1);
+   timer.SetTimerAndWait(handle2, 100, 2);
+   timer.SetTimerAndWait(handle3, 200, 3);
+   timer.SetTimerAndWait(handle4, 150, 4);
+   timer.SetTimerAndWait(handle5, 150, 5);
+   timer.SetTimerAndWait(handle6, 160, 6);
 
    // Prove that time is standing still
-   THROW_ON_FAILURE(functionName, false == callback1.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback2.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback3.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback4.WaitForTimer(0));
 
-   callback1.CheckResult(_T("|"));
-   callback2.CheckResult(_T("|"));
-   callback3.CheckResult(_T("|"));
-   callback4.CheckResult(_T("|"));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+   handle5.CheckTimerNotExpired();
+   handle6.CheckTimerNotExpired();
 
-   tickProvider.SetTickCount(1100);
+   timer.SetTickCountAndWait(1100, true);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerExpired(2, s_delay);
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+   handle5.CheckTimerNotExpired();
+   handle6.CheckTimerNotExpired();
 
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1100|"));
+   timer.SetTickCountAndWait(1155, true);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerExpired(4, s_delay);
+   handle5.CheckTimerExpired(5, s_delay);
+   handle6.CheckTimerNotExpired();
 
-   THROW_ON_FAILURE(functionName, true  == callback1.WaitForTimer(s_delay));
-   THROW_ON_FAILURE(functionName, false == callback2.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback3.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback4.WaitForTimer(0));
+   timer.SetTickCountAndWait(1201, true);
 
-   callback1.CheckResult(_T("|OnTimer: 1|"));
-   callback2.CheckResult(_T("|"));
-   callback3.CheckResult(_T("|"));
-   callback4.CheckResult(_T("|"));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerExpired(3, s_delay);
+   handle4.CheckTimerNotExpired();
+   handle5.CheckTimerNotExpired();
+   handle6.CheckTimerExpired(6, s_delay);
 
-   tickProvider.SetTickCount(1160);
+   timer.SetTickCountAndWait(1300, false);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
+   handle1.CheckTimerExpired(1, s_delay);
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+   handle5.CheckTimerNotExpired();
+   handle6.CheckTimerNotExpired();
 
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1160|"));
+   timer.SetTimerAndWait(handle1, 100, 1);
+   timer.SetTimerAndWait(handle2, 200, 2);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.WaitForBlockedCall(s_delay));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
 
-   THROW_ON_FAILURE(functionName, false == callback1.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback2.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, true  == callback3.WaitForTimer(s_delay));
-   THROW_ON_FAILURE(functionName, true  == callback4.WaitForTimer(s_delay));
+   timer.SetTickCountAndWait(1350, true);
 
-   callback1.CheckResult(_T("|"));
-   callback2.CheckResult(_T("|"));
-   callback3.CheckResult(_T("|OnTimer: 3|"));
-   callback4.CheckResult(_T("|OnTimer: 4|"));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
 
-   tickProvider.SetTickCount(1201);
+   timer.SetTickCountAndWait(1400, true);
 
-   THROW_ON_FAILURE(functionName, true == tickProvider.AllowCalls(1, s_delay));
+   handle1.CheckTimerExpired(1, s_delay);
+   handle2.CheckTimerNotExpired();
 
-   tickProvider.CheckResult(_T("|GetTickCount: Another Thread: 1201|"));
+   timer.SetTickCountAndWait(1400, true);
 
-   // No more timers pending so the thread goes into an infinite wait until new timers are added.
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
 
-   THROW_ON_FAILURE(functionName, false == callback1.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, true  == callback2.WaitForTimer(s_delay));
-   THROW_ON_FAILURE(functionName, false == callback3.WaitForTimer(0));
-   THROW_ON_FAILURE(functionName, false == callback4.WaitForTimer(0));
+   timer.SetTickCountAndWait(1600, false);
 
-   callback1.CheckResult(_T("|"));
-   callback2.CheckResult(_T("|OnTimer: 2|"));
-   callback3.CheckResult(_T("|"));
-   callback4.CheckResult(_T("|"));
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerExpired(2, s_delay);
+
+   Output(functionName + _T(" - stop"));
+}
+
+void CCallbackTimerTest::TestCancelTimer()
+{
+   const _tstring functionName = _T("CCallbackTimerTest::TestCancelTimer");
+   
+   Output(functionName + _T(" - start"));
+
+   CTestCallbackTimer timer(1000, s_delay);
+
+   CLoggingCallbackTimerHandle handle1;
+   CLoggingCallbackTimerHandle handle2;
+   CLoggingCallbackTimerHandle handle3;
+   CLoggingCallbackTimerHandle handle4;
+
+   timer.SetTimerAndWait(handle1, 100, 1);
+   timer.SetTimerAndWait(handle2, 200, 2);
+   timer.SetTimerAndWait(handle3, 150, 3);
+   timer.SetTimerAndWait(handle4, 150, 4);
+
+   // Prove that time is standing still
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+
+   timer.SetTickCountAndWait(1100, true);
+
+   handle1.CheckTimerExpired(1, s_delay);
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+
+   THROW_ON_FAILURE(functionName, true == timer.CancelTimer(handle4));
+   THROW_ON_FAILURE(functionName, false == timer.CancelTimer(handle1));
+
+   timer.SetTickCountAndWait(1160, true);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerExpired(3, s_delay);
+   handle4.CheckTimerNotExpired();
+
+   timer.SetTickCountAndWait(1201, false);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerExpired(2, s_delay);
+   handle3.CheckTimerNotExpired();
+   handle4.CheckTimerNotExpired();
+
+   Output(functionName + _T(" - stop"));
+}
+
+void CCallbackTimerTest::TestTickCountWrap()
+{
+   const _tstring functionName = _T("CCallbackTimerTest::TestTickCountWrap");
+   
+   Output(functionName + _T(" - start"));
+
+   const DWORD rollOver = 0;
+   const DWORD justBeforeRollOver = rollOver - 1;
+   const DWORD beforeRollOver = rollOver - 1000;
+
+   CTestCallbackTimer timer(beforeRollOver, s_delay);
+
+   CLoggingCallbackTimerHandle handle1;
+   CLoggingCallbackTimerHandle handle2;
+   CLoggingCallbackTimerHandle handle3;
+
+   timer.SetTimerAndWait(handle1, 900, 1);
+   timer.SetTimerAndWait(handle2, 1000, 2);
+   timer.SetTimerAndWait(handle3, 1100, 3);
+
+   // Prove that time is standing still
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+
+   timer.SetTickCountAndWait(justBeforeRollOver, true);
+
+   handle1.CheckTimerExpired(1, s_delay);
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerNotExpired();
+
+   timer.SetTickCountAndWait(rollOver, true);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerExpired(2, s_delay);
+   handle3.CheckTimerNotExpired();
+
+   timer.SetTickCountAndWait(2000, false);
+
+   handle1.CheckTimerNotExpired();
+   handle2.CheckTimerNotExpired();
+   handle3.CheckTimerExpired(3, s_delay);
 
    Output(functionName + _T(" - stop"));
 }

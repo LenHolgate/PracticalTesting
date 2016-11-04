@@ -88,6 +88,9 @@ class CMockTickCountProvider :
 
       CMockTickCountProvider();
 
+      explicit CMockTickCountProvider(
+         const DWORD tickCount); 
+
       void AllowCalls(
          const size_t numCalls);
 

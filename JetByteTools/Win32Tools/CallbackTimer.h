@@ -127,7 +127,7 @@ class CCallbackTimer : protected CThread
 
       TNodeList<Node> m_pendingList;
 
-      CCriticalSection m_criticalSection;
+      mutable CCriticalSection m_criticalSection;
       CAutoResetEvent m_stateChangeEvent;
 
       volatile bool m_shutdown;
