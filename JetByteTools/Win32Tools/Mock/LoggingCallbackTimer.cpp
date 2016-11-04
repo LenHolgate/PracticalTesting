@@ -1,11 +1,5 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: LoggingCallbackTimerHandleCallback.h 
+// File: LoggingCallbackTimer.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -36,6 +30,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "LoggingCallbackTimer.h"
+
+#include "JetByteTools\Win32Tools\Utils.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
@@ -43,10 +41,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
 
-#include "..\CallbackTimer.h"
-#include "..\AutoResetEvent.h"
+using JetByteTools::Win32::ToString;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -57,34 +56,18 @@ namespace Win32 {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CLoggingCallbackTimerHandleCallback
+// CLoggingCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
-class CLoggingCallbackTimerHandleCallback : 
-   public JetByteTools::Test::CTestLog,
-   public CCallbackTimer::Handle::Callback
+CLoggingCallbackTimer::CLoggingCallbackTimer()
 {
-   public :
+}
 
-      CLoggingCallbackTimerHandleCallback();
-   
-      bool WaitForTimer(
-         DWORD timeoutMillis);
-
-   private :
-
-      // Implement CCallbackTimer::Handle::Callback
-
-      virtual void OnTimer(
-         CCallbackTimer::Handle &hnd,
-         DWORD userData);
-
-      CAutoResetEvent m_event;
-
-      // No copies do not implement
-      CLoggingCallbackTimerHandleCallback(const CLoggingCallbackTimerHandleCallback &rhs);
-      CLoggingCallbackTimerHandleCallback &operator=(const CLoggingCallbackTimerHandleCallback &rhs);
-};
+void CLoggingCallbackTimer::OnTimer(
+   DWORD userData)
+{
+   LogMessage(_T("OnTimer: ") + ToString(userData));
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -101,8 +84,7 @@ class CLoggingCallbackTimerHandleCallback :
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_WIN32_MOCK_LOGGING_CALLBACK_TIMER_HANDLE_CALLBACK_INCLUDED__
+///////////////////////////////////////////////////////////////////////////////
+// End of file: LoggingCallbackTimer.cpp
+///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// End of file: LoggingCallbackTimerHandleCallback.h
-///////////////////////////////////////////////////////////////////////////////

@@ -1,14 +1,8 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Event.h
+// File: CallbackTimerQueue.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1997 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -36,26 +30,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "CallbackTimerQueue.h"
+#include "Utils.h"
+#include "Exception.h"
+#include "TickCountProvider.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
 //lint -save
 //
-// Private copy constructor
-//lint -esym(1704, CEvent::CEvent)
-//
-// No default constructor
-//lint -esym(1712, CEvent) 
-// 
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifndef _WINDOWS_
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
-
-#include "tstring.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -65,47 +50,91 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CEvent
+// Constants
 ///////////////////////////////////////////////////////////////////////////////
 
-class CEvent 
+static const CTickCountProvider s_tickProvider;
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueue
+///////////////////////////////////////////////////////////////////////////////
+
+CCallbackTimerQueue::CCallbackTimerQueue(
+   const IProvideTickCount &tickProvider)
+   :  m_tickProvider(tickProvider),
+      m_pTimer(0),
+      m_nextTimeout(0),
+      m_userData(0)
+{   
+}
+
+CCallbackTimerQueue::CCallbackTimerQueue()
+   :  m_tickProvider(s_tickProvider),
+      m_pTimer(0),
+      m_nextTimeout(0),
+      m_userData(0)
 {
-   public :
-   
-      CEvent(
-         LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-         bool manualReset,
-         bool initialState);
-   
-      CEvent(
-         LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-         bool manualReset,
-         bool initialState,
-         const _tstring &name);
-      
-      virtual ~CEvent();
+}
 
-      HANDLE GetEvent() const;
+void CCallbackTimerQueue::SetTimer(
+   Timer &timer,
+   const DWORD timeoutMillis,
+   const UserData userData)
+{
+   const DWORD now = m_tickProvider.GetTickCount();
 
-      void Wait() const;
+   m_pTimer = &timer;
 
-      bool Wait(
-         DWORD timeoutMillis) const;
+   m_nextTimeout = now + timeoutMillis;
 
-      void Reset();
+   m_userData = userData;
+}
 
-      void Set();
+DWORD CCallbackTimerQueue::GetNextTimeout() const
+{
+   DWORD timeout = INFINITE;
 
-      void Pulse();
+   if (m_pTimer)
+   {
+      const DWORD now = m_tickProvider.GetTickCount();
 
-   private :
+      if (now > m_nextTimeout)
+      {
+         timeout = 0;
+      }
+      else
+      {
+         timeout = m_nextTimeout - now;
+      }
+   }
 
-      HANDLE m_hEvent;
+   return timeout;
+}
 
-      // No copies do not implement
-      CEvent(const CEvent &rhs);
-      CEvent &operator=(const CEvent &rhs);
-};
+void CCallbackTimerQueue::HandleTimeouts()
+{
+   if (m_pTimer)
+   {
+      const DWORD now = m_tickProvider.GetTickCount();
+
+      if (now >= m_nextTimeout)
+      {
+         m_pTimer->OnTimer(m_userData);
+
+         m_pTimer = 0;
+         m_nextTimeout = 0;
+         m_userData = 0;
+      }
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueue::Timer
+///////////////////////////////////////////////////////////////////////////////
+
+CCallbackTimerQueue::Timer::~Timer()
+{
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -121,8 +150,6 @@ class CEvent
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
-
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Event.h
+// End of file: CallbackTimerQueue.cpp
 ///////////////////////////////////////////////////////////////////////////////

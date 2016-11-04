@@ -150,11 +150,11 @@ SOURCE=.\Test.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\CallbackTimerTest.cpp
+SOURCE=.\CallbackTimerQueueTest.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CallbackTimerTest.h
+SOURCE=.\CallbackTimerQueueTest.h
 # End Source File
 # End Group
 # End Target

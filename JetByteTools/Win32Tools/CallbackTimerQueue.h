@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_AUTO_RESET_EVENT_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_AUTO_RESET_EVENT_INCLUDED__
+#ifndef JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
+#define JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: AutoResetEvent.h 
+// File: CallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1997 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -36,17 +36,18 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WINDOWS_
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
 //lint -save
 //
-// Private copy constructor
-//lint -esym(1704, CAutoResetEvent::CAutoResetEvent) 
-//
 ///////////////////////////////////////////////////////////////////////////////
-
-#include "Event.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -56,25 +57,64 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CAutoResetEvent
+// Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
-class CAutoResetEvent : public CEvent
+class IProvideTickCount;
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueue
+///////////////////////////////////////////////////////////////////////////////
+
+class CCallbackTimerQueue
 {
    public :
-   
-      explicit CAutoResetEvent(
-         bool initialState = false);
-      
-      explicit CAutoResetEvent(
-         const _tstring &name, 
-         bool initialState = false);
+
+      typedef ULONG_PTR UserData;
+
+      class Timer;
+
+      CCallbackTimerQueue();
+
+      explicit CCallbackTimerQueue(
+         const IProvideTickCount &tickProvider);
+
+      void SetTimer(
+         Timer &timer,
+         const DWORD timeoutMillis,
+         const UserData userData);
+
+      DWORD GetNextTimeout() const;
+
+      void HandleTimeouts();
 
    private :
 
+      const IProvideTickCount &m_tickProvider;
+
+      Timer *m_pTimer;
+      DWORD m_nextTimeout;
+      UserData m_userData;
+
       // No copies do not implement
-      CAutoResetEvent(const CAutoResetEvent &rhs);
-      CAutoResetEvent &operator=(const CAutoResetEvent &rhs);
+      CCallbackTimerQueue(const CCallbackTimerQueue &rhs);
+      CCallbackTimerQueue &operator=(const CCallbackTimerQueue &rhs);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueue::Timer
+///////////////////////////////////////////////////////////////////////////////
+
+class CCallbackTimerQueue::Timer
+{
+   public :
+
+      virtual void OnTimer(
+         UserData userData) = 0;
+
+   protected :
+
+      ~Timer();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,8 +131,8 @@ class CAutoResetEvent : public CEvent
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_WIN32_AUTO_RESET_EVENT_INCLUDED__
+#endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: AutoResetEvent.h
+// End of file: CallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////

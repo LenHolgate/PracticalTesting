@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_NODE_LIST_INCLUDED__
-#define JETBYTE_TOOLS_NODE_LIST_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: NodeList.h
+// File: LoggingCallbackTimer.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2002 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -41,129 +41,50 @@
 //
 //lint -save
 //
-// Member hides non virtual member
-//lint -esym(1511, CNodeList::Head)
-//lint -esym(1511, CNodeList::PopNode)
-//lint -esym(1511, CNodeList::PushNode)
-//
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools\TestTools\TestLog.h"
+
+#include "..\CallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
+namespace Win32 {
+namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CNodeList
+// CLoggingCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
-class CNodeList
+class CLoggingCallbackTimer : 
+   public CCallbackTimerQueue::Timer,
+   public JetByteTools::Test::CTestLog
 {
-   public :
+   public : 
 
-      class Node
-      {
-         public :
+      CLoggingCallbackTimer();
 
-            Node *Next() const;
+      // Implement CCallbackTimerQueue::Timer
 
-            void Next(Node *pNext);
-
-            void AddToList(
-               CNodeList *pList);
-
-            void RemoveFromList();
-
-            bool InList(
-               const CNodeList &list) const;
-
-            bool InList() const;
-
-         protected :
-
-            Node();
-            ~Node();
-
-         private :
-
-            friend class CNodeList;
-
-            void Unlink();
-
-            Node *m_pNext;
-            Node *m_pPrev;
-
-            CNodeList *m_pList;
-      };
-
-      CNodeList();
-
-      void PushNode(
-         Node *pNode);
-
-      Node *PopNode();
-
-      Node *Head() const;
-
-      void InsertAfter(
-         Node *pNode, 
-         Node *pNewNode);
-
-      size_t Count() const;
-
-      bool IsEmpty() const;
+      virtual void OnTimer(
+         DWORD userData);
 
    private :
 
-      friend void Node::RemoveFromList();
-
-      void RemoveNode(Node &node);
-
-      Node *m_pHead; 
-
-      size_t m_numNodes;
+      // No copies do not implement
+      CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);
+      CLoggingCallbackTimer &operator=(const CLoggingCallbackTimer &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// TNodeList
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
-template <class T> class TNodeList : public CNodeList
-{
-   public :
-         
-      T *PopNode();
-   
-      T *Head() const;
-
-      static T *Next(const T *pNode);
-};
-
-template <class T>
-T *TNodeList<T>::PopNode()
-{
-   return static_cast<T*>(CNodeList::PopNode());
-}
-
-template <class T>
-T *TNodeList<T>::Head() const
-{
-   return static_cast<T*>(CNodeList::Head());
-}
-
-template <class T>
-T *TNodeList<T>::Next(const T *pNode)
-{
-   return static_cast<T*>(pNode->Next());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools
-///////////////////////////////////////////////////////////////////////////////
-
+} // End of namespace Mock
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,8 +94,8 @@ T *TNodeList<T>::Next(const T *pNode)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // JETBYTE_TOOLS_NODE_LIST_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: NodeList.h
+// End of file: LoggingCallbackTimer.h
 ///////////////////////////////////////////////////////////////////////////////

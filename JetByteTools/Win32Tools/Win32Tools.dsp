@@ -139,11 +139,7 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\AutoResetEvent.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\CallbackTimer.cpp
+SOURCE=.\CallbackTimerQueue.cpp
 # End Source File
 # Begin Source File
 
@@ -151,15 +147,7 @@ SOURCE=.\CriticalSection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Event.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\Exception.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ManualResetEvent.cpp
 # End Source File
 # Begin Source File
 
@@ -171,15 +159,7 @@ SOURCE=.\StringConverter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Thread.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\Utils.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\WaitableCounter.cpp
 # End Source File
 # Begin Source File
 
@@ -191,11 +171,7 @@ SOURCE=.\Win32Exception.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\AutoResetEvent.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CallbackTimer.h
+SOURCE=.\CallbackTimerQueue.h
 # End Source File
 # Begin Source File
 
@@ -203,15 +179,7 @@ SOURCE=.\CriticalSection.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Event.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\Exception.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ManualResetEvent.h
 # End Source File
 # Begin Source File
 
@@ -220,10 +188,6 @@ SOURCE=.\SEHException.h
 # Begin Source File
 
 SOURCE=.\StringConverter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Thread.h
 # End Source File
 # Begin Source File
 
@@ -240,10 +204,6 @@ SOURCE=.\tstring.h
 # Begin Source File
 
 SOURCE=.\Utils.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\WaitableCounter.h
 # End Source File
 # Begin Source File
 

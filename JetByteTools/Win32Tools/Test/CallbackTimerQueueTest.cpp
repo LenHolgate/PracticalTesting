@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: AutoResetEvent.cpp
+// File: CallbackTimerQueueTest.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1997 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,49 +30,136 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AutoResetEvent.h"
+#include "CallbackTimerQueueTest.h"
+
+#include "..\CallbackTimerQueue.h"
+
+#include "..\Mock\MockTickCountProvider.h"
+#include "..\Mock\LoggingCallbackTimer.h"
+
+#include "JetByteTools\Win32Tools\Utils.h"
+
+#include "JetByteTools\TestTools\TestException.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
 //lint -save
 //
-// Member not defined
-//lint -esym(1526, CAutoResetEvent::CAutoResetEvent)
-//lint -esym(1526, CAutoResetEvent::operator=)
-//
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using JetByteTools::Test::CTestException;
+
+using JetByteTools::Win32::Output;
+using JetByteTools::Win32::_tstring;
+
+using JetByteTools::Win32::Mock::CMockTickCountProvider;
+using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CAutoResetEvent
+// CCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-CAutoResetEvent::CAutoResetEvent(
-   bool initialState /* = false */)
-   :  CEvent(0, false, initialState)
+void CCallbackTimerQueueTest::TestAll()
 {
-
+   TestConstruct();
+   TestTimer();
+//   TestMultipleTimers();
+//   TestCancelTimer();
+//   TestTickCountWrap();
 }
 
-CAutoResetEvent::CAutoResetEvent(
-   const _tstring &name, 
-   bool initialState /* = false */)
-   :  CEvent(0, false, initialState, name)
+void CCallbackTimerQueueTest::TestConstruct()
 {
+   const _tstring functionName = _T("CCallbackTimerQueueTest::TestConstruct");
    
+   Output(functionName + _T(" - start"));
+
+   CCallbackTimerQueue timerQueue;
+
+   CMockTickCountProvider tickProvider;
+
+   CCallbackTimerQueue timerQueue2(tickProvider);
+
+   tickProvider.CheckResult(_T("|"));
+
+   Output(functionName + _T(" - stop"));
 }
- 
+
+void CCallbackTimerQueueTest::TestTimer()
+{
+   const _tstring functionName = _T("CCallbackTimerQueueTest::TestTimer");
+   
+   Output(functionName + _T(" - start"));
+
+   CMockTickCountProvider tickProvider;
+
+   CCallbackTimerQueue timerQueue(tickProvider);
+
+   tickProvider.CheckResult(_T("|"));
+
+   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|"));
+
+   CLoggingCallbackTimer timer;
+
+   timerQueue.SetTimer(timer, 100, 1);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   // Prove that time is standing still
+
+   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   
+   timerQueue.HandleTimeouts();
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   timer.CheckResult(_T("|"));
+
+   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timerQueue.HandleTimeouts();
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|"));
+
+   Output(functionName + _T(" - stop"));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
+} // End of namespace Test
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
@@ -84,6 +171,6 @@ CAutoResetEvent::CAutoResetEvent(
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: AutoResetEvent.cpp
+// End of file: CallbackTimerQueueTest.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

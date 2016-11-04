@@ -34,7 +34,7 @@
 
 #include "JetByteTools\TestTools\TestException.h"
 
-#include "CallbackTimerTest.h"
+#include "CallbackTimerQueueTest.h"
 
 #include "JetByteTools\Win32Tools\Exception.h"
 #include "JetByteTools\Win32Tools\SEHException.h"
@@ -75,11 +75,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
 
    try
    {
-      for (size_t i = 0; i < 1000; ++i)
-      {
-         cout << i << endl;
-         CCallbackTimerTest::TestAll();
-      }
+      CCallbackTimerQueueTest::TestAll();
 
       ok = true;
    }

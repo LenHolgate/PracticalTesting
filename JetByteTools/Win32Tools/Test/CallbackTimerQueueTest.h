@@ -1,8 +1,14 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Event.cpp
+// File: CallbackTimerQueueTest.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1997 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,151 +36,42 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Event.h"
-#include "Win32Exception.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
 //lint -save
-//lint -esym(1763, CEvent::GetEvent) const member indirectly modifies obj
-//
-// Member not defined
-//lint -esym(1526, CEvent::CEvent)
-//lint -esym(1526, CEvent::operator=)
-//
-//lint -esym(534, CloseHandle)   ignoring return value
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Static helper methods
+// CCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-static HANDLE Create(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
-   LPCTSTR lpName);
+class CCallbackTimerQueueTest
+{
+   public :
+
+      static void TestAll();
+      static void TestConstruct();
+      static void TestTimer();
+      static void TestMultipleTimers();
+      static void TestCancelTimer();
+      static void TestTickCountWrap();
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// CEvent
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-CEvent::CEvent(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState)
-   :  m_hEvent(Create(lpEventAttributes, bManualReset, bInitialState, 0))
-{
-
-}
-
-CEvent::CEvent(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
-   const _tstring &name)
-   :  m_hEvent(Create(lpEventAttributes, bManualReset, bInitialState, name.c_str()))
-{
-
-}
-
-CEvent::~CEvent()
-{
-   ::CloseHandle(m_hEvent);
-}
-
-HANDLE CEvent::GetEvent() const
-{
-   return m_hEvent;
-}
-
-void CEvent::Wait() const
-{
-   if (!Wait(INFINITE))
-   {
-      throw CException(_T("CEvent::Wait()"), _T("Unexpected timeout on infinite wait"));
-   }
-}
-
-bool CEvent::Wait(DWORD timeoutMillis) const
-{
-   bool ok;
-
-   DWORD result = ::WaitForSingleObject(m_hEvent, timeoutMillis);
-
-   if (result == WAIT_TIMEOUT)
-   {
-      ok = false;
-   }
-   else if (result == WAIT_OBJECT_0)
-   {
-      ok = true;
-   }
-   else
-   {
-      throw CWin32Exception(_T("CEvent::Wait() - WaitForSingleObject"), ::GetLastError());
-   }
-    
-   return ok;
-}
-
-void CEvent::Reset()
-{
-   if (!::ResetEvent(m_hEvent))
-   {
-      throw CWin32Exception(_T("CEvent::Reset()"), ::GetLastError());
-   }
-}
-
-void CEvent::Set()
-{
-   if (!::SetEvent(m_hEvent))
-   {
-      throw CWin32Exception(_T("CEvent::Set()"), ::GetLastError());
-   }
-}
-
-void CEvent::Pulse()
-{
-   if (!::PulseEvent(m_hEvent))
-   {
-      throw CWin32Exception(_T("CEvent::Pulse()"), ::GetLastError());
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper methods
-///////////////////////////////////////////////////////////////////////////////
-
-static HANDLE Create(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
-   LPCTSTR lpName)
-{
-   HANDLE hEvent = ::CreateEvent(lpEventAttributes, bManualReset, bInitialState, lpName);
-
-   if (hEvent == NULL)
-   {
-      throw CWin32Exception(_T("CEvent::Create()"), ::GetLastError());
-   }
-
-   return hEvent;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32
-///////////////////////////////////////////////////////////////////////////////
-
+} // End of namespace Test
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
@@ -185,6 +82,8 @@ static HANDLE Create(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
+
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Event.cpp
+// End of file: CallbackTimerQueueTest.h
 ///////////////////////////////////////////////////////////////////////////////
