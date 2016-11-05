@@ -30,24 +30,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include "Utils.h"
 #include "Exception.h"
+#include "Win32Exception.h"
 #include "CriticalSection.h"
+
+#pragma hdrstop
 
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include "Lmcons.h"     // UNLEN
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-//lint -esym(534, swprintf, wprintf)   ignoring return value
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -210,28 +207,28 @@ string HexToStringA(
    {
       BYTE c ;
 
-      BYTE b = pBuffer[i] >> 4;
+      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
          
       if (9 >= b)
       {
-         c = b + '0';
+         c = static_cast<BYTE>(b + '0');
       }
       else
       {
-         c = (b - 10) + (upperCase ? 'A' : 'a');
+         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
       }
 
       result += (char)c;
 
-      b = pBuffer[i] & 0x0f;
+      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
 
       if (9 >= b)
       {
-         c = b + '0';
+         c = static_cast<BYTE>(b + '0');
       }
       else
       {
-         c = (b - 10) + (upperCase ? 'A' : 'a');
+         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
       }
 
       result += (char)c;
@@ -250,28 +247,28 @@ _tstring HexToString(
    {
       BYTE c ;
 
-      BYTE b = pBuffer[i] >> 4;
+      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
          
       if (9 >= b)
       {
-         c = b + '0';
+         c = static_cast<BYTE>(b + '0');
       }
       else
       {
-         c = (b - 10) + 'A';
+         c = static_cast<BYTE>((b - 10) + 'A');
       }
 
       result += (TCHAR)c;
 
-      b = pBuffer[i] & 0x0f;
+      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
 
       if (9 >= b)
       {
-         c = b + '0';
+         c = static_cast<BYTE>(b + '0');
       }
       else
       {
-         c = (b - 10) + 'A';
+         c = static_cast<BYTE>((b - 10) + 'A');
       }
 
       result += (TCHAR)c;
@@ -297,22 +294,22 @@ void StringToHex(
 
       if (isdigit(b)) 
       {
-         val = (BYTE)((b - '0') * 16); 
+         val = static_cast<BYTE>((b - '0') * 16); 
       }
       else 
       {
-         val = (BYTE)(((toupper(b) - 'A') + 10) * 16); 
+         val = static_cast<BYTE>(((toupper(b) - 'A') + 10) * 16); 
       }
 
       const BYTE b1 = s[stringOffset + 1];
 
       if (isdigit(b1)) 
       {
-			val += b1 - '0' ; 
+			val = static_cast<BYTE>(val + b1 - '0'); 
       }
       else 
       {
-         val += (BYTE)((toupper(b1) - 'A') + 10); 
+         val = static_cast<BYTE>(val + (toupper(b1) - 'A') + 10); 
       }
 
       pBuffer[i] = val;
@@ -336,14 +333,46 @@ _tstring GetCurrentDirectory()
 _tstring GetDateStamp()
 {
    SYSTEMTIME systime;
-   GetSystemTime(&systime);
+   GetLocalTime(&systime);
 
    static TCHAR buffer[7];
 
    _stprintf(buffer, _T("%02d%02d%02d"),
                      systime.wDay,
                      systime.wMonth,
-                     ( 1900 + systime.wYear) % 100);
+                     systime.wYear % 100);
+
+   return buffer;
+}
+
+_tstring GetTimeStamp()
+{
+   SYSTEMTIME systime;
+   GetLocalTime(&systime);
+
+   static TCHAR buffer[14];
+
+   _stprintf(buffer, _T("%02d:%02d:%02d.%04d"),
+                     systime.wHour,
+                     systime.wMinute,
+                     systime.wSecond,
+                     systime.wMilliseconds);
+
+   return buffer;
+}
+
+string GetTimeStampA()
+{
+   SYSTEMTIME systime;
+   GetSystemTime(&systime);
+
+   static char buffer[14];
+
+   sprintf(buffer, "%02d:%02d:%02d.%04d",
+                   systime.wHour,
+                   systime.wMinute,
+                   systime.wSecond,
+                   systime.wMilliseconds);
 
    return buffer;
 }
@@ -669,19 +698,121 @@ _tstring GetFileVersion()
    return version;
 }
 
+string ToUpper(
+   const string &data)
+{
+   string dataOut = data;
+
+   const size_t length = dataOut.length();
+
+   for (size_t i = 0; i < length; ++i)
+   {
+      dataOut[i] = static_cast<char>(toupper(dataOut[i]));
+   }
+
+   return dataOut;
+}
+
+void SaveStringAsFile(
+   const _tstring &filename,
+   const string &data)
+{
+   HANDLE hFile = ::CreateFile(
+      filename.c_str(),
+      GENERIC_WRITE,
+      0,
+      0,
+      CREATE_ALWAYS,
+      FILE_ATTRIBUTE_NORMAL,
+      0);
+
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      throw CWin32Exception(_T("SaveStringAsFile() \"") + filename + _T("\""), ::GetLastError());
+   }
+
+   DWORD bytesWritten = 0;
+
+   if (!::WriteFile(hFile, data.c_str(), data.length(), &bytesWritten, 0))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      ::CloseHandle(hFile);
+
+      throw CWin32Exception(_T("SaveStringAsFile() \"") + filename + _T("\""), lastError);
+   }
+
+   if (bytesWritten != data.length())
+   {
+      const DWORD lastError = ::GetLastError();
+
+      ::CloseHandle(hFile);
+
+      throw CWin32Exception(_T("SaveStringAsFile() \"") + filename + _T("\" - Failed to write all data"), lastError);
+   }
+
+   ::CloseHandle(hFile);
+}
+
+string LoadFileAsStringA(
+   const _tstring &filename)
+{
+   HANDLE hFile = ::CreateFile(
+      filename.c_str(),
+      GENERIC_READ,
+      0,
+      0,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0);
+
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      throw CWin32Exception(_T("LoadFileAsString() \"") + filename + _T("\""), ::GetLastError());
+   }
+
+   BY_HANDLE_FILE_INFORMATION info;
+
+   if (!::GetFileInformationByHandle(hFile, &info))
+   {
+      ::CloseHandle(hFile);
+
+      throw CWin32Exception(_T("LoadFileAsString() - GetFileInformationByHandle \"") + filename + _T("\""), ::GetLastError());
+   }
+
+   string fileAsString;
+
+   if (info.nFileSizeHigh != 0 || info.nFileSizeLow > fileAsString.max_size())
+   {
+      ::CloseHandle(hFile);
+
+      throw CException(_T("LoadFileAsString()"), _T("File \"") + filename + _T("\" too big"));
+   }
+   
+   const DWORD bufferSize = info.nFileSizeLow;
+
+   fileAsString.resize(bufferSize);
+
+   DWORD bytesRead = 0;
+
+   DWORD totalBytesRead = 0;
+
+   while (::ReadFile(hFile, (void*)(fileAsString.c_str() + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
+   {
+      totalBytesRead += bytesRead;
+   }
+
+   ::CloseHandle(hFile);
+
+   return fileAsString;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Utils.cpp

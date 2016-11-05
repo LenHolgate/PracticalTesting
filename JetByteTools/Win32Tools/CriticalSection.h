@@ -36,26 +36,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-//  Class member is a reference
-//lint -esym(1725, Owner::m_crit)     
-//lint -esym(1725, ConditionalOwner::m_crit)     
-//
-// Private copy constructor
-//lint -esym(1704, Owner::Owner)
-//lint -esym(1704, CCriticalSection::CCriticalSection) 
-//lint -esym(1704, ConditionalOwner::ConditionalOwner) 
-//
-// No default constructor   
-//lint -esym(1712, Owner)
-//lint -esym(1712, ConditionalOwner)
-//
-///////////////////////////////////////////////////////////////////////////////
-
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -117,6 +97,9 @@ class CCriticalSection
       };
 
       CCriticalSection();
+
+      explicit CCriticalSection(       // only actually does anything if > NT 4 Sp3
+         const size_t spinCount);      
       
       ~CCriticalSection();
 
@@ -142,13 +125,6 @@ class CCriticalSection
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // JETBYTE_TOOLS_WIN32_CRITICAL_SECTION_INCLUDED__
 

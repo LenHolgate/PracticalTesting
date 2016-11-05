@@ -30,24 +30,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include "CriticalSection.h"
 #include "Utils.h"
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//lint -e1551   function may throw exception in dtor
-//
-// Member not defined
-//lint -esym(1526, CCriticalSection::CCriticalSection)
-//lint -esym(1526, CCriticalSection::operator=)
-//lint -esym(1526, Owner::Owner)
-//lint -esym(1526, Owner::operator=)
-//lint -esym(1526, ConditionalOwner::ConditionalOwner)
-//lint -esym(1526, ConditionalOwner::operator=)
-//
-///////////////////////////////////////////////////////////////////////////////
+#pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -63,6 +51,19 @@ namespace Win32 {
 CCriticalSection::CCriticalSection()
 {
    ::InitializeCriticalSection(&m_crit);
+}
+
+CCriticalSection::CCriticalSection(
+   const size_t spinCount)
+{
+#if(_WIN32_WINNT >= 0x0403)
+   ::InitializeCriticalSectionAndSpinCount(&m_crit, spinCount);
+#else
+   spinCount;
+   ::InitializeCriticalSection(&m_crit);
+   
+   OutputEx(_T("CCriticalSection::CCriticalSection() - spin count specified but _WIN32_WINNT < 0x0403, spin count not used"));
+#endif
 }
       
 CCriticalSection::~CCriticalSection()
@@ -133,13 +134,6 @@ CCriticalSection::ConditionalOwner::~ConditionalOwner()
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CriticalSection.cpp

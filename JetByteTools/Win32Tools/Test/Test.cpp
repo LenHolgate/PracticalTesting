@@ -30,16 +30,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include <iostream>
 
 #include "JetByteTools\TestTools\TestException.h"
 
 #include "CallbackTimerQueueTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
+#include "StringConverterTest.h"
 
 #include "JetByteTools\Win32Tools\Exception.h"
 #include "JetByteTools\Win32Tools\SEHException.h"
 #include "JetByteTools\Win32Tools\StringConverter.h"
+
+#pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -78,6 +83,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
    {
       CCallbackTimerQueueTest::TestAll();
       CThreadedCallbackTimerQueueTest::TestAll();
+      CStringConverterTest::TestAll();
 
       ok = true;
    }

@@ -30,9 +30,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "ThreadedCallbackTimerQueueTest.h"
+#include "JetByteTools\Admin\Admin.h"
 
-#include "..\ThreadedCallbackTimerQueue.h"
+#include "ThreadedCallbackTimerQueueTest.h"
 
 #include "..\Mock\MockTickCountProvider.h"
 #include "..\Mock\LoggingCallbackTimer.h"
@@ -41,12 +41,9 @@
 
 #include "JetByteTools\TestTools\TestException.h"
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
+#pragma hdrstop
+
+#include "..\ThreadedCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -106,7 +103,11 @@ void CThreadedCallbackTimerQueueTest::TestTimer()
 
    CLoggingCallbackTimer timer;
 
-   timerQueue.SetTimer(timer, 500, 1);
+   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE(functionName, CCallbackTimerQueue::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 500, 1));
 
    Sleep(1000);
 
@@ -155,13 +156,6 @@ void CThreadedCallbackTimerQueueTest::TestMultipleTimers()
 } // End of namespace Test
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadedCallbackTimerQueueTest.cpp

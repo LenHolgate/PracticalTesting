@@ -30,27 +30,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include "TestLog.h"
 #include "TestException.h"
 
 #include <iostream>
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
-
 #include "JetByteTools\Win32Tools\Utils.h"
 #include "JetByteTools\Win32Tools\StringConverter.h"
+
+#pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Win32::Output;
-using JetByteTools::Win32::OutputEx;
 using JetByteTools::Win32::_tstring;
 using JetByteTools::Win32::CCriticalSection;
 using JetByteTools::Win32::CStringConverter;
@@ -109,6 +105,12 @@ _tstring CTestLog::RemoveMessages()
    return result;
 }
 
+void CTestLog::CheckNoResults(
+   bool displayOnFailure)
+{
+   CheckResult(_T("|"), displayOnFailure);
+}
+
 void CTestLog::CheckResult(
    const _tstring &expectedResult, 
    bool displayOnFailure)
@@ -119,8 +121,8 @@ void CTestLog::CheckResult(
    {
       if (displayOnFailure)
       {
-         OutputEx(_T("result:   ") + result);
-         OutputEx(_T("expected: ") + expectedResult);
+         Output(_T("result:   ") + result);
+         Output(_T("expected: ") + expectedResult);
       }
 
       throw CTestException(_T("CTestLog::CheckResult()"), _T("Log does not contain expected result"));
@@ -141,13 +143,6 @@ void CTestLog::CheckResultA(
 
 } // End of namespace Test
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: TestLog.cpp

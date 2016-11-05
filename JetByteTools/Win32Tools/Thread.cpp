@@ -30,8 +30,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include "Thread.h"
 #include "Win32Exception.h"
+
+#pragma hdrstop
 
 #include <process.h>
 
@@ -94,6 +98,8 @@ void CThread::Wait() const
 
 bool CThread::Wait(DWORD timeoutMillis) const
 {
+   #pragma TODO("base class? Waitable?")
+
    bool ok;
 
    DWORD result = ::WaitForSingleObject(m_hThread, timeoutMillis);

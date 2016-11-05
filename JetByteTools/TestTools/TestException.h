@@ -36,14 +36,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
-
-#pragma warning(disable : 4786)
+#pragma warning(disable: 4127)   // conditional expression is constant
 
 #include "JetByteTools\Win32Tools\Exception.h"
 
@@ -80,6 +73,8 @@ class CTestException : public JetByteTools::Win32::CException
 #define THROW_ON_NO_EXCEPTION_3(w, e, p1, p2, p3) do{try{e(p1, p2, p3);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(", ") ## _T(#p3) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
 
 #define THROW_ON_NO_EXCEPTION_4(w, e, p1, p2, p3, p4) do{try{e(p1, p2, p3, p4);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(", ") ## _T(#p3) ## _T(", ") ## _T(#p4) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
+
+#define THROW_ON_NO_EXCEPTION_5(w, e, p1, p2, p3, p4, p5) do{try{e(p1, p2, p3, p4, p5);throw CTestException(w, _T("No Exception from: ")## _T(#e) ## _T("(") ## _T(#p1) ## _T(", ") ## _T(#p2) ## _T(", ") ## _T(#p3) ## _T(", ") ## _T(#p4) ## _T(", ") ## _T(#p5) ## _T(")"));}catch(CTestException &){throw;}catch(...){}}while(0)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Test

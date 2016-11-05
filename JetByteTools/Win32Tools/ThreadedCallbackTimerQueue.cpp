@@ -30,17 +30,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools\Admin\Admin.h"
+
 #include "ThreadedCallbackTimerQueue.h"
 #include "Utils.h"
 #include "Exception.h"
 #include "TickCountProvider.h"
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
+#pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -91,29 +88,22 @@ CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
    Wait();
 }
 
-CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::SetTimer(
-   Timer &timer,
-   const DWORD timeoutMillis,
-   const UserData userData)
+CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
    CCriticalSection::Owner lock(m_criticalSection);
    
-   Handle handle = m_timerQueue.SetTimer(timer, timeoutMillis, userData);
-
-   SignalStateChange();
-
-   return handle;
+   return m_timerQueue.CreateTimer();
 }
 
-bool CThreadedCallbackTimerQueue::ResetTimer(
-   Handle &handle, 
+bool CThreadedCallbackTimerQueue::SetTimer(
+   const Handle &handle, 
    Timer &timer,
    const DWORD timeoutMillis,
    const UserData userData)
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
-   const bool wasPending = m_timerQueue.ResetTimer(handle, timer, timeoutMillis, userData);
+   const bool wasPending = m_timerQueue.SetTimer(handle, timer, timeoutMillis, userData);
 
    SignalStateChange();
 
@@ -121,7 +111,7 @@ bool CThreadedCallbackTimerQueue::ResetTimer(
 }
 
 bool CThreadedCallbackTimerQueue::CancelTimer(
-   Handle &handle)
+   const Handle &handle)
 {
    CCriticalSection::Owner lock(m_criticalSection);
    
@@ -130,6 +120,26 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
    SignalStateChange();
 
    return wasPending;
+}
+
+bool CThreadedCallbackTimerQueue::DestroyTimer(
+   Handle &handle)
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   return m_timerQueue.DestroyTimer(handle);
+}
+
+void CThreadedCallbackTimerQueue::SetTimer(
+   Timer &timer,
+   const DWORD timeoutMillis,
+   const UserData userData)
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   m_timerQueue.SetTimer(timer, timeoutMillis, userData);
+
+   SignalStateChange();
 }
 
 int CThreadedCallbackTimerQueue::Run()
@@ -178,13 +188,6 @@ void CThreadedCallbackTimerQueue::SignalStateChange()
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadedCallbackTimerQueue.cpp

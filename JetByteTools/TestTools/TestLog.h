@@ -36,15 +36,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
-
-#pragma warning(disable : 4786)
-
 #include "JetByteTools\Win32Tools\tstring.h"
 #include "JetByteTools\Win32Tools\CriticalSection.h"
 
@@ -75,6 +66,9 @@ class CTestLog
 
       JetByteTools::Win32::_tstring RemoveMessages();
 
+      void CheckNoResults(
+         bool displayOnFailure = true);
+
       void CheckResult(
          const JetByteTools::Win32::_tstring &expectedResult, 
          bool displayOnFailure = true);
@@ -98,14 +92,6 @@ class CTestLog
 
 } // End of namespace Test
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
-
 
 #endif // JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
 

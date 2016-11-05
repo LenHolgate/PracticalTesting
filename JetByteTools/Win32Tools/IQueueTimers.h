@@ -63,26 +63,28 @@ class IQueueTimers
 
       typedef ULONG_PTR Handle;
 
-      enum
-      {
-         InvalidHandleValue = 0
-      };
+      static Handle InvalidHandleValue;
 
       class TimerData;
 
-      virtual Handle SetTimer(
-         Timer &timer,
-         const DWORD timeoutMillis,
-         const UserData userData) = 0;
+      virtual Handle CreateTimer() = 0;
 
-      virtual bool ResetTimer(
-         Handle &handle, 
+      virtual bool SetTimer(
+         const Handle &handle, 
          Timer &timer,
          const DWORD timeoutMillis,
          const UserData userData) = 0;
 
       virtual bool CancelTimer(
+         const Handle &handle) = 0;
+
+      virtual bool DestroyTimer(
          Handle &handle) = 0;
+
+      virtual void SetTimer(
+         Timer &timer,
+         const DWORD timeoutMillis,
+         const UserData userData) = 0;
 
    protected :
 

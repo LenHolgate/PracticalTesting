@@ -36,19 +36,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma warning(disable: 4786)
-
 #include "IQueueTimers.h"
 
 #include <list>
 #include <map>
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -91,44 +82,48 @@ class CCallbackTimerQueue : public IQueueTimers
 
       // Implement IQueueTimers
 
-      virtual Handle SetTimer(
-         Timer &timer,
-         const DWORD timeoutMillis,
-         const UserData userData);
+      virtual Handle CreateTimer();
 
-      virtual bool ResetTimer(
-         Handle &handle, 
+      virtual bool SetTimer(
+         const Handle &handle, 
          Timer &timer,
          const DWORD timeoutMillis,
          const UserData userData);
 
       virtual bool CancelTimer(
+         const Handle &handle);
+
+      virtual bool DestroyTimer(
          Handle &handle);
+
+      virtual void SetTimer(
+         Timer &timer,
+         const DWORD timeoutMillis,
+         const UserData userData);
 
    private :
 
       class TimerData;
 
-      TimerData *CreateTimer(
-         Timer &timer,
-         const DWORD timeoutMillis,
-         const UserData userData,
-         bool &wrapped) const;
+      typedef std::list<TimerData *> TimerQueue;
+
+      typedef std::map<Handle, TimerQueue::iterator> HandleMap;
+
+      HandleMap::iterator ValidateHandle(
+         const Handle &handle);
+
+      bool CancelTimer(
+         const Handle &handle,
+         const HandleMap::iterator &it);
 
       DWORD GetAbsoluteTimeout(
          const DWORD timeoutMillis,
          bool &wrapped) const;
 
-      Handle InsertTimer(
-         TimerData *pData,
+      void InsertTimer(
+         const Handle &handle,
+         TimerData * const pData,
          const bool wrapped);
-
-      TimerData *RemoveTimer(
-         Handle handle);
-
-      typedef std::list<TimerData *> TimerQueue;
-
-      typedef std::map<Handle, TimerQueue::iterator> HandleMap;
 
       TimerQueue m_queue;
 
@@ -151,13 +146,6 @@ class CCallbackTimerQueue : public IQueueTimers
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
 
 #endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
 

@@ -36,16 +36,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//lint -e537 repeated include files (atlbase.h)
-//
-///////////////////////////////////////////////////////////////////////////////
-
-#pragma warning(disable: 4201)   // nameless struct/union
-
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -56,8 +46,6 @@
 #include "StringConverter.h"
 
 #include <strstream>
-
-#pragma warning(default: 4201)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -81,7 +69,6 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 // Functions defined in this file...
 ///////////////////////////////////////////////////////////////////////////////
-
 
 /**
  * Converts a type to a _tstring.
@@ -126,8 +113,6 @@ std::string ToStringA(T num)
    buf.freeze(false);
 
    return strNum;
-
-   //lint -e{818} parameter num could be declared as a pointer to const
 }
 
 template <class T>
@@ -144,8 +129,6 @@ std::wstring ToStringW(T num)
    buf.freeze(false);
 
    return strNum;
-
-   //lint -e{818} parameter num could be declared as a pointer to const
 }
 
 template <class T>
@@ -184,6 +167,10 @@ _tstring GetCurrentDirectory();
 
 _tstring GetDateStamp();
 
+_tstring GetTimeStamp();
+
+std::string GetTimeStampA();
+
 void SetLogFileName(
    const _tstring &name);
 
@@ -202,6 +189,9 @@ void OutputEx(
 _tstring ToHex(BYTE c);
 
 std::string ToHexA(BYTE c);
+
+std::string ToUpper(
+   const std::string &data);
 
 _tstring MakePrintable(
    const BYTE * const pData, 
@@ -247,6 +237,13 @@ _tstring StripTrailing(
    const _tstring &source, 
    const char toStrip);
 
+std::string LoadFileAsStringA(
+   const _tstring &filename);
+
+void SaveStringAsFile(
+   const _tstring &filename,
+   const std::string &data);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -254,16 +251,9 @@ _tstring StripTrailing(
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
-///////////////////////////////////////////////////////////////////////////////
-
 #endif // JETBYTE_TOOLS_WIN32_UTILS__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: SystemInfo.h
+// End of file: Utils.h
 ///////////////////////////////////////////////////////////////////////////////
 
