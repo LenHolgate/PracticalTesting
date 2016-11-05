@@ -11,9 +11,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsTest", "Test\Win32ToolsTest.2005.vcproj", "{673D9A12-1869-4DDF-BC37-A463EAC46722}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0B1D4018-64AA-44B7-ABD8-936603EC0DE7} = {0B1D4018-64AA-44B7-ABD8-936603EC0DE7}
-		{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3} = {7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7} = {0F72F867-43B2-40CC-9FB0-25339820A9E7}
 		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2} = {8AD287CB-15B7-48DA-99C7-8FDC792B79F2}
+		{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3} = {7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTMallocTools", "..\PTMallocTools\PTMallocTools.2005.vcproj", "{0F72F867-43B2-40CC-9FB0-25339820A9E7}"
 EndProject
 Global
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
@@ -132,6 +135,26 @@ Global
 		{673D9A12-1869-4DDF-BC37-A463EAC46722}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
 		{673D9A12-1869-4DDF-BC37-A463EAC46722}.Unicode Release|x64.ActiveCfg = Unicode Release|x64
 		{673D9A12-1869-4DDF-BC37-A463EAC46722}.Unicode Release|x64.Build.0 = Unicode Release|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Debug|Win32.Build.0 = Debug|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Debug|x64.ActiveCfg = Debug|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Debug|x64.Build.0 = Debug|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Release|Win32.ActiveCfg = Release|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Release|Win32.Build.0 = Release|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Release|x64.ActiveCfg = Release|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Release|x64.Build.0 = Release|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug No PreComp|Win32.ActiveCfg = Unicode Debug No PreComp|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug No PreComp|Win32.Build.0 = Unicode Debug No PreComp|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug No PreComp|x64.ActiveCfg = Unicode Debug No PreComp|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug No PreComp|x64.Build.0 = Unicode Debug No PreComp|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug|Win32.ActiveCfg = Unicode Debug|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug|Win32.Build.0 = Unicode Debug|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug|x64.ActiveCfg = Unicode Debug|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Debug|x64.Build.0 = Unicode Debug|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Release|Win32.ActiveCfg = Unicode Release|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Release|x64.ActiveCfg = Unicode Release|x64
+		{0F72F867-43B2-40CC-9FB0-25339820A9E7}.Unicode Release|x64.Build.0 = Unicode Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

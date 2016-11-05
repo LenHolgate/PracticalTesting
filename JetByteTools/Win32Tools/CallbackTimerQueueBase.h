@@ -26,8 +26,10 @@
 
 #include "IManageTimerQueue.h"
 
-#include "STLHeapAllocator.h"
 #include "SmartHeapHandle.h"
+
+#include "JetByteTools\PTMallocTools\STLAllocator.h"
+#include "JetByteTools\PTMallocTools\SmartHeapHandle.h"
 
 #include <map>
 #include <deque>
@@ -117,15 +119,15 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       class TimerData;
 
-      typedef std::deque<TimerData *, CSTLHeapAllocator<TimerData *> > Timers;
+      typedef std::deque<TimerData *, JetByteTools::PTMalloc::CSTLAllocator<TimerData *> > Timers;
 
       typedef std::pair<size_t, Timers> TimersAtThisTime;
 
-      typedef std::map<ULONGLONG, TimersAtThisTime *, std::less<ULONGLONG>, CSTLHeapAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > > TimerQueue;
+      typedef std::map<ULONGLONG, TimersAtThisTime *, std::less<ULONGLONG>, JetByteTools::PTMalloc::CSTLAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > > TimerQueue;
 
       typedef std::pair<TimerQueue::iterator, size_t> TimerLocation;
 
-      typedef std::map<TimerData *, TimerLocation, std::less<TimerData *>, CSTLHeapAllocator<std::pair<TimerData *, TimerLocation> > > HandleMap;
+      typedef std::map<TimerData *, TimerLocation, std::less<TimerData *>, JetByteTools::PTMalloc::CSTLAllocator<std::pair<TimerData *, TimerLocation> > > HandleMap;
 
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
@@ -159,13 +161,13 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
       TimersAtThisTime *EraseTimeoutHandle(
          IManageTimerQueue::TimeoutHandle &handle);
 
-      CSmartHeapHandle m_heap;
+      JetByteTools::PTMalloc::CSmartHeapHandle m_hMalloc;
 
-      CSTLHeapAllocator<TimerData *> m_timersAllocator;
+      JetByteTools::PTMalloc::CSTLAllocator<TimerData *> m_timersAllocator;
 
-      CSTLHeapAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > m_timerQueueAllocator;
+      JetByteTools::PTMalloc::CSTLAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > m_timerQueueAllocator;
 
-      CSTLHeapAllocator<std::pair<TimerData *, TimerLocation> > m_handleMapAllocator;
+      JetByteTools::PTMalloc::CSTLAllocator<std::pair<TimerData *, TimerLocation> > m_handleMapAllocator;
 
       TimerQueue m_queue;
 

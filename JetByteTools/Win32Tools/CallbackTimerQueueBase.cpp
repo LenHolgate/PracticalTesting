@@ -125,38 +125,30 @@ IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
-   :  m_heap(::HeapCreate(HEAP_NO_SERIALIZE, 0,0)),
-      m_timersAllocator(m_heap),
-      m_timerQueueAllocator(m_heap),
-      m_handleMapAllocator(m_heap),
+   :  m_timersAllocator(m_hMalloc),
+      m_timerQueueAllocator(m_hMalloc),
+      m_handleMapAllocator(m_hMalloc),
       m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
       m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
       m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
-   if (!m_heap.IsValid())
-   {
-      throw CException(_T("CCallbackTimerQueueBase::CCallbackTimerQueueBase()"), _T("Failed to create private heap"));
-   }
+
 }
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    IMonitorCallbackTimerQueue &monitor)
-   :  m_heap(::HeapCreate(HEAP_NO_SERIALIZE, 0,0)),
-      m_timersAllocator(m_heap),
-      m_timerQueueAllocator(m_heap),
-      m_handleMapAllocator(m_heap),
+   :  m_timersAllocator(m_hMalloc),
+      m_timerQueueAllocator(m_hMalloc),
+      m_handleMapAllocator(m_hMalloc),
       m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
       m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
       m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
-   if (!m_heap.IsValid())
-   {
-      throw CException(_T("CCallbackTimerQueueBase::CCallbackTimerQueueBase()"), _T("Failed to create private heap"));
-   }
+
 }
 
 CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
