@@ -60,6 +60,10 @@ class CLoggingCallbackTimer :
 
       bool logUserData;
 
+      void DestroyTimerInOnTimer(
+         IQueueTimers &timerQueue,
+         IQueueTimers::Handle &handle);
+
       bool WaitForTimer(
          const Milliseconds timeout);
 
@@ -75,6 +79,10 @@ class CLoggingCallbackTimer :
       CAutoResetEvent m_timerEvent;
 
       volatile long m_numTimerEvents;
+
+      IQueueTimers *m_pTimerQueue;
+
+      IQueueTimers::Handle m_handle;
 
       // No copies do not implement
       CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);

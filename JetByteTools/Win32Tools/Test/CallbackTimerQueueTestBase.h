@@ -121,6 +121,8 @@ class TCallbackTimerQueueTestBase
       static void TestCancelOneOfManyTimersAndThenHandleTimeouts();
       static void TestCancelOneOfManyTimersAndThenBeginTimeoutHandling();
 
+      static void TestDestroyTimerDuringOnTimerInHandleTimeouts();
+
       static void PerfTestCreateTimer();
       static void PerfTestSetTimer();
       static void PerfTestSetDifferentTimers();
@@ -224,6 +226,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMonitoring);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelOneOfManyTimersAndThenHandleTimeouts);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelOneOfManyTimersAndThenBeginTimeoutHandling);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestDestroyTimerDuringOnTimerInHandleTimeouts);
 
 
    const Milliseconds timeout = INFINITE;    // Don't time out the perf tests
@@ -2297,6 +2300,52 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle3));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandleTimeouts()
+{
+   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      timer.DestroyTimerInOnTimer(timerQueue, handle);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      timerQueue.HandleTimeouts();
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckResult(_T("|OnTimer: 1|TimerDestroyed|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up

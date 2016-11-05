@@ -49,7 +49,9 @@ namespace Mock {
 CLoggingCallbackTimer::CLoggingCallbackTimer()
    :  logMessage(true),
       logUserData(true),
-      m_numTimerEvents(0)
+      m_numTimerEvents(0),
+      m_pTimerQueue(0),
+      m_handle(IQueueTimers::InvalidHandleValue)
 {
 }
 
@@ -58,8 +60,19 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
    :  CTestLog(&linkedLog),
       logMessage(true),
       logUserData(true),
-      m_numTimerEvents(0)
+      m_numTimerEvents(0),
+      m_pTimerQueue(0),
+      m_handle(IQueueTimers::InvalidHandleValue)
 {
+}
+
+void CLoggingCallbackTimer::DestroyTimerInOnTimer(
+   IQueueTimers &timerQueue,
+   IQueueTimers::Handle &handle)
+{
+   m_pTimerQueue = &timerQueue;
+
+   m_handle = handle;
 }
 
 bool CLoggingCallbackTimer::WaitForTimer(
@@ -86,6 +99,13 @@ void CLoggingCallbackTimer::OnTimer(
       {
          LogMessage(_T("OnTimer"));
       }
+   }
+
+   if (m_pTimerQueue)
+   {
+      m_pTimerQueue->DestroyTimer(m_handle);
+
+      LogMessage(_T("TimerDestroyed"));
    }
 
    ::InterlockedIncrement(&m_numTimerEvents);

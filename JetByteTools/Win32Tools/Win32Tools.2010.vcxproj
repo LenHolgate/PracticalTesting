@@ -628,7 +628,6 @@
     <ClCompile Include="SEHException.cpp" />
     <ClCompile Include="SimpleMessageLog.cpp" />
     <ClCompile Include="SmartHandle.cpp" />
-    <ClCompile Include="SmartHeapHandle.cpp" />
     <ClCompile Include="StringConverter.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="ThreadAffinity.cpp" />
@@ -671,8 +670,6 @@
     <ClInclude Include="SEHException.h" />
     <ClInclude Include="SimpleMessageLog.h" />
     <ClInclude Include="SmartHandle.h" />
-    <ClInclude Include="SmartHeapHandle.h" />
-    <ClInclude Include="STLHeapAllocator.h" />
     <ClInclude Include="StringConverter.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreadAffinity.h" />

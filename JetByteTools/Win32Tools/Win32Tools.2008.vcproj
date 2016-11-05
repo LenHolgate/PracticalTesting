@@ -915,10 +915,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartHeapHandle.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\StringConverter.cpp"
 				>
 			</File>
@@ -1037,14 +1033,6 @@
 			</File>
 			<File
 				RelativePath=".\SmartHandle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHeapHandle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\STLHeapAllocator.h"
 				>
 			</File>
 			<File
