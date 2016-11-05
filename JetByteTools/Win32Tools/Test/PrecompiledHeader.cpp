@@ -27,6 +27,7 @@
 
 #include "CallbackTimerQueueTest.h"
 #include "CallbackTimerQueueExTest.h"
+#include "CallbackTimerWheelTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
 
 #include "..\Mock\PrecompiledHeader.h"

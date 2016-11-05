@@ -27,6 +27,7 @@
 
 #include "CallbackTimerQueueTest.h"
 #include "CallbackTimerQueueExTest.h"
+#include "CallbackTimerWheelTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
@@ -92,11 +93,12 @@ int main(int /*argc*/, char * /*argv[ ]*/)
 
       CTestMonitor monitor(_T("Win32 Tools"), includePerformanceTests, stopOnFailure);
 
+      CCallbackTimerWheelTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueExTest::TestAll(monitor);
 
-      const size_t expectedTests = 87;
+      const size_t expectedTests = 103;
 
       ok = monitor.Report(expectedTests);
    }

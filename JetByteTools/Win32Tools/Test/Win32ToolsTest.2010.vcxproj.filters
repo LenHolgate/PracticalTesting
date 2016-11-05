@@ -27,6 +27,9 @@
     <ClCompile Include="ThreadedCallbackTimerQueueTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="CallbackTimerWheelTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CallbackTimerQueueExTest.h">
@@ -36,6 +39,9 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="ThreadedCallbackTimerQueueTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackTimerWheelTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>

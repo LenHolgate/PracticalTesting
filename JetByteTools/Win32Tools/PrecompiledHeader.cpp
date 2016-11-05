@@ -30,6 +30,7 @@
 #include "AutoResetEvent.h"
 #include "CallbackTimerQueue.h"
 #include "CallbackTimerQueueEx.h"
+#include "CallbackTimerWheel.h"
 #include "CriticalSection.h"
 #include "DebugTrace.h"
 #include "Event.h"

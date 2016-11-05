@@ -92,6 +92,9 @@
     <ClCompile Include="Win32Exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CallbackTimerWheel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h">
@@ -219,6 +222,9 @@
     </ClInclude>
     <ClInclude Include="IRunnable.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackTimerWheel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

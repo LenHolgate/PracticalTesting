@@ -593,6 +593,7 @@
     <ClCompile Include="CallbackTimerQueue.cpp" />
     <ClCompile Include="CallbackTimerQueueBase.cpp" />
     <ClCompile Include="CallbackTimerQueueEx.cpp" />
+    <ClCompile Include="CallbackTimerWheel.cpp" />
     <ClCompile Include="CriticalSection.cpp" />
     <ClCompile Include="DebugTrace.cpp" />
     <ClCompile Include="Event.cpp" />
@@ -641,6 +642,7 @@
     <ClInclude Include="CallbackTimerQueue.h" />
     <ClInclude Include="CallbackTimerQueueBase.h" />
     <ClInclude Include="CallbackTimerQueueEx.h" />
+    <ClInclude Include="CallbackTimerWheel.h" />
     <ClInclude Include="ConditionalSmartPointer.h" />
     <ClInclude Include="CriticalSection.h" />
     <ClInclude Include="DebugTrace.h" />

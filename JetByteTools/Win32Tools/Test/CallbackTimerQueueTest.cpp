@@ -2165,6 +2165,8 @@ void CCallbackTimerQueueTest::PerfTestSetTimer()
 
    CMockTickCountProvider tickProvider;
 
+   tickProvider.logMessages = false;
+
    Milliseconds totalTime = 0;
 
    const size_t numRuns = JETBYTE_PERF_NUM_TEST_RUNS;

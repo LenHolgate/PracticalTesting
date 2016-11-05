@@ -648,6 +648,7 @@
   <ItemGroup>
     <ClCompile Include="CallbackTimerQueueExTest.cpp" />
     <ClCompile Include="CallbackTimerQueueTest.cpp" />
+    <ClCompile Include="CallbackTimerWheelTest.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level4</WarningLevel>
@@ -708,6 +709,7 @@
   <ItemGroup>
     <ClInclude Include="CallbackTimerQueueExTest.h" />
     <ClInclude Include="CallbackTimerQueueTest.h" />
+    <ClInclude Include="CallbackTimerWheelTest.h" />
     <ClInclude Include="ThreadedCallbackTimerQueueTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

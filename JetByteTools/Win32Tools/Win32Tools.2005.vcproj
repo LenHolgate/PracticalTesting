@@ -855,6 +855,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CallbackTimerWheel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CriticalSection.cpp"
 				>
 			</File>
@@ -945,6 +949,10 @@
 			</File>
 			<File
 				RelativePath=".\CallbackTimerQueueEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CallbackTimerWheel.h"
 				>
 			</File>
 			<File
