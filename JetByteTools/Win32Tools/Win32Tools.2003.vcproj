@@ -316,6 +316,15 @@
 				RelativePath=".\IWaitable.cpp">
 			</File>
 			<File
+				RelativePath=".\ManualResetEvent.cpp">
+			</File>
+			<File
+				RelativePath=".\MessageLog.cpp">
+			</File>
+			<File
+				RelativePath=".\PerformanceCounter.cpp">
+			</File>
+			<File
 				RelativePath=".\SEHException.cpp">
 			</File>
 			<File
@@ -331,10 +340,16 @@
 				RelativePath=".\Thread.cpp">
 			</File>
 			<File
+				RelativePath=".\ThreadAffinity.cpp">
+			</File>
+			<File
 				RelativePath=".\ThreadedCallbackTimerQueue.cpp">
 			</File>
 			<File
 				RelativePath=".\ThreadLocalStorage.cpp">
+			</File>
+			<File
+				RelativePath=".\ToString.cpp">
 			</File>
 			<File
 				RelativePath=".\Utils.cpp">
@@ -359,6 +374,9 @@
 				RelativePath=".\CallbackTimerQueueEx.h">
 			</File>
 			<File
+				RelativePath=".\ConditionalSmartPointer.h">
+			</File>
+			<File
 				RelativePath=".\CriticalSection.h">
 			</File>
 			<File
@@ -369,6 +387,30 @@
 			</File>
 			<File
 				RelativePath=".\Exception.h">
+			</File>
+			<File
+				RelativePath=".\ExpandableBuffer.h">
+			</File>
+			<File
+				RelativePath=".\ManualResetEvent.h">
+			</File>
+			<File
+				RelativePath=".\MessageLog.h">
+			</File>
+			<File
+				RelativePath=".\NullCallbackTimerQueueMonitor.h">
+			</File>
+			<File
+				RelativePath=".\NullMessageLog.h">
+			</File>
+			<File
+				RelativePath=".\NullThreadedCallbackTimerQueueMonitor.h">
+			</File>
+			<File
+				RelativePath=".\OSVersionInfo.h">
+			</File>
+			<File
+				RelativePath=".\PerformanceCounter.h">
 			</File>
 			<File
 				RelativePath=".\SEHException.h">
@@ -386,13 +428,22 @@
 				RelativePath=".\Thread.h">
 			</File>
 			<File
+				RelativePath=".\ThreadAffinity.h">
+			</File>
+			<File
 				RelativePath=".\ThreadedCallbackTimerQueue.h">
 			</File>
 			<File
 				RelativePath=".\ThreadLocalStorage.h">
 			</File>
 			<File
+				RelativePath=".\TickCount64Provider.h">
+			</File>
+			<File
 				RelativePath=".\TickCountProvider.h">
+			</File>
+			<File
+				RelativePath=".\ToString.h">
 			</File>
 			<File
 				RelativePath=".\tstring.h">
@@ -414,10 +465,22 @@
 				RelativePath=".\IKernelObjectName.h">
 			</File>
 			<File
+				RelativePath=".\ILogMessages.h">
+			</File>
+			<File
 				RelativePath=".\IManageTimerQueue.h">
 			</File>
 			<File
+				RelativePath=".\IMonitorCallbackTimerQueue.h">
+			</File>
+			<File
+				RelativePath=".\IMonitorThreadedCallbackTimerQueue.h">
+			</File>
+			<File
 				RelativePath=".\IProvideTickCount.h">
+			</File>
+			<File
+				RelativePath=".\IProvideTickCount64.h">
 			</File>
 			<File
 				RelativePath=".\IQueueTimers.h">

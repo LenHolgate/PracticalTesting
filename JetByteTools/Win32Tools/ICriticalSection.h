@@ -37,10 +37,7 @@ namespace Win32 {
 
 /// An interface onto the operating system 
 /// <a href="http://msdn2.microsoft.com/en-us/library/ms682530.aspx">Critical 
-/// Section API</a>. Note that this class only provides the basic Enter() and 
-/// Leave() functionality, should TryEnter() ever be required then it's likely 
-/// that a new interface will be added that includes this rather than extending 
-/// this interface to include it.
+/// Section API</a>. 
 /// \ingroup Synchronization
 /// \ingroup Interfaces
 
@@ -105,6 +102,46 @@ class ICriticalSection
             /// No copies do not implement
             ConditionalOwner &operator=(const ConditionalOwner &rhs);
       };
+
+      /// A class that may take ownership of an instance of ICriticalSection. 
+      /// If you call Enter() or TryEnter() on this class it will keep track
+      /// of the fact that the critical section has been entered and will 
+      /// call Leave() in the destructor. This can therefore be used to 
+      /// support \ref RAII "scope based" locking and unlocking of instances 
+      /// of ICriticalSection.
+      /// \ingroup Synchronization
+      /// \ingroup RAII
+
+      class PotentialOwner
+      {
+         public:
+
+            explicit PotentialOwner(
+               ICriticalSection &crit);
+
+            ~PotentialOwner();
+
+            void Enter();
+
+            bool TryEnter();
+      
+         private :
+
+            ICriticalSection &m_crit;
+
+            bool m_locked;
+
+            /// No copies do not implement
+            PotentialOwner(const PotentialOwner &rhs);
+            /// No copies do not implement
+            PotentialOwner &operator=(const PotentialOwner &rhs);
+      };
+
+      /// Try to enter the critical section and lock other threads outside,
+      /// returns true if successful and false if some other thread already
+      /// has the critical section locked1.
+
+      virtual bool TryEnter() = 0;
 
       /// Enter the critical section and lock other threads outside.
 

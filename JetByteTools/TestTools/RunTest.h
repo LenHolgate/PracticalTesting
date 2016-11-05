@@ -126,87 +126,17 @@ do                                                                            \
                                                                               \
 }while(0)
 
-
 ///////////////////////////////////////////////////////////////////////////////
-// RUN_TEST_EX()
-// Usage: RUN_TEST_EX(Monitor, Class, TestFunction);
+// RUN_TIMED_TEST_EX()
+// Usage: RUN_TIMED_TEST_EX(Monitor, Class, TestFunction, timeoutMillis);
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (_MSC_VER < 1300)   // VC6...
-
-   // VC6 doesn't seem to like the exception dispatch method that we use in 
-   // CTestMonitor.TestException().
-
-#define RUN_TEST_EX(m, c, f)                                                  \
+#define RUN_TIMED_TEST_EX(m, c, f, t)                                         \
 do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      m.StartTest(_T(#c), _T(#f));                                            \
-                                                                              \
-      c::f();                                                                 \
-                                                                              \
-      m.TestComplete();                                                       \
-   }                                                                          \
-   catch(JetByteTools::Test::CTestSkippedException &e)                        \
-   {                                                                          \
-      if (e.GetWhere() != _T(""))                                             \
-      {                                                                       \
-         m.SkipTest(e.GetWhere() + _T(" - ") + e.GetMessage());               \
-      }                                                                       \
-      else                                                                    \
-      {                                                                       \
-         m.SkipTest(e.GetMessage());                                          \
-      }                                                                       \
-   }                                                                          \
-   catch(JetByteTools::Test::CTestException &e)                               \
-   {                                                                          \
-      if (e.GetWhere() != _T(""))                                             \
-      {                                                                       \
-         m.FailTest(_T("CTestException - ") + e.GetWhere() +                  \
-            _T(" - ") + e.GetMessage());                                      \
-      }                                                                       \
-      else                                                                    \
-      {                                                                       \
-         m.FailTest(_T("CTestException - ") + e.GetMessage());                \
-      }                                                                       \
-   }                                                                          \
-   catch(JetByteTools::Win32::CWin32Exception &e)                             \
-   {                                                                          \
-      m.FailTest(_T("CWin32Exception - ") + e.GetMessage());                  \
-   }                                                                          \
-   catch(JetByteTools::Win32::CException &e)                                  \
-   {                                                                          \
-      m.FailTest(_T("CException - ") + e.GetMessage());                       \
-   }                                                                          \
-   catch(JetByteTools::Win32::CSEHException &e)                               \
-   {                                                                          \
-      m.FailTest(_T("CSEHException - ") + e.GetMessage());                    \
-   }                                                                          \
-   catch(const char *pE)                                                      \
-   {                                                                          \
-      m.FailTest(_T("Exception - ") +                                         \
-         JetByteTools::Win32::CStringConverter::AtoT(pE));                    \
-   }                                                                          \
-   catch(const wchar_t *pE)                                                   \
-   {                                                                          \
-      m.FailTest(_T("Exception - ") +                                         \
-         JetByteTools::Win32::CStringConverter::WtoT(pE));                    \
-   }                                                                          \
-   catch(...)                                                                 \
-   {                                                                          \
-      m.FailTest(_T("Unexpected exception"));                                 \
-   }                                                                          \
-}while(0)
-
-#else
-
-#define RUN_TEST_EX(m, c, f)                                                  \
-do                                                                            \
-{                                                                             \
-   try                                                                        \
-   {                                                                          \
-      m.StartTest(_T(#c), _T(#f));                                            \
+      m.StartTest(_T(#c), _T(#f), t);                                         \
                                                                               \
       c::f();                                                                 \
                                                                               \
@@ -218,14 +148,24 @@ do                                                                            \
    }                                                                          \
 }while(0)
 
-#endif
+///////////////////////////////////////////////////////////////////////////////
+// RUN_TEST_EX()
+// Usage: RUN_TEST_EX(Monitor, Class, TestFunction);
+///////////////////////////////////////////////////////////////////////////////
 
-#define RUN_PERFORMANCE_TEST_EX(m, c, f)                                      \
+#define RUN_TEST_EX(m, c, f) RUN_TIMED_TEST_EX(m, c, f, 0)
+
+///////////////////////////////////////////////////////////////////////////////
+// RUN_TIMED_PERFORMANCE_TEST_EX()
+// Usage: RUN_TIMED_PERFORMANCE_TEST_EX(Monitor, Class, TestFunction, timeoutMillis);
+///////////////////////////////////////////////////////////////////////////////
+
+#define RUN_TIMED_PERFORMANCE_TEST_EX(m, c, f, t)                             \
 do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      if (m.StartPerformanceTest(_T(#c), _T(#f)))                             \
+      if (m.StartPerformanceTest(_T(#c), _T(#f), t))                          \
       {                                                                       \
          c::f();                                                              \
                                                                               \
@@ -237,6 +177,57 @@ do                                                                            \
       m.TestException();                                                      \
    }                                                                          \
 }while(0)
+
+///////////////////////////////////////////////////////////////////////////////
+// RUN_PERFORMANCE_TEST_EX()
+// Usage: RUN_TEST_EX(Monitor, Class, TestFunction);
+///////////////////////////////////////////////////////////////////////////////
+
+#define RUN_PERFORMANCE_TEST_EX(m, c, f)  RUN_TIMED_PERFORMANCE_TEST_EX(m, c, f, 0)
+
+///////////////////////////////////////////////////////////////////////////////
+// RUN_TEMPLATE_TEST_EX()
+// Note that T should be a _tstring
+// Usage: RUN_TEMPLATE_TEST_EX(Monitor, Class, T, TestFunction);
+///////////////////////////////////////////////////////////////////////////////
+
+#define RUN_TEMPLATE_TEST_EX(m, c, t, f)                                      \
+do                                                                            \
+{                                                                             \
+   try                                                                        \
+   {                                                                          \
+      m.StartTest(t, _T(#f));                                                 \
+                                                                              \
+      c::f();                                                                 \
+                                                                              \
+      m.TestComplete();                                                       \
+   }                                                                          \
+   catch(...)                                                                 \
+   {                                                                          \
+      m.TestException();                                                      \
+   }                                                                          \
+}while(0)
+
+#define RUN_TEMPLATE_PERFORMANCE_TEST_EX(m, c, t, f)                          \
+do                                                                            \
+{                                                                             \
+   try                                                                        \
+   {                                                                          \
+      const JetByteTools::Win32::_tstring t_(t);                              \
+                                                                              \
+      if (m.StartPerformanceTest(t, _T(#f)))                                  \
+      {                                                                       \
+         c::f();                                                              \
+                                                                              \
+         m.TestComplete();                                                    \
+      }                                                                       \
+   }                                                                          \
+   catch(...)                                                                 \
+   {                                                                          \
+      m.TestException();                                                      \
+   }                                                                          \
+}while(0)
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Test

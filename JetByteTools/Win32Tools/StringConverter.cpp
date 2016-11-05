@@ -129,6 +129,18 @@ BSTR CStringConverter::AtoBSTR(
 }
 
 BSTR CStringConverter::AtoBSTR(
+   const char *pInput)
+{
+   if (!pInput)
+   {
+      return ::SysAllocString(L"");
+   }
+
+   return AtoBSTR(pInput, GetStringLengthAsInt(pInput));
+}
+
+
+BSTR CStringConverter::AtoBSTR(
    const char *pInput,
    const int inputLength)
 {
@@ -204,7 +216,7 @@ string CStringConverter::WtoA(
          pInput, 
          inputLength, 
          const_cast<char *>(result.c_str()), 
-         GetStringLength<int>(result) + 1, 0, 0))
+         GetStringLength<int>(result, true), 0, 0))
       {
          throw CWin32Exception(_T("CStringConverter::WtoA()"), ::GetLastError());
       }
@@ -286,6 +298,48 @@ wstring CStringConverter::BSTRtoW(
    }
 
    return bstr;
+}
+
+void CStringConverter::BSTRtoA(
+   const BSTR bstr,
+   const char **ppResult)
+{
+   const size_t inputLength = ::SysStringLen(bstr);
+
+   if (inputLength != 0)
+   {
+      if (inputLength + 1 > static_cast<size_t>(std::numeric_limits<int>::max()))
+      {
+         throw CException(_T("CStringConverter::BSTRtoA("), _T("String is too long to fit: ") + ToString(inputLength));
+      }
+
+      const int outputLength = static_cast<int>(inputLength + 1);
+
+      char *pResult = new char[outputLength];
+
+      if (0 == ::WideCharToMultiByte(
+         CP_ACP, 
+         0, 
+         bstr, 
+         static_cast<int>(inputLength), 
+         pResult, 
+         outputLength, 
+         0, 
+         0))
+      {
+         delete [] pResult;
+
+         throw CWin32Exception(_T("CStringConverter::BSTRtoA()"), ::GetLastError());
+      }
+
+      pResult[outputLength - 1] = 0;         // Ensure that the string is null terminated.
+
+      *ppResult = pResult;
+   }
+   else
+   {
+      *ppResult = 0;
+   }
 }
 
 wstring CStringConverter::UTF8toW(

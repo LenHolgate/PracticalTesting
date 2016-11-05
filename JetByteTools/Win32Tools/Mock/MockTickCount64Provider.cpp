@@ -45,13 +45,15 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CMockTickCount64Provider::CMockTickCount64Provider()
-   :  m_tickCount(0)
+   :  m_tickCount(0),
+      logMessages(true)
 {
 }
 
 CMockTickCount64Provider::CMockTickCount64Provider(
    const ULONGLONG tickCount)
-   :  m_tickCount(tickCount)
+   :  m_tickCount(tickCount),
+      logMessages(true)
 {
 }
 
@@ -67,8 +69,11 @@ void CMockTickCount64Provider::SetTickCount(
 
 ULONGLONG CMockTickCount64Provider::GetTickCount64() const
 {
-   LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
-   
+   if (logMessages)
+   {
+      LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
+   }
+
    return m_tickCount;
 }
 

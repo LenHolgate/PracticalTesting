@@ -24,8 +24,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-//#include <wtypes.h>
-
 /// \file Types.h
 /// This file includes some typedefs for commonly used types.
 /// \ingroup Admin
@@ -40,11 +38,21 @@ namespace JetByteTools {
 
 typedef unsigned long Milliseconds;
 
+/// A second counter value
+
+typedef unsigned long Seconds;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace JetByteTools 
+
+// This saves us having to include wtypes.h 
+
+typedef unsigned long DWORD;
+
+typedef unsigned char BYTE;
 
 #endif // JETBYTE_TOOLS_ADMIN_TYPES_INCLUDED__
 

@@ -27,6 +27,7 @@
 #include <wtypes.h>
 
 #include "SmartHandle.h"
+#include "CriticalSection.h"
 #include "IRunnable.h"
 #include "IWaitable.h"
 #include "tstring.h"
@@ -72,7 +73,7 @@ class CThread : public IWaitable
       /// Start the thread running and optionally start it in a suspended state.
 
       void Start(
-         bool startSuspended);
+         const bool startSuspended);
 
       /// Start the thread in a suspended state.
 
@@ -91,11 +92,11 @@ class CThread : public IWaitable
       /// Note that this should be used with great care!
 
       void Terminate(
-         DWORD exitCode = 0);
+         const DWORD exitCode = 0);
 
-      /// Returns true if the thread was started.
+      /// Returns true if the thread is running.
 
-      bool WasStarted() const;
+      bool IsRunning() const;
 
       /// Sets a threads name so that it can be queried in a debugger.
 
@@ -115,7 +116,7 @@ class CThread : public IWaitable
       /// Sets the supplied threads name so that it can be queried in a debugger.
 
       static void SetThreadName(
-         DWORD threadID, 
+         const DWORD threadID, 
          const _tstring &threadName);
 
       void EnableThreadPriorityBoost();
@@ -139,6 +140,8 @@ class CThread : public IWaitable
          const Milliseconds timeout) const;
 
    private :
+
+      mutable CCriticalSection m_criticalSection;
 
       static unsigned int __stdcall ThreadFunction(void *pV);
 

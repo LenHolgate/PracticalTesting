@@ -46,6 +46,7 @@ using JetByteTools::Win32::CException;
 using JetByteTools::Win32::CStringConverter;
 using JetByteTools::Win32::CSEHException;
 using JetByteTools::Win32::SetCurrentDirectory;
+using JetByteTools::Win32::ToBool;
 
 using JetByteTools::Test::CTestException;
 using JetByteTools::Test::CTestMonitor;
@@ -81,13 +82,23 @@ int main(int /*argc*/, char * /*argv[ ]*/)
          SetCurrentDirectory(ppArgv[1]);
       }
 
-      CTestMonitor monitor(_T("Win32 Tools"));
+
+#ifdef _DEBUG
+      const bool includePerformanceTests = false;
+#else
+      const bool includePerformanceTests = true;
+#endif
+      const bool stopOnFailure = ToBool(::IsDebuggerPresent());
+
+      CTestMonitor monitor(_T("Win32 Tools"), includePerformanceTests, stopOnFailure);
 
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueExTest::TestAll(monitor);
 
-      ok = monitor.Report();
+      const size_t expectedTests = 83;
+
+      ok = monitor.Report(expectedTests);
    }
    catch(const CTestException &e)
    {
@@ -111,7 +122,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
    {
       OutputEx(std::string("Exception: ") + p);
    }
-   catch(...)
+   JETBYTE_TESTS_CATCH_ALL_IF_ENABLED
    {
       OutputEx("Unexpected exception");
 

@@ -67,7 +67,7 @@ CThreadLocalStorage::~CThreadLocalStorage()
          }
       }
    }
-   catch(...)
+   JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED
    {
    }
 }

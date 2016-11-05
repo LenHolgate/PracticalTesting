@@ -63,6 +63,9 @@ class CThreadedCallbackTimerQueueTest
       static void TestConstructHybridTickCount64();
       static void TestConstructCustomQueue();
 
+      static void TestBeginShutdown();
+      static void TestWaitForShutdownToComplete();
+
       static void TestTimer();
       static void TestTimerWithLock();
       static void TestTimerNoLock();

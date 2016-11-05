@@ -29,9 +29,9 @@
 #include "tstring.h"
 #include "StringConverter.h"
 #include "Exception.h"
+#include "ToString.h"
+#include "ExpandableBuffer.h"
 
-#include <sstream>
-#include <iomanip>
 #include <limits>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,40 +72,59 @@ inline TV RoundUp(TV Value, TM Multiple)
 /// Needed for VC6 & VS2002 only...
 
 DWORD GetStringLengthAsDWORD(
-   const std::string &theString);
+   const std::string &theString,
+   const bool includeNullTerminator = false);
 
 DWORD GetStringLengthAsDWORD(
-   const std::wstring &theString);
+   const std::wstring &theString,
+   const bool includeNullTerminator = false);
+
+DWORD GetStringLengthAsDWORD(
+   const char *pString,
+   const bool includeNullTerminator = false);
+
+DWORD GetStringLengthAsDWORD(
+   const wchar_t *pString,
+   const bool includeNullTerminator = false);
 
 int GetStringLengthAsInt(
-   const std::string &theString);
+   const std::string &theString,
+   const bool includeNullTerminator = false);
 
 int GetStringLengthAsInt(
-   const std::wstring &theString);
+   const std::wstring &theString,
+   const bool includeNullTerminator = false);
 
 int GetStringLengthAsInt(
-   const char *pString);
+   const char *pString,
+   const bool includeNullTerminator = false);
 
 int GetStringLengthAsInt(
-   const wchar_t *pString);
+   const wchar_t *pString,
+   const bool includeNullTerminator = false);
 
 UINT GetStringLengthAsUInt(
-   const std::string &theString);
+   const std::string &theString,
+   const bool includeNullTerminator = false);
 
 UINT GetStringLengthAsUInt(
-   const std::wstring &theString);
+   const std::wstring &theString,
+   const bool includeNullTerminator = false);
 
 UINT GetStringLengthAsUInt(
-   const char *pString);
+   const char *pString,
+   const bool includeNullTerminator = false);
 
 UINT GetStringLengthAsUInt(
-   const wchar_t *pString);
+   const wchar_t *pString,
+   const bool includeNullTerminator = false);
 
 template <typename result, class s> 
 result GetStringLength(
-   const s &theString)
+   const s &theString,
+   const bool includeNullTerminator = false)
 {
-   const size_t length = theString.length();
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
    {
@@ -117,9 +136,10 @@ result GetStringLength(
 
 template <typename result> 
 result GetStringLength(
-   const char *pString)
+   const char *pString,
+   const bool includeNullTerminator = false)
 {
-   const size_t length = strlen(pString);
+   const size_t length = strlen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
    {
@@ -131,9 +151,10 @@ result GetStringLength(
 
 template <typename result> 
 result GetStringLength(
-   const wchar_t *pString)
+   const wchar_t *pString,
+   const bool includeNullTerminator = false)
 {
-   const size_t length = wcslen(pString);
+   const size_t length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
    {
@@ -168,136 +189,6 @@ unsigned short GetShortFromString(
 bool IsAllDigits(
    const _tstring &numeric);
 
-_tstring BoolAsString(
-   const bool value);
-
-/**
- * Converts a type to a _tstring.
- * Convert a type to a string by streaming it. Requires that there's an ostream
- * inserter available for type T.
- */
-
-//_tstring ToString(__int64)
-template <class T>
-_tstring ToString(T num)
-{
-#ifdef _UNICODE
-   return ToStringW(num);
-#else 
-   return ToStringA(num);
-#endif
-}
-
-#pragma warning(push)
-#pragma warning(disable: 4701)
-#pragma warning(disable: 4267)   // warns of size_t to unsigned int truncation in win32 build with x64 warnings on
-#pragma warning(disable: 4244)   // warns of ulong_ptr to unsigned long truncation in win32 build with x64 warnings on
-template <class T>
-std::string ToStringA(T num)
-{
-   std::ostringstream buf;
-
-   buf << num;
-
-   return buf.str();
-}
-#pragma warning(pop)
-
-#pragma warning(push)
-#pragma warning(disable: 4701)
-#pragma warning(disable: 4267)   // warns of size_t to unsigned int truncation in win32 build with x64 warnings on
-#pragma warning(disable: 4244)   // warns of ulong_ptr to unsigned long truncation in win32 build with x64 warnings on
-template <class T>
-std::wstring ToStringW(T num)
-{
-   // Note that we can't just use a wostringstream for the wide version
-   // as that cannot format unsigned shorts correctly because in 
-   // VC6 and optionally in later compilers wchar is unsigned short and so
-   // it formats unsigned shorts as strings of characters...
-
-   std::ostringstream buf;
-
-   buf << num;
-
-   return CStringConverter::AtoW(buf.str());
-}
-#pragma warning(pop)
-
-template <class T>
-_tstring ToString(T num, const size_t decimalPlaces)
-{
-#ifdef _UNICODE
-   return ToStringW(num, decimalPlaces);
-#else 
-   return ToStringA(num, decimalPlaces);
-#endif
-}
-
-template <class T>
-std::string ToStringA(T num, const size_t decimalPlaces)
-{
-   std::ostringstream buf;
-
-   buf << std::fixed << std::setprecision(decimalPlaces) << num;
-
-   return buf.str();
-}
-
-template <class T>
-std::wstring ToStringW(T num, const size_t decimalPlaces)
-{
-   // Note that we can't just use a wostringstream for the wide version
-   // as that cannot format unsigned shorts correctly because in 
-   // VC6 and optionally in later compilers wchar is unsigned short...
-
-   std::ostringstream buf;
-
-   buf << std::fixed << std::setprecision(decimalPlaces) << num;
-
-   return CStringConverter::AtoW(buf.str());
-}
-
-template <class T>
-_tstring ToHexString(T num)
-{
-#ifdef _UNICODE
-   return ToHexStringW(num);
-#else 
-   return ToHexStringA(num);
-#endif
-}
-
-template <class T>
-std::string ToHexStringA(T num)
-{
-   // Note that we can't just use a wostringstream for the wide version
-   // as that cannot format unsigned shorts correctly because in 
-   // VC6 and optionally in later compilers wchar is unsigned short...
-
-   std::ostringstream buf;
-
-   buf.setf(std::ios::showbase);
-
-   buf << std::hex << num;
-
-   return buf.str();
-}
-
-template <class T>
-std::wstring ToHexStringW(T num)
-{
-   // Note that we can't just use a wostringstream for the wide version
-   // as that cannot format unsigned shorts correctly because in 
-   // VC6 and optionally in later compilers wchar is unsigned short...
-
-   std::ostringstream buf;
-
-   buf.setf(std::ios::showbase);
-
-   buf << std::hex << num;
-
-   return CStringConverter::AtoW(buf.str());
-}
 
 bool StringToBool(
    const _tstring &stringRepresentation);
@@ -308,25 +199,15 @@ bool ToBool(const T &value)
    return (0 != value);
 }
 
-template <class T>
-_tstring HexToString(T num)
-{
-   return HexToString(reinterpret_cast<const BYTE*>(&num), sizeof(T));
-}
-
-_tstring HexToString(
-   const BYTE *pBuffer, 
-   size_t iBytes);
-
-std::string HexToStringA(
-   const BYTE *pBuffer, 
-   size_t iBytes,
-   bool upperCase = true);
 
 void StringToHex(
    const _tstring &str, 
    BYTE *pBuffer, 
    size_t nBytes);
+
+_tstring GetLastErrorMessageIfPossible(
+   DWORD last_error,
+   bool stripTrailingLineFeed = false);
 
 _tstring GetLastErrorMessage(
    DWORD last_error,
@@ -346,6 +227,9 @@ void CreateDirectory(
 void CreateDirectoryIfRequired(
    const _tstring &directory);
 
+void CreateDirectoriesIfRequired(
+   const _tstring &directory);
+
 _tstring GetCurrentDirectory();
 
 void SetCurrentDirectory(
@@ -357,51 +241,11 @@ _tstring GetTimeStamp();
 
 std::string GetTimeStampA();
 
-_tstring ToHex(BYTE c);
-
-std::string ToHexA(BYTE c);
-
 _tstring ToUpper(
    const _tstring &data);
 
 std::string ToUpperA(
    const std::string &data);
-
-_tstring MakePrintable(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength = 0,
-   bool useCR = false);
-
-_tstring DumpData(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength = 0,
-   bool useCR = false);
-
-std::string DumpDataA(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength = 0,
-   bool useCR = false);
-
-_tstring DumpData(
-   const _tstring &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength = 0,
-   bool useCR = false,
-   bool linePrefixOnFirstLine = true,
-   bool lineFeedOnLastLine = true);
-
-std::string DumpDataA(
-   const std::string &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength = 0,
-   bool useCR = false,
-   bool linePrefixOnFirstLine = true,
-   bool lineFeedOnLastLine = true);
 
 _tstring GetTempPath();
 
@@ -420,15 +264,10 @@ _tstring GetModuleFileName(
    HANDLE hProcess,
    HINSTANCE hModule);
 
-#if (_MSC_VER < 1300) && (JETBYTE_NO_PLATFORM_SDK == 1)
-// GetModuleFileName(hProcess, hModule, name) not available with VC6 without an appropriate Platform SDK
-// Need psapi.h for GetModuleFileNameEx
-#else
 bool GetModuleFileName(
    HANDLE hProcess,
    HINSTANCE hModule,
    _tstring &name);
-#endif
 
 _tstring GetModuleFileName(
    HINSTANCE hModule = 0);
@@ -436,11 +275,7 @@ _tstring GetModuleFileName(
 _tstring GetModulePathName(
    HINSTANCE hModule = 0);
 
-#if (_MSC_VER < 1300) && (JETBYTE_NO_PLATFORM_SDK == 1)
-// GetSystemWindowsDirectory() not available with VC6 without an appropriate Platform SDK
-#else
 _tstring GetSystemWindowsDirectory();
-#endif
 
 _tstring GetSystemDirectory();
 
@@ -482,6 +317,10 @@ void CopyFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo,
    const bool failIfExists);
+
+void LoadFileAsBinaryData(   
+   const _tstring &filename,
+   TExpandableBuffer<BYTE> &buffer);
 
 std::wstring LoadFileAsUnicodeString(
    const _tstring &filename,
@@ -537,8 +376,21 @@ bool IsGoodWritePtr(
    void *pv, 
    ULONG cb);
 
+_tstring GUIDAsString(
+   const GUID &guid,
+   const bool stripBrackets = true);
+
 _tstring CreateGUIDAsString(
    const bool stripBrackets = true);
+
+_tstring GetFileNameFromHandle(
+   const HANDLE hFile);
+
+_tstring GetFileNameFromHandleIfPossible(
+   const HANDLE hFile);
+
+_tstring TranslateDeviceNamePathToDriveLetterPath(
+   const _tstring deviceNamePath);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

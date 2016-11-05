@@ -62,6 +62,8 @@ class CMockTickCount64Provider :
       explicit CMockTickCount64Provider(
          const ULONGLONG tickCount); 
 
+      bool logMessages;
+
       /// Change the tick count that the provider will return from calls to 
       /// GetTickCount64().
 

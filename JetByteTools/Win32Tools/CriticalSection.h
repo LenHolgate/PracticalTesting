@@ -57,8 +57,7 @@ class CCriticalSection : public ICriticalSection
       CCriticalSection();
 
       /// Creates a critical section object and allows you to specify the spin 
-      /// count. Note that this only works on systems that are later than
-      /// NT 4 Service Pack 3.
+      /// count. 
 
       explicit CCriticalSection(       
          const DWORD spinCount);      
@@ -70,13 +69,11 @@ class CCriticalSection : public ICriticalSection
 
       // Implement ICriticalSection
 
+      virtual bool TryEnter();
+
       virtual void Enter();
 
       virtual void Leave();
-
-//#if(_WIN32_WINNT >= 0x0400)
-//      bool TryEnter();
-//#endif
 
    private :
 

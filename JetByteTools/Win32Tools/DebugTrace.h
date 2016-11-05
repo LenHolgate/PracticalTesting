@@ -24,7 +24,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\C++Tools\MessageLog.h"
+#include "MessageLog.h"
 
 #include "StringConverter.h"
 
@@ -42,7 +42,7 @@ namespace Win32 {
 /// \ingroup DebugTrace
 /// \ingroup Logging
 
-class CDebugTrace : public JetByteTools::CMessageLog
+class CDebugTrace : public CMessageLog
 {
    public :
 
@@ -61,13 +61,13 @@ class CDebugTrace : public JetByteTools::CMessageLog
          public :
 
             explicit LogInstaller(
-               JetByteTools::ILogMessages &log);
+               ILogMessages &log);
       
             ~LogInstaller();
 
          private :
 
-            JetByteTools::ILogMessages *m_pOldLog;
+            ILogMessages *m_pOldLog;
 
             /// No copies do not implement
             LogInstaller(const LogInstaller &rhs);

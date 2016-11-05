@@ -54,6 +54,11 @@ class IWaitable
 
       virtual HANDLE GetWaitHandle() const = 0;
 
+      /// Returns true if the object is signalled and false if it isn't; doesn't
+      /// block.
+
+      virtual bool IsSignalled() const;
+
       /// Wait indefinitely for the object to become signalled.
 
       virtual void Wait() const = 0;
@@ -73,6 +78,33 @@ class IWaitable
       static bool Wait(
          HANDLE handle,
          const Milliseconds timeout);
+
+      static bool WaitWithMessageLoop(
+         HANDLE handle, 
+         const Milliseconds timeout);
+
+      static bool WaitWithMessageLoop(
+         HANDLE handle, 
+         const Milliseconds timeout,
+         const DWORD removeFlags);
+
+      static bool WaitWithMessageLoop(
+         const DWORD numHandles,
+         HANDLE *pHandles, 
+         const Milliseconds timeout);
+
+      static bool WaitWithMessageLoop(
+         const DWORD numHandles,
+         HANDLE *pHandles, 
+         DWORD &signalledHandle,
+         const Milliseconds timeout);
+
+      static bool WaitWithMessageLoop(
+         const DWORD numHandles,
+         HANDLE *pHandles, 
+         DWORD &signalledHandle,
+         const Milliseconds timeout,
+         const DWORD removeFlags);
 
    protected :
 

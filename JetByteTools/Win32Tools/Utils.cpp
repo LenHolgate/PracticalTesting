@@ -26,7 +26,7 @@
 #include "CriticalSection.h"
 #include "SmartHandle.h"
 
-#include "JetByteTools\C++Tools\ExpandableBuffer.h"
+#include "ExpandableBuffer.h"
 
 #pragma hdrstop
 
@@ -36,11 +36,7 @@
 #include <fstream>
 #include <algorithm>
 
-#if (_MSC_VER < 1300) && (JETBYTE_NO_PLATFORM_SDK == 1)
-#pragma MESSAGE("PSAPI.h not available with VC6 without an appropriate Platform SDK")
-#else
 #include <Psapi.h>
-#endif
 
 #include "Lmcons.h"     // UNLEN
 
@@ -57,6 +53,7 @@
 using std::endl;
 using std::string;
 using std::wstring;
+using std::min;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -68,26 +65,6 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 // Static helper functions
 ///////////////////////////////////////////////////////////////////////////////
-
-static _tstring DumpData(
-   const _tstring &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength, 
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine);
-
-static string DumpDataA(
-   const string &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength, 
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine);
 
 static bool IsGoodPtr(
    HANDLE hProcess,
@@ -126,9 +103,15 @@ bool StringToBool(
 }
 
 DWORD GetStringLengthAsDWORD(
-   const string &theString)
+   const string &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<DWORD>::max()))
    {
@@ -136,12 +119,21 @@ DWORD GetStringLengthAsDWORD(
    }
 
    return static_cast<DWORD>(length);
+#else
+   return GetStringLength<DWORD>(theString, includeNullTerminator);
+#endif
 }
 
 DWORD GetStringLengthAsDWORD(
-   const wstring &theString)
+   const wstring &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<DWORD>::max()))
    {
@@ -149,12 +141,65 @@ DWORD GetStringLengthAsDWORD(
    }
 
    return static_cast<DWORD>(length);
+#else
+   return GetStringLength<DWORD>(theString, includeNullTerminator);
+#endif
+}
+
+DWORD GetStringLengthAsDWORD(
+   const char *pString,
+   const bool includeNullTerminator)
+{
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+ 
+#if (_MSC_VER < 1400)
+   const size_t length = strlen(pString) + (includeNullTerminator ? 1 : 0);
+
+   if (length > static_cast<size_t>(std::numeric_limits<DWORD>::max()))
+   {
+      throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
+   }
+
+   return static_cast<DWORD>(length);
+#else
+   return GetStringLength<DWORD>(pString, includeNullTerminator);
+#endif
+}
+
+DWORD GetStringLengthAsDWORD(
+   const wchar_t *pString,
+   const bool includeNullTerminator)
+{
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
+
+   if (length > static_cast<size_t>(std::numeric_limits<DWORD>::max()))
+   {
+      throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
+   }
+
+   return static_cast<DWORD>(length);
+#else
+   return GetStringLength<DWORD>(pString, includeNullTerminator);
+#endif
 }
 
 int GetStringLengthAsInt(
-   const string &theString)
+   const string &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<int>::max()))
    {
@@ -162,12 +207,21 @@ int GetStringLengthAsInt(
    }
 
    return static_cast<int>(length);
+#else
+   return GetStringLength<int>(theString, includeNullTerminator);
+#endif
 }
 
 int GetStringLengthAsInt(
-   const wstring &theString)
+   const wstring &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<int>::max()))
    {
@@ -175,12 +229,21 @@ int GetStringLengthAsInt(
    }
 
    return static_cast<int>(length);
+#else
+	return GetStringLength<int>(theString, includeNullTerminator);
+#endif
 }
 
 int GetStringLengthAsInt(
-   const char *pString)
+   const char *pString,
+   const bool includeNullTerminator)
 {
-   const size_t length = strlen(pString);
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = strlen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<int>::max()))
    {
@@ -188,12 +251,21 @@ int GetStringLengthAsInt(
    }
 
    return static_cast<int>(length);
+#else
+	return GetStringLength<int>(pString, includeNullTerminator);
+#endif
 }
 
 int GetStringLengthAsInt(
-   const wchar_t *pString)
+   const wchar_t *pString,
+   const bool includeNullTerminator)
 {
-   const size_t length = wcslen(pString);
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<int>::max()))
    {
@@ -201,12 +273,21 @@ int GetStringLengthAsInt(
    }
 
    return static_cast<int>(length);
+#else
+   return GetStringLength<int>(pString, includeNullTerminator);
+#endif
 }
 
 UINT GetStringLengthAsUInt(
-   const string &theString)
+   const string &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<UINT>::max()))
    {
@@ -214,12 +295,21 @@ UINT GetStringLengthAsUInt(
    }
 
    return static_cast<UINT>(length);
+#else
+   return GetStringLength<UINT>(theString, includeNullTerminator);
+#endif
 }
 
 UINT GetStringLengthAsUInt(
-   const wstring &theString)
+   const wstring &theString,
+   const bool includeNullTerminator)
 {
-   const size_t length = theString.length();
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<UINT>::max()))
    {
@@ -227,12 +317,21 @@ UINT GetStringLengthAsUInt(
    }
 
    return static_cast<UINT>(length);
+#else
+   return GetStringLength<UINT>(theString, includeNullTerminator);
+#endif
 }
 
 UINT GetStringLengthAsUInt(
-   const char *pString)
+   const char *pString,
+   const bool includeNullTerminator)
 {
-   const size_t length = strlen(pString);
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = strlen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<UINT>::max()))
    {
@@ -240,12 +339,21 @@ UINT GetStringLengthAsUInt(
    }
 
    return static_cast<UINT>(length);
+#else
+	return GetStringLength<UINT>(pString, includeNullTerminator);
+#endif
 }
 
 UINT GetStringLengthAsUInt(
-   const wchar_t *pString)
+   const wchar_t *pString,
+   const bool includeNullTerminator)
 {
-   const size_t length = wcslen(pString);
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1400
+#error Compiler specific code that is no longer required
+#endif
+
+#if (_MSC_VER < 1400)
+   const size_t length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
 
    if (length > static_cast<size_t>(std::numeric_limits<UINT>::max()))
    {
@@ -253,6 +361,9 @@ UINT GetStringLengthAsUInt(
    }
 
    return static_cast<UINT>(length);
+#else
+   return GetStringLength<UINT>(pString, includeNullTerminator);
+#endif
 }
 
 bool IsAllDigits(
@@ -266,6 +377,41 @@ bool IsAllDigits(
    }
 
    return ok;
+}
+
+_tstring GetLastErrorMessageIfPossible(
+   DWORD last_error,
+   bool stripTrailingLineFeed)
+{
+   TCHAR errmsg[512];
+
+   if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
+      0,
+      last_error,
+      0,
+      errmsg, 
+      511,
+      NULL))
+   {
+      return _T("");
+   }
+
+   if (stripTrailingLineFeed)
+   {
+      const size_t length = _tcslen(errmsg);
+
+      if (errmsg[length-1] == '\n')
+      {
+         errmsg[length-1] = 0;
+
+         if (errmsg[length-2] == '\r')
+         {
+            errmsg[length-2] = 0;
+         }
+      }
+   }
+  
+   return errmsg;
 }
 
 _tstring GetLastErrorMessage(
@@ -282,8 +428,20 @@ _tstring GetLastErrorMessage(
       511,
       NULL))
    {
-      /* if we fail, call ourself to find out why and return that error */
-      return (GetLastErrorMessage(GetLastError()));  
+      // if we fail, call ourself to find out why and return that error 
+
+      const DWORD thisError = ::GetLastError();
+
+      if (thisError != last_error)
+      {
+         return GetLastErrorMessage(thisError, stripTrailingLineFeed);
+      }
+      else
+      {
+         // But don't get into an infinite loop...
+
+         return _T("Failed to obtain error string: ") + ToString(last_error);
+      }
    }
 
    if (stripTrailingLineFeed)
@@ -310,7 +468,7 @@ string GetLastErrorMessageA(
 {
    CHAR errmsg[512];
 
-   if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 
+   if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
       0,
       last_error,
       0,
@@ -318,8 +476,20 @@ string GetLastErrorMessageA(
       511,
       NULL))
    {
-      /* if we fail, call ourself to find out why and return that error */
-      return (GetLastErrorMessageA(GetLastError()));  
+      // if we fail, call ourself to find out why and return that error 
+
+      const DWORD thisError = ::GetLastError();
+
+      if (thisError != last_error)
+      {
+         return GetLastErrorMessageA(thisError, stripTrailingLineFeed);
+      }
+      else
+      {
+         // But don't get into an infinite loop...
+
+         return "Failed to obtain error string: " + ToStringA(last_error);
+      }
    }
   
    if (stripTrailingLineFeed)
@@ -346,7 +516,7 @@ wstring GetLastErrorMessageW(
 {
    wchar_t errmsg[512];
 
-   if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, 
+   if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
       0,
       last_error,
       0,
@@ -354,8 +524,20 @@ wstring GetLastErrorMessageW(
       511,
       NULL))
    {
-      /* if we fail, call ourself to find out why and return that error */
-      return (GetLastErrorMessageW(GetLastError()));  
+      // if we fail, call ourself to find out why and return that error 
+
+      const DWORD thisError = ::GetLastError();
+
+      if (thisError != last_error)
+      {
+         return GetLastErrorMessageW(thisError, stripTrailingLineFeed);
+      }
+      else
+      {
+         // But don't get into an infinite loop...
+
+         return L"Failed to obtain error string: " + ToStringW(last_error);
+      }
    }
   
    if (stripTrailingLineFeed)
@@ -374,87 +556,6 @@ wstring GetLastErrorMessageW(
    }
 
    return errmsg;
-}
-
-string HexToStringA(
-   const BYTE *pBuffer, 
-   size_t iBytes,
-   bool upperCase)
-{
-   string result;
-     
-   for (size_t i = 0; i < iBytes; i++)
-   {
-      BYTE c ;
-
-      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
-         
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
-      }
-
-      result += (char)c;
-
-      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
-
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
-      }
-
-      result += (char)c;
-   }
-
-   return result;
-}
-
-_tstring HexToString(
-   const BYTE *pBuffer, 
-   size_t iBytes)
-{
-   _tstring result;
-     
-   for (size_t i = 0; i < iBytes; i++)
-   {
-      BYTE c ;
-
-      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
-         
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + 'A');
-      }
-
-      result += (TCHAR)c;
-
-      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
-
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + 'A');
-      }
-
-      result += (TCHAR)c;
-   }
-
-   return result;
 }
 
 void StringToHex(
@@ -516,10 +617,46 @@ void CreateDirectoryIfRequired(
 
       if (lastError != ERROR_ALREADY_EXISTS)
       {
-         throw CWin32Exception(_T("CreateDirectory()"), lastError);
+         throw CWin32Exception(_T("CreateDirectoryIfRequired()"), lastError);
       }
    }
 }
+
+void CreateDirectoriesIfRequired(
+   const _tstring &directory)
+{
+   if (!::CreateDirectory(directory.c_str(), 0))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError == ERROR_PATH_NOT_FOUND)
+      {
+         const _tstring::size_type pos = directory.find_last_of(_T("\\"));
+
+         if (pos != _tstring::npos)
+         {
+            const _tstring previousDirectory = directory.substr(0, pos);
+
+            CreateDirectoriesIfRequired(previousDirectory);   
+
+            // We use 'if required' here because we might get passed a path with a
+            // trailing \ which means we will try and create "lastDirectory" and then
+            // "lastDirectory\"...
+
+            CreateDirectoryIfRequired(directory);
+         }
+         else
+         {
+            throw CWin32Exception(_T("CreateDirectoriesIfRequired()"), lastError);
+         }
+      }
+      else if (lastError != ERROR_ALREADY_EXISTS)
+      {
+         throw CWin32Exception(_T("CreateDirectoriesIfRequired()"), lastError);
+      }
+   }
+}
+
 _tstring GetCurrentDirectory()
 {
    DWORD size = ::GetCurrentDirectory(0, 0);
@@ -588,94 +725,16 @@ string GetTimeStampA()
 
    char buffer[14];
 
-   sprintf_s(buffer, "%02d:%02d:%02d.%04d",
-                   systime.wHour,
-                   systime.wMinute,
-                   systime.wSecond,
-                   systime.wMilliseconds);
+   sprintf_s(
+      buffer, 
+      sizeof(buffer), 
+      "%02d:%02d:%02d.%04d",
+      systime.wHour,
+      systime.wMinute,
+      systime.wSecond,
+      systime.wMilliseconds);
 
    return buffer;
-}
-
-_tstring ToHex(
-   const BYTE c)
-{
-   TCHAR hex[3];
-   
-   const int val = c;
-
-   _stprintf_s(hex, _T("%02X"), val);
-
-   return hex;
-}
-
-string ToHexA(
-   const BYTE c)
-{
-   char hex[3];
-
-   const int val = c;
-
-   sprintf_s(hex, "%02X", val);
-
-   return hex;
-}
-
-_tstring MakePrintable(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength,
-   bool useCR)
-{
-   static const _tstring linePrefix;
-
-   return DumpData(linePrefix, pData, dataLength, lineLength, true, useCR, true, true);
-}
-
-_tstring DumpData(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength,
-   bool useCR)
-{
-   static const _tstring linePrefix;
-
-   return DumpData(linePrefix, pData, dataLength, lineLength, false, useCR, true, true);
-}
-
-_tstring DumpData(
-   const _tstring &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength,
-   bool useCR,
-   bool linePrefixOnFirstLine,
-   bool lineFeedOnLastLine)
-{
-   return DumpData(linePrefix, pData, dataLength, lineLength, false, useCR, linePrefixOnFirstLine, lineFeedOnLastLine);
-}
-
-string DumpDataA(
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength,
-   bool useCR)
-{
-   static const string linePrefix;
-
-   return DumpDataA(linePrefix, pData, dataLength, lineLength, false, useCR, true, true);
-}
-
-string DumpDataA(
-   const string &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength,
-   bool useCR,
-   bool linePrefixOnFirstLine,
-   bool lineFeedOnLastLine)
-{
-   return DumpDataA(linePrefix, pData, dataLength, lineLength, false, useCR, linePrefixOnFirstLine, lineFeedOnLastLine);
 }
 
 _tstring GetComputerName()
@@ -699,11 +758,6 @@ _tstring GetComputerName()
 
    return name;
 }
-
-#if (_MSC_VER < 1300) && (JETBYTE_NO_PLATFORM_SDK == 1)
-#pragma MESSAGE("GetModuleFileName(hProcess, hModule) not available with VC6 without an appropriate Platform SDK")
-// Need psapi.h for GetModuleFileNameEx
-#else
 
 _tstring GetModuleFileName(
    HANDLE hProcess,
@@ -734,8 +788,6 @@ bool GetModuleFileName(
    return ok;
 }
 
-#endif
-
 _tstring GetModuleFileName(
    HINSTANCE hModule /* = 0 */)
 {
@@ -762,11 +814,6 @@ _tstring GetModulePathName(
    return path.substr(0, pos);
 }
 
-#if (_MSC_VER < 1300) && (JETBYTE_NO_PLATFORM_SDK == 1)
-#pragma MESSAGE("GetSystemWindowsDirectory() not available with VC6 without an appropriate Platform SDK")
-// Need psapi.h for GetSystemWindowsDirectory
-#else
-
 _tstring GetSystemWindowsDirectory()
 {
    TCHAR buffer[MAX_PATH + 1];
@@ -789,12 +836,8 @@ _tstring GetSystemWindowsDirectory()
    return buffer;
 }
 
-#endif
-
 _tstring GetSystemDirectory()
 {
-//#pragma TODO("Vista x64 gives wrong result for GetSystemDirectoty()? C:\\Windows\\system rather than C:\\Windows\\System")
-
    TCHAR buffer[MAX_PATH + 1];
 
    DWORD bufferLen = MAX_PATH;
@@ -813,8 +856,6 @@ _tstring GetSystemDirectory()
    }
 
    return buffer;
-
-//   return GetSystemWindowsDirectory() + _T("\\System");
 }
 
 _tstring GetFileNameFromPathName(
@@ -870,7 +911,12 @@ bool Is64bitSystem()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
+#pragma warning(push)
+#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
+
    static LPFN_ISWOW64PROCESS s_fnIsWow64Process = (LPFN_ISWOW64PROCESS)::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
+
+#pragma warning(pop)
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -897,7 +943,7 @@ bool Is64bitSystem()
 #endif
 }
 
-#pragma TODO("Move all x64 code into a new file")
+// 11/3/2010 - #pragma JETBYTE_TODO("Move all x64 code into a new file")
 
 bool IsWow64Process()
 {
@@ -911,7 +957,12 @@ bool IsWow64Process()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
+#pragma warning(push)
+#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
+
    static LPFN_ISWOW64PROCESS s_fnIsWow64Process = (LPFN_ISWOW64PROCESS)::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
+
+#pragma warning(pop)
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -981,7 +1032,12 @@ _tstring GetSystemWow64Directory()
    const LPCSTR pFunctionName = "GetSystemWow64DirectoryA";
 #endif
 
-   LPFN_GETSYSTEMWOW64DIRECTORY s_fnGetSystemWow64Directory = (LPFN_GETSYSTEMWOW64DIRECTORY)::GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName);
+#pragma warning(push)
+#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
+
+   static LPFN_GETSYSTEMWOW64DIRECTORY s_fnGetSystemWow64Directory = (LPFN_GETSYSTEMWOW64DIRECTORY)::GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName);
+
+#pragma warning(pop)
 
    if (s_fnGetSystemWow64Directory)
    {
@@ -1011,10 +1067,6 @@ _tstring GetSystemWow64Directory()
 _tstring GetSystemWow64Directory()
 {
    throw CException(_T("GetSystemWow64Directory()"), _T("Functionality not available on this platform"));
-
-#if (_MSC_VER < 1300)   // VC6...
-   return _T("");
-#endif
 }
 
 #endif // _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
@@ -1412,6 +1464,58 @@ void SaveUnicodeStringAsFile(
    }
 }
 
+void LoadFileAsBinaryData(   
+   const _tstring &filename,
+   TExpandableBuffer<BYTE> &buffer)
+{
+   CSmartHandle hFile(::CreateFile(
+      filename.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      0,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0));
+
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("LoadFileAsBinaryData() \"") + filename + _T("\""), lastError);
+   }
+
+   BY_HANDLE_FILE_INFORMATION info;
+
+   if (!::GetFileInformationByHandle(hFile, &info))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("LoadFileAsBinaryData() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
+   }
+
+   LARGE_INTEGER fileSize;
+
+   fileSize.LowPart = info.nFileSizeLow;
+   fileSize.HighPart = info.nFileSizeHigh;
+
+   const size_t bufferSize = static_cast<size_t>(fileSize.QuadPart);
+
+   buffer.Resize(bufferSize);
+
+   DWORD bytesRead = 0;
+
+   size_t totalBytesRead = 0;
+
+   while (::ReadFile(
+      hFile, 
+      (void*)(buffer.GetBuffer() + totalBytesRead), 
+	  static_cast<DWORD>(std::min<size_t>(bufferSize - totalBytesRead, std::numeric_limits<DWORD>::max())), 
+      &bytesRead, 0) && bytesRead > 0)
+   {
+      totalBytesRead += bytesRead;
+   }
+}
+
 _tstring LoadFileAsString(
    const _tstring &filename)
 {
@@ -1557,12 +1661,6 @@ bool IsGoodWritePtr(
       PAGE_EXECUTE_WRITECOPY);
 }
 
-_tstring BoolAsString(
-   const bool value)
-{
-   return value ? _T("True") : _T("False");
-}
-
 _tstring GetTempFileName(
    const _tstring &pathName,
    const _tstring &prefixString,
@@ -1677,27 +1775,19 @@ void WriteResourceToFile(
    }
 }
 
-_tstring CreateGUIDAsString(
+_tstring GUIDAsString(
+   const GUID &guid,
    const bool stripBrackets)
 {
-   GUID guid;
-
-   HRESULT hr = ::CoCreateGuid(&guid);
-
-   if (FAILED(hr))
-   {
-      throw CWin32Exception(_T("CreateGUIDAsString() - CoCreateGuid"), hr);
-   }
-
    wchar_t *pString = 0;
 
-   hr = ::StringFromIID(guid, &pString);
+   HRESULT hr = ::StringFromIID(guid, &pString);
 
    if (FAILED(hr))
    {
       ::CoTaskMemFree(pString);
 
-      throw CWin32Exception(_T("CreateGUIDAsString() - CoCreateGuid"), hr);
+      throw CWin32Exception(_T("GUIDAoString() - StringFromIID"), hr);
    }
 
    _tstring result = CStringConverter::WtoT(pString);
@@ -1712,83 +1802,161 @@ _tstring CreateGUIDAsString(
    return result;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static string DumpDataA(
-   const string &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength, 
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine)
+_tstring CreateGUIDAsString(
+   const bool stripBrackets)
 {
-   const string lineSep = useCR ? "\r\n" : "\n";
+   GUID guid;
 
-   const size_t bytesPerLine = lineLength != 0 ? (lineLength - 1) / 3 : 0;
+   HRESULT hr = ::CoCreateGuid(&guid);
 
-   string result;
-
-   string hexDisplay;
-   string display;
-
-   size_t i = 0;
-
-   bool firstLine = true;
-
-   while (i < dataLength)
+   if (FAILED(hr))
    {
-      const BYTE c = pData[i++];
+      throw CWin32Exception(_T("CreateGUIDAsString() - CoCreateGuid"), hr);
+   }
 
-      if (!makePrintable)
-      {
-         hexDisplay += ToHexA(c) + " ";   
-      }
+   return GUIDAsString(guid, stripBrackets);
+}
 
-      if (isprint(c))
-      {
-         display += (char)c;
-      }
-      else
-      {
-         display += '.';
-      }
+_tstring TranslateDeviceNamePathToDriveLetterPath(
+   const _tstring deviceNamePath)
+{
+   _tstring driveStrings;
 
-      if ((bytesPerLine && (i % bytesPerLine == 0 && i != 0)) || i == dataLength)
+   driveStrings.resize(512);
+
+   if (::GetLogicalDriveStrings(GetStringLengthAsDWORD(driveStrings), const_cast<TCHAR *>(driveStrings.c_str()))) 
+   {
+      TCHAR name[MAX_PATH];
+      TCHAR drive[3] = _T(" :");
+
+      const TCHAR *pDriveLetter = driveStrings.c_str();
+
+      do 
       {
-         if (!makePrintable)
+         drive[0] = *pDriveLetter;
+
+         // Look up each device name
+         if (::QueryDosDevice(drive, name, MAX_PATH))
          {
-            if (i == dataLength && (bytesPerLine && (i % bytesPerLine != 0)))
+            const size_t nameLength = _tcslen(name);
+
+            if (nameLength < MAX_PATH) 
             {
-               for (size_t pad = i % bytesPerLine; pad < bytesPerLine; pad++)
+               if (0 == _tcsnicmp(deviceNamePath.c_str(), name, nameLength))
                {
-                  hexDisplay += "   ";
+                  return drive + deviceNamePath.substr(nameLength);
                }
             }
          }
+         
+         while (*pDriveLetter++);   // Go to the next NULL character.
 
-         const string prefix = (firstLine ? (linePrefixOnFirstLine ? linePrefix : "" ) : linePrefix);
+      } 
+      while (*pDriveLetter); // end of string
+   }
 
-         result += prefix + (!makePrintable ? hexDisplay + " - " : "") + display + (bytesPerLine ? lineSep : "");
+   return deviceNamePath;
+}
 
-         firstLine = false;
+_tstring GetFileNameFromHandleIfPossible(
+   const HANDLE hFile) 
+{
+   _tstring fileName;
 
-         hexDisplay = "";
-         display = "";
+   DWORD fileSizeHi = 0;
+   const DWORD fileSizeLo = GetFileSize(hFile, &fileSizeHi); 
+
+   if (fileSizeLo != 0 || fileSizeHi != 0)
+   {
+      CSmartHandle hFileMapping(::CreateFileMapping(
+         hFile, 
+         NULL, 
+         PAGE_READONLY,
+         0, 
+         1,
+         NULL));
+
+      if (hFileMapping.IsValid()) 
+      {
+         void *pMem = ::MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
+
+         if (pMem) 
+         {
+            TCHAR buffer[MAX_PATH+1];
+         
+            if (::GetMappedFileName(
+               GetCurrentProcess(), 
+               pMem, 
+               buffer,
+               MAX_PATH)) 
+            {
+               fileName = TranslateDeviceNamePathToDriveLetterPath(buffer);
+            }
+
+            ::UnmapViewOfFile(pMem);
+         }
       }
    }
 
+   return fileName;
+}
 
-   if (!lineFeedOnLastLine)
+_tstring GetFileNameFromHandle(
+   const HANDLE hFile) 
+{
+   _tstring fileName;
+
+   DWORD fileSizeHi = 0;
+   const DWORD fileSizeLo = GetFileSize(hFile, &fileSizeHi); 
+
+   if (fileSizeLo == 0 && fileSizeHi == 0)
    {
-      result = result.substr(0, result.length() - lineSep.length());
+      throw CException(
+         _T("GetFileNameFromHandle()"), 
+         _T("Cannot obtain file name from handle for a file with a length of zero."));
    }
 
-   return result;
+   CSmartHandle hFileMapping(::CreateFileMapping(
+      hFile, 
+      NULL, 
+      PAGE_READONLY,
+      0, 
+      1,
+      NULL));
+
+   if (hFileMapping.IsValid()) 
+   {
+      void *pMem = ::MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
+
+      if (pMem) 
+      {
+         TCHAR buffer[MAX_PATH+1];
+      
+         if (::GetMappedFileName(
+            GetCurrentProcess(), 
+            pMem, 
+            buffer,
+            MAX_PATH)) 
+         {
+            fileName = TranslateDeviceNamePathToDriveLetterPath(buffer);
+         }
+      }
+      else
+      {
+         const DWORD lastError = ::GetLastError();
+
+         throw CWin32Exception(_T("GetFileNameFromHandle()"), lastError);
+      }
+
+      ::UnmapViewOfFile(pMem);
+   }
+
+   return fileName;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
 
 static bool StringIsAllANSI(
    const std::wstring &data)
@@ -1808,79 +1976,6 @@ static bool StringIsAllANSI(
    }
 
    return allANSI;
-}
-
-static _tstring DumpData(
-   const _tstring &linePrefix,
-   const BYTE * const pData, 
-   size_t dataLength, 
-   size_t lineLength, 
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine)
-{
-   const _tstring lineSep = useCR ? _T("\r\n") : _T("\n");
-
-   const size_t bytesPerLine = lineLength != 0 ? (lineLength - 1) / 3 : 0;
-
-   _tstring result;
-
-   _tstring hexDisplay;
-   _tstring display;
-
-   size_t i = 0;
-
-   bool firstLine = true;
-
-   while (i < dataLength)
-   {
-      const BYTE c = pData[i++];
-
-      if (!makePrintable)
-      {
-         hexDisplay += ToHex(c) + _T(" ");   
-      }
-
-      if (isprint(c))
-      {
-         display += (TCHAR)c;
-      }
-      else
-      {
-         display += _T('.');
-      }
-
-      if ((bytesPerLine && (i % bytesPerLine == 0 && i != 0)) || i == dataLength)
-      {
-         if (!makePrintable)
-         {
-            if (i == dataLength && (bytesPerLine && (i % bytesPerLine != 0)))
-            {
-               for (size_t pad = i % bytesPerLine; pad < bytesPerLine; pad++)
-               {
-                  hexDisplay += _T("   ");
-               }
-            }
-         }
-
-         const _tstring prefix = (firstLine ? (linePrefixOnFirstLine ? linePrefix : _T("") ) : linePrefix);
-
-         result += prefix + (!makePrintable ? hexDisplay + _T(" - ") : _T("")) + display + (bytesPerLine ? lineSep : _T(""));
-
-         firstLine = false;
-
-         hexDisplay = _T("");
-         display = _T("");
-      }
-   }
-
-   if (!lineFeedOnLastLine)
-   {
-      result = result.substr(0, result.length() - lineSep.length());
-   }
-
-   return result;
 }
 
 static bool IsGoodPtr(

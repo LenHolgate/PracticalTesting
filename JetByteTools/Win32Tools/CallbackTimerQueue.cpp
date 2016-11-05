@@ -53,6 +53,24 @@ static const LARGE_INTEGER s_zeroLargeInteger;  // Rely on static init to provid
 // CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
+CCallbackTimerQueue::CCallbackTimerQueue()
+   :  m_tickProvider(s_tickProvider),
+      m_lastCount(s_zeroLargeInteger),
+      m_maintenanceTimer(CreateTimer())
+{
+   SetMaintenanceTimer();
+}
+
+CCallbackTimerQueue::CCallbackTimerQueue(
+   IMonitorCallbackTimerQueue &monitor)
+   :  CCallbackTimerQueueBase(monitor),
+      m_tickProvider(s_tickProvider),
+      m_lastCount(s_zeroLargeInteger),
+      m_maintenanceTimer(CreateTimer())
+{
+   SetMaintenanceTimer();
+}
+
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
    :  m_tickProvider(tickProvider),
@@ -62,11 +80,14 @@ CCallbackTimerQueue::CCallbackTimerQueue(
    SetMaintenanceTimer();
 }
 
-CCallbackTimerQueue::CCallbackTimerQueue()
-   :  m_tickProvider(s_tickProvider),
+CCallbackTimerQueue::CCallbackTimerQueue(
+   IMonitorCallbackTimerQueue &monitor,
+   const IProvideTickCount &tickProvider)
+   :  CCallbackTimerQueueBase(monitor),
+      m_tickProvider(tickProvider),
       m_lastCount(s_zeroLargeInteger),
       m_maintenanceTimer(CreateTimer())
-{
+{   
    SetMaintenanceTimer();
 }
 
@@ -91,7 +112,7 @@ ULONGLONG CCallbackTimerQueue::GetTickCount64()
       }
    }
 
-   return m_lastCount.QuadPart;
+   return static_cast<ULONGLONG>(m_lastCount.QuadPart);
 }
 
 void CCallbackTimerQueue::SetMaintenanceTimer()

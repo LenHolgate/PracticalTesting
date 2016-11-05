@@ -32,25 +32,34 @@
 
 #pragma hdrstop
 
+#include "JetByteTools\Admin\CompilerName.h"
+
 #include <iostream>
+
+#pragma warning(disable: 4355) // this used in base member initialiser list
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Win32::Output;
+using JetByteTools::Win32::OutputEx;
+using JetByteTools::Win32::ToString;
+using JetByteTools::Win32::ToStringA;
 using JetByteTools::Win32::_tstring;
 using JetByteTools::Win32::CStringConverter;
 using JetByteTools::Win32::CException;
 using JetByteTools::Win32::CWin32Exception;
 using JetByteTools::Win32::CSEHException;
+using JetByteTools::Win32::GetLastErrorMessage;
+using JetByteTools::Win32::GetComputerName;
 
 using std::cout; 
 using std::endl;
 using std::string;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
@@ -80,17 +89,22 @@ class CTestMonitor::TestDetails
 
       const _tstring &GetMessage() const;
 
+      _tstring GetTimeTakenAsString() const;
+
       State GetState() const;
 
-      void TestComplete(); 
+      void TestComplete(
+         const DWORD timeTaken); 
 
-      void TestException();
+      void TestException(
+         const DWORD timeTaken);
 
       void SkipTest(
          const _tstring &reason);
 
       void FailTest(
-         const _tstring &reason);
+         const _tstring &reason,
+         const DWORD timeTaken);
 
    private :
 
@@ -100,10 +114,64 @@ class CTestMonitor::TestDetails
 
       State m_state;
 
+      DWORD m_timeTaken;
+
       // no copies - do not implement
       TestDetails(const TestDetails &rhs);
       TestDetails &operator=(const TestDetails &rhs);
 };
+
+///////////////////////////////////////////////////////////////////////////////
+// Purecall handler
+///////////////////////////////////////////////////////////////////////////////
+
+static CTestMonitor *s_pMonitor = 0;
+
+static void PureCallHandler()
+{
+   if (s_pMonitor)
+   {
+      s_pMonitor->HandlePureCall();
+   }
+
+   if (::IsDebuggerPresent())
+   {
+      DebugBreak();
+   }
+   else
+   {
+      JetByteTools::Win32::OutputEx(_T("Purecall!"));
+   }
+}
+
+#if _MSC_VER < 1310
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Test
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Test
+} // End of namespace JetByteTools 
+
+int __cdecl _purecall(void)
+{
+	JetByteTools::Test::PureCallHandler();
+
+   return 0;
+}
+
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1310
+#error Compiler specific code that is no longer required
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Test
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Test {
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTestMonitor
@@ -111,28 +179,71 @@ class CTestMonitor::TestDetails
 
 CTestMonitor::CTestMonitor(
    const _tstring &name,
-   const bool includePerformanceTests)
-   :  m_name(name),
+   const bool includePerformanceTests,
+   const bool stopOnFailure,
+   const bool debugOnFailure)
+   :  m_testTimeoutThread(*this),
+      m_pPreviousHandler(0),
+      m_name(name),
       m_includePerformanceTests(includePerformanceTests),
       m_pActiveTest(0),
-      m_reported(false)
+      m_reported(false),
+      m_stopOnFailure(stopOnFailure),
+      m_debugOnFailure(debugOnFailure && ::IsDebuggerPresent()),
+      m_testTimeout(INFINITE)
 {
+   s_pMonitor = this;
 
+#if _MSC_VER >= 1310 
+   m_pPreviousHandler = _set_purecall_handler(PureCallHandler);   
+
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1310
+#error Compiler specific code that is no longer required
+#endif
+
+#endif
+
+   m_testTimeoutThread.Start();
+   m_testTimeoutThread.SetThreadName(_T("TestTimeoutThread"));
+
+   OutputTestDetails();
 }
 
 CTestMonitor::CTestMonitor()
-   :  m_pActiveTest(0),
+   :  m_testTimeoutThread(*this),
+      m_pPreviousHandler(0),
+      m_pActiveTest(0),
       m_includePerformanceTests(false),
-      m_reported(false)
+      m_reported(false),
+      m_stopOnFailure(false),
+      m_debugOnFailure(false),
+      m_testTimeout(INFINITE)
 {
+   s_pMonitor = this;
 
+#if _MSC_VER >= 1310 
+   m_pPreviousHandler = _set_purecall_handler(PureCallHandler);   
+
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1310
+#error Compiler specific code that is no longer required
+#endif
+
+#endif
+
+   m_testTimeoutThread.Start();
+   m_testTimeoutThread.SetThreadName(_T("TestTimeoutThread"));
+
+   OutputTestDetails();
 }
 
 CTestMonitor::~CTestMonitor()
 {
+   m_shutdownEvent.Set();
+   m_testTimeoutThread.Wait();
+
    if (!m_reported)
    {
-      Report();
+      Report(0);
    }
 
    for (Tests::const_iterator it = m_tests.begin(), end = m_tests.end();
@@ -143,11 +254,92 @@ CTestMonitor::~CTestMonitor()
 
       delete pTest;
    }
+
+   s_pMonitor = 0;
+
+#if _MSC_VER >= 1310 
+   _set_purecall_handler(m_pPreviousHandler);
+
+#if JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION >= 1310
+#error Compiler specific code that is no longer required
+#endif
+
+#endif
+}
+
+void CTestMonitor::OutputTestDetails()
+{
+#ifdef UNICODE
+#ifdef _DEBUG
+   OutputEx(m_name + _T(" - UNICODE - Debug - ") + JETBYTE_COMPILER_NAME);
+#else
+   OutputEx(m_name + _T(" - UNICODE - Release - ") + JETBYTE_COMPILER_NAME);
+#endif
+#else
+#ifdef _DEBUG
+   OutputEx(m_name + _T(" - Debug - ") + JETBYTE_COMPILER_NAME);
+#else
+   OutputEx(m_name + _T(" - Release - ") + JETBYTE_COMPILER_NAME);
+#endif
+#endif
+}
+
+void CTestMonitor::HandlePureCall()
+{
+   if (!m_pActiveTest)
+   {
+      OutputEx(_T("Pure call - No test running!"));
+   }
+   else
+   {
+      OutputEx(_T("PureCall: ") + m_pActiveTest->GetName());
+
+      m_pActiveTest->FailTest(_T("Pure call"), 0);
+
+      m_pActiveTest = 0;
+   }
+
+   //Report(0);
+}
+
+bool CTestMonitor::DebugOnFailure()
+{
+   return s_pMonitor && s_pMonitor->m_stopOnFailure && s_pMonitor->m_debugOnFailure;
+}
+
+void CTestMonitor::Trace(
+   const _tstring &message)
+{
+   if (s_pMonitor)
+   {
+      s_pMonitor->m_traceMessages.push_back(message);
+   }
+}
+
+Milliseconds CTestMonitor::GetTimeoutForMachine()
+{
+   const _tstring machine = GetComputerName();
+
+   if (machine == _T("SATURN"))
+   {
+      return 20000;
+   }
+   else if (machine == _T("GALLIFREY"))
+   {
+      return 20000;
+   }
+   else if (machine == _T("MERCURY"))
+   {
+      return 20000;
+   }
+
+   return 10000;     // 10 seconds is a LONG time for a test to run!
 }
 
 void CTestMonitor::StartTest(
    const _tstring &className,
-   const _tstring &functionName)
+   const _tstring &functionName,
+   const Milliseconds timeout)
 {
    if (m_pActiveTest)
    {
@@ -159,11 +351,23 @@ void CTestMonitor::StartTest(
    m_pActiveTest = new TestDetails(className, functionName);
 
    m_tests.push_back(m_pActiveTest);
+
+   m_traceMessages.clear();
+
+   static const Milliseconds defaultTimeout = GetTimeoutForMachine();
+   
+   m_testTimeout = ::IsDebuggerPresent() ? INFINITE : (timeout == 0 ? defaultTimeout : timeout);
+
+   m_startTimingEvent.Set();
+   m_timingStartedEvent.Wait();
+
+   m_testTimer.Reset();
 }
 
 bool CTestMonitor::StartPerformanceTest(
    const _tstring &className,
-   const _tstring &functionName)
+   const _tstring &functionName,
+   const Milliseconds timeout)
 {
    if (m_pActiveTest)
    {
@@ -175,12 +379,26 @@ bool CTestMonitor::StartPerformanceTest(
    m_pActiveTest = new TestDetails(className, functionName);
 
    m_tests.push_back(m_pActiveTest);
+
+   m_traceMessages.clear();
 
    if (!m_includePerformanceTests)
    {
       m_pActiveTest->SkipTest(_T("Skipped - not running performance tests."));
 
       m_pActiveTest = 0;
+   }
+   else
+   {
+      // Performance tests take longer, but 60 seconds is a LONG time for a test to run
+      static const Milliseconds defaultTimeout = 60000;
+
+      m_testTimeout = ::IsDebuggerPresent() ? INFINITE : (timeout == 0 ? defaultTimeout : timeout);
+
+      m_startTimingEvent.Set();
+      m_timingStartedEvent.Wait();
+
+      m_testTimer.Reset();
    }
 
    return m_includePerformanceTests;
@@ -193,9 +411,11 @@ void CTestMonitor::TestComplete()
       throw CException(_T("CTestMonitor::TestComplete()"), _T("No test running!"));
    }
 
-   m_pActiveTest->TestComplete();
+   m_pActiveTest->TestComplete(m_testTimer.GetElapsedTimeAsDWORD());
 
    m_pActiveTest = 0;
+
+   m_stopTimingEvent.Set();
 }
 
 void CTestMonitor::SkipTest(
@@ -209,6 +429,8 @@ void CTestMonitor::SkipTest(
    m_pActiveTest->SkipTest(reason);
 
    m_pActiveTest = 0;
+
+   m_stopTimingEvent.Set();
 }
 
 void CTestMonitor::FailTest(
@@ -219,9 +441,21 @@ void CTestMonitor::FailTest(
       throw CException(_T("CTestMonitor::FailTest()"), _T("No test running!"));
    }
 
-   m_pActiveTest->FailTest(reason);
+   m_pActiveTest->FailTest(reason, m_testTimer.GetElapsedTimeAsDWORD());
 
    m_pActiveTest = 0;
+
+   m_stopTimingEvent.Set();
+
+   if (m_stopOnFailure)
+   {
+      if (m_debugOnFailure)
+      {
+         DebugBreak();
+      }
+
+      throw CException(_T("CTestMonitor::FailTest()"), _T("Test failed"));
+   }
 }
 
 void CTestMonitor::TestException()
@@ -231,17 +465,40 @@ void CTestMonitor::TestException()
       throw CException(_T("CTestMonitor::TestComplete()"), _T("No test running!"));
    }
 
-   m_pActiveTest->TestException();
+   m_pActiveTest->TestException(m_testTimer.GetElapsedTimeAsDWORD());
+
+   const TestDetails::State state = m_pActiveTest->GetState();
 
    m_pActiveTest = 0;
+
+   m_stopTimingEvent.Set();
+
+   if (m_stopOnFailure)
+   {
+      if (TestDetails::Failed == state)
+      {
+         throw CException(_T("CTestMonitor::TestException()"), _T("Test failed"));
+      }
+   }
 }
 
-bool CTestMonitor::Report() const
+bool CTestMonitor::Report(
+   const size_t expectedTests) const
 {
+   const string timeTaken = CStringConverter::TtoA(m_totalTimer.GetElapsedTimeAsString());
+
    cout << endl;
    cout << CStringConverter::TtoA(m_name) << endl;
    cout << "Test run summary" << endl;
    cout << endl;
+
+#ifdef _UNICODE
+   cout << "Unicode build" << endl;
+#endif
+
+#ifdef _DEBUG
+   cout << "Debug build" << endl;
+#endif
 
    if (m_pActiveTest)
    {
@@ -275,7 +532,10 @@ bool CTestMonitor::Report() const
       }
       else if (state == TestDetails::Passed)
       {
-         const string status = "PASSED  : " + CStringConverter::TtoA(pTest->GetName());
+         const string status = "PASSED  : " + 
+            CStringConverter::TtoA(pTest->GetTimeTakenAsString()) + 
+            ": " + 
+            CStringConverter::TtoA(pTest->GetName());
 
          results.push_back(status);
 
@@ -344,11 +604,9 @@ bool CTestMonitor::Report() const
    cout << "Full test run output" << endl;
    cout << endl;
 
-   {  // VC6 for loop scoping...
    for (Results::const_iterator it = results.begin(), end = results.end(); it != end; ++it)
    {
       cout << *it << endl;
-   }
    }
 
    cout << endl;
@@ -356,11 +614,144 @@ bool CTestMonitor::Report() const
    cout << " Passed : " << numPassed << endl;
    cout << " Failed : " << numFailed << endl;
    cout << "Skipped : " << numSkipped << endl;
+   cout << "   Time : " << timeTaken << endl;
+
+   cout << endl;
+
+   const size_t actualTestsRun = m_tests.size();
+
+   bool passed = (numPassed + numSkipped) == actualTestsRun;
+
+   if (expectedTests != 0)
+   {
+      if (actualTestsRun < expectedTests)
+      {
+         cout << "Not all tests have been run: expected: " << expectedTests << " only ran: " << actualTestsRun << endl;
+
+         passed = false;
+      }
+      else if (actualTestsRun > expectedTests)
+      {
+         cout << "More tests than expected have been run: expected: " << expectedTests << " actually ran: " << actualTestsRun << endl;
+         cout << "Update the expectedTests value in Test.cpp!" << endl;
+
+         passed = false;
+      }
+   }
+
    cout << endl;
 
    m_reported = true;
 
-   return (numPassed + numSkipped) == m_tests.size();
+   return passed;
+}
+
+int CTestMonitor::Run() throw()
+{
+   CSEHException::Translator sehTranslator;
+
+   try
+   {
+      HANDLE handlesToWaitFor[2];
+
+      handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
+      handlesToWaitFor[1] = m_startTimingEvent.GetWaitHandle();
+
+      while (!m_shutdownEvent.Wait(0))
+      {
+         DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, INFINITE);
+
+         if (waitResult == WAIT_OBJECT_0)
+         {
+            // Time to shutdown
+            break;
+         }
+         else if (waitResult == WAIT_OBJECT_0 + 1)
+         {
+            if (m_pActiveTest)
+            {
+               // Time to time a test...
+         
+               // Grab the data that we need about the test we're about to time...
+
+               const string testName = CStringConverter::TtoA(m_pActiveTest->GetName());
+
+               const Milliseconds timeout = m_testTimeout;
+
+               m_timingStartedEvent.Set();
+
+               HANDLE handlesToWaitFor[2];
+
+               handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
+               handlesToWaitFor[1] = m_stopTimingEvent.GetWaitHandle();
+
+               DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, timeout);
+
+               if (waitResult == WAIT_OBJECT_0)
+               {
+                  // Time to shutdown
+                  break;
+               }
+               else if (waitResult == WAIT_OBJECT_0 + 1)
+               {
+                  // test completed within the time limit
+               }
+               else if (waitResult == WAIT_TIMEOUT)
+               {
+                  // the test timed out...
+
+                  cout << "Test: " << testName << " timed out. Timeout was: " << ToStringA(timeout) << "ms" << endl;
+
+                  if (m_traceMessages.size() != 0)
+                  {
+                     cout << "Trace messages:" << endl;
+                     
+                     for (TraceMessages::const_iterator it = m_traceMessages.begin(), end = m_traceMessages.end();
+                        it != end;
+                        ++it)
+                     {
+                        cout << CStringConverter::TtoA(*it) << "\"" << endl;
+                     }
+                  }
+
+                  exit(2);
+               }
+               else if (waitResult == WAIT_FAILED)
+               {
+                  const DWORD lastError = ::GetLastError();
+
+                  cout << "Unexpected result during test timeout wait for test to end" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
+
+                  exit(3);
+               }
+            }
+            else
+            {
+               cout << "Unexpected; no active test to time!" << endl;
+            }
+         }
+         else
+         {
+            const DWORD lastError = ::GetLastError();
+
+            cout << "Unexpected result during test timeout wait for test to start" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
+         }
+      }
+   }
+   catch(const CException &e)
+   {
+      cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+   }
+   catch(const CSEHException &e)
+   {
+      cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+   }
+   JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
+   {
+      cout << "Unecpedted exception during test timeout processing" << endl;
+   }
+
+   return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -371,7 +762,8 @@ CTestMonitor::TestDetails::TestDetails(
    const _tstring &className,
    const _tstring &functionName)
    :  m_name(className + _T("::") + functionName),
-      m_state(Running)
+      m_state(Running),
+      m_timeTaken(0)
 {
    Output(_T("Start: ") + m_name);
 }
@@ -391,11 +783,14 @@ CTestMonitor::TestDetails::State CTestMonitor::TestDetails::GetState() const
    return m_state;
 }
 
-void CTestMonitor::TestDetails::TestComplete()
+void CTestMonitor::TestDetails::TestComplete(
+   const DWORD timeTaken)
 {
    m_state = Passed;
 
-   Output(_T("Stop : ") + m_name);
+   m_timeTaken = timeTaken;
+
+   Output(_T("Stop : ") + GetTimeTakenAsString() + m_name);
 }
 
 void CTestMonitor::TestDetails::SkipTest(
@@ -409,18 +804,24 @@ void CTestMonitor::TestDetails::SkipTest(
 }
 
 void CTestMonitor::TestDetails::FailTest(
-   const _tstring &reason)
+   const _tstring &reason,
+   const DWORD timeTaken)
 {
    m_state = Failed;
 
    m_message = reason;
 
-   Output(_T("Fail : ") + m_name + _T(" - ") + m_message);
+   m_timeTaken = timeTaken;
+
+   Output(_T("Fail : ") + GetTimeTakenAsString() + m_name + _T(" - ") + m_message);
 }
 
-void CTestMonitor::TestDetails::TestException()
+void CTestMonitor::TestDetails::TestException(
+   const DWORD timeTaken)
 {
    m_state = Failed;
+
+   m_timeTaken = timeTaken;
 
    try
    {
@@ -462,7 +863,7 @@ void CTestMonitor::TestDetails::TestException()
    }
    catch(CSEHException &e)
    {
-      m_message = _T("CSEHException - ") + e.GetWhere() + _T(" - ") + e.GetMessage();
+      m_message = _T("CSEHException - ") + e.GetWhere() + _T(" - ") + e.GetMessage() + _T("\n");
    }
    catch(const char *pE)
    {
@@ -472,19 +873,29 @@ void CTestMonitor::TestDetails::TestException()
    {
       m_message = _T("Exception - ") + CStringConverter::WtoT(pE);
    }
-   catch(...)
+   JETBYTE_TESTS_CATCH_ALL_IF_ENABLED
    {
       m_message = _T("Unexpected exception");
    }  
 
    if (m_state == Failed)
    {
-      Output(_T("Fail : ") + m_name + _T(" - ") + m_message);
+      Output(_T("Fail : ") + GetTimeTakenAsString() + m_name + _T(" - ") + m_message);
    }
    else
    {
       Output(_T("Skip : ") + m_name + _T(" - ") + m_message);
    }
+}
+
+_tstring CTestMonitor::TestDetails::GetTimeTakenAsString() const
+{
+   if (m_timeTaken == 0)
+   {
+      return _T("");
+   }
+
+   return ToString(m_timeTaken) + _T("ms ");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

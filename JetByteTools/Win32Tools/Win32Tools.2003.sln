@@ -3,10 +3,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\Admin\Admin.200
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C++Tools", "..\C++Tools\C++Tools.2003.vcproj", "{565C1A3F-DEB0-417C-88D1-38855F08921B}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\TestTools\TestTools.2003.vcproj", "{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -22,21 +18,19 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsTest", "Test\Win32ToolsTest.2003.vcproj", "{673D9A12-1869-4DDF-BC37-A463EAC46722}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0B1D4018-64AA-44B7-ABD8-936603EC0DE7} = {0B1D4018-64AA-44B7-ABD8-936603EC0DE7}
-		{565C1A3F-DEB0-417C-88D1-38855F08921B} = {565C1A3F-DEB0-417C-88D1-38855F08921B}
 		{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E} = {5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}
 		{706A3F8D-AB39-45F3-BBA0-BF3B95CE74BE} = {706A3F8D-AB39-45F3-BBA0-BF3B95CE74BE}
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Release = Release
 		Unicode Debug = Unicode Debug
 		Unicode Debug No PreComp = Unicode Debug No PreComp
 		Unicode Release = Unicode Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{0440B71C-082D-454B-BBCF-51F1F15372FD}.Debug.ActiveCfg = Debug|Win32
@@ -49,16 +43,6 @@ Global
 		{0440B71C-082D-454B-BBCF-51F1F15372FD}.Unicode Debug No PreComp.Build.0 = Unicode Debug No PreComp|Win32
 		{0440B71C-082D-454B-BBCF-51F1F15372FD}.Unicode Release.ActiveCfg = Unicode Release|Win32
 		{0440B71C-082D-454B-BBCF-51F1F15372FD}.Unicode Release.Build.0 = Unicode Release|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Debug.ActiveCfg = Debug|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Debug.Build.0 = Debug|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Release.ActiveCfg = Release|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Release.Build.0 = Release|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Debug.ActiveCfg = Unicode Debug|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Debug.Build.0 = Unicode Debug|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Debug No PreComp.ActiveCfg = Unicode Debug No PreComp|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Debug No PreComp.Build.0 = Unicode Debug No PreComp|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Release.ActiveCfg = Unicode Release|Win32
-		{565C1A3F-DEB0-417C-88D1-38855F08921B}.Unicode Release.Build.0 = Unicode Release|Win32
 		{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}.Debug.ActiveCfg = Debug|Win32
 		{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}.Debug.Build.0 = Debug|Win32
 		{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}.Release.ActiveCfg = Release|Win32
@@ -103,5 +87,8 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
 	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
 EndGlobal

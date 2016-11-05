@@ -74,6 +74,9 @@ class CStringConverter
          const std::string &input);
 
       static BSTR AtoBSTR(
+         const char *pInput);
+
+      static BSTR AtoBSTR(
          const char *pInput,
          const int inputLength);
 
@@ -123,6 +126,10 @@ class CStringConverter
 
       static std::wstring BSTRtoW(
          const BSTR bstr);
+
+      static void BSTRtoA(
+         const BSTR bstr,
+         const char **ppResult);
 
       // UTF8to
 

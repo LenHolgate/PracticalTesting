@@ -277,7 +277,13 @@
 				RelativePath=".\Admin.h">
 			</File>
 			<File
-				RelativePath=".\NoPlatformSDK.h">
+				RelativePath=".\CompilerName.h">
+			</File>
+			<File
+				RelativePath=".\Config.h">
+			</File>
+			<File
+				RelativePath=".\ForwardDeclareWinsockTypes.h">
 			</File>
 			<File
 				RelativePath=".\SecureCRT.h">
@@ -292,7 +298,60 @@
 				RelativePath=".\Types.h">
 			</File>
 			<File
+				RelativePath=".\UsingMFC.h">
+			</File>
+			<File
 				RelativePath=".\Warnings.h">
+			</File>
+			<File
+				RelativePath=".\WinsockWrapper.h">
+			</File>
+			<Filter
+				Name="Example Config Headers"
+				Filter="">
+				<File
+					RelativePath=".\ExampleConfigHeaders\Config.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\EARTH-Config.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\MERCURY-Config.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\SATURN-Config.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_VISTA.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_WIN2K.h">
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_WINXP.h">
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			Filter="">
+			<File
+				RelativePath=".\Docs\FAQ.txt">
+			</File>
+			<File
+				RelativePath=".\Docs\Groups.txt">
+			</File>
+			<File
+				RelativePath=".\Docs\Overview.txt">
+			</File>
+			<File
+				RelativePath=".\Docs\ProgrammingConcepts.txt">
+			</File>
+			<File
+				RelativePath=".\Docs\ReleaseNotes.txt">
+			</File>
+			<File
+				RelativePath=".\Docs\Testing.txt">
 			</File>
 		</Filter>
 		<Filter

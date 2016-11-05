@@ -26,7 +26,7 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\CallbackTimerQueue.h"
+#include "..\IQueueTimers.h"
 #include "..\AutoResetEvent.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,12 +41,12 @@ namespace Mock {
 // CLoggingCallbackTimer
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A mock object that implements CCallbackTimerQueue::Timer so that it can be
-/// used as a timer in a CCallbackTimerQueue.
+/// A mock object that implements IQueueTimers::Timer so that it can be
+/// used as a timer for testing implementations of IQueueTimers.
 /// \ingroup Win32ToolsMocks
 
 class CLoggingCallbackTimer : 
-   public CCallbackTimerQueue::Timer,
+   public IQueueTimers::Timer,
    public JetByteTools::Test::CTestLog
 {
    public : 
@@ -56,10 +56,14 @@ class CLoggingCallbackTimer :
       explicit CLoggingCallbackTimer(
          JetByteTools::Test::CTestLog &linkedLog);
 
+      bool logMessage;
+
       bool WaitForTimer(
          const Milliseconds timeout);
 
-      // Implement CCallbackTimerQueue::Timer
+      unsigned long GetNumTimerEvents() const;
+
+      // Implement IQueueTimers::Timer
 
       virtual void OnTimer(
          UserData userData);
@@ -67,6 +71,8 @@ class CLoggingCallbackTimer :
    private :
 
       CAutoResetEvent m_timerEvent;
+
+      volatile unsigned long m_numTimerEvents;
 
       // No copies do not implement
       CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);

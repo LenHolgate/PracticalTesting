@@ -25,46 +25,46 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /// \file Todo.h
-/// This file provides some macros that allow #pragma TODO("message") to give
-/// a clickable message in the build window from within Visual Studio. 
+/// This file provides some macros that allow pragma JETBYTE_TODO("message") 
+/// to give a clickable message in the build window from within Visual Studio. 
 /// Note that all of these messages only show up in debug builds.
 /// \ingroup Admin
 
-// To allow #pragma TODO(blah blah) to give a 'clickable' message in the build
+// To allow #pragma JETBYTE_TODO(blah blah) to give a 'clickable' message in the build
 // window.
 
-#define TODOSTRINGIZE(L) #L
-#define TODOMAKESTRING(M,L) M(L)
-#define TODOLINE TODOMAKESTRING( TODOSTRINGIZE, __LINE__) 
-#define MACROASSTRING(x) TODOMAKESTRING( TODOSTRINGIZE, x) 
+#define JETBYTE_TODOSTRINGIZE(L) #L
+#define JETBYTE_TODOMAKESTRING(M,L) M(L)
+#define JETBYTE_TODOLINE JETBYTE_TODOMAKESTRING( JETBYTE_TODOSTRINGIZE, __LINE__) 
+#define JETBYTE_MACROASSTRING(x) JETBYTE_TODOMAKESTRING( JETBYTE_TODOSTRINGIZE, x) 
 
 #if !defined(NDEBUG)
 
 #if (JETBYTE_SHOW_TODO == 1)
-/// TODO(message) - leave yourself notes that show up in the build window
+/// JETBYTE_TODO(message) - leave yourself notes that show up in the build window
 /// like warnings
-#define TODO(_msg) message(__FILE__ "(" TODOLINE ") : TODO : " _msg)
+#define JETBYTE_TODO(_msg) message(__FILE__ "(" JETBYTE_TODOLINE ") : TODO : " _msg)
 #else 
-/// TODO(message) - leave yourself notes that show up in the build window
+/// JETBYTE_TODO(message) - leave yourself notes that show up in the build window
 /// like warnings
-#define TODO(x)
+#define JETBYTE_TODO(x)
 #endif // JETBYTE_SHOW_TODO
 
 /// Don't document a bug with this, fix it!
-#define BUG(_msg) message(__FILE__ "(" TODOLINE ") : BUG : " _msg)
+#define JETBYTE_BUG(_msg) message(__FILE__ "(" JETBYTE_TODOLINE ") : BUG : " _msg)
 
 /// Just a message
-#define MESSAGE(_msg) message(__FILE__ "(" TODOLINE ") : " _msg)
+#define JETBYTE_MESSAGE(_msg) message(__FILE__ "(" JETBYTE_TODOLINE ") : " _msg)
 
 /// Just an error
-#define STOP(_msg) error(__FILE__ "(" TODOLINE ") : " _msg)
+#define JETBYTE_STOP(_msg) error(__FILE__ "(" JETBYTE_TODOLINE ") : " _msg)
 
 #else
 
-#define TODO(x)
-#define BUG(x)
-#define MESSAGE(_msg) message(__FILE__ "(" TODOLINE ") : " _msg)
-#define STOP(_msg) error(__FILE__ "(" TODOLINE ") : " _msg)
+#define JETBYTE_TODO(x)
+#define JETBYTE_BUG(x)
+#define JETBYTE_MESSAGE(_msg) message(__FILE__ "(" JETBYTE_TODOLINE ") : " _msg)
+#define JETBYTE_STOP(_msg) error(__FILE__ "(" JETBYTE_TODOLINE ") : " _msg)
 
 #endif // NDEBUG && JETBYTE_SHOW_TODO
 

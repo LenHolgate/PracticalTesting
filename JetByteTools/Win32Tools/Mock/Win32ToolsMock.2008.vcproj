@@ -526,7 +526,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -607,7 +607,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -687,7 +687,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -768,7 +768,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -843,6 +843,10 @@
 				RelativePath=".\MockTimerQueue.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\MockTimerQueueMonitor.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -862,6 +866,10 @@
 			</File>
 			<File
 				RelativePath=".\MockTimerQueue.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MockTimerQueueMonitor.h"
 				>
 			</File>
 		</Filter>

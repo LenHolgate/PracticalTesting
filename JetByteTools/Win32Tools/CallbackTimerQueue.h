@@ -38,6 +38,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 class IProvideTickCount;
+class IMonitorCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueue
@@ -69,11 +70,24 @@ class CCallbackTimerQueue : public CCallbackTimerQueueBase
 
       CCallbackTimerQueue();
 
+      /// Create a timer queue and monitor it with the supplied monitor.
+      
+      explicit CCallbackTimerQueue(
+         IMonitorCallbackTimerQueue &monitor);
+
       /// Create a timer queue that uses the provdided instance of 
       /// IProvideTickCount to obtain its tick counts rather than getting
       /// them directly from the system.
-      
+
       explicit CCallbackTimerQueue(
+         const IProvideTickCount &tickProvider);
+
+      /// Create a timer queue that uses the provdided instance of 
+      /// IProvideTickCount to obtain its tick counts rather than getting
+      /// them directly from the system. Monitor it with the supplied monitor.
+
+      CCallbackTimerQueue(
+         IMonitorCallbackTimerQueue &monitor,
          const IProvideTickCount &tickProvider);
 
       virtual ~CCallbackTimerQueue();

@@ -60,6 +60,8 @@ class CMockTickCountProvider :
       explicit CMockTickCountProvider(
          const Milliseconds tickCount); 
 
+      bool logMessages;
+
       /// Change the tick count that the provider will return from calls to 
       /// GetTickCount().
 

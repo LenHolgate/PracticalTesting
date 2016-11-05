@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\Admin\Admin.2008.vcproj", "{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C++Tools", "..\C++Tools\C++Tools.2008.vcproj", "{64498FA5-E213-4069-B985-3BAEBF657EFE}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\TestTools\TestTools.2008.vcproj", "{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Tools", "Win32Tools.2008.vcproj", "{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
@@ -14,11 +12,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsTest", "Test\Win3
 	ProjectSection(ProjectDependencies) = postProject
 		{0B1D4018-64AA-44B7-ABD8-936603EC0DE7} = {0B1D4018-64AA-44B7-ABD8-936603EC0DE7}
 		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2} = {8AD287CB-15B7-48DA-99C7-8FDC792B79F2}
-		{64498FA5-E213-4069-B985-3BAEBF657EFE} = {64498FA5-E213-4069-B985-3BAEBF657EFE}
 		{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3} = {7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}
 	EndProjectSection
 EndProject
 Global
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
@@ -52,26 +52,6 @@ Global
 		{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
 		{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}.Unicode Release|x64.ActiveCfg = Unicode Release|x64
 		{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}.Unicode Release|x64.Build.0 = Unicode Release|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Debug|Win32.Build.0 = Debug|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Debug|x64.ActiveCfg = Debug|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Debug|x64.Build.0 = Debug|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Release|Win32.ActiveCfg = Release|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Release|Win32.Build.0 = Release|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Release|x64.ActiveCfg = Release|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Release|x64.Build.0 = Release|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug No PreComp|Win32.ActiveCfg = Unicode Debug No PreComp|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug No PreComp|Win32.Build.0 = Unicode Debug No PreComp|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug No PreComp|x64.ActiveCfg = Unicode Debug No PreComp|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug No PreComp|x64.Build.0 = Unicode Debug No PreComp|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug|Win32.ActiveCfg = Unicode Debug|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug|Win32.Build.0 = Unicode Debug|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug|x64.ActiveCfg = Unicode Debug|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Debug|x64.Build.0 = Unicode Debug|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Release|Win32.ActiveCfg = Unicode Release|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Release|x64.ActiveCfg = Unicode Release|x64
-		{64498FA5-E213-4069-B985-3BAEBF657EFE}.Unicode Release|x64.Build.0 = Unicode Release|x64
 		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}.Debug|Win32.Build.0 = Debug|Win32
 		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}.Debug|x64.ActiveCfg = Debug|x64

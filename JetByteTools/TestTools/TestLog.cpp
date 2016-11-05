@@ -22,6 +22,7 @@
 
 #include "TestLog.h"
 #include "TestException.h"
+#include "TestMonitor.h"
 
 #include <iostream>
 
@@ -43,6 +44,7 @@ using JetByteTools::Win32::FindAndReplace;
 using JetByteTools::Win32::ToString;
 using JetByteTools::Win32::LoadFileAsString;
 using JetByteTools::Win32::SaveStringAsFile;
+using JetByteTools::Win32::CException;
 
 using std::string;
 
@@ -91,6 +93,16 @@ CTestLog::CTestLog(
       m_pLog(pLinkedLog)
 {
 
+}
+
+CTestLog::~CTestLog()
+{
+   const _tstring messages = GetMessages();
+
+   if (messages.length() != 0)
+   {
+      CTestMonitor::Trace(messages);
+   }
 }
 
 void CTestLog::ClearLog()
@@ -159,14 +171,14 @@ _tstring CTestLog::RemoveMessages()
 }
 
 void CTestLog::CheckNoResults(
-   DisplayOnFailureMode displayOnFailure)
+   const DisplayOnFailureMode displayOnFailure)
 {
    CheckResult(m_separator, displayOnFailure);
 }
 
 void CTestLog::CheckResult(
    const _tstring &expectedResult, 
-   DisplayOnFailureMode displayOnFailure)
+   const DisplayOnFailureMode displayOnFailure)
 {
    CheckResult(expectedResult, m_separator + RemoveMessages(), displayOnFailure);
 }
@@ -174,7 +186,7 @@ void CTestLog::CheckResult(
 void CTestLog::CheckResult(
    const _tstring &expectedResult, 
    const _tstring &actualResult, 
-   DisplayOnFailureMode displayOnFailure)
+   const DisplayOnFailureMode displayOnFailure)
 {
    if (actualResult != expectedResult)
    {
@@ -189,11 +201,17 @@ void CTestLog::CheckResult(
          _T("result:   ") + actualResult + _T("\n")
          _T("expected: ") + expectedResult);
    }
+   else
+   {
+      // tell the monitor of a successful check
+
+      CTestMonitor::Trace(expectedResult);
+   }
 }
 
 void CTestLog::CheckResultA(
    const string &expectedResult, 
-   DisplayOnFailureMode displayOnFailure)
+   const DisplayOnFailureMode displayOnFailure)
 {
    CheckResult(CStringConverter::AtoT(expectedResult), displayOnFailure);
 }
@@ -230,9 +248,9 @@ void CTestLog::CheckResultFromFile(
 
          expectedResults = FindAndReplace(expectedResults, lineEnd, m_separator);
 
-         CheckResult(m_separator + expectedResults, false);
+         CheckResult(m_separator + expectedResults, DoNotDisplayOnFailure);
       }
-      catch(...)
+      catch(const CException &/*e*/)
       {
          SaveStringAsFile(fileNameBase + _T(".Actual.log"), actualResults);
          

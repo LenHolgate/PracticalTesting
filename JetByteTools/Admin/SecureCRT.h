@@ -41,7 +41,9 @@
 
 #define _tcsncpy_s         _tcsncpy
 #define _stprintf_s        _stprintf
-#define sprintf_s          sprintf
+
+#define sprintf_s          _snprintf
+#define swprintf_s         _snwprintf
 
 inline char *strcpy_s(char *s, const char *d)
 {

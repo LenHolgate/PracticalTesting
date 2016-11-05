@@ -255,6 +255,9 @@
 			<File
 				RelativePath="MockTimerQueue.cpp">
 			</File>
+			<File
+				RelativePath="MockTimerQueueMonitor.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -270,6 +273,9 @@
 			</File>
 			<File
 				RelativePath="MockTimerQueue.h">
+			</File>
+			<File
+				RelativePath="MockTimerQueueMonitor.h">
 			</File>
 		</Filter>
 		<Filter

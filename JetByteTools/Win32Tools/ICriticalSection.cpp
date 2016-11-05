@@ -22,6 +22,8 @@
 
 #include "ICriticalSection.h"
 
+#include "Exception.h"
+
 #pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,6 +83,49 @@ void ICriticalSection::ConditionalOwner::Leave()
    }
 }
  
+///////////////////////////////////////////////////////////////////////////////
+// ICriticalSection::PotentialOwner
+///////////////////////////////////////////////////////////////////////////////
+
+ICriticalSection::PotentialOwner::PotentialOwner(
+   ICriticalSection &crit)
+   :  m_crit(crit),
+      m_locked(false)
+{
+}
+
+ICriticalSection::PotentialOwner::~PotentialOwner()
+{
+   if (m_locked)
+   {
+      m_crit.Leave();
+   }
+}
+
+void ICriticalSection::PotentialOwner::Enter()
+{
+   if (m_locked)
+   {
+      throw CException(_T("ICriticalSection::PotentialOwner::Enter()"), _T("Already locked"));
+   }
+
+   m_locked = true;
+
+   m_crit.Enter();
+}
+
+bool ICriticalSection::PotentialOwner::TryEnter()
+{
+   if (m_locked)
+   {
+      throw CException(_T("ICriticalSection::PotentialOwner::TryEnter()"), _T("Already locked"));
+   }
+
+   m_locked = m_crit.TryEnter();
+
+   return m_locked;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////

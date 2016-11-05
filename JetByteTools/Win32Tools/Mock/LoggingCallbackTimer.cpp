@@ -47,12 +47,16 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CLoggingCallbackTimer::CLoggingCallbackTimer()
+   :  logMessage(true),
+      m_numTimerEvents(0)
 {
 }
 
 CLoggingCallbackTimer::CLoggingCallbackTimer(
    CTestLog &linkedLog)
-   :  CTestLog(&linkedLog)
+   :  CTestLog(&linkedLog),
+      logMessage(true),
+      m_numTimerEvents(0)
 {
 }
 
@@ -62,10 +66,20 @@ bool CLoggingCallbackTimer::WaitForTimer(
    return m_timerEvent.Wait(timeout);
 }
 
+unsigned long CLoggingCallbackTimer::GetNumTimerEvents() const
+{
+   return m_numTimerEvents;
+}
+
 void CLoggingCallbackTimer::OnTimer(
    UserData userData)
 {
-   LogMessage(_T("OnTimer: ") + ToString(userData));
+   if (logMessage)
+   {
+      LogMessage(_T("OnTimer: ") + ToString(userData));
+   }
+
+   ::InterlockedIncrement(&m_numTimerEvents);
 
    m_timerEvent.Set();
 }

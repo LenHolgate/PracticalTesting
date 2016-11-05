@@ -82,9 +82,9 @@ CThread::~CThread()
 
 }
       
-bool CThread::WasStarted() const
+bool CThread::IsRunning() const
 {
-   return INVALID_HANDLE_VALUE != m_hThread;
+   return INVALID_HANDLE_VALUE != m_hThread && !m_hThread.Wait(0);
 }
 
 void CThread::Start()
@@ -98,9 +98,11 @@ void CThread::StartSuspended()
 }
 
 void CThread::Start(
-   bool startSuspended)
+   const bool startSuspended)
 {
-   if (!WasStarted())
+   ICriticalSection::Owner lock(m_criticalSection);
+
+   if (!IsRunning())
    {
       const uintptr_t result = ::_beginthreadex(0, 0, ThreadFunction, (void*)this, startSuspended, reinterpret_cast<unsigned int*>(&m_threadID));
 
@@ -120,6 +122,8 @@ void CThread::Start(
 void CThread::StartWithPriority(
    const int priority)
 {
+   ICriticalSection::Owner lock(m_criticalSection);
+
    StartSuspended();
 
    SetThreadPriority(priority);
@@ -130,7 +134,9 @@ void CThread::StartWithPriority(
 
 void CThread::Resume() 
 {
-   if (WasStarted())
+   ICriticalSection::Owner lock(m_criticalSection);
+
+   if (IsRunning())
    {
       if (-1 == ::ResumeThread(m_hThread))
       {
@@ -222,7 +228,7 @@ unsigned int __stdcall CThread::ThreadFunction(
       {
          result = pThis->m_runnable.Run();
       }
-      catch(...)
+      JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
       {
          result = 666;
       }
@@ -232,7 +238,7 @@ unsigned int __stdcall CThread::ThreadFunction(
 }
 
 void CThread::Terminate(
-   DWORD exitCode)
+   const DWORD exitCode)
 {
    if (!::TerminateThread(m_hThread, exitCode))
    {
@@ -245,7 +251,9 @@ void CThread::Terminate(
 void CThread::SetThreadName(
    const _tstring &threadName) const
 {
-   if (WasStarted())
+   ICriticalSection::Owner lock(m_criticalSection);
+
+   if (IsRunning())
    {
       SetThreadName(m_threadID, threadName);
    }
@@ -274,7 +282,7 @@ bool CThread::IsThisThread() const
 {
    bool isThisThread = false;
 
-   if (WasStarted())
+   if (IsRunning())
    {
       isThisThread = (::GetCurrentThreadId() == m_threadID);
    }

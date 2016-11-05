@@ -85,6 +85,14 @@ class CCallbackTimerQueueTest
       static void TestResetTimer();
       static void TestOneShotTimer();
       static void TestActiveTimersAtDestructionTime();
+      static void TestMonitoring();
+
+      static void PerfTestCreateTimer();
+      static void PerfTestSetTimer();
+      static void PerfTestSetDifferentTimers();
+      static void PerfTestSetDifferentTimersSameTimes();
+      static void PerfTestHandleTimeouts();
+      static void PerfTestBeginTimeoutHandling();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -57,6 +57,8 @@ class CTestLog
          CTestLog *pLinkedLog,
          const JetByteTools::Win32::_tstring &separator);
 
+      ~CTestLog();
+
       void ClearLog();
 
       void LogMessage(
@@ -73,15 +75,15 @@ class CTestLog
       };
 
       void CheckNoResults(
-         DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
+         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
 
       void CheckResult(
          const JetByteTools::Win32::_tstring &expectedResult, 
-         DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
+         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
 
       void CheckResultA(
          const std::string &expectedResult, 
-         DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
+         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
 
       void CheckResultFromFile(
          const JetByteTools::Win32::_tstring &fileName,
@@ -111,8 +113,9 @@ class CTestLog
 
       CTestLog *m_pLog;
 
-      // no copies - do not implement
+      /// No copies do not implement
       CTestLog(const CTestLog &rhs);
+      /// No copies do not implement
       CTestLog &operator=(const CTestLog &rhs);
 };
 

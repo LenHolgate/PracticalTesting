@@ -33,6 +33,7 @@
 #include "IRunnable.h"
 #include "AutoResetEvent.h"
 #include "CriticalSection.h"
+#include "ConditionalSmartPointer.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -40,6 +41,12 @@
 
 namespace JetByteTools {
 namespace Win32 {
+
+///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+class IMonitorThreadedCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CThreadedCallbackTimerQueue
@@ -93,6 +100,13 @@ class CThreadedCallbackTimerQueue :
       explicit CThreadedCallbackTimerQueue(
          const TimerQueueImplementation timerQueueImplementation = BestForPlatform);
 
+      /// Create a timer queue using the specified implementation and monitor it 
+      /// with the supplied monitor.
+      
+      CThreadedCallbackTimerQueue(
+         const TimerQueueImplementation timerQueueImplementation,
+         IMonitorThreadedCallbackTimerQueue &monitor);
+
       /// Create a timer queue that uses CCallbackTimerQueue as its implementation and
       /// that uses the provdided instance of IProvideTickCount to obtain its tick 
       /// counts rather than getting them directly from the system.
@@ -100,6 +114,16 @@ class CThreadedCallbackTimerQueue :
       explicit CThreadedCallbackTimerQueue(
          const IProvideTickCount &tickProvider,
          const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+
+      /// Create a timer queue that uses CCallbackTimerQueue as its implementation and
+      /// that uses the provdided instance of IProvideTickCount to obtain its tick 
+      /// counts rather than getting them directly from the system. Monitor it 
+      /// with the supplied monitor.
+
+      CThreadedCallbackTimerQueue(
+         const IProvideTickCount &tickProvider,
+         const TimerQueueImplementation timerQueueImplementation,
+         IMonitorThreadedCallbackTimerQueue &monitor);
 
       /// Create a timer queue that uses CCallbackTimerQueueEx as its implementation and
       /// that uses the provdided instance of IProvideTickCount64 to obtain its tick 
@@ -109,6 +133,16 @@ class CThreadedCallbackTimerQueue :
          const IProvideTickCount64 &tickProvider,
          const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
 
+      /// Create a timer queue that uses CCallbackTimerQueueEx as its implementation and
+      /// that uses the provdided instance of IProvideTickCount64 to obtain its tick 
+      /// counts rather than getting them directly from the system. Monitor it 
+      /// with the supplied monitor.
+
+      CThreadedCallbackTimerQueue(
+         const IProvideTickCount64 &tickProvider,
+         const TimerQueueImplementation timerQueueImplementation,
+         IMonitorThreadedCallbackTimerQueue &monitor);
+
       /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its 
       /// implementation. Note that we don't take ownership of the implementation, it's up
       /// to you to manage its lifetime.
@@ -116,6 +150,15 @@ class CThreadedCallbackTimerQueue :
       explicit CThreadedCallbackTimerQueue(
          IManageTimerQueue &impl,
          const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+
+      /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its 
+      /// implementation. Note that we don't take ownership of the implementation, it's up
+      /// to you to manage its lifetime. Monitor it with the supplied monitor.
+
+      CThreadedCallbackTimerQueue(
+         IManageTimerQueue &impl,
+         const TimerQueueImplementation timerQueueImplementation,
+         IMonitorThreadedCallbackTimerQueue &monitor);
 
       ~CThreadedCallbackTimerQueue();
 
@@ -125,6 +168,17 @@ class CThreadedCallbackTimerQueue :
 
       void SetThreadName(
          const JetByteTools::Win32::_tstring &threadName) const;
+
+      /// Starts the shutdown process and returns immediately.
+
+      void BeginShutdown();
+
+      /// Initiates a shutdown (if one isn't already in progresss) and then waits 
+      /// for it to complete. Does not return until the shutdown has completed or
+      /// the timeout has expired. Returns true if the shutdown is complete.
+
+      bool WaitForShutdownToComplete(
+         const Milliseconds timeout = INFINITE);
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in 
@@ -154,6 +208,8 @@ class CThreadedCallbackTimerQueue :
 
       virtual Milliseconds GetMaximumTimeout() const;
 
+      virtual bool DispatchesWithoutLock() const;
+
       /// Called when the timer queue thread is terminated due to an exception
       /// this is a BAD situation! Override this to deal with it, log the error,
       /// etc...
@@ -161,11 +217,17 @@ class CThreadedCallbackTimerQueue :
       virtual void OnThreadTerminationException(
          const _tstring &message);
 
+      /// Called on the timer thread when the timer thread is started
+
+      virtual bool OnThreadInitialised();
+
+      /// Called on the timer thread when the thread is shutting down
+
+      virtual void OnThreadShutdown();
+
    private :
 
       Milliseconds GetNextTimeout();
-
-      void InitiateShutdown();
 
       void SignalStateChange();
 
@@ -173,15 +235,15 @@ class CThreadedCallbackTimerQueue :
 
       virtual int Run() throw();
 
+      IMonitorThreadedCallbackTimerQueue &m_monitor;
+
       mutable CCriticalSection m_criticalSection;
 
       CAutoResetEvent m_stateChangeEvent;
 
       CThread m_thread;
 
-      IManageTimerQueue *m_pTimerQueue;
-
-      const bool m_weOwnImpl;
+      TConditionalSmartPointer<IManageTimerQueue> m_spTimerQueue;
 
       const bool m_dispatchWithLock;
 

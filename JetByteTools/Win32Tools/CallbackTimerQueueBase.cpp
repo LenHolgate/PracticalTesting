@@ -23,6 +23,7 @@
 #include "CallbackTimerQueueBase.h"
 #include "Utils.h"
 #include "Exception.h"
+#include "NullCallbackTimerQueueMonitor.h"
 
 #pragma hdrstop
 
@@ -98,6 +99,12 @@ class CCallbackTimerQueueBase::TimerData
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// File level statics
+///////////////////////////////////////////////////////////////////////////////
+
+static CNullCallbackTimerQueueMonitor s_monitor;
+
+///////////////////////////////////////////////////////////////////////////////
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -118,7 +125,17 @@ IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
-   :  m_maxTimeout(s_timeoutMax),
+   :  m_monitor(s_monitor),
+      m_maxTimeout(s_timeoutMax),
+      m_handlingTimeouts(false)
+{
+
+}
+
+CCallbackTimerQueueBase::CCallbackTimerQueueBase(
+   IMonitorCallbackTimerQueue &monitor)
+   :  m_monitor(monitor),
+      m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(false)
 {
 
@@ -131,6 +148,12 @@ CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
       TimerData *pData = reinterpret_cast<TimerData*>(it->first);
 
       delete pData;
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+      m_monitor.OnTimerDeleted();
+
+#endif
    }
 }
 
@@ -138,9 +161,13 @@ CCallbackTimerQueueBase::Handle CCallbackTimerQueueBase::CreateTimer()
 {
    TimerData *pData = new TimerData();
 
-   Handle handle = reinterpret_cast<Handle>(pData);
+   MarkTimerUnset(pData);
 
-   MarkHandleUnset(handle);
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerCreated();
+
+#endif
 
    return reinterpret_cast<Handle>(pData);
 }
@@ -166,7 +193,13 @@ bool CCallbackTimerQueueBase::SetTimer(
 
    pData->UpdateData(timer, userData);
 
-   InsertTimer(handle, pData, timeout);
+   InsertTimer(pData, timeout);
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerSet(wasPending);
+
+#endif
 
    return wasPending;
 }
@@ -174,7 +207,15 @@ bool CCallbackTimerQueueBase::SetTimer(
 bool CCallbackTimerQueueBase::CancelTimer(
    const Handle &handle)
 {
-   return CancelTimer(handle, ValidateHandle(handle));
+   const bool wasPending = CancelTimer(handle, ValidateHandle(handle));
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerCancelled(wasPending);
+
+#endif
+
+   return wasPending;
 }
 
 bool CCallbackTimerQueueBase::DestroyTimer(
@@ -188,16 +229,29 @@ bool CCallbackTimerQueueBase::DestroyTimer(
 
    m_handleMap.erase(it);
 
+   handle = InvalidHandleValue;
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerDestroyed(wasPending);
+
+#endif
+
    if (pData->HasTimedOut())
    {
-      pData->DeleteAfterTimeout();
+      pData->SetDeleteAfterTimeout();
    }
    else
    {
       delete pData;
-   }
 
-   handle = InvalidHandleValue;
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+      m_monitor.OnTimerDeleted();
+
+#endif
+
+   }
 
    return wasPending;
 }
@@ -224,9 +278,15 @@ void CCallbackTimerQueueBase::SetTimer(
 
    TimerData *pData = new TimerData(timer, userData);
 
-   Handle handle = reinterpret_cast<Handle>(pData);
+   InsertTimer(pData, timeout);
 
-   InsertTimer(handle, pData, timeout);
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerCreated();
+
+   m_monitor.OnOneOffTimerSet();
+
+#endif
 }
 
 Milliseconds CCallbackTimerQueueBase::GetMaximumTimeout() const
@@ -234,8 +294,12 @@ Milliseconds CCallbackTimerQueueBase::GetMaximumTimeout() const
    return m_maxTimeout;
 }
 
+bool CCallbackTimerQueueBase::DispatchesWithoutLock() const
+{
+   return true;
+}
+
 void CCallbackTimerQueueBase::InsertTimer(
-   const Handle &handle,
    TimerData * const pData,
    const Milliseconds timeout)
 {
@@ -252,17 +316,16 @@ void CCallbackTimerQueueBase::InsertTimer(
          _T("but this is outside of our specificiation..."));
    }
 
-   InsertTimer(handle, pData, absoluteTimeout);
+   InsertTimer(pData, absoluteTimeout);
 }
 
 void CCallbackTimerQueueBase::InsertTimer(
-   const Handle &handle,
    TimerData * const pData,
    const ULONGLONG absoluteTimeout)
 {
    TimerQueue::iterator it = m_queue.insert(TimerQueue::value_type(absoluteTimeout, pData));
 
-   m_handleMap[handle] = it;
+   m_handleMap[pData] = it;
 }
 
 bool CCallbackTimerQueueBase::SetInternalTimer(
@@ -278,7 +341,13 @@ bool CCallbackTimerQueueBase::SetInternalTimer(
 
    pData->UpdateData(timer, reinterpret_cast<UserData>(this));
 
-   InsertTimer(handle, pData, absoluteTimeout);
+   InsertTimer(pData, absoluteTimeout);
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerSet(wasPending);
+
+#endif
 
    return wasPending;
 }
@@ -286,7 +355,9 @@ bool CCallbackTimerQueueBase::SetInternalTimer(
 CCallbackTimerQueueBase::HandleMap::iterator CCallbackTimerQueueBase::ValidateHandle(
    const Handle &handle)
 {
-   HandleMap::iterator it = m_handleMap.find(handle);
+   TimerData *pData = reinterpret_cast<TimerData *>(handle);
+
+   HandleMap::iterator it = m_handleMap.find(pData);
 
    if (it == m_handleMap.end())
    {
@@ -372,11 +443,24 @@ void CCallbackTimerQueueBase::HandleTimeouts()
 
       pData->OnTimer();
 
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+      m_monitor.OnTimer();
+
+#endif
+
       if (pData->DeleteAfterTimeout())
       {
-         m_handleMap.erase(handle);
+         m_handleMap.erase(pData);
 
          delete pData;
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+         m_monitor.OnTimerDeleted();
+
+#endif
+
       }
    }
 }
@@ -457,17 +541,15 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 
       timeoutHandle = GetTimeoutHandle(pData);
 
-      Handle handle = reinterpret_cast<Handle>(pData);
-
       if (pData->DeleteAfterTimeout())
       {
-         m_handleMap.erase(handle);
+         m_handleMap.erase(pData);
          
          // pData will be cleaned up after we've processed the timeout
       }
       else
       {
-         MarkHandleUnset(handle);
+         MarkTimerUnset(pData);
       }
    }
 
@@ -479,7 +561,13 @@ void CCallbackTimerQueueBase::HandleTimeout(
 {
    TimerData *pData = ValidateTimeoutHandle(handle);
 
-   pData->HandleTimeout();
+      pData->HandleTimeout();
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimer();
+
+#endif
 }
 
 void CCallbackTimerQueueBase::EndTimeoutHandling(
@@ -490,19 +578,32 @@ void CCallbackTimerQueueBase::EndTimeoutHandling(
    if (pData->DeleteAfterTimeout())
    {
       delete pData;
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+      m_monitor.OnTimerDeleted();
+
+#endif
+
    }
    else
    {
-      pData->TimeoutHandlingComplete();      
+      pData->TimeoutHandlingComplete();
    }
 
    m_handlingTimeouts = false;
 }
 
 void CCallbackTimerQueueBase::MarkHandleUnset(
-   Handle handle)
+   const Handle &handle)
 {
-   m_handleMap[handle] = m_queue.end();
+   MarkTimerUnset(reinterpret_cast<TimerData *>(handle));
+}
+
+void CCallbackTimerQueueBase::MarkTimerUnset(
+   TimerData *pData)
+{
+   m_handleMap[pData] = m_queue.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

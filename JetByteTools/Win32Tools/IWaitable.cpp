@@ -36,6 +36,11 @@ namespace Win32 {
 // IWaitable
 ///////////////////////////////////////////////////////////////////////////////
 
+bool IWaitable::IsSignalled() const
+{
+   return Wait(static_cast<Milliseconds>(0));
+}
+
 void IWaitable::Wait(
    HANDLE handle)
 {
@@ -73,6 +78,142 @@ bool IWaitable::Wait(
     
    return ok;
 }   
+
+bool IWaitable::WaitWithMessageLoop(
+   HANDLE handle, 
+   const Milliseconds timeout)
+{
+   DWORD notUsed;
+
+   return WaitWithMessageLoop(1, &handle, notUsed, timeout, 0);
+}
+
+bool IWaitable::WaitWithMessageLoop(
+   HANDLE handle, 
+   const Milliseconds timeout,
+   const DWORD removeFlags)
+{
+   DWORD notUsed;
+
+   return WaitWithMessageLoop(1, &handle, notUsed, timeout, removeFlags);
+}
+
+bool IWaitable::WaitWithMessageLoop(
+   const DWORD numHandles,
+   HANDLE *pHandles, 
+   const Milliseconds timeout)
+{
+   DWORD notUsed;
+
+   return WaitWithMessageLoop(numHandles, pHandles, notUsed, timeout, 0);
+}
+
+bool IWaitable::WaitWithMessageLoop(
+   const DWORD numHandles,
+   HANDLE *pHandles, 
+   DWORD &signalledHandle,
+   const Milliseconds timeout)
+{
+   return WaitWithMessageLoop(numHandles, pHandles, signalledHandle, timeout, 0);
+}
+
+bool IWaitable::WaitWithMessageLoop(
+   const DWORD numHandles,
+   HANDLE *pHandles, 
+   DWORD &signalledHandle,
+   Milliseconds timeout,
+   const DWORD removeFlags)
+{
+   bool done = false;
+
+   bool result = false;
+
+   const DWORD startTime = ::GetTickCount();
+
+   const DWORD originalTimeout = timeout;
+
+   while (!done)       
+   {
+      // Check here in case the event is signalled and there are messages to dispatch as
+      // we otherwise could continually loop trying to dispatch (if the remove flags are
+      // 'wrong'). Bit of an ugly cludge but fixes the problem...
+
+      DWORD dwRet = WaitForMultipleObjects(numHandles, pHandles, FALSE, 0);
+
+      if (dwRet == WAIT_TIMEOUT)
+      {
+         // The real wait...
+
+         dwRet = MsgWaitForMultipleObjects( 
+            numHandles,     
+            pHandles,        
+            FALSE,          // Wait for 1 handle
+            timeout,        // Timeout value
+            QS_ALLINPUT);   // Any message wakes up
+      }
+
+      if (dwRet == WAIT_TIMEOUT)
+      {
+         result = false;       
+         done = true;
+      }       
+#pragma warning(push)
+#pragma warning(disable: 4296)   // '>=' : expression is always true 
+      else if (dwRet >= WAIT_OBJECT_0 && dwRet < (WAIT_OBJECT_0 + numHandles))       
+#pragma warning(pop)
+      {
+         // An event was signaled, return         
+
+         signalledHandle = dwRet - WAIT_OBJECT_0;
+
+         result = true;       
+         done = true;
+      } 
+      else if (dwRet == WAIT_OBJECT_0 + numHandles)       
+      {
+         // There is a window message available. Dispatch it.
+
+         MSG msg;
+      
+         while (::PeekMessage(&msg,NULL,NULL,NULL, removeFlags | PM_REMOVE))       
+         {
+				if (msg.message == WM_QUIT)
+				{
+               ::PostQuitMessage(0);
+
+					return false;
+				}
+
+            ::TranslateMessage(&msg);          
+
+            ::DispatchMessage(&msg);
+         }       
+
+         // Adjust the timeout so that we don't wait forever...
+
+         const DWORD now = ::GetTickCount();
+
+         if (now - startTime >= originalTimeout)
+         {
+            result = false;
+            done = true;
+         }
+         else
+         {
+            timeout = originalTimeout - (now - startTime);
+         }
+      } 
+      else       
+      {          
+         // Something else happened. Return.
+
+         result = false;       
+         done = true;
+      }  
+   }   
+
+   return result;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

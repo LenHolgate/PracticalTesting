@@ -78,6 +78,9 @@ void CThreadedCallbackTimerQueueTest::TestAll(
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructTickCount64);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructCustomQueue);
 
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestBeginShutdown);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestWaitForShutdownToComplete);
+
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimer);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerWithLock);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerNoLock);
@@ -210,6 +213,28 @@ void CThreadedCallbackTimerQueueTest::TestConstructCustomQueue()
    queue.CheckNoResults();
 }
 
+void CThreadedCallbackTimerQueueTest::TestBeginShutdown()
+{
+   {
+      CThreadedCallbackTimerQueue timerQueue;
+
+      timerQueue.BeginShutdown();
+
+      THROW_ON_FAILURE_EX(true == timerQueue.WaitForShutdownToComplete(SHORT_TIME_NON_ZERO));
+   }
+}
+
+void CThreadedCallbackTimerQueueTest::TestWaitForShutdownToComplete()
+{
+   {
+      CThreadedCallbackTimerQueue timerQueue;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.WaitForShutdownToComplete(SHORT_TIME_NON_ZERO));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.WaitForShutdownToComplete(0));
+   }
+}
+
 void CThreadedCallbackTimerQueueTest::TestTimer()
 {
    TestTimerWithLock();
@@ -225,11 +250,11 @@ void CThreadedCallbackTimerQueueTest::TestTimerWithLock()
 
    CLoggingCallbackTimer timer;
 
-   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
    queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 
-   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
    THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
@@ -251,11 +276,11 @@ void CThreadedCallbackTimerQueueTest::TestTimerNoLock()
 
    CLoggingCallbackTimer timer;
 
-   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
    queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 
-   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
    THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
@@ -326,9 +351,9 @@ static void TestTimerImpl(
 
    CLoggingCallbackTimer timer;
 
-   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
-   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
    THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
@@ -351,12 +376,12 @@ static void TestMultipleTimers(
    CLoggingCallbackTimer timer5(log);
    CLoggingCallbackTimer timer6(log);
 
-   timerQueue.SetTimer(timer1, 300, 1);
-   timerQueue.SetTimer(timer2, 500, 2);
-   timerQueue.SetTimer(timer3, 200, 3);
-   timerQueue.SetTimer(timer4, 600, 4);
-   timerQueue.SetTimer(timer5, 400, 5);
-   timerQueue.SetTimer(timer6, 700, 6);
+   timerQueue.SetTimer(timer1, 400, 1);      // 2
+   timerQueue.SetTimer(timer2, 800, 2);      // 4
+   timerQueue.SetTimer(timer3, 200, 3);      // 1
+   timerQueue.SetTimer(timer4, 1000, 4);     // 5
+   timerQueue.SetTimer(timer5, 600, 5);      // 3
+   timerQueue.SetTimer(timer6, 1200, 6);     // 6
 
    THROW_ON_FAILURE_EX(true == timer1.WaitForTimer(REASONABLE_TIME));
    THROW_ON_FAILURE_EX(true == timer2.WaitForTimer(REASONABLE_TIME));

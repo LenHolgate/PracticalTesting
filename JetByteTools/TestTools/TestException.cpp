@@ -21,6 +21,7 @@
 #include "JetByteTools\Admin\Admin.h"
 
 #include "TestException.h"
+#include "TestMonitor.h"
 
 #pragma hdrstop
 
@@ -49,6 +50,10 @@ CTestException::CTestException(
    const _tstring &message)
    :  CException(_T(""), message)
 {
+   if (CTestMonitor::DebugOnFailure())
+   {
+      DebugBreak();
+   }
 }
 
 CTestException::CTestException(
@@ -56,6 +61,41 @@ CTestException::CTestException(
    const _tstring &message)
    :  CException(where, message)
 {
+   if (CTestMonitor::DebugOnFailure())
+   {
+      DebugBreak();
+   }
+}
+
+CTestException::CTestException(
+   const _tstring &where, 
+   const _tstring &message,
+   const bool nonFatal)
+   :  CException(where, message)
+{
+   if (!nonFatal && CTestMonitor::DebugOnFailure())
+   {
+      DebugBreak();
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CNonFatalTestException
+///////////////////////////////////////////////////////////////////////////////
+
+CNonFatalTestException::CNonFatalTestException(
+   const _tstring &message)
+   :  CTestException(_T(""), message, true)
+{
+
+}
+
+CNonFatalTestException::CNonFatalTestException(
+   const _tstring &where, 
+   const _tstring &message)
+   :  CTestException(where, message, true)
+{
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

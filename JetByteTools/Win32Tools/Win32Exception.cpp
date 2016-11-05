@@ -39,7 +39,7 @@ namespace Win32 {
 CWin32Exception::CWin32Exception(
    const _tstring &where, 
    DWORD error)
-   :  CException(where, GetLastErrorMessage(error)),
+   :  CException(where, GetLastErrorMessage(error, true)),
       m_error(error)
 {
 }

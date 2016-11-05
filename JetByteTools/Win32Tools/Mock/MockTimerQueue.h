@@ -50,7 +50,8 @@ class CMockTimerQueue :
 {
    public : 
 
-      CMockTimerQueue();
+      explicit CMockTimerQueue(
+         const bool dispatchWithoutLock = true);
 
       void OnTimer();
 
@@ -105,7 +106,11 @@ class CMockTimerQueue :
 
       virtual Milliseconds GetMaximumTimeout() const;
 
+      virtual bool DispatchesWithoutLock() const;
+
    private :
+
+      const bool m_dispatchWithoutLock;
 
       CAutoResetEvent m_nextTimeoutEvent;
 

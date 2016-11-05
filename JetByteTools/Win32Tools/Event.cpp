@@ -92,7 +92,9 @@ void CEvent::Set()
 {
    if (!::SetEvent(m_hEvent))
    {
-      throw CWin32Exception(_T("CEvent::Set()"), ::GetLastError());
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CEvent::Set()"), lastError);
    }
 }
 
@@ -100,7 +102,9 @@ void CEvent::Pulse()
 {
    if (!::PulseEvent(m_hEvent))
    {
-      throw CWin32Exception(_T("CEvent::Pulse()"), ::GetLastError());
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CEvent::Pulse()"), lastError);
    }
 }
 

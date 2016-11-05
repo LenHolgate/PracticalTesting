@@ -37,6 +37,12 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+class IMonitorCallbackTimerQueue;
+
+///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueueBase
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -86,11 +92,16 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       virtual Milliseconds GetMaximumTimeout() const;
 
+      virtual bool DispatchesWithoutLock() const;
+
    protected :
 
       /// Create a timer queue.
 
       CCallbackTimerQueueBase();
+
+      explicit CCallbackTimerQueueBase(
+         IMonitorCallbackTimerQueue &monitor);
 
       virtual ~CCallbackTimerQueueBase();
 
@@ -105,7 +116,7 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       typedef std::multimap<ULONGLONG, TimerData *> TimerQueue;
 
-      typedef std::map<Handle, TimerQueue::iterator> HandleMap;
+      typedef std::map<TimerData *, TimerQueue::iterator> HandleMap;
 
       typedef std::set<TimeoutHandle> TimeoutHandles;
 
@@ -117,17 +128,18 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
          const HandleMap::iterator &it);
 
       void InsertTimer(
-         const Handle &handle,
          TimerData * const pData,
          const Milliseconds timeout);
 
       void InsertTimer(
-         const Handle &handle,
          TimerData * const pData,
          const ULONGLONG absoluteTimeout);
 
       void MarkHandleUnset(
-         Handle handle);
+         const Handle &handle);
+
+      void MarkTimerUnset(
+         TimerData *pData);
 
       virtual ULONGLONG GetTickCount64() = 0;
 
@@ -146,13 +158,15 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       TimeoutHandles m_timeoutHandles;
 
+      IMonitorCallbackTimerQueue &m_monitor;
+
       const Milliseconds m_maxTimeout;
 
       bool m_handlingTimeouts;
 
-		/// No copies do not implement
+      /// No copies do not implement
       CCallbackTimerQueueBase(const CCallbackTimerQueueBase &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CCallbackTimerQueueBase &operator=(const CCallbackTimerQueueBase &rhs);
 };
 

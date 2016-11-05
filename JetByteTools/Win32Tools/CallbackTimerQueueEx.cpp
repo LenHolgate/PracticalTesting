@@ -42,6 +42,20 @@ static const CTickCount64Provider s_tickProvider;
 // CCallbackTimerQueueEx
 ///////////////////////////////////////////////////////////////////////////////
 
+CCallbackTimerQueueEx::CCallbackTimerQueueEx()
+   :  m_tickProvider(s_tickProvider)
+{
+
+}
+
+CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+   IMonitorCallbackTimerQueue &monitor)
+   :  CCallbackTimerQueueBase(monitor),
+      m_tickProvider(s_tickProvider)
+{
+
+}
+
 CCallbackTimerQueueEx::CCallbackTimerQueueEx(
    const IProvideTickCount64 &tickProvider)
    :  m_tickProvider(tickProvider)
@@ -49,8 +63,11 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
 
 }
 
-CCallbackTimerQueueEx::CCallbackTimerQueueEx()
-   :  m_tickProvider(s_tickProvider)
+CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+   IMonitorCallbackTimerQueue &monitor,
+   const IProvideTickCount64 &tickProvider)
+   :  CCallbackTimerQueueBase(monitor),
+      m_tickProvider(tickProvider)
 {
 
 }

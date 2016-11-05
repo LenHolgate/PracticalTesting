@@ -45,9 +45,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,_LIB,WIN32"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -97,8 +99,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory=".\Output\VS2008-x64\Debug/"
-			IntermediateDirectory=".\Output\VS2008-x64\Debug/"
+			OutputDirectory=".\Output\VS2008-x64\Debug"
+			IntermediateDirectory=".\Output\VS2008-x64\Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -123,9 +125,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,_LIB,WIN32"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -200,10 +204,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -253,8 +259,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory=".\Output\VS2008-x64\Release\"
-			IntermediateDirectory=".\Output\VS2008-x64\Release\"
+			OutputDirectory=".\Output\VS2008-x64\Release"
+			IntermediateDirectory=".\Output\VS2008-x64\Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -279,10 +285,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -357,9 +365,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -409,8 +419,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug|x64"
-			OutputDirectory=".\Output\VS2008-x64\UDebug\"
-			IntermediateDirectory=".\Output\VS2008-x64\UDebug\"
+			OutputDirectory=".\Output\VS2008-x64\UDebug"
+			IntermediateDirectory=".\Output\VS2008-x64\UDebug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -435,9 +445,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -512,10 +524,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -565,8 +579,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Release|x64"
-			OutputDirectory=".\Output\VS2008-x64\URelease\"
-			IntermediateDirectory=".\Output\VS2008-x64\URelease\"
+			OutputDirectory=".\Output\VS2008-x64\URelease"
+			IntermediateDirectory=".\Output\VS2008-x64\URelease"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -591,10 +605,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
 				StringPooling="true"
+				ExceptionHandling="2"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -669,9 +685,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -721,8 +739,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug No PreComp|x64"
-			OutputDirectory=".\Output\VS2008-x64\UDebugNoPreComp\"
-			IntermediateDirectory=".\Output\VS2008-x64\UDebugNoPreComp\"
+			OutputDirectory=".\Output\VS2008-x64\UDebugNoPreComp"
+			IntermediateDirectory=".\Output\VS2008-x64\UDebugNoPreComp"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -747,9 +765,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Wall"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile="$(IntDir)\$(ProjectName).pch"
@@ -810,7 +830,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\NoPlatformSDK.h"
+				RelativePath=".\CompilerName.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DetectPlatformSDKVersion.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ForwardDeclareWinsockTypes.h"
 				>
 			</File>
 			<File
@@ -830,7 +862,91 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UsingMFC.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Warnings.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WinsockWrapper.h"
+				>
+			</File>
+			<Filter
+				Name="Example Config Headers"
+				>
+				<File
+					RelativePath=".\ExampleConfigHeaders\Config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\EARTH-Config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\MERCURY-Config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\SATURN-Config.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_VISTA.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_WIN2K.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_WIN7.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\TargetWindowsVersion_WINXP.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ExampleConfigHeaders\x64-STLPort-Config.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			>
+			<File
+				RelativePath=".\Docs\BuildConfiguration.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\FAQ.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\Groups.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\MainPage.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\Overview.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\ProgrammingConcepts.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\ReleaseNotes.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Docs\Testing.txt"
 				>
 			</File>
 		</Filter>

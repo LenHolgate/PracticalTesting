@@ -24,7 +24,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\C++Tools\ILogMessages.h"
+#include "ILogMessages.h"
 
 #include "tstring.h"
 #include "CriticalSection.h"

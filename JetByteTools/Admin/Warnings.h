@@ -33,12 +33,6 @@
 
 #if (JETBYTE_USE_STL_PORT == 1)
 
-#if (_MSC_VER < 1300)            // Need this for anything earlier than VS.Net 2003
-#define _STLP_NEW_PLATFORM_SDK
-#endif
-
-#define _REENTRANT 1
-
 #ifdef _DEBUG
    #define _STLP_DEBUG 
    #define _STLP_USE_DEBUG_LIB 
@@ -47,20 +41,9 @@
 #pragma warning(push, 4)
 
 #pragma warning(disable: 4097)   // typedef-name 'x' used as synonym for class-name 'y'
+#pragma warning(disable: 4302)   // 'reinterpret_cast' : truncation from 'const void *' to 'unsigned long'
 #pragma warning(disable: 4800)   // 'int' : forcing value to bool 'true' or 'false' (performance warning)
-
-#else // !JETBYTE_USE_STL_PORT
-
-#if (_MSC_VER < 1300)   // VC6...
-// Native Microsoft STL - can't use warning level 4 as the stl headers do all 
-// kinds of crap things.
-
-#pragma warning(push, 3)
-
-// And in fstream...
-#pragma warning(disable: 4701)   // local variable '_C' may be used without having been initialized
-
-#endif // _MSC_VER
+#pragma warning(disable: 4686)   // 'stlp_std::_Is_POD' : possible change in behavior, change in UDT return calling convention
 
 #endif // JETBYTE_USE_STL_PORT
 
@@ -80,17 +63,38 @@
 #pragma warning(disable: 4710)   // function 'x' not inlined
 #pragma warning(disable: 4786)   // identifier was truncated to '255' characters in the debug information
 
-#if (_MSC_VER < 1300)   // VC6...
+// Things we need to disable to be able to compile with /Wall
 
-// In Winnt.h of v6.1 of the platform sdk...
+#pragma warning(disable: 4548)   // expression before comma has no effect; expected expression with side-effect
+#pragma warning(disable: 4820)   // 'x' bytes padding added after data member 'y'
+#pragma warning(disable: 4265)   // class has virtual functions, but destructor is not virtual
+#pragma warning(disable: 4668)   // 'x' is not defined as a preprocessor macro, replaceing with '0' for '#if/#elif'
+#pragma warning(disable: 4619)   // #pragma warning : there is no warning number 'x'
+#pragma warning(disable: 4571)   // catch(...) semantics changed since VC 7.1; SEH are no longer caught
+#pragma warning(disable: 4917)   // 'x' : a GUID can only be associated with a class, interface or namespace
+#pragma warning(disable: 4365)   // conversion from 'x' to 'y', signed/unsigned mismatch
+#pragma warning(disable: 4640)   // 'x' : construction of local static object is not thread-safe
+#pragma warning(disable: 4625)   // 'x' : copy constructor could not be generated because a base class copy constructor is inaccessible
+#pragma warning(disable: 4626)   // 'x' : assignment operator could not be generated because a base class assignment operator is inaccessible
 
-#pragma warning(disable: 4035)   // no return value
+// This is needed for VS2005 without any platform sdk, basestd.h is full of these..
 
-// In wingdi of v6.1. of the platform sdk..
+#pragma warning(disable: 4826)   // Conversion from 'x' to 'y' is sign-extended. This may cause unexpected runtime behavior.
+#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
 
-#pragma warning(disable: 4068)   // unknown pragma
+#pragma warning(disable: 4370)   // layout of class has changed from a previous version of the compiler due to better packing
 
-#endif // _MSC_VER
+#if _MSC_VER == 1600
+// This is a problem in crtdbg.h ...
+#pragma warning(disable: 4986)   // 'x': exception specification does not match previous declaration
+#endif
+
+#pragma warning(disable: 4574)   // 'x' is defined to be '0': did you mean to use '#if x'?
+
+//#if JETBYTE_PLATFORM_SDK_VERSION >= 0x070A
+// In atlconv.h, atlalloc.h, etc
+#pragma warning(disable: 4987)   // nonstandard extension used: 'throw (...)'
+//#endif
 
 #endif // JETBYTE_TOOLS_ADMIN_WARNINGS_INCLUDED__
 

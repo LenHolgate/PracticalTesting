@@ -81,11 +81,11 @@ class CAutoResetEvent : public IWaitable
 
       // Implement IWaitable
 
-      HANDLE GetWaitHandle() const;
+      virtual HANDLE GetWaitHandle() const;
 
-      void Wait() const;
+      virtual void Wait() const;
 
-      bool Wait(
+      virtual bool Wait(
          const Milliseconds timeout) const;
 
    private :

@@ -48,8 +48,10 @@ namespace Mock {
 // CMockTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-CMockTimerQueue::CMockTimerQueue()
-   :  m_nextTimer(0),
+CMockTimerQueue::CMockTimerQueue(
+   const bool dispatchWithoutLock)
+   :  m_dispatchWithoutLock(dispatchWithoutLock),
+      m_nextTimer(0),
       m_pTimer(0),
       m_userData(0),
       m_maxTimeout(0xFFFFFFFE),
@@ -83,10 +85,14 @@ void CMockTimerQueue::OnTimer()
       throw CTestException(_T("CMockTimerQueue::OnTimer()"), _T("Timer not set"));
    }
 
-   m_pTimer->OnTimer(m_userData);
+   Timer *pTimer = m_pTimer;
+
+   UserData userData = m_userData;
 
    m_pTimer = 0;
    m_userData = 0;
+
+   pTimer->OnTimer(userData);
 
    m_onTimerEvent.Set();
 }
@@ -228,6 +234,13 @@ Milliseconds CMockTimerQueue::GetMaximumTimeout() const
    LogMessage(_T("GetMaximumTimeout"));
 
    return m_maxTimeout;
+}
+
+bool CMockTimerQueue::DispatchesWithoutLock() const
+{
+   LogMessage(_T("DispatchesWithoutLock"));
+
+   return m_dispatchWithoutLock;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -48,19 +48,12 @@ CCriticalSection::CCriticalSection()
 CCriticalSection::CCriticalSection(
    const DWORD spinCount)
 {
-#if(_WIN32_WINNT >= 0x0403)
    if (!::InitializeCriticalSectionAndSpinCount(&m_crit, spinCount))
    {
       const DWORD lastError = ::GetLastError();
 
       throw CWin32Exception(_T("CCriticalSection::CCriticalSection()"), lastError);
    }
-#else
-   spinCount;
-   ::InitializeCriticalSection(&m_crit);
-
-   OutputDebugString(_T("CCriticalSection::CCriticalSection() - spin count specified but _WIN32_WINNT < 0x0403, spin count not used\n"));
-#endif
 }
       
 CCriticalSection::~CCriticalSection()
@@ -68,23 +61,15 @@ CCriticalSection::~CCriticalSection()
    ::DeleteCriticalSection(&m_crit);
 }
 
-/*
-#if(_WIN32_WINNT >= 0x0400)
-bool CCriticalSection::TryEnter()
-{
-   return ToBool(::TryEnterCriticalSection(&m_crit));
-}
-#endif
-*/
-
 void CCriticalSection::SetSpinCount(
    const DWORD spinCount)
 {
-#if (_WIN32_WINNT >= 0x0403)
    ::SetCriticalSectionSpinCount(&m_crit, spinCount);
-#else
-   OutputDebugString(_T("CCriticalSection::SetSpinCount() - _WIN32_WINNT < 0x0403, spin count not used\n"));
-#endif
+}
+
+bool CCriticalSection::TryEnter()
+{
+   return ToBool(::TryEnterCriticalSection(&m_crit));
 }
 
 void CCriticalSection::Enter()

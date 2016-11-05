@@ -40,10 +40,16 @@
 #include "IQueueTimers.h"
 #include "IRunnable.h"
 #include "IWaitable.h"
+#include "ManualResetEvent.h"
+#include "NullCallbackTimerQueueMonitor.h"
+#include "NullMessageLog.h"
+#include "NullThreadedCallbackTimerQueueMonitor.h"
+#include "PerformanceCounter.h"
 #include "SEHException.h"
 #include "SimpleMessageLog.h"
 #include "StringConverter.h"
 #include "Thread.h"
+#include "ThreadAffinity.h"
 #include "ThreadedCallbackTimerQueue.h"
 #include "TickCountProvider.h"
 #include "TickCount64Provider.h"
@@ -56,7 +62,7 @@
 // right, keep this at the end of the precompiled header..
 #include "JetByteTools\Admin\SecureCRT.h"
 
-#include "JetByteTools\C++Tools\ExpandableBuffer.h"
+#include "JetByteTools\Win32Tools\ExpandableBuffer.h"
 
 #pragma hdrstop
 

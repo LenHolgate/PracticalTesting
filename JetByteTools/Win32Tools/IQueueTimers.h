@@ -123,6 +123,11 @@ class IQueueTimers
 
       virtual Milliseconds GetMaximumTimeout() const = 0;
 
+      /// Returns true if the queue dispatches timers without holding an internal
+      /// lock which it also requires to manipulate timers.
+
+      virtual bool DispatchesWithoutLock() const = 0;
+
    protected :
 
       /// We never delete instances of this interface; you must manage the 
