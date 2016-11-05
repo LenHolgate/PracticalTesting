@@ -48,6 +48,7 @@
 #include "PerformanceCounter.h"
 #include "SEHException.h"
 #include "SimpleMessageLog.h"
+#include "SmartHeapHandle.h"
 #include "StringConverter.h"
 #include "Thread.h"
 #include "ThreadAffinity.h"

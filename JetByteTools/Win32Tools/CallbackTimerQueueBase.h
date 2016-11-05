@@ -26,6 +26,9 @@
 
 #include "IManageTimerQueue.h"
 
+#include "STLHeapAllocator.h"
+#include "SmartHeapHandle.h"
+
 #include <map>
 #include <deque>
 
@@ -114,15 +117,15 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       class TimerData;
 
-      typedef std::deque<TimerData *> Timers;
+      typedef std::deque<TimerData *, CSTLHeapAllocator<TimerData *> > Timers;
 
       typedef std::pair<size_t, Timers> TimersAtThisTime;
 
-      typedef std::map<ULONGLONG, TimersAtThisTime *> TimerQueue;
+      typedef std::map<ULONGLONG, TimersAtThisTime *, std::less<ULONGLONG>, CSTLHeapAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > > TimerQueue;
 
       typedef std::pair<TimerQueue::iterator, size_t> TimerLocation;
 
-      typedef std::map<TimerData *, TimerLocation> HandleMap;
+      typedef std::map<TimerData *, TimerLocation, std::less<TimerData *>, CSTLHeapAllocator<std::pair<TimerData *, TimerLocation> > > HandleMap;
 
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
@@ -155,6 +158,14 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       TimersAtThisTime *EraseTimeoutHandle(
          IManageTimerQueue::TimeoutHandle &handle);
+
+      CSmartHeapHandle m_heap;
+
+      CSTLHeapAllocator<TimerData *> m_timersAllocator;
+
+      CSTLHeapAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > m_timerQueueAllocator;
+
+      CSTLHeapAllocator<std::pair<TimerData *, TimerLocation> > m_handleMapAllocator;
 
       TimerQueue m_queue;
 

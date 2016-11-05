@@ -125,25 +125,43 @@ IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
-   :  m_monitor(s_monitor),
+   :  m_heap(::HeapCreate(HEAP_NO_SERIALIZE, 0,0)),
+      m_timersAllocator(m_heap),
+      m_timerQueueAllocator(m_heap),
+      m_handleMapAllocator(m_heap),
+      m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
+      m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
+      m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
-
+   if (!m_heap.IsValid())
+   {
+      throw CException(_T("CCallbackTimerQueueBase::CCallbackTimerQueueBase()"), _T("Failed to create private heap"));
+   }
 }
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    IMonitorCallbackTimerQueue &monitor)
-   :  m_monitor(monitor),
+   :  m_heap(::HeapCreate(HEAP_NO_SERIALIZE, 0,0)),
+      m_timersAllocator(m_heap),
+      m_timerQueueAllocator(m_heap),
+      m_handleMapAllocator(m_heap),
+      m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
+      m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
+      m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
-
+   if (!m_heap.IsValid())
+   {
+      throw CException(_T("CCallbackTimerQueueBase::CCallbackTimerQueueBase()"), _T("Failed to create private heap"));
+   }
 }
 
 CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 {
-   for (HandleMap::iterator it = m_handleMap.begin(); it != m_handleMap.end(); ++it)
+   for (HandleMap::iterator it = m_handleMap.begin(), end = m_handleMap.end(); it != end; ++it)
    {
       TimerData *pData = reinterpret_cast<TimerData*>(it->first);
 
@@ -156,10 +174,14 @@ CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 #endif
    }
 
-   for (TimerQueue::iterator it = m_queue.begin(); it != m_queue.end(); ++it)
+   m_handleMap.clear();
+
+   for (TimerQueue::iterator it = m_queue.begin(), end = m_queue.end(); it != end; ++it)
    {
       delete (it->second);
    }
+
+   m_queue.clear();
 
 }
 
@@ -335,7 +357,9 @@ void CCallbackTimerQueueBase::InsertTimer(
 
    if (result.second)
    {
-      result.first->second = new TimersAtThisTime();
+      TimersAtThisTime *pTimers = new TimersAtThisTime(0, Timers(m_timersAllocator));
+
+      result.first->second = pTimers;
    }
 
    const size_t offset = result.first->second->second.size();

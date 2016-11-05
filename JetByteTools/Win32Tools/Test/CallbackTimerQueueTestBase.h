@@ -2373,7 +2373,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 
       for (size_t i = 0; i < 100000; ++i)
       {
-         timerQueue.SetTimer(handle, timer, i % 4000, 0);
+         timerQueue.SetTimer(handle, timer, static_cast<Milliseconds>(i % 4000), 0);
       }
 
       const DWORD timeTaken = counter.GetElapsedTimeAsDWORD();
@@ -2429,7 +2429,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 
          for (size_t i = 0; i < 100000; ++i)
          {
-            timerQueue.SetTimer(handles[i % s_numHandles], timer, i % 4000, 0);
+            timerQueue.SetTimer(handles[i % s_numHandles], timer, static_cast<Milliseconds>(i % 4000), 0);
          }
 
          const DWORD timeTaken = counter.GetElapsedTimeAsDWORD();
@@ -2493,7 +2493,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
          {
             for (size_t x = 0; x < s_numHandles; ++x)
             {
-               timerQueue.SetTimer(handles[x], timer, ((1 + i) * 100) % 4000, 0);
+               timerQueue.SetTimer(handles[x], timer, static_cast<Milliseconds>(((1 + i) * 100) % 4000), 0);
             }
          }
 
@@ -2554,7 +2554,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
       {
          handles[i] = timerQueue.CreateTimer();
 
-         timerQueue.SetTimer(handles[i], timer, i % 4000, 0);
+         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0);
       }
 
       {
@@ -2636,7 +2636,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
       {
          handles[i] = timerQueue.CreateTimer();
 
-         timerQueue.SetTimer(handles[i], timer, i % 4000, 0);
+         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0);
       }
 
       {
