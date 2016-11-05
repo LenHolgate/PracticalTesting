@@ -60,12 +60,17 @@ class CCallbackTimerWheelTest :
       static void TestConstruct();
       static void TestGetMaximumTimeout();
 
+      static void TestGetNextTimeout();
+
       // Test traits...
       enum traits
       {
          timerGranularity = 15,
+         maxTimeout = 4000,
          creationQueriesTicks = true,
          setQueriesTicks = false,
+         handleTimeoutQueriesTicksPerTimer = false,
+         timersAtSameTimeAreExpiredInOrderSet = false,
 
    #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
 

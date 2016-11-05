@@ -122,7 +122,8 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       void InsertTimer(
          const Milliseconds timeout,
-         TimerData &data);
+         TimerData &data,
+         const bool wasSet);
 
       static TimerData **CreateTimerWheel(
          const size_t numTimers);
@@ -130,13 +131,20 @@ class CCallbackTimerWheel : public IManageTimerQueue
       TimerData &ValidateHandle(
          const Handle &handle) const;
 
+      TimerData **GetFirstTimerSet() const;
+
+      void OnTimerCancelled();
+
+      TimerData *GetTimersToProcess(
+         const Milliseconds now);
+
       TimerData **GetTimerAtOffset(
          const size_t offset) const;
 
       const Milliseconds m_maximumTimeout;
-      
+
       const Milliseconds m_timerGranularity;
-      
+
       const size_t m_numTimers;
 
       const IProvideTickCount &m_tickCountProvider;
@@ -148,6 +156,10 @@ class CCallbackTimerWheel : public IManageTimerQueue
       TimerData **m_pTimersEnd;
 
       TimerData **m_pNow;
+
+      TimerData **m_pFirstTimerSetHint;
+
+      size_t m_numTimersSet;
 
       typedef std::set<TimerData *> Handles;
 

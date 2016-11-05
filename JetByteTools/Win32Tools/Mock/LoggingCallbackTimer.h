@@ -58,6 +58,8 @@ class CLoggingCallbackTimer :
 
       bool logMessage;
 
+      bool logUserData;
+
       bool WaitForTimer(
          const Milliseconds timeout);
 

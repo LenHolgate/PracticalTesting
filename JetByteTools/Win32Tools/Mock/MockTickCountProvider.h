@@ -62,6 +62,8 @@ class CMockTickCountProvider :
 
       bool logMessages;
 
+      bool logTickCount;
+
       /// Change the tick count that the provider will return from calls to 
       /// GetTickCount().
 

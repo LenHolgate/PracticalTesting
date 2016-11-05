@@ -46,14 +46,16 @@ namespace Mock {
 
 CMockTickCountProvider::CMockTickCountProvider()
    :  m_tickCount(0),
-      logMessages(true)
+      logMessages(true),
+      logTickCount(true)
 {
 }
 
 CMockTickCountProvider::CMockTickCountProvider(
    const Milliseconds tickCount)
    :  m_tickCount(tickCount),
-      logMessages(true)
+      logMessages(true),
+      logTickCount(true)
 {
 }
 
@@ -67,7 +69,14 @@ Milliseconds CMockTickCountProvider::GetTickCount() const
 {
    if (logMessages)
    {
-      LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
+      if (logTickCount)
+      {
+         LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
+      }
+      else
+      {
+         LogMessage(_T("GetTickCount"));
+      }
    }
 
    return m_tickCount;

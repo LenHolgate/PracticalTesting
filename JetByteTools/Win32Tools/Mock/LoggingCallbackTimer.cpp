@@ -48,6 +48,7 @@ namespace Mock {
 
 CLoggingCallbackTimer::CLoggingCallbackTimer()
    :  logMessage(true),
+      logUserData(true),
       m_numTimerEvents(0)
 {
 }
@@ -56,6 +57,7 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
    CTestLog &linkedLog)
    :  CTestLog(&linkedLog),
       logMessage(true),
+      logUserData(true),
       m_numTimerEvents(0)
 {
 }
@@ -76,7 +78,14 @@ void CLoggingCallbackTimer::OnTimer(
 {
    if (logMessage)
    {
-      LogMessage(_T("OnTimer: ") + ToString(userData));
+      if (logUserData)
+      {
+         LogMessage(_T("OnTimer: ") + ToString(userData));
+      }
+      else
+      {
+         LogMessage(_T("OnTimer"));
+      }
    }
 
    ::InterlockedIncrement(&m_numTimerEvents);

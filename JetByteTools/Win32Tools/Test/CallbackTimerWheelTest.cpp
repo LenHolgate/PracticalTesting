@@ -75,6 +75,8 @@ const _tstring CCallbackTimerWheelTest::shortName = _T("  W - ");
 void CCallbackTimerWheelTest::TestAll(
    CTestMonitor &monitor)
 {
+   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetNextTimeout);
+
    Base::TestAll(monitor, _T("CCallbackTimerWheel"));
 
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestConstruct);
@@ -137,6 +139,67 @@ void CCallbackTimerWheelTest::TestGetMaximumTimeout()
       THROW_ON_FAILURE_EX(maximumTimeout == CallbackTimerWheel.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
+   }
+}
+
+void CCallbackTimerWheelTest::TestGetNextTimeout()
+{
+   CMockTickCountProvider tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      static const Milliseconds maximumTimeout = 4000;
+
+      static const Milliseconds timerGranularity = 15;
+
+      CCallbackTimerWheel timerWheel(maximumTimeout, timerGranularity, tickProvider);
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(INFINITE == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      CLoggingCallbackTimer timer1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerWheel, timer1, 20, 1);
+
+      THROW_ON_FAILURE_EX(30 == timerWheel.GetNextTimeout());     // Timers actual expiry is rounded up to next granularity
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(1);
+
+      THROW_ON_FAILURE_EX(29 == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(15);
+
+      THROW_ON_FAILURE_EX(15 == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(16);
+
+      THROW_ON_FAILURE_EX(14 == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(29);
+
+      THROW_ON_FAILURE_EX(1 == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      tickProvider.SetTickCount(30);
+
+      THROW_ON_FAILURE_EX(0 == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      (void)handle1;
    }
 }
 

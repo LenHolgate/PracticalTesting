@@ -47,8 +47,11 @@ struct CCallbackTimerQueueExTestTraits
    enum traits
    {
       timerGranularity = 1,
+      maxTimeout = 4294967294,
       creationQueriesTicks = false,
       setQueriesTicks = true,
+      handleTimeoutQueriesTicksPerTimer = true,
+      timersAtSameTimeAreExpiredInOrderSet = true,
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
 

@@ -29,11 +29,15 @@
 
 #pragma hdrstop
 
+#include "JetByteTools\TestTools\TestException.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using std::min;
+
+using JetByteTools::Test::CTestSkippedException;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -89,6 +93,8 @@ class CCallbackTimerWheel::TimerData
          TimerData *pNext);
 
 
+      TimerData *OnTimer();
+
       TimerData **m_ppPrevious;
 
       TimerData *m_pNext;
@@ -118,7 +124,9 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_currentTime(m_tickCountProvider.GetTickCount()),
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
-      m_pNow(m_pTimersStart)
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
 {
 
 }
@@ -133,7 +141,9 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_currentTime(m_tickCountProvider.GetTickCount()),
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
-      m_pNow(m_pTimersStart)
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
 {
 
 }
@@ -148,7 +158,9 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_currentTime(m_tickCountProvider.GetTickCount()),
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
-      m_pNow(m_pTimersStart)
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
 {
 
 }
@@ -164,7 +176,9 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_currentTime(m_tickCountProvider.GetTickCount()),
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
-      m_pNow(m_pTimersStart)
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
 {
 
 }
@@ -183,19 +197,101 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
 
 Milliseconds CCallbackTimerWheel::GetNextTimeout()
 {
-   throw CException(_T("CCallbackTimerWheel::GetNextTimeout()"), _T("Not implemented"));
+   Milliseconds nextTimeout = INFINITE;
 
-   return INFINITE;
+   // We need to work out the time difference between now and the first timer that is set. 
+
+   if (!m_pFirstTimerSetHint)
+   {
+      m_pFirstTimerSetHint = GetFirstTimerSet(); 
+   }
+
+   if (m_pFirstTimerSetHint)
+   {
+      // A timer is set! Calculate the timeout in ms
+
+      nextTimeout = static_cast<Milliseconds>(((m_pFirstTimerSetHint > m_pNow ? (m_pFirstTimerSetHint - m_pNow) : (m_pNow - m_pFirstTimerSetHint)) + 1) * m_timerGranularity);
+
+      const Milliseconds now = m_tickCountProvider.GetTickCount();
+
+      if (now != m_currentTime)
+      {
+         // Time has moved on, adjust the next timeout to take into account the difference between now and 
+         // the timer wheel's view of the current time...
+
+         const Milliseconds timeDiff = (now > m_currentTime ? now - m_currentTime : m_currentTime - now);
+
+         if (timeDiff > nextTimeout)
+         {
+            nextTimeout = 0;
+         }
+         else
+         {
+            nextTimeout -= timeDiff;
+         }
+      }
+   }
+
+   return nextTimeout;
+}
+
+CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetFirstTimerSet() const
+{
+   TimerData **pFirstTimer = 0;
+
+   if (m_numTimersSet != 0)
+   {
+      // Scan forwards from now to the end of the array...
+
+      for (TimerData **p = m_pNow; !pFirstTimer && p < m_pTimersEnd; ++p)
+      {
+         if (*p)
+         {
+            pFirstTimer = p;
+         }
+      }
+
+      if (!pFirstTimer)
+      {
+         // We havent yet found our first timer, now scan from the start of the array to 
+         // now...
+
+         for (TimerData **p = m_pTimersStart; !pFirstTimer && p < m_pNow; ++p)
+         {
+            if (*p)
+            {
+               pFirstTimer = p;
+            }
+         }
+      }
+
+      if (!pFirstTimer)
+      {
+         throw CException(_T("CCallbackTimerWheel::GetFirstTimerSet()"), _T("Unexpected, no timer set but count = ") + ToString(m_numTimersSet));
+      }
+   }
+
+   return pFirstTimer;
 }
 
 void CCallbackTimerWheel::HandleTimeouts()
 {
-   throw CException(_T("CCallbackTimerWheel::HandleTimeouts()"), _T("Not implemented"));
+   const Milliseconds now = m_tickCountProvider.GetTickCount();
+
+   while (TimerData *pTimers = GetTimersToProcess(now))
+   {
+      while (pTimers)
+      {
+         pTimers = pTimers->OnTimer();
+
+         --m_numTimersSet;
+      }
+   }
 }
 
 IManageTimerQueue::TimeoutHandle CCallbackTimerWheel::BeginTimeoutHandling()
 {
-   throw CException(_T("CCallbackTimerWheel::BeginTimeoutHandling()"), _T("Not implemented"));
+   throw CTestSkippedException(_T("CCallbackTimerWheel::BeginTimeoutHandling()"), _T("Not implemented"));
 
    return InvalidTimeoutHandleValue;
 }
@@ -205,7 +301,7 @@ void CCallbackTimerWheel::HandleTimeout(
 {
    (void)handle;
 
-   throw CException(_T("CCallbackTimerWheel::HandleTimeout()"), _T("Not implemented"));
+   throw CTestSkippedException(_T("CCallbackTimerWheel::HandleTimeout()"), _T("Not implemented"));
 }
 
 void CCallbackTimerWheel::EndTimeoutHandling(
@@ -213,7 +309,7 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 {
    (void)handle;
 
-   throw CException(_T("CCallbackTimerWheel::EndTimeoutHandling()"), _T("Not implemented"));
+   throw CTestSkippedException(_T("CCallbackTimerWheel::EndTimeoutHandling()"), _T("Not implemented"));
 }
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
@@ -244,7 +340,7 @@ bool CCallbackTimerWheel::SetTimer(
 
    data.UpdateData(timer, userData);
 
-   InsertTimer(timeout, data);
+   InsertTimer(timeout, data, wasSet);
 
    return wasSet;
 }
@@ -258,18 +354,31 @@ void CCallbackTimerWheel::SetTimer(
    (void)timeout;
    (void)userData;
 
-   throw CException(_T("CCallbackTimerWheel::SetTimer()"), _T("Not implemented"));
+   throw CTestSkippedException(_T("CCallbackTimerWheel::SetTimer()"), _T("Not implemented"));
 }
 
 void CCallbackTimerWheel::InsertTimer(
    const Milliseconds timeout,
-   TimerData &data)
+   TimerData &data,
+   const bool wasSet)
 {
    const size_t timerOffset = timeout / m_timerGranularity;
 
    TimerData **ppTimer = GetTimerAtOffset(timerOffset);
 
    data.SetTimer(ppTimer, *ppTimer);
+
+   m_pFirstTimerSetHint = 0;
+
+   if (!wasSet)
+   {
+      if (0 == ++m_numTimersSet)
+      {
+         // number of timers set counter has wrapped!
+
+         throw CException(_T("CCallbackTimerWheel::InsertTimer()"), _T("Too many timers set!"));
+      }
+   }
 }
 
 bool CCallbackTimerWheel::CancelTimer(
@@ -277,7 +386,21 @@ bool CCallbackTimerWheel::CancelTimer(
 {
    TimerData &data = ValidateHandle(handle);
 
-   return data.CancelTimer();
+   const bool wasSet = data.CancelTimer();
+
+   if (wasSet)
+   {
+      OnTimerCancelled();
+   }
+
+   return wasSet;
+}
+
+void CCallbackTimerWheel::OnTimerCancelled()
+{
+   --m_numTimersSet;
+
+   m_pFirstTimerSetHint = 0;
 }
 
 bool CCallbackTimerWheel::DestroyTimer(
@@ -292,6 +415,11 @@ bool CCallbackTimerWheel::DestroyTimer(
    handle = InvalidHandleValue;
 
    delete &data;
+
+   if (wasSet)
+   {
+      OnTimerCancelled();
+   }
 
    return wasSet;
 }
@@ -329,6 +457,41 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
    }
 
    return *pData;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
+   const Milliseconds now)
+{
+   TimerData *pTimers = 0;
+
+   // Round 'now' down to the timer granularity
+
+   const Milliseconds thisTime = ((now / m_timerGranularity) * m_timerGranularity);
+
+   while (!pTimers && m_currentTime != thisTime)
+   {
+      TimerData **ppTimers = GetTimerAtOffset(0);
+
+      pTimers = *ppTimers;
+
+      // Step along the wheel...
+
+      m_pNow++;
+
+      if (m_pNow >= m_pTimersEnd)
+      {
+         m_pNow = m_pTimersStart + (m_pNow - m_pTimersEnd);
+      }
+
+      m_currentTime += m_timerGranularity;
+   }
+
+   if (pTimers)
+   {
+      m_pFirstTimerSetHint = 0;
+   }
+
+   return pTimers;
 }
 
 CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetTimerAtOffset(
@@ -433,6 +596,31 @@ void CCallbackTimerWheel::TimerData::SetTimer(
    }
 
    *ppPrevious = this;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer()
+{
+   if (!m_pTimer)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::TimerData::OnTimer()"), 
+         _T("Internal Error: Timer not set"));
+   }
+
+   m_ppPrevious = 0;
+
+   TimerData *pNext = m_pNext;
+
+   if (m_pNext)
+   {
+      m_pNext->m_ppPrevious = 0;
+   }
+
+   m_pNext = 0;
+
+   m_pTimer->OnTimer(m_userData);
+
+   return pNext;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
