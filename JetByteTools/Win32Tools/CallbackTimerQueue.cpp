@@ -4,29 +4,17 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,30 +46,20 @@ class CCallbackTimerQueue::TimerData
 
       TimerData(
          Timer &timer,
-         DWORD timeout,
          UserData userData);
 
       void UpdateData(
          Timer &timer,
-         DWORD timeout,
          UserData userData);
 
       void OnTimer();
-
-      bool IsBefore(
-         const TimerData &rhs) const;
-
-      DWORD TimeUntilTimeout(
-         const DWORD now) const;
 
       bool IsOneShotTimer() const;
 
    private :
    
       Timer *m_pTimer;
-   
-      DWORD m_timeout;
-   
+      
       UserData m_userData;
 
       const bool m_oneShotTimer;
@@ -110,8 +88,9 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::InvalidHandleValue = 0;
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
    :  m_tickProvider(tickProvider),
-      m_wrapPoint(m_queue.end()),
-      m_maxTimeout(s_timeoutMax)
+      m_maxTimeout(s_timeoutMax),
+      m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2)
 {   
 }
 
@@ -119,23 +98,26 @@ CCallbackTimerQueue::CCallbackTimerQueue(
    const DWORD maxTimeout,
    const IProvideTickCount &tickProvider)
    :  m_tickProvider(tickProvider),
-      m_wrapPoint(m_queue.end()),
-      m_maxTimeout(maxTimeout)
+      m_maxTimeout(maxTimeout),
+      m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2)
 {   
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue()
    :  m_tickProvider(s_tickProvider),
-      m_wrapPoint(m_queue.end()),
-      m_maxTimeout(s_timeoutMax)
+      m_maxTimeout(s_timeoutMax),
+      m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2)
 {
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
    const DWORD maxTimeout)
    :  m_tickProvider(s_tickProvider),
-      m_wrapPoint(m_queue.end()),
-      m_maxTimeout(maxTimeout)
+      m_maxTimeout(maxTimeout),
+      m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2)
 {
 }
 
@@ -155,7 +137,7 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
 
    Handle handle = reinterpret_cast<Handle>(pData);
 
-   m_handleMap[handle] = m_queue.end();
+   MarkHandleUnset(handle);
 
    return handle;
 }
@@ -176,9 +158,9 @@ bool CCallbackTimerQueue::SetTimer(
 
    TimerData *pData = reinterpret_cast<TimerData*>(it->first);
 
-   pData->UpdateData(timer, timeout, userData);
+   pData->UpdateData(timer, userData);
 
-   InsertTimer(handle, pData, wrapped);
+   InsertTimer(handle, pData, timeout, wrapped);
 
    return wasPending;
 }
@@ -216,12 +198,13 @@ void CCallbackTimerQueue::SetTimer(
 
    const DWORD timeout = GetAbsoluteTimeout(timeoutMillis, wrapped);
 
-   TimerData *pData = new TimerData(timer, timeout, userData);
+   TimerData *pData = new TimerData(timer, userData);
 
    Handle handle = reinterpret_cast<Handle>(pData);
 
-   InsertTimer(handle, pData, wrapped);
+   InsertTimer(handle, pData, timeout, wrapped);
 }
+
 
 DWORD CCallbackTimerQueue::GetAbsoluteTimeout(
    const DWORD timeoutMillis,
@@ -244,26 +227,14 @@ DWORD CCallbackTimerQueue::GetAbsoluteTimeout(
 void CCallbackTimerQueue::InsertTimer(
    const Handle &handle,
    TimerData * const pData,
+   const DWORD timeoutMillis,
    const bool wrapped)
 {
-   if (wrapped && m_wrapPoint == m_queue.end())
-   {
-      m_wrapPoint = m_queue.insert(m_queue.end(), 0);      
-   }
-   
-   TimerQueue::iterator wrapPoint = m_wrapPoint;
+   TimerQueue *pQueue = wrapped ? m_pWrappedQueue : m_pCurrentQueue;         
 
-   TimerQueue::iterator it = (wrapped ? ++wrapPoint :  m_queue.begin());
-   // insert into the list in the right place
+   TimerQueue::iterator it = pQueue->insert(TimerQueue::value_type(timeoutMillis, pData));
 
-   while (it != m_queue.end() && it != m_wrapPoint && (*it)->IsBefore(*pData))
-   {
-      ++it;
-   }
-
-   it = m_queue.insert(it, pData);
-
-   m_handleMap[handle] = it;
+   m_handleMap[handle] = HandleMapValue(pQueue, it);
 }
 
 CCallbackTimerQueue::HandleMap::iterator CCallbackTimerQueue::ValidateHandle(
@@ -285,11 +256,15 @@ bool CCallbackTimerQueue::CancelTimer(
 {
    bool wasPending = false;
    
-   if (it->second != m_queue.end())
-   {
-      m_queue.erase(it->second);
+   const HandleMapValue &value = it->second;
 
-      m_handleMap[handle] = m_queue.end();
+   TimerQueue *pQueue = value.first;
+
+   if (pQueue)
+   {
+      pQueue->erase(value.second);
+
+      MarkHandleUnset(handle);
 
       wasPending = true;
    }
@@ -299,65 +274,73 @@ bool CCallbackTimerQueue::CancelTimer(
 
 DWORD CCallbackTimerQueue::GetNextTimeout() const
 {
-   DWORD timeout = INFINITE;
+   bool haveTimer = true;
 
-   TimerQueue::const_iterator it = m_queue.begin();
+   DWORD timeUntilTimeout = INFINITE;
 
-   if (it != m_queue.end())
+   TimerQueue::const_iterator it = m_pCurrentQueue->begin();
+
+   if (it == m_pCurrentQueue->end())
+   {
+      it = m_pWrappedQueue->begin();
+
+      if (it == m_pWrappedQueue->end())
+      {
+         haveTimer = false;
+      }
+   }
+
+   if (haveTimer)
    {
       const DWORD now = m_tickProvider.GetTickCount();
 
-      if (it == m_wrapPoint)
+      const DWORD timeout = it->first;
+
+      timeUntilTimeout = timeout - now;
+
+      if (timeUntilTimeout > s_timeoutMax)
       {
-         ++it;
-      }
-
-      TimerData *pData = *it;
-
-      timeout = pData->TimeUntilTimeout(now);
-
-      if (timeout > s_timeoutMax)
-      {
-         timeout = 0;
+         timeUntilTimeout = 0;
       }
    }  
 
-   return timeout;
+   return timeUntilTimeout;
 }
 
 void CCallbackTimerQueue::HandleTimeouts()
 {
    while (0 == GetNextTimeout())
    {
-      TimerQueue::iterator it = m_queue.begin();
+      TimerQueue::iterator it = m_pCurrentQueue->begin();
       
-      if (it != m_queue.end())
+      if (it == m_pCurrentQueue->end())
       {
-         if (it == m_wrapPoint)
-         {  
-            ++it;
-          
-            m_queue.erase(m_wrapPoint);
+         std::swap(m_pCurrentQueue, m_pWrappedQueue);
 
-            m_wrapPoint = m_queue.end();
-         }
+         it = m_pCurrentQueue->begin();
+      }
 
-         TimerData *pData = *it;
+      TimerData *pData = it->second;
 
-         m_queue.erase(it);
+      m_pCurrentQueue->erase(it);
 
-         Handle handle = reinterpret_cast<Handle>(pData);
+      Handle handle = reinterpret_cast<Handle>(pData);
 
-         m_handleMap[handle] = m_queue.end();
+      MarkHandleUnset(handle);
 
-         pData->OnTimer();
+      pData->OnTimer();
 
-         if (pData->IsOneShotTimer())
-         {
-            DestroyTimer(handle);
-         }
+      if (pData->IsOneShotTimer())
+      {
+         DestroyTimer(handle);
       }
    }
+}
+
+void CCallbackTimerQueue::MarkHandleUnset(
+   Handle handle)
+{
+   m_handleMap[handle] = HandleMapValue(0, m_queue1.end());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -366,7 +349,6 @@ void CCallbackTimerQueue::HandleTimeouts()
 
 CCallbackTimerQueue::TimerData::TimerData()
    :  m_pTimer(0), 
-      m_timeout(0),
       m_userData(0),
       m_oneShotTimer(false)
 {
@@ -374,10 +356,8 @@ CCallbackTimerQueue::TimerData::TimerData()
 
 CCallbackTimerQueue::TimerData::TimerData(
    Timer &timer,
-   DWORD timeout,
    UserData userData)
    :  m_pTimer(&timer), 
-      m_timeout(timeout),
       m_userData(userData),
       m_oneShotTimer(true)
 {
@@ -385,7 +365,6 @@ CCallbackTimerQueue::TimerData::TimerData(
 
 void CCallbackTimerQueue::TimerData::UpdateData(
    Timer &timer,
-   DWORD timeout,
    UserData userData)
 {
    if (m_oneShotTimer)
@@ -394,7 +373,6 @@ void CCallbackTimerQueue::TimerData::UpdateData(
    }
 
    m_pTimer = &timer; 
-   m_timeout = timeout;
    m_userData = userData;
 }
 
@@ -406,18 +384,6 @@ void CCallbackTimerQueue::TimerData::OnTimer()
    }
 
    m_pTimer->OnTimer(m_userData);
-}
-
-bool CCallbackTimerQueue::TimerData::IsBefore(
-   const TimerData &rhs) const
-{
-   return m_timeout < rhs.m_timeout;
-}
-
-DWORD CCallbackTimerQueue::TimerData::TimeUntilTimeout(
-   const DWORD now) const
-{
-   return m_timeout - now;
 }
 
 bool CCallbackTimerQueue::TimerData::IsOneShotTimer() const

@@ -64,6 +64,7 @@
 // Check that we're using the version of STL that we expect to be
 
 #ifdef JETBYTE_USE_STL_PORT
+#define _STLP_NEW_DONT_THROW 1
 
 #include <stl/_config.h>
 
@@ -73,6 +74,13 @@
 // level 4. Either set STLPORT_ROOT to point to the root of your STLPort installation
 // (e.g. C:\\STLport-4.6.1) or comment out the #define of JB_USE_STL_PORT in Admin.h and
 // use the standard Microsoft STL
+
+#else
+
+// Prevent wierd "some of it is inline some of it is not" linkage issues when using 
+// "standard" Microsoft supplied STL
+
+#define _WCTYPE_INLINE_DEFINED
 
 #endif
 
