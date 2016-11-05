@@ -53,16 +53,35 @@ namespace Win32 {
 // CCallbackTimerQueue::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CCallbackTimerQueue::TimerData
+class CCallbackTimerQueue::TimerData
 {
-   TimerData(
-      Timer &timer,
-      DWORD timeout,
-      UserData userData);
+   public :
 
-   Timer * const pTimer;
-   const DWORD timeout;
-   const UserData userData;
+      TimerData(
+         Timer &timer,
+         DWORD timeout,
+         UserData userData);
+
+      void UpdateData(
+         Timer &timer,
+         DWORD timeout,
+         UserData userData);
+
+      void OnTimer();
+
+      bool IsBefore(
+         const TimerData &rhs) const;
+
+      DWORD TimeUntilTimeout(
+         const DWORD now) const;
+
+   private :
+   
+      Timer *m_pTimer;
+   
+      DWORD m_timeout;
+   
+      UserData m_userData;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -127,19 +146,46 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::SetTimer(
    const DWORD timeoutMillis,
    const UserData userData)
 {
+   bool wrapped = false;
+
+   TimerData *pData = CreateTimer(timer, timeoutMillis, userData, wrapped);
+
+   return InsertTimer(pData, wrapped);
+}
+
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::CreateTimer(
+   Timer &timer,
+   const DWORD timeoutMillis,
+   const UserData userData,
+   bool &wrapped) const
+{
    if (timeoutMillis > m_maxTimeout)
    {
-      throw CException(_T("CCallbackTimerQueue::SetTimer()"), _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
+      throw CException(_T("CCallbackTimerQueue::CreateTimer()"), _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
+   const DWORD timeout = GetAbsoluteTimeout(timeoutMillis, wrapped);
+
+   return new TimerData(timer, timeout, userData);
+}
+
+DWORD CCallbackTimerQueue::GetAbsoluteTimeout(
+   const DWORD timeoutMillis,
+   bool &wrapped) const
+{
    const DWORD now = m_tickProvider.GetTickCount();
 
    const DWORD timeout = now + timeoutMillis;
 
-   bool wrapped = (timeout < now);
+   wrapped = (timeout < now);
 
-   TimerData *pData = new TimerData(timer, timeout, userData);
+   return timeout;
+}
 
+CCallbackTimerQueue::Handle CCallbackTimerQueue::InsertTimer(
+   TimerData *pData,
+   const bool wrapped)
+{
    if (wrapped && m_wrapPoint == m_queue.end())
    {
       m_wrapPoint = m_queue.insert(m_queue.end(), 0);      
@@ -150,7 +196,7 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::SetTimer(
    TimerQueue::iterator it = (wrapped ? ++wrapPoint :  m_queue.begin());
    // insert into the list in the right place
 
-   while (it != m_queue.end() && it != m_wrapPoint && (*it)->timeout < timeout)
+   while (it != m_queue.end() && it != m_wrapPoint && (*it)->IsBefore(*pData))
    {
       ++it;
    }
@@ -164,25 +210,73 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::SetTimer(
    return handle;
 }
 
-bool CCallbackTimerQueue::CancelTimer(
-   Handle handle)
+bool CCallbackTimerQueue::ResetTimer(
+   Handle &handle, 
+   Timer &timer,
+   const DWORD timeoutMillis,
+   const UserData userData)
 {
    bool wasPending = false;
+
+   TimerData *pData = 0;
+   
+   if (handle != InvalidHandleValue)
+   {
+      pData = RemoveTimer(handle);
+   }
+
+   bool wrapped = false;
+
+   if (pData)
+   {
+      const DWORD timeout = GetAbsoluteTimeout(timeoutMillis, wrapped);
+   
+      pData->UpdateData(timer, timeout, userData);
+
+      wasPending = true;
+   }
+   else
+   {
+      pData = CreateTimer(timer, timeoutMillis, userData, wrapped);
+   }
+
+   handle = InsertTimer(pData, wrapped);
+
+   return wasPending;
+}
+
+bool CCallbackTimerQueue::CancelTimer(
+   Handle &handle)
+{
+   TimerData *pData = RemoveTimer(handle);
+      
+   handle = InvalidHandleValue;
+
+   bool wasPending = pData != 0;
+
+   delete pData;
+
+   return wasPending;
+}
+
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::RemoveTimer(
+   Handle handle)
+{
+   TimerData *pData = 0;
 
    HandleMap::iterator mapIt = m_handleMap.find(handle);
 
    if (mapIt != m_handleMap.end())
    {
-      wasPending = true;
-
       TimerQueue::iterator it = mapIt->second;
 
-      delete *it;
+      pData = *it;
+
       m_queue.erase(it);
       m_handleMap.erase(mapIt);
    }
 
-   return wasPending;
+   return pData;
 }
 
 DWORD CCallbackTimerQueue::GetNextTimeout() const
@@ -202,7 +296,7 @@ DWORD CCallbackTimerQueue::GetNextTimeout() const
 
       TimerData *pData = *it;
 
-      timeout = pData->timeout - now;
+      timeout = pData->TimeUntilTimeout(now);
 
       if (timeout > s_timeoutMax)
       {
@@ -235,7 +329,7 @@ void CCallbackTimerQueue::HandleTimeouts()
          m_queue.erase(it);
          m_handleMap.erase(reinterpret_cast<Handle>(pData));
 
-         pData->pTimer->OnTimer(pData->userData);
+         pData->OnTimer();
 
          delete pData;
       }
@@ -247,21 +341,40 @@ void CCallbackTimerQueue::HandleTimeouts()
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueue::TimerData::TimerData(
-   Timer &timer_,
-   DWORD timeout_,
-   UserData userData_)
-   :  pTimer(&timer_), 
-      timeout(timeout_),
-      userData(userData_)
+   Timer &timer,
+   DWORD timeout,
+   UserData userData)
+   :  m_pTimer(&timer), 
+      m_timeout(timeout),
+      m_userData(userData)
 {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue::Timer
-///////////////////////////////////////////////////////////////////////////////
-
-CCallbackTimerQueue::Timer::~Timer()
+void CCallbackTimerQueue::TimerData::UpdateData(
+   Timer &timer,
+   DWORD timeout,
+   UserData userData)
 {
+   m_pTimer = &timer; 
+   m_timeout = timeout;
+   m_userData = userData;
+}
+
+void CCallbackTimerQueue::TimerData::OnTimer()
+{
+   m_pTimer->OnTimer(m_userData);
+}
+
+bool CCallbackTimerQueue::TimerData::IsBefore(
+   const TimerData &rhs) const
+{
+   return m_timeout < rhs.m_timeout;
+}
+
+DWORD CCallbackTimerQueue::TimerData::TimeUntilTimeout(
+   const DWORD now) const
+{
+   return m_timeout - now;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -80,6 +80,7 @@ void CCallbackTimerQueueTest::TestAll()
    TestTickCountWrap();
    TestMaxTimeout();
    TestMultipleTimers();
+   TestResetTimer();
 }
 
 void CCallbackTimerQueueTest::TestConstruct()
@@ -185,7 +186,7 @@ void CCallbackTimerQueueTest::TestCancelTimer()
    tickProvider.CheckResult(_T("|"));
 
    THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(handle));
-   THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(0));
+   THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(handle));
 
    tickProvider.SetTickCount(100);
 
@@ -494,6 +495,77 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 
 //   timerQueue.SetTimer(timer1, 100, 1);
 //   timerQueue.SetTimer(timer2, 200, 2);
+
+   Output(functionName + _T(" - stop"));
+}
+
+void CCallbackTimerQueueTest::TestResetTimer()
+{
+   const _tstring functionName = _T("CCallbackTimerQueueTest::TestResetTimer");
+   
+   Output(functionName + _T(" - start"));
+
+   CMockTickCountProvider tickProvider;
+
+   CCallbackTimerQueue timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueue::Handle handle = timerQueue.SetTimer(timer, 100, 1);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   
+   THROW_ON_FAILURE(functionName, true == timerQueue.ResetTimer(handle, timer, 90, 2));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   THROW_ON_FAILURE(functionName, 90 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(90);
+
+   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 90|"));
+
+   timerQueue.HandleTimeouts();
+
+   tickProvider.CheckResult(_T("|GetTickCount: 90|"));
+
+   timer.CheckResult(_T("|OnTimer: 2|"));
+
+   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|"));
+
+   THROW_ON_FAILURE(functionName, false == timerQueue.ResetTimer(handle, timer, 110, 3));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 90|"));
+
+   THROW_ON_FAILURE(functionName, 110 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 90|"));
+
+   tickProvider.SetTickCount(200);
+
+   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   timerQueue.HandleTimeouts();
+
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   timer.CheckResult(_T("|OnTimer: 3|"));
+
+   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|"));
 
    Output(functionName + _T(" - stop"));
 }

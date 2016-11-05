@@ -2,10 +2,10 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
-#define JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#ifndef JETBYTE_TOOLS_I_QUEUE_TIMERS_INCLUDED__
+#define JETBYTE_TOOLS_I_QUEUE_TIMERS_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: ThreadedCallbackTimerQueue.h
+// File: IQueueTimers.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -36,10 +36,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CallbackTimerQueue.h"
-#include "Thread.h"
-#include "AutoResetEvent.h"
-#include "CriticalSection.h"
+#ifndef _WINDOWS_
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -49,68 +50,61 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CThreadedCallbackTimerQueue
+// IQueueTimers
 ///////////////////////////////////////////////////////////////////////////////
 
-class CThreadedCallbackTimerQueue : 
-   public IQueueTimers,
-   private CThread
+class IQueueTimers
 {
    public :
 
-      CThreadedCallbackTimerQueue();
+      typedef ULONG_PTR UserData;
 
-      explicit CThreadedCallbackTimerQueue(
-         const DWORD maxTimeout);
+      class Timer;
 
-      explicit CThreadedCallbackTimerQueue(
-         const IProvideTickCount &tickProvider);
+      typedef ULONG_PTR Handle;
 
-      CThreadedCallbackTimerQueue(
-         const DWORD maxTimeout,
-         const IProvideTickCount &tickProvider);
+      enum
+      {
+         InvalidHandleValue = 0
+      };
 
-      ~CThreadedCallbackTimerQueue();
-
-      // Implement IQueueTimers
+      class TimerData;
 
       virtual Handle SetTimer(
          Timer &timer,
          const DWORD timeoutMillis,
-         const UserData userData);
+         const UserData userData) = 0;
 
       virtual bool ResetTimer(
          Handle &handle, 
          Timer &timer,
          const DWORD timeoutMillis,
-         const UserData userData);
+         const UserData userData) = 0;
 
       virtual bool CancelTimer(
-         Handle &handle);
+         Handle &handle) = 0;
 
-   private :
+   protected :
 
-      DWORD GetNextTimeout();
+      ~IQueueTimers() {}
+};
 
-      void InitiateShutdown();
+///////////////////////////////////////////////////////////////////////////////
+// IQueueTimers::Timer
+///////////////////////////////////////////////////////////////////////////////
 
-      void SignalStateChange();
+class IQueueTimers::Timer
+{
+   public :
 
-      // Implement CThread
+      typedef IQueueTimers::UserData UserData;
 
-      virtual int Run();
+      virtual void OnTimer(
+         UserData userData) = 0;
 
-      mutable CCriticalSection m_criticalSection;
+   protected :
 
-      CAutoResetEvent m_stateChangeEvent;
-
-      volatile bool m_shutdown;
-
-      CCallbackTimerQueue m_timerQueue;
-
-      // No copies do not implement
-      CThreadedCallbackTimerQueue(const CThreadedCallbackTimerQueue &rhs);
-      CThreadedCallbackTimerQueue &operator=(const CThreadedCallbackTimerQueue &rhs);
+      ~Timer() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,8 +114,8 @@ class CThreadedCallbackTimerQueue :
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#endif // JETBYTE_TOOLS_I_QUEUE_TIMERS_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: ThreadedCallbackTimerQueue.h
+// End of file: IQueueTimers.h
 ///////////////////////////////////////////////////////////////////////////////

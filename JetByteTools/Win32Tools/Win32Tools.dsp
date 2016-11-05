@@ -261,6 +261,10 @@ SOURCE=.\Win32Tools.lnt
 
 SOURCE=.\IProvideTickCount.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\IQueueTimers.h
+# End Source File
 # End Group
 # End Target
 # End Project

@@ -55,7 +55,7 @@ namespace Win32 {
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
-   :  CCallbackTimerQueue(tickProvider),
+   :  m_timerQueue(tickProvider),
       m_shutdown(false)
 {
    Start();
@@ -64,7 +64,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const DWORD maxTimeout,
    const IProvideTickCount &tickProvider)
-   :  CCallbackTimerQueue(maxTimeout, tickProvider),
+   :  m_timerQueue(maxTimeout, tickProvider),
       m_shutdown(false)
 {   
    Start();
@@ -78,7 +78,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const DWORD maxTimeout)
-   :  CCallbackTimerQueue(maxTimeout),
+   :  m_timerQueue(maxTimeout),
       m_shutdown(false)
 {
    Start();
@@ -98,19 +98,34 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::SetTimer(
 {
    CCriticalSection::Owner lock(m_criticalSection);
    
-   Handle handle = CCallbackTimerQueue::SetTimer(timer, timeoutMillis, userData);
+   Handle handle = m_timerQueue.SetTimer(timer, timeoutMillis, userData);
 
    SignalStateChange();
 
    return handle;
 }
 
+bool CThreadedCallbackTimerQueue::ResetTimer(
+   Handle &handle, 
+   Timer &timer,
+   const DWORD timeoutMillis,
+   const UserData userData)
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   const bool wasPending = m_timerQueue.ResetTimer(handle, timer, timeoutMillis, userData);
+
+   SignalStateChange();
+
+   return wasPending;
+}
+
 bool CThreadedCallbackTimerQueue::CancelTimer(
-   Handle handle)
+   Handle &handle)
 {
    CCriticalSection::Owner lock(m_criticalSection);
    
-   const bool wasPending = CCallbackTimerQueue::CancelTimer(handle);
+   const bool wasPending = m_timerQueue.CancelTimer(handle);
 
    SignalStateChange();
 
@@ -127,7 +142,7 @@ int CThreadedCallbackTimerQueue::Run()
       {
          CCriticalSection::Owner lock(m_criticalSection);
    
-         HandleTimeouts();
+         m_timerQueue.HandleTimeouts();
       }
       else 
       {
@@ -142,7 +157,7 @@ DWORD CThreadedCallbackTimerQueue::GetNextTimeout()
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
-   return CCallbackTimerQueue::GetNextTimeout();
+   return m_timerQueue.GetNextTimeout();
 }
 
 void CThreadedCallbackTimerQueue::InitiateShutdown()
