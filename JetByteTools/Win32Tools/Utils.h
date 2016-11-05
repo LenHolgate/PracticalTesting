@@ -10,16 +10,16 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename TV, typename TM>
-inline TV RoundDown(TV Value, TM Multiple) 
+inline TV RoundDown(TV Value, TM Multiple)
 {
    return((Value / Multiple) * Multiple);
 }
@@ -69,57 +69,7 @@ inline TV RoundUp(TV Value, TM Multiple)
    return(RoundDown(Value, Multiple) + (((Value % Multiple) > 0) ? Multiple : 0));
 }
 
-/// Needed for VC6 & VS2002 only...
-
-DWORD GetStringLengthAsDWORD(
-   const std::string &theString,
-   const bool includeNullTerminator = false);
-
-DWORD GetStringLengthAsDWORD(
-   const std::wstring &theString,
-   const bool includeNullTerminator = false);
-
-DWORD GetStringLengthAsDWORD(
-   const char *pString,
-   const bool includeNullTerminator = false);
-
-DWORD GetStringLengthAsDWORD(
-   const wchar_t *pString,
-   const bool includeNullTerminator = false);
-
-int GetStringLengthAsInt(
-   const std::string &theString,
-   const bool includeNullTerminator = false);
-
-int GetStringLengthAsInt(
-   const std::wstring &theString,
-   const bool includeNullTerminator = false);
-
-int GetStringLengthAsInt(
-   const char *pString,
-   const bool includeNullTerminator = false);
-
-int GetStringLengthAsInt(
-   const wchar_t *pString,
-   const bool includeNullTerminator = false);
-
-UINT GetStringLengthAsUInt(
-   const std::string &theString,
-   const bool includeNullTerminator = false);
-
-UINT GetStringLengthAsUInt(
-   const std::wstring &theString,
-   const bool includeNullTerminator = false);
-
-UINT GetStringLengthAsUInt(
-   const char *pString,
-   const bool includeNullTerminator = false);
-
-UINT GetStringLengthAsUInt(
-   const wchar_t *pString,
-   const bool includeNullTerminator = false);
-
-template <typename result, class s> 
+template <typename result, class s>
 result GetStringLength(
    const s &theString,
    const bool includeNullTerminator = false)
@@ -134,7 +84,7 @@ result GetStringLength(
    return static_cast<result>(length);
 }
 
-template <typename result> 
+template <typename result>
 result GetStringLength(
    const char *pString,
    const bool includeNullTerminator = false)
@@ -149,7 +99,7 @@ result GetStringLength(
    return static_cast<result>(length);
 }
 
-template <typename result> 
+template <typename result>
 result GetStringLength(
    const wchar_t *pString,
    const bool includeNullTerminator = false)
@@ -186,9 +136,24 @@ unsigned short GetShortFromString(
    const size_t startOffset,
    const size_t length);
 
+unsigned long GetLongFromStringA(
+   const std::string &numeric,
+   const size_t startOffset,
+   const size_t length);
+
+unsigned short GetShortFromStringA(
+   const std::string &numeric,
+   const size_t startOffset,
+   const size_t length);
+
 bool IsAllDigits(
    const _tstring &numeric);
 
+bool IsAllDigitsA(
+   const std::string &numeric);
+
+bool IsAllHexDigitsA(
+   const std::string &numeric);
 
 bool StringToBool(
    const _tstring &stringRepresentation);
@@ -199,17 +164,26 @@ bool ToBool(const T &value)
    return (0 != value);
 }
 
-
 void StringToHex(
-   const _tstring &str, 
-   BYTE *pBuffer, 
+   const _tstring &str,
+   BYTE *pBuffer,
    size_t nBytes);
 
 _tstring GetLastErrorMessageIfPossible(
    DWORD last_error,
    bool stripTrailingLineFeed = false);
 
+_tstring GetLastErrorMessageIfPossible(
+   const HMODULE hModule, 
+   DWORD last_error,
+   bool stripTrailingLineFeed = false);
+
 _tstring GetLastErrorMessage(
+   DWORD last_error,
+   bool stripTrailingLineFeed = false);
+
+_tstring GetLastErrorMessage(
+   const HMODULE hModule, 
    DWORD last_error,
    bool stripTrailingLineFeed = false);
 
@@ -224,16 +198,31 @@ std::wstring GetLastErrorMessageW(
 void CreateDirectory(
    const _tstring &directory);
 
-void CreateDirectoryIfRequired(
+bool CreateDirectoryIfRequired(
    const _tstring &directory);
 
-void CreateDirectoriesIfRequired(
+size_t CreateDirectoriesIfRequired(
    const _tstring &directory);
 
 _tstring GetCurrentDirectory();
 
 void SetCurrentDirectory(
    const _tstring &directory);
+
+_tstring EnsurePathEndsWithSingleBackslash(
+   const _tstring &path);
+
+bool TryCombinePath(
+   _tstring &combinedPath,
+   const _tstring &path1,
+   const _tstring &path2);
+
+_tstring CombinePath(
+   const _tstring &path1,
+   const _tstring &path2);
+
+_tstring MakePathAbsolute(
+   const _tstring &path);
 
 _tstring GetDateStamp();
 
@@ -246,6 +235,18 @@ _tstring ToUpper(
 
 std::string ToUpperA(
    const std::string &data);
+
+std::wstring ToUpperW(
+   const std::wstring &data);
+
+_tstring ToLower(
+   const _tstring &data);
+
+std::string ToLowerA(
+   const std::string &data);
+
+std::wstring ToLowerW(
+   const std::wstring &data);
 
 _tstring GetTempPath();
 
@@ -275,6 +276,12 @@ _tstring GetModuleFileName(
 _tstring GetModulePathName(
    HINSTANCE hModule = 0);
 
+_tstring StripFileExtension(
+   const _tstring &filename);
+
+std::string StripFileExtensionA(
+   const std::string &filename);
+
 _tstring GetSystemWindowsDirectory();
 
 _tstring GetSystemDirectory();
@@ -302,25 +309,53 @@ _tstring GetUserName();
 
 _tstring GetFileVersion();
 
+_tstring GetFileVersion(
+   const HMODULE hModule);
+
+_tstring StripWhiteSpace(
+   const _tstring &source);
+
+std::string StripWhiteSpaceA(
+   const std::string &source);
+
 _tstring StripSurroundingWhiteSpace(
    const _tstring &source);
 
+std::string StripSurroundingWhiteSpaceA(
+   const std::string &source);
+
 _tstring StripLeading(
-   const _tstring &source, 
+   const _tstring &source,
    const char toStrip);
 
 _tstring StripTrailing(
-   const _tstring &source, 
+   const _tstring &source,
    const char toStrip);
+
+std::string StripLeadingA(
+   const std::string &source,
+   const char toStrip);
+
+std::string StripTrailingA(
+   const std::string &source,
+   const char toStrip);
+
+void MoveFile(
+   const _tstring &filenameFrom,
+   const _tstring &filenameTo);
 
 void CopyFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo,
    const bool failIfExists);
 
-void LoadFileAsBinaryData(   
+void LoadFileAsBinaryData(
    const _tstring &filename,
    TExpandableBuffer<BYTE> &buffer);
+
+void SaveBinaryDataAsFile(
+   const _tstring &filename,
+   const TExpandableBuffer<BYTE> &buffer);
 
 std::wstring LoadFileAsUnicodeString(
    const _tstring &filename,
@@ -337,6 +372,14 @@ _tstring LoadFileAsString(
 std::string LoadFileAsStringA(
    const _tstring &filename);
 
+_tstring LoadFileAsString(
+   HANDLE hFile, 
+   const _tstring &filename);
+
+std::string LoadFileAsStringA(
+   HANDLE hFile, 
+   const _tstring &filename);
+
 void SaveStringAsFile(
    const _tstring &filename,
    const _tstring &data);
@@ -345,35 +388,59 @@ void SaveStringAsFileA(
    const _tstring &filename,
    const std::string &data);
 
+void SaveStringToFile(
+   const _tstring &filename,
+   HANDLE hFile,
+   const _tstring &data);
+
+void SaveStringToFileA(
+   const _tstring &filename,
+   HANDLE hFile,
+   const std::string &data);
+
 bool FileExists(
    const _tstring &filename);
 
 _tstring FindAndReplace(
    const _tstring &phrase,
    const _tstring &findString,
-   const _tstring &replaceString);
+   const _tstring &replaceString,
+   const size_t numReplacements = INFINITE);
 
-void InPlaceFindAndReplace(
+bool InPlaceFindAndReplace(
    _tstring &phrase,
    const _tstring &findString,
-   const _tstring &replaceString);
+   const _tstring &replaceString,
+   const size_t numReplacements = INFINITE);
+
+std::string FindAndReplaceA(
+   const std::string &phrase,
+   const std::string &findString,
+   const std::string &replaceString,
+   const size_t numReplacements = INFINITE);
+
+bool InPlaceFindAndReplaceA(
+   std::string &phrase,
+   const std::string &findString,
+   const std::string &replaceString,
+   const size_t numReplacements = INFINITE);
 
 bool IsGoodReadPtr(
-   void *pv, 
+   void *pv,
    ULONG cb);
 
 bool IsGoodReadPtr(
    HANDLE hProcess,
-   void *pv, 
+   void *pv,
    ULONG cb);
 
 bool IsGoodWritePtr(
-   void *pv, 
+   void *pv,
    ULONG cb);
 
 bool IsGoodWritePtr(
    HANDLE hProcess,
-   void *pv, 
+   void *pv,
    ULONG cb);
 
 _tstring GUIDAsString(
@@ -397,7 +464,7 @@ _tstring TranslateDeviceNamePathToDriveLetterPath(
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_UTILS__
 

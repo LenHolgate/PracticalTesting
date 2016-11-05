@@ -10,26 +10,21 @@
 //
 // Copyright 2008 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "IManageTimerQueue.h"
-
-#include "SmartHeapHandle.h"
-
-#include "JetByteTools\PTMallocTools\STLAllocator.h"
-#include "JetByteTools\PTMallocTools\SmartHeapHandle.h"
 
 #include <map>
 #include <deque>
@@ -70,13 +65,13 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
          IManageTimerQueue::TimeoutHandle &handle);
 
       // Implement IQueueTimers
-      // We need to fully specify the IQueueTimers types to get around a bug in 
+      // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
       virtual IQueueTimers::Handle CreateTimer();
 
       virtual bool SetTimer(
-         const IQueueTimers::Handle &handle, 
+         const IQueueTimers::Handle &handle,
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
          const IQueueTimers::UserData userData);
@@ -111,7 +106,7 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
       virtual ~CCallbackTimerQueueBase();
 
       bool SetInternalTimer(
-         const IQueueTimers::Handle &handle, 
+         const IQueueTimers::Handle &handle,
          IQueueTimers::Timer &timer,
          const ULONGLONG absoluteTimeout);
 
@@ -119,15 +114,15 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       class TimerData;
 
-      typedef std::deque<TimerData *, JetByteTools::PTMalloc::CSTLAllocator<TimerData *> > Timers;
+      typedef std::deque<TimerData *> Timers;
 
       typedef std::pair<size_t, Timers> TimersAtThisTime;
 
-      typedef std::map<ULONGLONG, TimersAtThisTime *, std::less<ULONGLONG>, JetByteTools::PTMalloc::CSTLAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > > TimerQueue;
+      typedef std::map<ULONGLONG, TimersAtThisTime *> TimerQueue;
 
       typedef std::pair<TimerQueue::iterator, size_t> TimerLocation;
 
-      typedef std::map<TimerData *, TimerLocation, std::less<TimerData *>, JetByteTools::PTMalloc::CSTLAllocator<std::pair<TimerData *, TimerLocation> > > HandleMap;
+      typedef std::map<TimerData *, TimerLocation> HandleMap;
 
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
@@ -161,14 +156,6 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
       TimersAtThisTime *EraseTimeoutHandle(
          IManageTimerQueue::TimeoutHandle &handle);
 
-      JetByteTools::PTMalloc::CSmartHeapHandle m_hMalloc;
-
-      JetByteTools::PTMalloc::CSTLAllocator<TimerData *> m_timersAllocator;
-
-      JetByteTools::PTMalloc::CSTLAllocator<std::pair<ULONGLONG, TimersAtThisTime *> > m_timerQueueAllocator;
-
-      JetByteTools::PTMalloc::CSTLAllocator<std::pair<TimerData *, TimerLocation> > m_handleMapAllocator;
-
       TimerQueue m_queue;
 
       HandleMap m_handleMap;
@@ -190,7 +177,7 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_BASE_INCLUDED__
 

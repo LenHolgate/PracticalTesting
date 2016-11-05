@@ -4,16 +4,16 @@
 //
 // Copyright 2002 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -21,6 +21,7 @@
 #include "JetByteTools\Admin\Admin.h"
 
 #include "Thread.h"
+#include "IRunnable.h"
 #include "StringConverter.h"
 #include "Win32Exception.h"
 
@@ -36,6 +37,18 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
+// File level statics
+///////////////////////////////////////////////////////////////////////////////
+
+#if (JETBYTE_TRACK_THREAD_NAMES == 1)
+
+static CLockableObject s_criticalSection;
+
+CThread::ThreadNames CThread::m_threadNames;
+
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 // CThreadNameInfo
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +59,7 @@ class CThreadNameInfo
       static const DWORD CurrentThreadID;
 
       static void SetThreadName(
-         DWORD threadID, 
+         DWORD threadID,
          const std::string &threadName);
 
       DWORD GetSize() const;
@@ -60,9 +73,9 @@ class CThreadNameInfo
          const char *pThreadName);
 
       const DWORD_PTR m_type;
-      const LPCSTR m_pName; 
-      const DWORD_PTR m_threadID; 
-      const DWORD_PTR m_flags; 
+      const LPCSTR m_pName;
+      const DWORD_PTR m_threadID;
+      const DWORD_PTR m_flags;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,7 +94,7 @@ CThread::~CThread()
 {
 
 }
-      
+
 bool CThread::IsRunning() const
 {
    return INVALID_HANDLE_VALUE != m_hThread && !m_hThread.Wait(0);
@@ -89,19 +102,29 @@ bool CThread::IsRunning() const
 
 void CThread::Start()
 {
-   Start(false);
+   CLockableObject::Owner lock(m_lock);
+
+   InternalStart(false);
 }
 
 void CThread::StartSuspended()
 {
-   Start(true);
+   CLockableObject::Owner lock(m_lock);
+
+   InternalStart(true);
 }
 
 void CThread::Start(
    const bool startSuspended)
 {
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
+   InternalStart(startSuspended);
+}
+
+void CThread::InternalStart(
+   const bool startSuspended)
+{
    if (!IsRunning())
    {
       const uintptr_t result = ::_beginthreadex(0, 0, ThreadFunction, (void*)this, startSuspended, reinterpret_cast<unsigned int*>(&m_threadID));
@@ -122,20 +145,25 @@ void CThread::Start(
 void CThread::StartWithPriority(
    const int priority)
 {
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
-   StartSuspended();
+   InternalStart(true);
 
    SetThreadPriority(priority);
 
-   Resume();
+   InternalResume();
 }
 
 
-void CThread::Resume() 
+void CThread::Resume()
 {
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
+   InternalResume();
+}
+
+void CThread::InternalResume()
+{
    if (IsRunning())
    {
       if (-1 == ::ResumeThread(m_hThread))
@@ -221,7 +249,7 @@ unsigned int __stdcall CThread::ThreadFunction(
    int result = 0;
 
    CThread* pThis = (CThread*)pV;
-   
+
    if (pThis)
    {
       try
@@ -240,6 +268,7 @@ unsigned int __stdcall CThread::ThreadFunction(
 void CThread::Terminate(
    const DWORD exitCode)
 {
+#pragma warning(suppress: 6258)  // Using terminate thread
    if (!::TerminateThread(m_hThread, exitCode))
    {
       throw CWin32Exception(_T("CThread::Terminate() - TerminateThread"), ::GetLastError());
@@ -251,7 +280,7 @@ void CThread::Terminate(
 void CThread::SetThreadName(
    const _tstring &threadName) const
 {
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
    if (IsRunning())
    {
@@ -270,12 +299,27 @@ void CThread::SetCurrentThreadName(
 }
 
 void CThread::SetThreadName(
-   DWORD threadID, 
+   DWORD threadID,
    const _tstring &threadName)
 {
    const std::string narrowString = CStringConverter::TtoA(threadName);
-   
+
    CThreadNameInfo::SetThreadName(threadID, narrowString);
+
+#if (JETBYTE_TRACK_THREAD_NAMES == 1)
+
+   CLockableObject::Owner lock(s_lock);
+
+   if (threadID != CThreadNameInfo::CurrentThreadID)
+   {
+      m_threadNames[threadID] = threadName;
+   }
+   else
+   {
+      m_threadNames[::GetCurrentThreadId()] = threadName;
+   }
+
+#endif
 }
 
 bool CThread::IsThisThread() const
@@ -289,6 +333,19 @@ bool CThread::IsThisThread() const
 
    return isThisThread;
 }
+
+#if (JETBYTE_TRACK_THREAD_NAMES == 1)
+
+CThread::ThreadNames CThread::GetThreadNames()
+{
+   ICriticalSection::Owner lock(s_criticalSection);
+
+   ThreadNames copy(m_threadNames);
+
+   return m_threadNames;
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // CThreadNameInfo
@@ -310,7 +367,7 @@ DWORD CThreadNameInfo::GetSize() const
 {
    // We pass 4 ULONG_PTR sized items to the debugger...
 
-   return 4;   
+   return 4;
 }
 
 ULONG_PTR *CThreadNameInfo::GetData() const
@@ -319,7 +376,7 @@ ULONG_PTR *CThreadNameInfo::GetData() const
 }
 
 void CThreadNameInfo::SetThreadName(
-   DWORD threadID, 
+   DWORD threadID,
    const std::string &threadName)
 {
    CThreadNameInfo info(threadID, threadName.c_str());
@@ -328,6 +385,7 @@ void CThreadNameInfo::SetThreadName(
    {
       ::RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
    }
+#pragma warning(suppress: 6312)  // Exception continue execution loop - no, it's OK.
    __except(EXCEPTION_CONTINUE_EXECUTION)
    {
    }
@@ -338,7 +396,7 @@ void CThreadNameInfo::SetThreadName(
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Thread.cpp

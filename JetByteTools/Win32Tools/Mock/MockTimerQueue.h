@@ -5,21 +5,21 @@
 #ifndef JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockTimerQueue.h 
+// File: MockTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2007 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,6 +28,8 @@
 
 #include "..\IManageTimerQueue.h"
 #include "..\AutoResetEvent.h"
+
+#include <list>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -44,14 +46,18 @@ namespace Mock {
 /// A mock object that implements IManageTimerQueue.
 /// \ingroup Win32ToolsMocks
 
-class CMockTimerQueue : 
+class CMockTimerQueue :
    public IManageTimerQueue,
    public JetByteTools::Test::CTestLog
 {
-   public : 
+   public :
 
       explicit CMockTimerQueue(
          const bool dispatchWithoutLock = true);
+
+      bool waitForOnTimerWaitComplete;
+
+      bool includeHandleValuesInLogs;
 
       void OnTimer();
 
@@ -81,11 +87,11 @@ class CMockTimerQueue :
          IManageTimerQueue::TimeoutHandle &handle);
 
       // Implement IQueueTimers
-      
+
       virtual Handle CreateTimer();
-      
+
       virtual bool SetTimer(
-         const Handle &handle, 
+         const Handle &handle,
          Timer &timer,
          const Milliseconds timeout,
          const UserData userData);
@@ -116,11 +122,32 @@ class CMockTimerQueue :
 
       CAutoResetEvent m_onTimerEvent;
 
+      CAutoResetEvent m_onTimerWaitCompleteEvent;
+
       long m_nextTimer;
 
-      Timer *m_pTimer;
+      struct TimerDetails
+      {
+         TimerDetails(
+            const Handle &handle_,
+            Timer &timer_,
+            UserData userData_)
+            :  handle(handle_),
+               timer(timer_),
+               userData(userData_)
+         {
+         }
 
-      UserData m_userData;
+         const Handle handle;
+
+         Timer &timer;
+
+         UserData userData;
+      };
+
+      typedef std::list<TimerDetails> SetTimers;
+
+      SetTimers m_setTimers;
 
       const Milliseconds m_maxTimeout;
 
@@ -138,7 +165,7 @@ class CMockTimerQueue :
 
 } // End of namespace Mock
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
 

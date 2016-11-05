@@ -5,21 +5,21 @@
 #ifndef JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
 #define JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: RunTest.h 
+// File: RunTest.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2008 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,10 +81,20 @@ do                                                                            \
    }                                                                          \
    catch(JetByteTools::Win32::CSEHException &e)                               \
    {                                                                          \
+      JetByteTools::Test::CCallStackCreator stackWalker;                      \
+                                                                              \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CSEHException - ") + e.GetWhere() +                 \
-         _T(" - ") + e.GetMessage());                                         \
+         _T(" - ") + e.GetMessage() +                                         \
+         _T(" - ") + stackWalker.GetStack(&e.GetContext()));                  \
+   }                                                                          \
+   catch(std::exception &e)                                                   \
+   {                                                                          \
+      throw JetByteTools::Test::CTestException(                               \
+         functionName,                                                        \
+         _T("Test failed: std::exception - ") +                               \
+         JetByteTools::Win32::CStringConverter::AtoT(e.what()));              \
    }                                                                          \
    catch(const char *pE)                                                      \
    {                                                                          \
@@ -339,7 +349,7 @@ do                                                                            \
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Test
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
 

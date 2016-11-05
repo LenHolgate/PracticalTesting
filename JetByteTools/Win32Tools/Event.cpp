@@ -4,16 +4,16 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,14 +38,14 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 static HANDLE Create(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
+   bool bManualReset,
+   bool bInitialState,
    LPCTSTR lpName,
    const CEvent::CreationFlags creationFlags);
 
 static HANDLE Create(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
    LPCTSTR lpName);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,8 +53,8 @@ static HANDLE Create(
 ///////////////////////////////////////////////////////////////////////////////
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
-   ResetType resetType, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
+   ResetType resetType,
    InitialState initialState)
    :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), 0, CEvent::CreateOrConnect))
 {
@@ -62,8 +62,8 @@ CEvent::CEvent(
 }
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
-   ResetType resetType, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
+   ResetType resetType,
    InitialState initialState,
    const IKernelObjectName &name,
    const CreationFlags creationFlags)
@@ -73,7 +73,7 @@ CEvent::CEvent(
 }
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
    const IKernelObjectName &name)
    :  m_hEvent(Create(pEventAttributes, name.GetName().c_str()))
 {
@@ -129,7 +129,7 @@ bool CEvent::Wait(
 ///////////////////////////////////////////////////////////////////////////////
 
 static HANDLE Create(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
    LPCTSTR lpName)
 {
    static const bool notUsedWhenConnecting = false;
@@ -139,35 +139,49 @@ static HANDLE Create(
 
 
 static HANDLE Create(
-   SECURITY_ATTRIBUTES *pEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
+   SECURITY_ATTRIBUTES *pEventAttributes,
+   bool bManualReset,
+   bool bInitialState,
    LPCTSTR lpName,
    const CEvent::CreationFlags creationFlags)
 {
    ::SetLastError(ERROR_SUCCESS);
 
-   CSmartHandle hEvent(::CreateEvent(pEventAttributes, bManualReset, bInitialState, lpName));
+   CSmartHandle hEvent;
 
-   const DWORD lastError = ::GetLastError();
-
-   if (hEvent == NULL)
+   if (creationFlags == CEvent::ConnectToExisting ||
+       creationFlags == CEvent::CreateOrConnect)
    {
-      throw CWin32Exception(_T("CEvent::Create()"), lastError);
-   }
+      hEvent.Attach(::OpenEvent(EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, lpName));
 
-   if (creationFlags == CEvent::CreateNew)
-   {
-      if (lastError == ERROR_ALREADY_EXISTS)
+      if (creationFlags == CEvent::ConnectToExisting &&
+          hEvent == NULL)
       {
+         const DWORD lastError = ::GetLastError();
+   
          throw CWin32Exception(_T("CEvent::Create()"), lastError);
       }
    }
-   else if (creationFlags == CEvent::ConnectToExisting)
+
+   if (!hEvent.IsValid() && 
+       creationFlags == CEvent::CreateNew ||
+       creationFlags == CEvent::CreateOrConnect)
    {
-      if (lastError != ERROR_ALREADY_EXISTS)
+      hEvent.Attach(::CreateEvent(pEventAttributes, bManualReset, bInitialState, lpName));
+
+      const DWORD lastError = ::GetLastError();
+
+      if (hEvent == NULL)
       {
-         throw CWin32Exception(_T("CEvent::Create()"), ERROR_NOT_FOUND);
+         throw CWin32Exception(_T("CEvent::Create()"), lastError);
+      }
+
+      if (creationFlags == CEvent::CreateNew)
+      {
+         if (lastError == ERROR_ALREADY_EXISTS)
+         {
+            throw CWin32Exception(_T("CEvent::Create()"), lastError);
+         }
       }
    }
 
@@ -179,7 +193,7 @@ static HANDLE Create(
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Event.cpp

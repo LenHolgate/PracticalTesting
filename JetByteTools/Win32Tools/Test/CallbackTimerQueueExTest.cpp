@@ -4,16 +4,16 @@
 //
 // Copyright 2008 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -79,17 +79,17 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
       CCallbackTimerQueueEx timerQueue(monitor, tickProvider);
 
       tickProvider.CheckNoResults();
-   
+
       CLoggingCallbackTimer timer;
 
       THROW_ON_FAILURE_EX(4294967294 == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
 
-      // GetMaximumTimeout() doesn't reduce the value that it returns as the 64bit 
+      // GetMaximumTimeout() doesn't reduce the value that it returns as the 64bit
       // rollover approaches; which means you WILL get an exception if you try and
-      // set a timer that is less than the value returned by GetMaximumTimeout() 
-      // but which crosses the rollover point. I'll fix this if I get enough 
+      // set a timer that is less than the value returned by GetMaximumTimeout()
+      // but which crosses the rollover point. I'll fix this if I get enough
       // repeatable bug reports.
 
       const ULONGLONG rollOver = 0;
@@ -163,7 +163,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));      
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
       // Check that the time goes off.
 
@@ -217,7 +217,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
 } // End of namespace Test
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CallbackTimerQueueTest.cpp

@@ -855,6 +855,14 @@
 				RelativePath=".\TestCallbackTimerWheel.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TestIntrusiveMultiMapNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TestIntrusiveRedBlackTreeNode.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -886,6 +894,14 @@
 			</File>
 			<File
 				RelativePath=".\TestCallbackTimerWheel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TestIntrusiveMultiMapNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TestIntrusiveRedBlackTreeNode.h"
 				>
 			</File>
 		</Filter>

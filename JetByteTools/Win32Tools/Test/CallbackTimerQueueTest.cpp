@@ -4,16 +4,16 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap()
 
       const _tstring resultBeforeRollOver = _T("|GetTickCount: ") + ToString(beforeRollOver) + _T("|");
 
-      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an 
+      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an
                                                                // internal maintenance timer
 
       THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
@@ -130,7 +130,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap()
 
       // Because the count has wrapped the maintenance timer is reset, so two calls to GetTickCount...
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));      
+      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));
 
       // Check that the timer doesn't go off.
 
@@ -175,7 +175,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap()
       THROW_ON_FAILURE_EX(timeout2 == timerQueue.GetNextTimeout());
 
       tickProvider.CheckResult(resultBeforeRollOver);
-   
+
       timerQueue.HandleTimeouts();
 
       tickProvider.CheckResult(resultBeforeRollOver);
@@ -202,7 +202,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap2()
 
       const _tstring resultBeforeRollOver = _T("|GetTickCount: ") + ToString(beforeRollOver) + _T("|");
 
-      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an 
+      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an
                                                                // internal maintenance timer
 
       THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
@@ -247,7 +247,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap2()
 
       // Because the count has wrapped the maintenance timer is reset, so two calls to GetTickCount...
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));      
+      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));
 
       // Check that the timer doesn't go off.
 
@@ -325,8 +325,8 @@ void CCallbackTimerQueueTest::TestTickCountWrap2()
 
 void CCallbackTimerQueueTest::TestTickCountWrap3()
 {
-   // If we have a timer before the GetTickCount() wrap point that is set but hasn't been 
-   // handled and a timer after the wrap point and the tick count wraps and we set a new 
+   // If we have a timer before the GetTickCount() wrap point that is set but hasn't been
+   // handled and a timer after the wrap point and the tick count wraps and we set a new
    // timer, the three timers should all go off in the right order...
 
    CMockTimerQueueMonitor monitor;
@@ -341,7 +341,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap3()
 
       const _tstring resultBeforeRollOver = _T("|GetTickCount: ") + ToString(beforeRollOver) + _T("|");
 
-      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an 
+      tickProvider.CheckResult(resultBeforeRollOver);          // creating a queue sets an
                                                                // internal maintenance timer
 
       THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
@@ -416,7 +416,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap3()
 
       // Because the count has wrapped the maintenance timer is reset, so two calls to GetTickCount...
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));      
+      tickProvider.CheckResult(_T("|GetTickCount: 0|GetTickCount: 0|"));
 
       timer.CheckNoResults();
 
@@ -498,7 +498,7 @@ void CCallbackTimerQueueTest::TestTickCountWrap3()
 
 } // End of namespace Test
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CallbackTimerQueueTest.cpp

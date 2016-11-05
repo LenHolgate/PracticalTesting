@@ -875,6 +875,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CodePage.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CriticalSection.cpp"
 				>
 			</File>
@@ -915,11 +919,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartHeapHandle.cpp"
+				RelativePath=".\StringConverter.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\StringConverter.cpp"
+				RelativePath=".\SystemTime.cpp"
 				>
 			</File>
 			<File
@@ -976,6 +980,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CodePage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ConditionalSmartPointer.h"
 				>
 			</File>
@@ -997,6 +1005,34 @@
 			</File>
 			<File
 				RelativePath=".\ExpandableBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveMap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveMultiMap.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveMultiMapNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveRedBlackTree.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveRedBlackTreeNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveSet.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveSetNode.h"
 				>
 			</File>
 			<File
@@ -1040,15 +1076,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartHeapHandle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\STLHeapAllocator.h"
-				>
-			</File>
-			<File
 				RelativePath=".\StringConverter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SystemTime.h"
 				>
 			</File>
 			<File

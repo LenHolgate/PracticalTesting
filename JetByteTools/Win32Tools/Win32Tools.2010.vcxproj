@@ -594,6 +594,7 @@
     <ClCompile Include="CallbackTimerQueueBase.cpp" />
     <ClCompile Include="CallbackTimerQueueEx.cpp" />
     <ClCompile Include="CallbackTimerWheel.cpp" />
+    <ClCompile Include="CodePage.cpp" />
     <ClCompile Include="CriticalSection.cpp" />
     <ClCompile Include="DebugTrace.cpp" />
     <ClCompile Include="Event.cpp" />
@@ -628,8 +629,8 @@
     <ClCompile Include="SEHException.cpp" />
     <ClCompile Include="SimpleMessageLog.cpp" />
     <ClCompile Include="SmartHandle.cpp" />
-    <ClCompile Include="SmartHeapHandle.cpp" />
     <ClCompile Include="StringConverter.cpp" />
+    <ClCompile Include="SystemTime.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="ThreadAffinity.cpp" />
     <ClCompile Include="ThreadedCallbackTimerQueue.cpp" />
@@ -644,6 +645,7 @@
     <ClInclude Include="CallbackTimerQueueBase.h" />
     <ClInclude Include="CallbackTimerQueueEx.h" />
     <ClInclude Include="CallbackTimerWheel.h" />
+    <ClInclude Include="CodePage.h" />
     <ClInclude Include="ConditionalSmartPointer.h" />
     <ClInclude Include="CriticalSection.h" />
     <ClInclude Include="DebugTrace.h" />
@@ -656,6 +658,13 @@
     <ClInclude Include="IManageTimerQueue.h" />
     <ClInclude Include="IMonitorCallbackTimerQueue.h" />
     <ClInclude Include="IMonitorThreadedCallbackTimerQueue.h" />
+    <ClInclude Include="IntrusiveMap.h" />
+    <ClInclude Include="IntrusiveMultiMap.h" />
+    <ClInclude Include="IntrusiveMultiMapNode.h" />
+    <ClInclude Include="IntrusiveRedBlackTree.h" />
+    <ClInclude Include="IntrusiveRedBlackTreeNode.h" />
+    <ClInclude Include="IntrusiveSet.h" />
+    <ClInclude Include="IntrusiveSetNode.h" />
     <ClInclude Include="IProvideTickCount.h" />
     <ClInclude Include="IProvideTickCount64.h" />
     <ClInclude Include="IQueueTimers.h" />
@@ -671,9 +680,8 @@
     <ClInclude Include="SEHException.h" />
     <ClInclude Include="SimpleMessageLog.h" />
     <ClInclude Include="SmartHandle.h" />
-    <ClInclude Include="SmartHeapHandle.h" />
-    <ClInclude Include="STLHeapAllocator.h" />
     <ClInclude Include="StringConverter.h" />
+    <ClInclude Include="SystemTime.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreadAffinity.h" />
     <ClInclude Include="ThreadedCallbackTimerQueue.h" />

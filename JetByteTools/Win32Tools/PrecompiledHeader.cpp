@@ -24,6 +24,7 @@
 /// \ingroup Precomp
 
 #include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools\Admin\SecureCRT.h"
 
 #include <wtypes.h>
 
@@ -48,7 +49,6 @@
 #include "PerformanceCounter.h"
 #include "SEHException.h"
 #include "SimpleMessageLog.h"
-#include "SmartHeapHandle.h"
 #include "StringConverter.h"
 #include "Thread.h"
 #include "ThreadAffinity.h"
@@ -58,11 +58,10 @@
 #include "tstring.h"
 #include "Utils.h"
 #include "Win32Exception.h"
-
-// There's an issue with VS2002 where the ordering of includes is important
-// with regards to the secure CRT stuff, until I spend the time to get it
-// right, keep this at the end of the precompiled header..
-#include "JetByteTools\Admin\SecureCRT.h"
+#include "SystemTime.h"
+#include "IntrusiveRedBlackTree.h"
+#include "IntrusiveRedBlackTreeNode.h"
+#include "IntrusiveSetNode.h"
 
 #include "JetByteTools\Win32Tools\ExpandableBuffer.h"
 

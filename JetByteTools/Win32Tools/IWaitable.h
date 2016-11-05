@@ -10,16 +10,16 @@
 //
 // Copyright 2007 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 /// An interface to code that can be waited for, either via the methods on the
-/// interface or by passing a handle to one of the 
+/// interface or by passing a handle to one of the
 /// <a href="http://msdn2.microsoft.com/en-us/library/ms687069.aspx">Wait Functions</a>.
 /// \ingroup Synchronization
 /// \ingroup Interfaces
@@ -49,7 +49,7 @@ namespace Win32 {
 class IWaitable
 {
    public :
-   
+
       /// Access a HANDLE to wait on by passing it to one of the Wait Functions
 
       virtual HANDLE GetWaitHandle() const = 0;
@@ -80,35 +80,35 @@ class IWaitable
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         HANDLE handle, 
+         HANDLE handle,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         HANDLE handle, 
+         HANDLE handle,
          const Milliseconds timeout,
          const DWORD removeFlags);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles, 
+         HANDLE *pHandles,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles, 
+         HANDLE *pHandles,
          DWORD &signalledHandle,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles, 
+         HANDLE *pHandles,
          DWORD &signalledHandle,
          const Milliseconds timeout,
          const DWORD removeFlags);
 
    protected :
 
-      /// We never delete instances of this interface; you must manage the 
+      /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
       ~IWaitable() {}
@@ -119,7 +119,7 @@ class IWaitable
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_I_WAITABLE_INCLUDED__
 

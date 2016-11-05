@@ -10,16 +10,16 @@
 //
 // Copyright 2009 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,10 +38,10 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 /// A \ref SmartPointer "smart pointer" to memory using the C++ new API.
-   /// Calls delete on any memory that the TConditionalSmartPointer owns when it
+/// Calls delete on any memory that the TConditionalSmartPointer owns when it
 /// goes out of scope to aid in \ref RAII "scope based" designs. Note that the
 /// TConditionalSmartPointer can be told that it does NOT own the memory that
-/// it is given; this is useful if sometimes it holds dynamically allocated 
+/// it is given; this is useful if sometimes it holds dynamically allocated
 /// memory that it should own and delete and sometimes it holds a pointer to,
 /// for example, a static null object implementation.
 /// \ingroup SmartPointer
@@ -49,7 +49,7 @@ namespace Win32 {
 template <class T> class TConditionalSmartPointer
 {
    public :
-   
+
       /// Create a TConditionalSmartPointer that currently owns no memory.
 
       TConditionalSmartPointer();
@@ -61,7 +61,7 @@ template <class T> class TConditionalSmartPointer
       explicit TConditionalSmartPointer(
          T *pMemoryThatWasAllocatedWithNew,
          const bool takeOwnershipOfMemory = true);
- 
+
       ~TConditionalSmartPointer();
 
       TConditionalSmartPointer &operator=(T *pMemoryThatWasAllocatedWithNew);
@@ -99,39 +99,39 @@ template <class T> class TConditionalSmartPointer
 
       bool m_weOwnMemory;
 
-      // No copies do not implement 
+      // No copies do not implement
       TConditionalSmartPointer(const TConditionalSmartPointer &rhs);
       TConditionalSmartPointer &operator=(const TConditionalSmartPointer &rhs);
 };
 
-template <class T> 
-TConditionalSmartPointer<T>::TConditionalSmartPointer() 
-   :  m_pMemoryThatWasAllocatedWithNew(0), 
-      m_weOwnMemory(false) 
-{ 
+template <class T>
+TConditionalSmartPointer<T>::TConditionalSmartPointer()
+   :  m_pMemoryThatWasAllocatedWithNew(0),
+      m_weOwnMemory(false)
+{
 
 }
 
-template <class T> 
+template <class T>
 TConditionalSmartPointer<T>::TConditionalSmartPointer(
    T *pMemoryThatWasAllocatedWithNew,
-   const bool weOwnMemory) 
-   :  m_pMemoryThatWasAllocatedWithNew(pMemoryThatWasAllocatedWithNew), 
-      m_weOwnMemory(weOwnMemory) 
-{ 
+   const bool weOwnMemory)
+   :  m_pMemoryThatWasAllocatedWithNew(pMemoryThatWasAllocatedWithNew),
+      m_weOwnMemory(weOwnMemory)
+{
 
 }
 
-template <class T> 
-TConditionalSmartPointer<T>::~TConditionalSmartPointer() 
-{ 
+template <class T>
+TConditionalSmartPointer<T>::~TConditionalSmartPointer()
+{
    if (m_weOwnMemory)
    {
       delete m_pMemoryThatWasAllocatedWithNew;
    }
 }
 
-template <class T> 
+template <class T>
 TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::operator=(
    T *pMemoryThatWasAllocatedWithNew)
 {
@@ -145,7 +145,7 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::operator=(
    m_weOwnMemory = true;
 }
 
-template <class T> 
+template <class T>
 TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::Assign(
    T *pMemoryThatWasAllocatedWithNew,
    const bool weOwnMemory)
@@ -160,13 +160,13 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::Assign(
    m_weOwnMemory = weOwnMemory;
 }
 
-template <class T> 
+template <class T>
 T *TConditionalSmartPointer<T>::Get() const
 {
    return m_pMemoryThatWasAllocatedWithNew;
 }
 
-template <class T> 
+template <class T>
 T *TConditionalSmartPointer<T>::Detach()
 {
    T *pMemory = m_pMemoryThatWasAllocatedWithNew;
@@ -178,16 +178,28 @@ T *TConditionalSmartPointer<T>::Detach()
    return pMemory;
 }
 
-template <class T> 
+template <class T>
 TConditionalSmartPointer<T>::operator T *() const
 {
+#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   if (!m_pMemoryThatWasAllocatedWithNew)
+   {
+      throw CException(_T("TConditionalSmartPointer<T>::operator*()"), _T("operator*() called on null reference"));
+   }
+#endif
+
    return m_pMemoryThatWasAllocatedWithNew;
 }
 
 template<class T>
-T* TConditionalSmartPointer<T>::operator->() const 
+T* TConditionalSmartPointer<T>::operator->() const
 {
-   // TODO - conditional throw on null
+#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   if (!m_pMemoryThatWasAllocatedWithNew)
+   {
+      throw CException(_T("TConditionalSmartPointer<T>::operator->()"), _T("operator->() called on null reference"));
+   }
+#endif
 
    return m_pMemoryThatWasAllocatedWithNew;
 }
@@ -195,10 +207,17 @@ T* TConditionalSmartPointer<T>::operator->() const
 template<class T>
 T& TConditionalSmartPointer<T>::operator*() const
 {
+#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   if (!m_pMemoryThatWasAllocatedWithNew)
+   {
+      throw CException(_T("TConditionalSmartPointer<T>::operator*()"), _T("operator*() called on null reference"));
+   }
+#endif
+
    return *m_pMemoryThatWasAllocatedWithNew;
 }
 
-template <class T> 
+template <class T>
 bool TConditionalSmartPointer<T>::IsValid() const
 {
    return m_pMemoryThatWasAllocatedWithNew != 0;
@@ -209,7 +228,7 @@ bool TConditionalSmartPointer<T>::IsValid() const
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_CONDITIONAL_SMART_POINTER_INCLUDED__
 

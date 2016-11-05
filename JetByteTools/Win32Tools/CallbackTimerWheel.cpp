@@ -26,8 +26,11 @@
 #include "ToString.h"
 #include "NullCallbackTimerQueueMonitor.h"
 #include "TickCountProvider.h"
+#include "IntrusiveSetNode.h"
 
 #pragma hdrstop
+
+#include <algorithm>          // for min
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -65,32 +68,20 @@ static size_t CalculateNumberOfTimers(
    const Milliseconds timerGranularity);
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerWheel::Handle
+// CCallbackTimerWheel::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCallbackTimerWheel::TimerData
+class CCallbackTimerWheel::TimerData : private  CIntrusiveSetNode
 {
    public :
+
+      template <class TimerData> friend class TIntrusiveRedBlackTreeNodeIsBaseClass;
 
       TimerData();
 
       TimerData(
          CCallbackTimerWheel::Timer &timer,
          const CCallbackTimerWheel::UserData userData);
-
-      inline static void *operator new(
-         size_t size, 
-         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
-      {
-         return allocator.Allocate(size);
-      }
-
-      inline static void operator delete(
-         void *p, 
-         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
-      {
-         allocator.Deallocate(p);
-      }
 
       bool DeleteAfterTimeout() const;
 
@@ -178,8 +169,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -199,8 +188,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -220,8 +207,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -242,8 +227,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -263,8 +246,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -285,8 +266,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -307,8 +286,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -330,8 +307,6 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlesAllocator(m_hMalloc),
-      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -339,17 +314,25 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 
 CCallbackTimerWheel::~CCallbackTimerWheel()
 {
-   for (Handles::iterator it = m_handles.begin(); it != m_handles.end(); ++it)
+   ActiveHandles::Iterator it = m_activeHandles.Begin();
+
+   const ActiveHandles::Iterator end = m_activeHandles.End();
+
+   while (it != end)
    {
+      ActiveHandles::Iterator next = it + 1;
+
       TimerData *pData = *it;
 
-      m_hMalloc.Destroy(pData);
+      m_activeHandles.Erase(it);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+      delete pData;
 
+      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
       m_monitor.OnTimerDeleted();
+      #endif
 
-#endif
+      it = next;
    }
 
    delete [] m_pTimersStart;
@@ -394,7 +377,7 @@ Milliseconds CCallbackTimerWheel::GetNextTimeout()
       if (nextTimeout > m_maximumTimeout)
       {
          throw CException(
-            _T("CCallbackTimerWheel::GetNextTimeout()"), 
+            _T("CCallbackTimerWheel::GetNextTimeout()"),
             _T("Next timeout: ") + ToString(nextTimeout) + _T(" is larger than max: ") + ToString(m_maximumTimeout));
       }
    }
@@ -455,23 +438,19 @@ void CCallbackTimerWheel::HandleTimeouts()
 
          pTimers = pTimer->OnTimer();
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
          m_monitor.OnTimer();
-
-#endif
+         #endif
 
          if (pTimer->DeleteAfterTimeout())
          {
-            m_handles.erase(pTimer);
+            m_activeHandles.Erase(pTimer);
 
-            m_hMalloc.Destroy(pTimer);
+            delete pTimer;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+            #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
             m_monitor.OnTimerDeleted();
-
-#endif
+            #endif
          }
 
          --m_numTimersSet;
@@ -507,14 +486,14 @@ void CCallbackTimerWheel::HandleTimeout(
 {
    if (m_handlingTimeouts != handle)
    {
-// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-// it's due to some confusion, and even if it isn't then it's not that crucial...
-#pragma warning(push, 4)
-#pragma warning(disable: 4244)
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::HandleTimeout()"),
          _T("Invalid timeout handle: ") + ToString(handle));
-#pragma warning(pop)
+      #pragma warning(pop)
    }
 
    TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
@@ -523,11 +502,9 @@ void CCallbackTimerWheel::HandleTimeout(
    {
       pTimers = pTimers->HandleTimeout();
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
-         m_monitor.OnTimer();
-
-#endif
+      #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+      m_monitor.OnTimer();
+      #endif
 
    }
 }
@@ -537,14 +514,14 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 {
    if (m_handlingTimeouts != handle)
    {
-// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-// it's due to some confusion, and even if it isn't then it's not that crucial...
-#pragma warning(push, 4)
-#pragma warning(disable: 4244)
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::EndTimeoutHandling()"),
          _T("Invalid timeout handle: ") + ToString(handle));
-#pragma warning(pop)
+      #pragma warning(pop)
    }
 
    m_handlingTimeouts = InvalidTimeoutHandleValue;
@@ -564,13 +541,11 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 
       if (pDeadTimer)
       {
-         m_hMalloc.Destroy(pDeadTimer);
+         delete pDeadTimer;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
          m_monitor.OnTimerDeleted();
-
-#endif
+         #endif
 
          pDeadTimer = 0;
       }
@@ -579,7 +554,8 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 {
-   TimerData *pData = new(m_hMalloc)TimerData();
+#pragma warning(suppress: 28197) // Possibly leaking memory. No, we're not.
+   TimerData *pData = new TimerData();
 
    return OnTimerCreated(pData);
 }
@@ -587,13 +563,11 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
    TimerData *pData)
 {
-   m_handles.insert(pData);
+   m_activeHandles.Insert(pData);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerCreated();
-
-#endif
+   #endif
 
    return reinterpret_cast<Handle>(pData);
 }
@@ -616,7 +590,11 @@ Milliseconds CCallbackTimerWheel::CalculateTimeout(
    {
       throw CException(
          _T("CCallbackTimerWheel::CalculateTimeout()"),
-         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(actualTimeout) + _T(" (") + ToString(timeout) + _T(")"));
+         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) +
+         _T(" tried to set: ") + ToString(actualTimeout) +
+         _T(" (") + ToString(timeout) + 
+         _T(") - now = ") + ToString(now) +
+         _T(" m_currentTime = ") + ToString(m_currentTime));
    }
 
    return actualTimeout;
@@ -638,11 +616,9 @@ bool CCallbackTimerWheel::SetTimer(
 
    InsertTimer(actualTimeout, data, wasPending);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerSet(wasPending);
-
-#endif
+   #endif
 
    return wasPending;
 }
@@ -654,17 +630,16 @@ void CCallbackTimerWheel::SetTimer(
 {
    Milliseconds actualTimeout = CalculateTimeout(timeout);
 
-   TimerData *pData = new(m_hMalloc)TimerData(timer, userData);
+   #pragma warning(suppress: 28197) // Possibly leaking memory. No, we're not.
+   TimerData *pData = new TimerData(timer, userData);
 
    OnTimerCreated(pData);
 
    InsertTimer(actualTimeout, *pData);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnOneOffTimerSet();
-
-#endif
+   #endif
 }
 
 void CCallbackTimerWheel::InsertTimer(
@@ -703,11 +678,9 @@ bool CCallbackTimerWheel::CancelTimer(
       OnTimerCancelled();
    }
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerCancelled(wasPending);
-
-#endif
+   #endif
 
    return wasPending;
 }
@@ -726,15 +699,13 @@ bool CCallbackTimerWheel::DestroyTimer(
 
    const bool wasPending = data.CancelTimer();
 
-   m_handles.erase(&data);
+   m_activeHandles.Erase(&data);
 
    handle = InvalidHandleValue;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerDestroyed(wasPending);
-
-#endif
+   #endif
 
    if (data.HasTimedOut())
    {
@@ -742,13 +713,11 @@ bool CCallbackTimerWheel::DestroyTimer(
    }
    else
    {
-      m_hMalloc.Destroy(&data);
+      delete &data;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerDeleted();
-
-#endif
+   #endif
 
    }
 
@@ -783,30 +752,30 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
 {
    TimerData *pData = reinterpret_cast<TimerData *>(handle);
 
-   Handles::const_iterator it = m_handles.find(pData);
+   const ActiveHandles::Iterator it = m_activeHandles.Find(pData);
 
-   if (it == m_handles.end())
+   if (it == m_activeHandles.End())
    {
-// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-// it's due to some confusion, and even if it isn't then it's not that crucial...
-#pragma warning(push, 4)
-#pragma warning(disable: 4244)
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
-#pragma warning(pop)
+      #pragma warning(pop)
    }
 
    if (pData->DeleteAfterTimeout())
    {
-// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-// it's due to some confusion, and even if it isn't then it's not that crucial...
-#pragma warning(push, 4)
-#pragma warning(disable: 4244)
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
-#pragma warning(pop)
+      #pragma warning(pop)
    }
 
    return *pData;

@@ -578,6 +578,8 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Level4</WarningLevel>
     </ClCompile>
     <ClCompile Include="TestCallbackTimerWheel.cpp" />
+    <ClCompile Include="TestIntrusiveMultiMapNode.cpp" />
+    <ClCompile Include="TestIntrusiveRedBlackTreeNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoggingCallbackTimer.h" />
@@ -588,6 +590,8 @@
     <ClInclude Include="MockTimerQueueMonitor.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="TestCallbackTimerWheel.h" />
+    <ClInclude Include="TestIntrusiveMultiMapNode.h" />
+    <ClInclude Include="TestIntrusiveRedBlackTreeNode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

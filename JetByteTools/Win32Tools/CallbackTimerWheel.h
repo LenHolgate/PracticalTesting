@@ -10,16 +10,16 @@
 //
 // Copyright 2010 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,12 +28,9 @@
 
 #include "IManageTimerQueue.h"
 
-#include "JetByteTools\PTMallocTools\STLAllocator.h"
-#include "JetByteTools\PTMallocTools\SmartHeapHandle.h"
-
 #include <WTypes.h>
 
-#include <set>
+#include "IntrusiveSet.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -110,13 +107,13 @@ class CCallbackTimerWheel : public IManageTimerQueue
          IManageTimerQueue::TimeoutHandle &handle);
 
       // Implement IQueueTimers
-      // We need to fully specify the IQueueTimers types to get around a bug in 
+      // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
       virtual IQueueTimers::Handle CreateTimer();
 
       virtual bool SetTimer(
-         const IQueueTimers::Handle &handle, 
+         const IQueueTimers::Handle &handle,
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
          const IQueueTimers::UserData userData);
@@ -198,16 +195,12 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       size_t m_numTimersSet;
 
-      typedef std::set<TimerData *, std::less<TimerData *>, JetByteTools::PTMalloc::CSTLAllocator<TimerData *> > Handles;
+      typedef TIntrusiveSet<TimerData> ActiveHandles;
 
-      JetByteTools::PTMalloc::CSmartHeapHandle m_hMalloc;
-
-      JetByteTools::PTMalloc::CSTLAllocator<TimerData *> m_handlesAllocator;
-
-      Handles m_handles;
+      ActiveHandles m_activeHandles;
 
       TimeoutHandle m_handlingTimeouts;
-      
+
       /// No copies do not implement
       CCallbackTimerWheel(const CCallbackTimerWheel &rhs);
       /// No copies do not implement
@@ -219,7 +212,7 @@ class CCallbackTimerWheel : public IManageTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_CALLBACK_TIMER_WHEEL_INCLUDED__
 

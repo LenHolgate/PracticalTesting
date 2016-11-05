@@ -4,16 +4,16 @@
 //
 // Copyright 2007 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,10 +33,24 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Static variables 
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+static void DebugTraceAtExitDetector();
+
+///////////////////////////////////////////////////////////////////////////////
+// Static variables
 ///////////////////////////////////////////////////////////////////////////////
 
 static CSimpleMessageLog s_simpleMessageLog;
+
+static bool s_processIsExiting = false;
+
+// This reference is here purely to force the function scoped static to be
+// initialised when all other 'file scope' statics are initialised - i.e. at
+// program start up and in a thread-safe manner...
+
+static CDebugTrace &s_notUsed = CDebugTrace::Instance();
 
 ///////////////////////////////////////////////////////////////////////////////
 // CDebugTrace
@@ -45,13 +59,27 @@ static CSimpleMessageLog s_simpleMessageLog;
 CDebugTrace::CDebugTrace()
    :  CMessageLog(s_simpleMessageLog)
 {
+   atexit(DebugTraceAtExitDetector);
+}
+
+bool CDebugTrace::IsValid()
+{
+   return !s_processIsExiting;
 }
 
 CDebugTrace &CDebugTrace::Instance()
 {
-   static CDebugTrace theInstance;
+#pragma warning(push)
+#pragma warning(disable: 4640)   // construction of local static object is not thread-safe
 
-   return theInstance;
+   // Note that we call GetInstance() during 'file scope' static object
+   // construction and this removes the thread-safety issues...
+
+   static CDebugTrace s_instance;
+
+#pragma warning(pop)
+
+   return s_instance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,10 +92,29 @@ CDebugTrace::LogInstaller::LogInstaller(
 {
 
 }
-      
+
 CDebugTrace::LogInstaller::~LogInstaller()
 {
-   CDebugTrace::Instance().SetLog(*m_pOldLog);
+   Uninstall();
+}
+
+void CDebugTrace::LogInstaller::Uninstall()
+{
+   if (m_pOldLog)
+   {
+      CDebugTrace::Instance().SetLog(*m_pOldLog);
+
+      m_pOldLog = 0;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+static void DebugTraceAtExitDetector()
+{
+   s_processIsExiting = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,7 +122,7 @@ CDebugTrace::LogInstaller::~LogInstaller()
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: DebugTrace.cpp

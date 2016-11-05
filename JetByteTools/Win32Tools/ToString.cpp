@@ -4,16 +4,16 @@
 //
 // Copyright 2008 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ namespace Win32 {
 
 static string InternalDumpDataA(
    const string &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
-   const size_t lineLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
+   const size_t lineLength,
    const bool makePrintable,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -57,9 +57,9 @@ static string InternalDumpDataA(
 
 static wstring InternalDumpDataW(
    const wstring &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
-   const size_t lineLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
+   const size_t lineLength,
    const bool makePrintable,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -69,95 +69,112 @@ static wstring InternalDumpDataW(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (JETBYTE_USE_TEMPLATE_TO_STRING == 1)
-
-string HexToStringA(
-   const BYTE *pBuffer, 
-   size_t iBytes,
-   bool upperCase)
+unsigned short CalculateRequiredPrecision(
+   const double value)
 {
-   string result;
-     
-   for (size_t i = 0; i < iBytes; i++)
+   const string asString = ToStringA(value, 30);
+
+   unsigned short precision = 0;
+
+   const char *pStart = asString.c_str();
+
+   const char *p = pStart;
+
+   bool started = false;
+
+   size_t zeroes = 0;
+
+   size_t nines = 0;
+
+   unsigned short numDigits = 0;
+
+   while (*p)
    {
-      BYTE c ;
-
-      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
-         
-      if (9 >= b)
+      if (*p == '.')
       {
-         c = static_cast<BYTE>(b + '0');
+         started = true;
       }
       else
       {
-         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
+         numDigits++;
+
+         if (started)
+         {
+            if (*p == '0')
+            {
+               if (nines)
+               {
+                  nines = 0;
+
+                  precision = numDigits - 1;
+               }
+
+               zeroes++;
+            }
+            else if (*p == '9')
+            {
+               if (zeroes)
+               {
+                  zeroes = 0;
+
+                  precision = numDigits - 1;
+               }
+
+               nines++;
+            }
+            else
+            {
+               if (*(p + 1) == 0)
+               {
+                  if (zeroes + nines > 2)
+                  {
+                     if (numDigits < 6)
+                     {
+                        precision = numDigits;
+                     }
+
+                     break;
+                  }
+               }
+
+               precision = numDigits;
+
+               zeroes = 0;
+               nines = 0;
+            }
+         }
+         else
+         {
+            precision++;
+         }
       }
-
-      result += (char)c;
-
-      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
-
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + (upperCase ? 'A' : 'a'));
-      }
-
-      result += (char)c;
+      p++;
    }
 
-   return result;
-}
-
-_tstring HexToString(
-   const BYTE *pBuffer, 
-   size_t iBytes)
-{
-   _tstring result;
-     
-   for (size_t i = 0; i < iBytes; i++)
+   if (zeroes + nines < 2)
    {
-      BYTE c ;
-
-      BYTE b = static_cast<BYTE>(pBuffer[i] >> 4);
-         
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + 'A');
-      }
-
-      result += (TCHAR)c;
-
-      b = static_cast<BYTE>(pBuffer[i] & 0x0f);
-
-      if (9 >= b)
-      {
-         c = static_cast<BYTE>(b + '0');
-      }
-      else
-      {
-         c = static_cast<BYTE>((b - 10) + 'A');
-      }
-
-      result += (TCHAR)c;
+      precision = numDigits;
    }
 
-   return result;
+   return precision;
 }
 
-#else
+string ToStringA(
+   const bool val)
+{
+   return val ? "1" : "0";
+}
+
+wstring ToStringW(
+   const bool val)
+{
+   return val ? L"1" : L"0";
+}
 
 string ToStringA(
    const unsigned int val)
 {
-   static const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = 10 + 1;
 
    char buffer[bufferSize];
 
@@ -172,7 +189,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned int val)
 {
-   static const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = 10 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -187,7 +204,7 @@ wstring ToStringW(
 string ToStringA(
    const signed int val)
 {
-   static const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = 10 + 1 + 1;
 
    char buffer[bufferSize];
 
@@ -202,7 +219,7 @@ string ToStringA(
 wstring ToStringW(
    const signed int val)
 {
-   static const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = 10 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -217,7 +234,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned short val)
 {
-   static const size_t bufferSize = 5 + 1;
+   const size_t bufferSize = 5 + 1;
 
    char buffer[bufferSize];
 
@@ -232,7 +249,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned short val)
 {
-   static const size_t bufferSize = 5 + 1;
+   const size_t bufferSize = 5 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -247,7 +264,7 @@ wstring ToStringW(
 string ToStringA(
    const signed short val)
 {
-   static const size_t bufferSize = 5 + 1 + 1;
+   const size_t bufferSize = 5 + 1 + 1;
 
    char buffer[bufferSize];
 
@@ -262,7 +279,7 @@ string ToStringA(
 wstring ToStringW(
    const signed short val)
 {
-   static const size_t bufferSize = 5 + 1 + 1;
+   const size_t bufferSize = 5 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -277,7 +294,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned long val)
 {
-   static const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = 10 + 1;
 
    char buffer[bufferSize];
 
@@ -292,7 +309,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned long val)
 {
-   static const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = 10 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -307,7 +324,7 @@ wstring ToStringW(
 string ToStringA(
    const signed long val)
 {
-   static const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = 10 + 1 + 1;
 
    char buffer[bufferSize];
 
@@ -322,7 +339,7 @@ string ToStringA(
 wstring ToStringW(
    const signed long val)
 {
-   static const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = 10 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -337,7 +354,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned __int64 val)
 {
-   static const size_t bufferSize = 20 + 1;
+   const size_t bufferSize = 20 + 1;
 
    char buffer[bufferSize];
 
@@ -352,7 +369,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned __int64 val)
 {
-   static const size_t bufferSize = 20 + 1;
+   const size_t bufferSize = 20 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -367,7 +384,7 @@ wstring ToStringW(
 string ToStringA(
    const signed __int64 val)
 {
-   static const size_t bufferSize = 19 + 1 + 1;
+   const size_t bufferSize = 19 + 1 + 1;
 
    char buffer[bufferSize];
 
@@ -382,7 +399,7 @@ string ToStringA(
 wstring ToStringW(
    const signed __int64 val)
 {
-   static const size_t bufferSize = 19 + 1 + 1;
+   const size_t bufferSize = 19 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -407,13 +424,19 @@ wstring ToStringW(
 }
 
 string ToStringA(
-   const double val)
+   const double val,
+   unsigned short precision)
 {
-   static const size_t bufferSize = 20 + 1 + 1;
+   const size_t bufferSize = 256 + 1 + 1;
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, "%g", val))
+   if (precision == 0)
+   {
+      precision = 6;
+   }
+
+   if (-1 == sprintf_s(buffer, bufferSize, "%.*g", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -422,13 +445,19 @@ string ToStringA(
 }
 
 wstring ToStringW(
-   const double val)
+   const double val,
+   unsigned short precision)
 {
-   static const size_t bufferSize = 20 + 1 + 1;
+   const size_t bufferSize = 256 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, L"%g", val))
+   if (precision == 0)
+   {
+      precision = 6;
+   }
+
+   if (-1 == swprintf_s(buffer, bufferSize, L"%.*g", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -437,13 +466,19 @@ wstring ToStringW(
 }
 
 string ToStringA(
-   const long double val)
+   const long double val,
+   unsigned short precision)
 {
-   static const size_t bufferSize = 256 + 1 + 1;
+   const size_t bufferSize = 256 + 1 + 1;
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, "%lg", val))
+   if (precision == 0)
+   {
+      precision = 6;
+   }
+
+   if (-1 == sprintf_s(buffer, bufferSize, "%.*lg", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -452,13 +487,19 @@ string ToStringA(
 }
 
 wstring ToStringW(
-   const long double val)
+   const long double val,
+   unsigned short precision)
 {
-   static const size_t bufferSize = 256 + 1 + 1;
+   const size_t bufferSize = 256 + 1 + 1;
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, L"%lg", val))
+   if (precision == 0)
+   {
+      precision = 6;
+   }
+
+   if (-1 == swprintf_s(buffer, bufferSize, L"%.*lg", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -469,7 +510,7 @@ wstring ToStringW(
 string ToStringA(
    const void *val)
 {
-   static const size_t bufferSize = 16 + 1;
+   const size_t bufferSize = 16 + 1;
 
    char buffer[bufferSize];
 
@@ -484,45 +525,11 @@ string ToStringA(
 wstring ToStringW(
    const void *val)
 {
-   static const size_t bufferSize = 16 + 1;
+   const size_t bufferSize = 16 + 1;
 
    wchar_t buffer[bufferSize];
 
    if (-1 == swprintf_s(buffer, bufferSize, L"%p", val))
-   {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
-   }
-
-   return buffer;
-}
-
-string PointerToStringA(
-   const void *val)
-{
-   static const size_t bufferSize = 16 + 1;
-
-   char buffer[bufferSize];
-
-   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
-
-   if (-1 == sprintf_s(buffer, bufferSize, "%16.16I64X", value))
-   {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
-   }
-
-   return buffer;
-}
-
-wstring PointerToStringW(
-   const void *val)
-{
-   static const size_t bufferSize = 16 + 1;
-
-   wchar_t buffer[bufferSize];
-
-   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
-
-   if (-1 == swprintf_s(buffer, bufferSize, L"%16.16I64X", value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -536,15 +543,87 @@ inline bool IsUpperCaseRepresentation(
    return (hexDigitRepresentation & HexDigitsUpperCase) == HexDigitsUpperCase;
 }
 
+inline bool IncludePrefix(
+   const ToHexStringHexDigitRepresentation hexDigitRepresentation)
+{
+   return (hexDigitRepresentation & HexDigitsWithPrefix) == HexDigitsWithPrefix;
+}
+
+inline bool IncludePadding(
+   const ToHexStringHexDigitRepresentation hexDigitRepresentation)
+{
+   return (hexDigitRepresentation & HexDigitsWithPadding) == HexDigitsWithPadding;
+}
+
+#define DETERMINE_FORMAT_STRING_A(rep, w, fU, fL)           \
+   IncludePrefix(rep) ?                                     \
+      (IsUpperCaseRepresentation(rep) ?                     \
+      (IncludePadding(rep) ? "0x%" w fU : "0x%" fU) :       \
+         (IncludePadding(rep) ? "0x%" w fL : "0x%" fL)) :   \
+      (IsUpperCaseRepresentation(rep) ?                     \
+         (IncludePadding(rep) ? "%" w fU : "%" fU) :        \
+         (IncludePadding(rep) ? "%" w fL : "%" fL))
+
+#define DETERMINE_FORMAT_STRING_W(rep, w, fU, fL)           \
+   IncludePrefix(rep) ?                                     \
+      (IsUpperCaseRepresentation(rep) ?                     \
+      (IncludePadding(rep) ? L"0x%" w fU : L"0x%" fU) :       \
+         (IncludePadding(rep) ? L"0x%" w fL : L"0x%" fL)) :   \
+      (IsUpperCaseRepresentation(rep) ?                     \
+         (IncludePadding(rep) ? L"%" w fU : L"%" fU) :        \
+         (IncludePadding(rep) ? L"%" w fL : L"%" fL))
+
+string PointerToStringA(
+   const void *val,
+   const ToHexStringHexDigitRepresentation hexDigitRepresentation)
+{
+   static const size_t bufferSize = 2 + 16 + 1;
+
+   char buffer[bufferSize];
+
+   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
+
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
+   {
+      throw CException(_T("ToString"), _T("sprintf_s failed"));
+   }
+
+   return buffer;
+}
+
+wstring PointerToStringW(
+   const void *val,
+   const ToHexStringHexDigitRepresentation hexDigitRepresentation)
+{
+   static const size_t bufferSize = 2 + 16 + 1;
+
+   wchar_t buffer[bufferSize];
+
+   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
+
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
+   {
+      throw CException(_T("ToString"), _T("sprintf_s failed"));
+   }
+
+   return buffer;
+}
+
 string ToHexStringA(
    const unsigned char val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 2 + 8 + 1;
+   static const size_t bufferSize = 2 + 2 + 1;
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "%2.2X" : "%2.2x", val))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "2.2", "X", "x");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -556,11 +635,13 @@ wstring ToHexStringW(
    const unsigned char val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 2 + 8 + 1;
+   static const size_t bufferSize = 2 + 2 + 1;
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"%2.2X" : L"%2.2x", val))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"2.2", L"X", L"x");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -590,7 +671,9 @@ string ToHexStringA(
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%X" : "0x%x", val))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "X", "x");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -606,7 +689,9 @@ wstring ToHexStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%X" : L"0x%x", val))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"X", L"x");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -636,7 +721,9 @@ string ToHexStringA(
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%hX" : "0x%hx", val))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "4.4", "hX", "hx");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -652,7 +739,9 @@ wstring ToHexStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%hX" : L"0x%hx", val))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"4.4", L"hX", L"hx");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -682,7 +771,9 @@ string ToHexStringA(
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%lX" : "0x%lx", val))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -698,7 +789,9 @@ wstring ToHexStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%lX" : L"0x%lx", val))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -728,7 +821,9 @@ string ToHexStringA(
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%I64X" : "0x%I64x", val))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -744,7 +839,9 @@ wstring ToHexStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%I64X" : L"0x%I64x", val))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -766,7 +863,7 @@ wstring ToHexStringW(
    return ToHexStringW(static_cast<unsigned __int64>(val), hexDigitRepresentation);
 }
 
-// Since there isn't a %p for lower case hex conversion of pointer types we 
+// Since there isn't a %p for lower case hex conversion of pointer types we
 // do it all ourselves.
 
 string ToHexStringA(
@@ -781,9 +878,11 @@ string ToHexStringA(
 
    const __int64 value = reinterpret_cast<__int64>(val);
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%16.16I64X" : "0x%16.16I64x", value))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
-      throw "TODO";
+      throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
 
    return buffer;
@@ -796,7 +895,9 @@ string ToHexStringA(
 
    const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
 
-   if (-1 == sprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? "0x%8.8lX" : "0x%8.8lx", value))
+   const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
+
+   if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -818,9 +919,11 @@ wstring ToHexStringW(
 
    const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%16.16llX" : L"0x%16.16llx", value))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
-      throw "TODO";
+      throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
 
    return buffer;
@@ -833,7 +936,9 @@ wstring ToHexStringW(
 
    const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
 
-   if (-1 == swprintf_s(buffer, bufferSize, IsUpperCaseRepresentation(hexDigitRepresentation) ? L"0x%8.8lX" : L"0x%8.8lx", value))
+   const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
+
+   if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -851,13 +956,22 @@ string ToHexStringA(
    const BYTE *pBytes = reinterpret_cast<const BYTE *>(pData);
 
    string result;
-     
+
+   const size_t outputSize = ((IncludePrefix(hexDigitRepresentation) ? 1 : 0) + length) * 2;
+
+   result.reserve(outputSize);
+
+   if (IncludePrefix(hexDigitRepresentation))
+   {
+      result += "0x";
+   }
+
    for (size_t i = 0; i < length; i++)
    {
       BYTE c ;
 
       BYTE b = static_cast<BYTE>(pBytes[i] >> 4);
-         
+
       if (9 >= b)
       {
          c = static_cast<BYTE>(b + '0');
@@ -894,13 +1008,22 @@ wstring ToHexStringW(
    const BYTE *pBytes = reinterpret_cast<const BYTE *>(pData);
 
    wstring result;
-     
+
+   const size_t outputSize = ((IncludePrefix(hexDigitRepresentation) ? 1 : 0) + length) * 2;
+
+   result.reserve(outputSize);
+
+   if (IncludePrefix(hexDigitRepresentation))
+   {
+      result += L"0x";
+   }
+
    for (size_t i = 0; i < length; i++)
    {
       BYTE c ;
 
       BYTE b = static_cast<BYTE>(pBytes[i] >> 4);
-         
+
       if (9 >= b)
       {
          c = static_cast<BYTE>(b + '0');
@@ -928,9 +1051,6 @@ wstring ToHexStringW(
 
    return result;
 }
-
-#endif
-
 
 _tstring BoolAsString(
    const bool value)
@@ -978,54 +1098,49 @@ wstring ToHexW(
    return buffer;
 }
 
+static const string s_emptyStringLinePrefixA;
+static const wstring s_emptyStringLinePrefixW;
+
 string MakePrintableA(
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR)
 {
-   static const string linePrefix;
-
-   return InternalDumpDataA(linePrefix, pData, dataLength, lineLength, true, useCR, true, true);
+   return InternalDumpDataA(s_emptyStringLinePrefixA, pData, dataLength, lineLength, true, useCR, true, true);
 }
 
 wstring MakePrintableW(
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR)
 {
-   static const wstring linePrefix;
-
-   return InternalDumpDataW(linePrefix, pData, dataLength, lineLength, true, useCR, true, true);
+   return InternalDumpDataW(s_emptyStringLinePrefixW, pData, dataLength, lineLength, true, useCR, true, true);
 }
 
 string DumpDataA(
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR)
 {
-   static const string linePrefix;
-
-   return InternalDumpDataA(linePrefix, pData, dataLength, lineLength, false, useCR, true, true);
+   return InternalDumpDataA(s_emptyStringLinePrefixA, pData, dataLength, lineLength, false, useCR, true, true);
 }
 
 wstring DumpDataW(
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR)
 {
-   static const wstring linePrefix;
-
-   return InternalDumpDataW(linePrefix, pData, dataLength, lineLength, false, useCR, true, true);
+   return InternalDumpDataW(s_emptyStringLinePrefixW, pData, dataLength, lineLength, false, useCR, true, true);
 }
 
 string DumpDataA(
    const string &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -1036,8 +1151,8 @@ string DumpDataA(
 
 wstring DumpDataW(
    const wstring &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
    const size_t lineLength,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -1052,9 +1167,9 @@ wstring DumpDataW(
 
 static string InternalDumpDataA(
    const string &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
-   const size_t lineLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
+   const size_t lineLength,
    const bool makePrintable,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -1079,10 +1194,14 @@ static string InternalDumpDataA(
 
       if (!makePrintable)
       {
-         hexDisplay += ToHexA(c) + " ";   
+         hexDisplay += ToHexA(c) + " ";
       }
 
+      #if (VS2013_PREVIEW_BROKEN_ISPRINT == 1)
+      if (isprint(c) && c != 9)
+      #else
       if (isprint(c))
+      #endif
       {
          display += (char)c;
       }
@@ -1125,9 +1244,9 @@ static string InternalDumpDataA(
 
 static wstring InternalDumpDataW(
    const wstring &linePrefix,
-   const BYTE * const pData, 
-   const size_t dataLength, 
-   const size_t lineLength, 
+   const BYTE * const pData,
+   const size_t dataLength,
+   const size_t lineLength,
    const bool makePrintable,
    const bool useCR,
    const bool linePrefixOnFirstLine,
@@ -1152,10 +1271,14 @@ static wstring InternalDumpDataW(
 
       if (!makePrintable)
       {
-         hexDisplay += ToHexW(c) + L" ";   
+         hexDisplay += ToHexW(c) + L" ";
       }
 
+      #if (VS2013_PREVIEW_BROKEN_ISPRINT == 1)
+      if (isprint(c) && c != 9)
+      #else
       if (isprint(c))
+      #endif
       {
          display += (wchar_t)c;
       }
@@ -1201,7 +1324,7 @@ static wstring InternalDumpDataW(
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ToString.cpp

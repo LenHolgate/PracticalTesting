@@ -28,6 +28,7 @@
 #include "TickCountProvider.h"
 #include "SEHException.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
+#include "DebugTrace.h"
 
 #pragma hdrstop
 
@@ -207,18 +208,18 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::CreateTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -239,18 +240,18 @@ bool CThreadedCallbackTimerQueue::SetTimer(
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::SetTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -266,18 +267,18 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::CancelTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -293,18 +294,18 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::DestroyTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -316,18 +317,18 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::DestroyTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -341,18 +342,18 @@ void CThreadedCallbackTimerQueue::SetTimer(
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::SetOneOffTimerContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -390,17 +391,17 @@ int CThreadedCallbackTimerQueue::Run() throw()
 
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-                  ICriticalSection::PotentialOwner lock(m_criticalSection);
+                  CLockableObject::PotentialOwner lock(m_lock);
 
-                  if (!lock.TryEnter())
+                  if (!lock.TryLock())
                   {
                      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
 
-                     lock.Enter();
+                     lock.Lock();
                   }
 #else
 
-                  ICriticalSection::Owner lock(m_criticalSection);
+                  CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -437,18 +438,18 @@ int CThreadedCallbackTimerQueue::Run() throw()
                   {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-                     ICriticalSection::PotentialOwner lock(m_criticalSection);
+                     CLockableObject::PotentialOwner lock(m_lock);
 
-                     if (!lock.TryEnter())
+                     if (!lock.TryLock())
                      {
                         m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
 
-                        lock.Enter();
+                        lock.Lock();
                      }
 
 #else
 
-                     ICriticalSection::Owner lock(m_criticalSection);
+                     CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -467,18 +468,18 @@ int CThreadedCallbackTimerQueue::Run() throw()
 
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-                     ICriticalSection::PotentialOwner lock(m_criticalSection);
+                     CLockableObject::PotentialOwner lock(m_lock);
 
-                     if (!lock.TryEnter())
+                     if (!lock.TryLock())
                      {
                         m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
 
-                        lock.Enter();
+                        lock.Lock();
                      }
 
 #else
 
-                     ICriticalSection::Owner lock(m_criticalSection);
+                     CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -526,18 +527,18 @@ Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 {
 #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
-   ICriticalSection::PotentialOwner lock(m_criticalSection);
+   CLockableObject::PotentialOwner lock(m_lock);
 
-   if (!lock.TryEnter())
+   if (!lock.TryLock())
    {
       m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::GetNextTimeoutContention);
 
-      lock.Enter();
+      lock.Lock();
    }
 
 #else
 
-   ICriticalSection::Owner lock(m_criticalSection);
+   CLockableObject::Owner lock(m_lock);
 
 #endif
 
@@ -550,9 +551,11 @@ void CThreadedCallbackTimerQueue::SignalStateChange()
 }
 
 void CThreadedCallbackTimerQueue::OnThreadTerminationException(
-   const _tstring & /*message*/)
+   const _tstring &message)
 {
-   // derived class could/should log?
+   OutputEx(_T("CThreadedCallbackTimerQueue::OnThreadTerminationException() - ") + message);
+
+   // derived class can disable this.
 }
 
 bool CThreadedCallbackTimerQueue::OnThreadInitialised()

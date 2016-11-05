@@ -4,16 +4,16 @@
 //
 // Copyright 2007 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,10 +52,10 @@ CMockTimerQueue::CMockTimerQueue(
    const bool dispatchWithoutLock)
    :  m_dispatchWithoutLock(dispatchWithoutLock),
       m_nextTimer(0),
-      m_pTimer(0),
-      m_userData(0),
       m_maxTimeout(0xFFFFFFFE),
-      m_nextTimeout(INFINITE)
+      m_nextTimeout(INFINITE),
+      waitForOnTimerWaitComplete(false),
+      includeHandleValuesInLogs(true)
 {
 
 }
@@ -75,31 +75,40 @@ bool CMockTimerQueue::WaitForNextTimeout(
 bool CMockTimerQueue::WaitForOnTimer(
    const Milliseconds timeout)
 {
-   return m_onTimerEvent.Wait(timeout);
+   const bool ok = m_onTimerEvent.Wait(timeout);
+
+   if (ok && waitForOnTimerWaitComplete)
+   {
+      m_onTimerWaitCompleteEvent.Set();
+   }
+
+   return ok;
 }
 
 void CMockTimerQueue::OnTimer()
 {
-   if (!m_pTimer)
+   if (m_setTimers.empty())
    {
       throw CTestException(_T("CMockTimerQueue::OnTimer()"), _T("Timer not set"));
    }
 
-   Timer *pTimer = m_pTimer;
+   const TimerDetails details = m_setTimers.front();
 
-   UserData userData = m_userData;
+   m_setTimers.pop_front();
 
-   m_pTimer = 0;
-   m_userData = 0;
-
-   pTimer->OnTimer(userData);
+   details.timer.OnTimer(details.userData);
 
    m_onTimerEvent.Set();
+
+   if (waitForOnTimerWaitComplete)
+   {
+      m_onTimerWaitCompleteEvent.Wait();
+   }
 }
 
 bool CMockTimerQueue::IsTimerSet() const
 {
-   return (m_pTimer != 0);
+   return !m_setTimers.empty();
 }
 
 Milliseconds CMockTimerQueue::GetNextTimeout()
@@ -115,7 +124,7 @@ void CMockTimerQueue::HandleTimeouts()
 {
    LogMessage(_T("HandleTimeouts"));
 
-   if (m_pTimer)
+   if (!m_setTimers.empty())
    {
       OnTimer();
    }
@@ -127,7 +136,7 @@ IManageTimerQueue::TimeoutHandle CMockTimerQueue::BeginTimeoutHandling()
 {
    LogMessage(_T("BeginTimeoutHandling"));
 
-   return m_pTimer ? reinterpret_cast<IManageTimerQueue::TimeoutHandle>(1) : IManageTimerQueue::InvalidTimeoutHandleValue;
+   return !m_setTimers.empty() ? static_cast<IManageTimerQueue::TimeoutHandle>(1) : IManageTimerQueue::InvalidTimeoutHandleValue;
 }
 
 void CMockTimerQueue::HandleTimeout(
@@ -158,18 +167,33 @@ CMockTimerQueue::Handle CMockTimerQueue::CreateTimer()
 #pragma warning(disable: 4100)
 
 bool CMockTimerQueue::SetTimer(
-   const Handle &handle, 
+   const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData)
 {
-   LogMessage(_T("SetTimer: ") + ToString(handle) + _T(": ") + ToString(timeout));
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("SetTimer: ") + ToString(handle) + _T(": ") + ToString(timeout));
+   }
+   else
+   {
+      LogMessage(_T("SetTimer: ") + ToString(timeout));
+   }
 
-   bool wasPending = (m_pTimer != 0);
+   bool wasPending = false;
 
-   m_pTimer = &timer;
+   for (SetTimers::const_iterator it = m_setTimers.begin(), end = m_setTimers.end();
+      !wasPending && it != end;
+      ++it)
+   {
+      if (it->handle == handle)
+      {
+         wasPending = true;
+      }
+   }
 
-   m_userData = userData;
+   m_setTimers.push_back(TimerDetails(handle, timer, userData));
 
    m_nextTimeout = 0;
 
@@ -179,12 +203,30 @@ bool CMockTimerQueue::SetTimer(
 bool CMockTimerQueue::CancelTimer(
    const Handle &handle)
 {
-   LogMessage(_T("CancelTimer: ") + ToString(handle));
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("CancelTimer: ") + ToString(handle));
+   }
+   else
+   {
+      LogMessage(_T("CancelTimer"));
+   }
 
-   const bool wasSet = m_pTimer != 0;
+   bool wasSet = false;
 
-   m_pTimer = 0;
-   m_userData = 0;
+   for (SetTimers::iterator it = m_setTimers.begin(), end = m_setTimers.end();
+      it != end;
+      ++it)
+   {
+      if (it->handle == handle)
+      {
+         m_setTimers.erase(it);
+
+         wasSet = true;
+
+         break;
+      }
+   }
 
    return wasSet;
 }
@@ -192,14 +234,32 @@ bool CMockTimerQueue::CancelTimer(
 bool CMockTimerQueue::DestroyTimer(
    Handle &handle)
 {
-   LogMessage(_T("DestroyTimer: ") + ToString(handle));
-   
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("DestroyTimer: ") + ToString(handle));
+   }
+   else
+   {
+      LogMessage(_T("DestroyTimer"));
+   }
+
+   bool wasSet = false;
+
+   for (SetTimers::iterator it = m_setTimers.begin(), end = m_setTimers.end();
+      it != end;
+      ++it)
+   {
+      if (it->handle == handle)
+      {
+         m_setTimers.erase(it);
+
+         wasSet = true;
+
+         break;
+      }
+   }
+
    handle = InvalidHandleValue;
-
-   const bool wasSet = m_pTimer != 0;
-
-   m_pTimer = 0;
-   m_userData = 0;
 
    return wasSet;
 }
@@ -207,12 +267,30 @@ bool CMockTimerQueue::DestroyTimer(
 bool CMockTimerQueue::DestroyTimer(
    const Handle &handle)
 {
-   LogMessage(_T("DestroyTimer: ") + ToString(handle));
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("DestroyTimer: ") + ToString(handle));
+   }
+   else
+   {
+      LogMessage(_T("DestroyTimer"));
+   }
 
-   const bool wasSet = m_pTimer != 0;
+   bool wasSet = false;
 
-   m_pTimer = 0;
-   m_userData = 0;
+   for (SetTimers::iterator it = m_setTimers.begin(), end = m_setTimers.end();
+      it != end;
+      ++it)
+   {
+      if (it->handle == handle)
+      {
+         m_setTimers.erase(it);
+
+         wasSet = true;
+
+         break;
+      }
+   }
 
    return wasSet;
 }
@@ -224,9 +302,7 @@ void CMockTimerQueue::SetTimer(
 {
    LogMessage(_T("SetTimer: ") + ToString(timeout));
 
-   m_pTimer = &timer;
-
-   m_userData = userData;
+   m_setTimers.push_back(TimerDetails(InvalidHandleValue, timer, userData));
 }
 
 Milliseconds CMockTimerQueue::GetMaximumTimeout() const
@@ -249,7 +325,7 @@ bool CMockTimerQueue::DispatchesWithoutLock() const
 
 } // End of namespace Mock
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: MockTimerQueue.cpp

@@ -1010,6 +1010,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IntrusiveMultiMapTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveMultiMapTest.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveRedBlackTreeTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IntrusiveRedBlackTreeTest.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ThreadedCallbackTimerQueueTest.cpp"
 				>
 			</File>

@@ -10,16 +10,16 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ class IKernelObjectName;
 // CEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A class that wraps the operating system 
+/// A class that wraps the operating system
 /// <a href="http://msdn2.microsoft.com/en-us/library/ms682655.aspx">Event API</a>.
-/// See <a href="http://www.lenholgate.com/archives/000279.html ">here</a> for 
+/// See <a href="http://www.lenholgate.com/archives/000279.html ">here</a> for
 /// more details.
 /// \ingroup Synchronization
 /// \ingroup KernelObjects
@@ -57,7 +57,7 @@ class IKernelObjectName;
 class CEvent : public IWaitable
 {
    public :
-   
+
       /// Specify the type of event object.
 
       enum ResetType
@@ -67,7 +67,7 @@ class CEvent : public IWaitable
       };
 
       /// Specify the initial state of an event object.
-      
+
       enum InitialState
       {
          Signaled,
@@ -84,12 +84,12 @@ class CEvent : public IWaitable
       };
 
       /// Create an anonymous CEvent object for in-process use.
-      
+
       CEvent(
          SECURITY_ATTRIBUTES *pSecurityAttributes,
          ResetType resetType,
          InitialState initialState);
-   
+
       /// Create a new named CEvent object or connect to an existing
       /// one with the same name, for cross-process use. Use the CreationFlags
       /// to force creation only or connection only if required.
@@ -100,13 +100,13 @@ class CEvent : public IWaitable
          InitialState initialState,
          const IKernelObjectName &name,
          const CreationFlags creationFlags = CreateOrConnect);
- 
+
       /// Connect to an existing named CEvent object for cross-process use.
 
       CEvent(
          SECURITY_ATTRIBUTES *pSecurityAttributes,
          const IKernelObjectName &name);
- 
+
       /// Reset the event to the unsignalled state.
 
       void Reset();
@@ -143,7 +143,7 @@ class CEvent : public IWaitable
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
 

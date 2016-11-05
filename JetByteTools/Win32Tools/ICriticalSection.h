@@ -10,19 +10,21 @@
 //
 // Copyright 2007 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
+
+#if (JETBYTE_DEPRECATE_CRITICAL_SECTION == 0)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -35,19 +37,19 @@ namespace Win32 {
 // ICriticalSection
 ///////////////////////////////////////////////////////////////////////////////
 
-/// An interface onto the operating system 
-/// <a href="http://msdn2.microsoft.com/en-us/library/ms682530.aspx">Critical 
-/// Section API</a>. 
+/// An interface onto the operating system
+/// <a href="http://msdn2.microsoft.com/en-us/library/ms682530.aspx">Critical
+/// Section API</a>.
 /// \ingroup Synchronization
 /// \ingroup Interfaces
 
-class ICriticalSection 
+class ICriticalSection
 {
    public :
-   
+
       /// A class that takes ownership of an instance of ICriticalSection. That
-      /// is it calls Enter() in the constructor and Leave() in the destructor 
-      /// and can therefore be used to support \ref RAII "scope based" locking 
+      /// is it calls Enter() in the constructor and Leave() in the destructor
+      /// and can therefore be used to support \ref RAII "scope based" locking
       /// and unlocking of instances of ICriticalSection.
       /// \ingroup Synchronization
       /// \ingroup RAII
@@ -60,7 +62,7 @@ class ICriticalSection
                ICriticalSection &crit);
 
             ~Owner();
-      
+
          private :
 
             ICriticalSection &m_crit;
@@ -71,9 +73,9 @@ class ICriticalSection
             Owner &operator=(const Owner &rhs);
       };
 
-      /// A class that may take ownership of an instance of ICriticalSection. 
-      /// That is it calls Enter() in the constructor and Leave() in the 
-      /// destructor (but only if locked passed as true to the constructor) 
+      /// A class that may take ownership of an instance of ICriticalSection.
+      /// That is it calls Enter() in the constructor and Leave() in the
+      /// destructor (but only if locked passed as true to the constructor)
       /// and can therefore be used to support \ref RAII "scope based" locking
       /// and unlocking of instances of ICriticalSection.
       /// \ingroup Synchronization
@@ -90,7 +92,7 @@ class ICriticalSection
             ~ConditionalOwner();
 
             void Leave();
-      
+
          private :
 
             ICriticalSection &m_crit;
@@ -103,11 +105,11 @@ class ICriticalSection
             ConditionalOwner &operator=(const ConditionalOwner &rhs);
       };
 
-      /// A class that may take ownership of an instance of ICriticalSection. 
+      /// A class that may take ownership of an instance of ICriticalSection.
       /// If you call Enter() or TryEnter() on this class it will keep track
-      /// of the fact that the critical section has been entered and will 
-      /// call Leave() in the destructor. This can therefore be used to 
-      /// support \ref RAII "scope based" locking and unlocking of instances 
+      /// of the fact that the critical section has been entered and will
+      /// call Leave() in the destructor. This can therefore be used to
+      /// support \ref RAII "scope based" locking and unlocking of instances
       /// of ICriticalSection.
       /// \ingroup Synchronization
       /// \ingroup RAII
@@ -124,7 +126,9 @@ class ICriticalSection
             void Enter();
 
             bool TryEnter();
-      
+
+            void Leave();
+
          private :
 
             ICriticalSection &m_crit;
@@ -151,6 +155,11 @@ class ICriticalSection
 
       virtual void Leave() = 0;
 
+      /// Returns true if the critical section is currently locked by this
+      /// thread.
+
+      virtual bool IsLockedByThisThread() const = 0;
+
       /// Instances of this interface can be deleted by their users.
 
       virtual ~ICriticalSection() {}
@@ -161,7 +170,9 @@ class ICriticalSection
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
+
+#endif // JETBYTE_DEPRECATE_CRITICAL_SECTION
 
 #endif // JETBYTE_TOOLS_WIN32_I_CRITICAL_SECTION_INCLUDED__
 

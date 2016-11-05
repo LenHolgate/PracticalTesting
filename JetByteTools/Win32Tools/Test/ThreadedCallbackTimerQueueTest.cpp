@@ -318,6 +318,16 @@ void CThreadedCallbackTimerQueueTest::TestTimerWithLock()
 {
    CMockTimerQueue queue;
 
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
+
    CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock);
 
    THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
@@ -343,6 +353,16 @@ void CThreadedCallbackTimerQueueTest::TestTimerWithLock()
 void CThreadedCallbackTimerQueueTest::TestTimerNoLock()
 {
    CMockTimerQueue queue;
+
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
 
    CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
 
@@ -454,6 +474,16 @@ void CThreadedCallbackTimerQueueTest::TestMonitorTimerWithLock()
 {
    CMockTimerQueue queue;
 
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
+
    CMockThreadedCallbackTimerQueueMonitor monitor;
 
    CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock, monitor);
@@ -487,6 +517,16 @@ void CThreadedCallbackTimerQueueTest::TestMonitorTimerWithLock()
 void CThreadedCallbackTimerQueueTest::TestMonitorTimerNoLock()
 {
    CMockTimerQueue queue;
+
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
 
    CMockThreadedCallbackTimerQueueMonitor monitor;
 

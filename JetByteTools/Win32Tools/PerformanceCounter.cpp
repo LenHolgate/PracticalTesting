@@ -4,16 +4,16 @@
 //
 // Copyright 2005 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ void CPerformanceCounter::Reset()
 {
    m_start = GetCounter();
 }
-      
+
 DWORD CPerformanceCounter::GetElapsedTimeAsDWORD() const
 {
    const LARGE_INTEGER elapsed = GetElapsedTime();
@@ -74,9 +74,9 @@ DWORD CPerformanceCounter::GetElapsedTimeAsDWORD() const
 LARGE_INTEGER CPerformanceCounter::GetElapsedTime() const
 {
    const LARGE_INTEGER now = GetCounter();
-   
+
    LARGE_INTEGER elapsed;
-   
+
    elapsed.QuadPart = (now.QuadPart - m_start.QuadPart) / (m_frequency.QuadPart / 1000);
 
    return elapsed;
@@ -122,7 +122,7 @@ static LARGE_INTEGER GetCounter()
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: PerformanceCounter.cpp
