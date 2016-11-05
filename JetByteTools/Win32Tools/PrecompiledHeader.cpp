@@ -29,6 +29,7 @@
 
 #include "AutoResetEvent.h"
 #include "CallbackTimerQueue.h"
+#include "CallbackTimerQueueEx.h"
 #include "CriticalSection.h"
 #include "DebugTrace.h"
 #include "Event.h"
@@ -45,6 +46,7 @@
 #include "Thread.h"
 #include "ThreadedCallbackTimerQueue.h"
 #include "TickCountProvider.h"
+#include "TickCount64Provider.h"
 #include "tstring.h"
 #include "Utils.h"
 #include "Win32Exception.h"

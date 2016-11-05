@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueue.cpp
+// File: CallbackTimerQueueEx.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -20,13 +20,18 @@
 
 #include "JetByteTools\Admin\Admin.h"
 
-#include "CallbackTimerQueue.h"
+#include "CallbackTimerQueueEx.h"
 #include "Utils.h"
 #include "Exception.h"
-#include "TickCountProvider.h"
-#include "ICriticalSection.h"
+#include "TickCount64Provider.h"
 
 #pragma hdrstop
+
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#if (_WIN32_WINNT >= 0x0600)  
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -36,10 +41,10 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue::TimerData
+// CCallbackTimerQueueExEx::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCallbackTimerQueue::TimerData
+class CCallbackTimerQueueEx::TimerData
 {
    public :
 
@@ -57,9 +62,6 @@ class CCallbackTimerQueue::TimerData
 
       bool IsOneShotTimer() const;
 
-      bool IsMaintenanceTimer(
-         const CCallbackTimerQueue *pQueue) const;
-
    private :
    
       Timer *m_pTimer;
@@ -73,53 +75,32 @@ class CCallbackTimerQueue::TimerData
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const CTickCountProvider s_tickProvider;
+static const CTickCount64Provider s_tickProvider;
 
 static const Milliseconds s_tickCountMax = 0xFFFFFFFF;
 
 static const Milliseconds s_timeoutMax = s_tickCountMax - 1;
 
-#pragma warning(push, 4)
-#pragma warning(disable: 4268)   // 'const' static/global data initialized with 
-                                 // compiler generated default constructor fills 
-                                 // the object with zeros
-
-static const LARGE_INTEGER s_zeroLargeInteger;  // Rely on static init to provide 
-                                                // us with a LARGE_INTEGER zero.
-#pragma warning(pop)
-
 ///////////////////////////////////////////////////////////////////////////////
-// Static members
+// CCallbackTimerQueueEx
 ///////////////////////////////////////////////////////////////////////////////
 
-#pragma TODO("Move to its own file?")
-
-IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
-
-///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue
-///////////////////////////////////////////////////////////////////////////////
-
-CCallbackTimerQueue::CCallbackTimerQueue(
-   const IProvideTickCount &tickProvider)
+CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+   const IProvideTickCount64 &tickProvider)
    :  m_tickProvider(tickProvider),
-      m_maxTimeout(s_timeoutMax),
-      m_lastCount(s_zeroLargeInteger),
-      m_maintenanceTimer(CreateTimer())
-{   
-   SetMaintenanceTimer();
-}
-
-CCallbackTimerQueue::CCallbackTimerQueue()
-   :  m_tickProvider(s_tickProvider),
-      m_maxTimeout(s_timeoutMax),
-      m_lastCount(s_zeroLargeInteger),
-      m_maintenanceTimer(CreateTimer())
+      m_maxTimeout(s_timeoutMax)
 {
-   SetMaintenanceTimer();
+
 }
 
-CCallbackTimerQueue::~CCallbackTimerQueue()
+CCallbackTimerQueueEx::CCallbackTimerQueueEx()
+   :  m_tickProvider(s_tickProvider),
+      m_maxTimeout(s_timeoutMax)
+{
+
+}
+
+CCallbackTimerQueueEx::~CCallbackTimerQueueEx()
 {
    try
    {
@@ -136,7 +117,7 @@ CCallbackTimerQueue::~CCallbackTimerQueue()
    }
 }
 
-CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
+CCallbackTimerQueueEx::Handle CCallbackTimerQueueEx::CreateTimer()
 {
    TimerData *pData = new TimerData();
 
@@ -147,7 +128,7 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
    return reinterpret_cast<Handle>(pData);
 }
 
-bool CCallbackTimerQueue::SetTimer(
+bool CCallbackTimerQueueEx::SetTimer(
    const Handle &handle, 
    Timer &timer,
    const Milliseconds timeout,
@@ -156,7 +137,7 @@ bool CCallbackTimerQueue::SetTimer(
    if (timeout > m_maxTimeout)
    {
       throw CException(
-         _T("CCallbackTimerQueue::SetTimer()"), 
+         _T("CCallbackTimerQueueEx::GetAbsoluteTimeout()"), 
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
@@ -173,13 +154,13 @@ bool CCallbackTimerQueue::SetTimer(
    return wasPending;
 }
 
-bool CCallbackTimerQueue::CancelTimer(
+bool CCallbackTimerQueueEx::CancelTimer(
    const Handle &handle)
 {
    return CancelTimer(handle, ValidateHandle(handle));
 }
 
-bool CCallbackTimerQueue::DestroyTimer(
+bool CCallbackTimerQueueEx::DestroyTimer(
    Handle &handle)
 {
    HandleMap::iterator it = ValidateHandle(handle);
@@ -197,7 +178,7 @@ bool CCallbackTimerQueue::DestroyTimer(
    return wasPending;
 }
 
-bool CCallbackTimerQueue::DestroyTimer(
+bool CCallbackTimerQueueEx::DestroyTimer(
    const Handle &handle)
 {
    Handle handle_ = handle;
@@ -205,7 +186,7 @@ bool CCallbackTimerQueue::DestroyTimer(
    return DestroyTimer(handle_);
 }
 
-void CCallbackTimerQueue::SetTimer(
+void CCallbackTimerQueueEx::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData)
@@ -213,7 +194,7 @@ void CCallbackTimerQueue::SetTimer(
    if (timeout > m_maxTimeout)
    {
       throw CException(
-         _T("CCallbackTimerQueue::SetTimer()"), 
+         _T("CCallbackTimerQueueEx::GetAbsoluteTimeout()"), 
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
@@ -224,45 +205,24 @@ void CCallbackTimerQueue::SetTimer(
    InsertTimer(handle, pData, timeout);
 }
 
-Milliseconds CCallbackTimerQueue::GetMaximumTimeout() const
+Milliseconds CCallbackTimerQueueEx::GetMaximumTimeout() const
 {
    return m_maxTimeout;
 }
 
-ULONGLONG CCallbackTimerQueue::GetTickCount64()
-{
-   const DWORD lastCount = m_lastCount.LowPart;
-
-   m_lastCount.LowPart = m_tickProvider.GetTickCount();
-
-   if (m_lastCount.LowPart < lastCount)
-   {
-      ICriticalSection::Owner lock(m_criticalSection);
-
-      if (m_lastCount.LowPart < lastCount)
-      {
-         m_lastCount.HighPart++;
-
-         SetMaintenanceTimer();
-      }
-   }
-
-   return m_lastCount.QuadPart;
-}
-
-void CCallbackTimerQueue::InsertTimer(
+void CCallbackTimerQueueEx::InsertTimer(
    const Handle &handle,
    TimerData * const pData,
    const Milliseconds timeout)
 {
-   const ULONGLONG now = GetTickCount64();
+   const ULONGLONG now = m_tickProvider.GetTickCount64();
 
    const ULONGLONG absoluteTimeout = now + timeout;
 
    if (absoluteTimeout < now)
    {
       throw CException(
-         _T("CCallbackTimerQueue::InsertTimer()"), 
+         _T("CCallbackTimerQueueEx::InsertTimer()"), 
          _T("Timeout will extend beyond the wrap point of GetTickCount64(). ")
          _T("Well done at having your machine running for this long, ")
          _T("but this is outside of our specificiation..."));
@@ -273,7 +233,7 @@ void CCallbackTimerQueue::InsertTimer(
    m_handleMap[handle] = it;
 }
 
-CCallbackTimerQueue::HandleMap::iterator CCallbackTimerQueue::ValidateHandle(
+CCallbackTimerQueueEx::HandleMap::iterator CCallbackTimerQueueEx::ValidateHandle(
    const Handle &handle)
 {
    HandleMap::iterator it = m_handleMap.find(handle);
@@ -285,7 +245,7 @@ CCallbackTimerQueue::HandleMap::iterator CCallbackTimerQueue::ValidateHandle(
 #pragma warning(push, 4)
 #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerQueue::ValidateHandle()"), 
+         _T("CCallbackTimerQueueEx::ValidateHandle()"), 
          _T("Invalid timer handle: ") + ToString(handle));
 #pragma warning(pop)
    }
@@ -293,7 +253,7 @@ CCallbackTimerQueue::HandleMap::iterator CCallbackTimerQueue::ValidateHandle(
    return it;
 }
 
-bool CCallbackTimerQueue::CancelTimer(
+bool CCallbackTimerQueueEx::CancelTimer(
    const Handle &handle,
    const HandleMap::iterator &it)
 {
@@ -311,7 +271,7 @@ bool CCallbackTimerQueue::CancelTimer(
    return wasPending;
 }
 
-Milliseconds CCallbackTimerQueue::GetNextTimeout() 
+Milliseconds CCallbackTimerQueueEx::GetNextTimeout() 
 {
    Milliseconds timeUntilTimeout = INFINITE;
 
@@ -319,34 +279,26 @@ Milliseconds CCallbackTimerQueue::GetNextTimeout()
 
    if (it != m_queue.end())
    {
-      if (it->second->IsMaintenanceTimer(this))
-      {
-         it++;
-      }
+      const ULONGLONG now = m_tickProvider.GetTickCount64();
 
-      if (it != m_queue.end())
-      {
-         const ULONGLONG now = GetTickCount64();
-
-         const ULONGLONG timeout = it->first;
-
-         const ULONGLONG ticksUntilTimeout = timeout - now;
+      const ULONGLONG timeout = it->first;
  
-         if (ticksUntilTimeout > s_timeoutMax)
-         {
-            timeUntilTimeout = 0;
-         }
-         else
-         {
-            timeUntilTimeout = static_cast<Milliseconds>(ticksUntilTimeout);
-         }
-      }  
+      const ULONGLONG ticksUntilTimeout = timeout - now;
+
+      if (ticksUntilTimeout > s_timeoutMax)
+      {
+         timeUntilTimeout = 0;
+      }
+      else
+      {
+         timeUntilTimeout = static_cast<Milliseconds>(ticksUntilTimeout);
+      }
    }
 
    return timeUntilTimeout;
 }
 
-void CCallbackTimerQueue::HandleTimeouts()
+void CCallbackTimerQueueEx::HandleTimeouts()
 {
    while (0 == GetNextTimeout())
    {
@@ -369,59 +321,24 @@ void CCallbackTimerQueue::HandleTimeouts()
    }
 }
 
-void CCallbackTimerQueue::MarkHandleUnset(
+void CCallbackTimerQueueEx::MarkHandleUnset(
    Handle handle)
 {
    m_handleMap[handle] = m_queue.end();
 }
 
-void CCallbackTimerQueue::SetMaintenanceTimer()
-{
-   // Sets a timer for the next GetTickCount() roll over...
-
-   HandleMap::iterator it = ValidateHandle(m_maintenanceTimer);
-
-   CancelTimer(m_maintenanceTimer, it);
-
-   TimerData *pData = reinterpret_cast<TimerData*>(it->first);
-
-   pData->UpdateData(m_maintenanceTimerHandler, reinterpret_cast<UserData>(this));
-
-  {
-      Handle handle = reinterpret_cast<Handle>(pData);
-
-      const ULONGLONG now = GetTickCount64();
-
-      const ULONGLONG absoluteTimeout = (now & 0xFFFFFFFF00000000) + 0x0000000100000000;
-  
-      TimerQueue::iterator it = m_queue.insert(TimerQueue::value_type(absoluteTimeout, pData));
-
-      m_handleMap[handle] = it;
-   }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue::MaintenanceTimerHandler
+// CCallbackTimerQueueEx::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-void CCallbackTimerQueue::MaintenanceTimerHandler::OnTimer(
-   UserData userData)
-{
-   reinterpret_cast<CCallbackTimerQueue *>(userData)->SetMaintenanceTimer();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue::TimerData
-///////////////////////////////////////////////////////////////////////////////
-
-CCallbackTimerQueue::TimerData::TimerData()
+CCallbackTimerQueueEx::TimerData::TimerData()
    :  m_pTimer(0), 
       m_userData(0),
       m_oneShotTimer(false)
 {
 }
 
-CCallbackTimerQueue::TimerData::TimerData(
+CCallbackTimerQueueEx::TimerData::TimerData(
    Timer &timer,
    UserData userData)
    :  m_pTimer(&timer), 
@@ -430,14 +347,14 @@ CCallbackTimerQueue::TimerData::TimerData(
 {
 }
 
-void CCallbackTimerQueue::TimerData::UpdateData(
+void CCallbackTimerQueueEx::TimerData::UpdateData(
    Timer &timer,
    UserData userData)
 {
    if (m_oneShotTimer)
    {
       throw CException(
-         _T("CCallbackTimerQueue::UpdateData()"), 
+         _T("CCallbackTimerQueueEx::UpdateData()"), 
          _T("Internal Error: Can't update one shot timers"));
    }
 
@@ -445,27 +362,21 @@ void CCallbackTimerQueue::TimerData::UpdateData(
    m_userData = userData;
 }
 
-void CCallbackTimerQueue::TimerData::OnTimer()
+void CCallbackTimerQueueEx::TimerData::OnTimer()
 {
    if (!m_pTimer)
    {
       throw CException(
-         _T("CCallbackTimerQueue::OnTimer()"), 
+         _T("CCallbackTimerQueueEx::OnTimer()"), 
          _T("Internal Error: Timer not set"));
    }
 
    m_pTimer->OnTimer(m_userData);
 }
 
-bool CCallbackTimerQueue::TimerData::IsOneShotTimer() const
+bool CCallbackTimerQueueEx::TimerData::IsOneShotTimer() const
 {
    return m_oneShotTimer;
-}
-
-bool CCallbackTimerQueue::TimerData::IsMaintenanceTimer(
-   const CCallbackTimerQueue *pQueue) const
-{
-   return m_userData == reinterpret_cast<UserData>(pQueue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -474,6 +385,12 @@ bool CCallbackTimerQueue::TimerData::IsMaintenanceTimer(
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
+
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // (_WIN32_WINNT >= 0x0600)
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CallbackTimerQueue.cpp

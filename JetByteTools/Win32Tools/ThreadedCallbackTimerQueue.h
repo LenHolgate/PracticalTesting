@@ -60,24 +60,14 @@ class CThreadedCallbackTimerQueue :
    public :
 
       /// Create a timer queue.
-      CThreadedCallbackTimerQueue();
 
-      /// Create a timer queue with the specified maximum timeout value.
-      explicit CThreadedCallbackTimerQueue(
-         const Milliseconds maxTimeout);
+      CThreadedCallbackTimerQueue();
 
       /// Create a timer queue that uses the provdided instance of 
       /// IProvideTickCount to obtain its tick counts rather than getting
       /// them directly from the system.
-      explicit CThreadedCallbackTimerQueue(
-         const IProvideTickCount &tickProvider);
 
-      /// Create a timer queue with the specified maximum timeout value
-      /// and that uses the provdided instance of IProvideTickCount to 
-      /// obtain its tick counts rather than getting them directly from 
-      /// the system.
-      CThreadedCallbackTimerQueue(
-         const Milliseconds maxTimeout,
+      explicit CThreadedCallbackTimerQueue(
          const IProvideTickCount &tickProvider);
 
       ~CThreadedCallbackTimerQueue();

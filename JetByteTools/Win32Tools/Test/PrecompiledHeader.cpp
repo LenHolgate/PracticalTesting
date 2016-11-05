@@ -26,6 +26,7 @@
 #include "JetByteTools\Admin\Admin.h"
 
 #include "CallbackTimerQueueTest.h"
+#include "CallbackTimerQueueExTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
 
 #include "..\Mock\PrecompiledHeader.h"

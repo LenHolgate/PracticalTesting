@@ -76,8 +76,8 @@ void CThreadedCallbackTimerQueueTest::TestConstruct()
 
    CThreadedCallbackTimerQueue timerQueue2(tickProvider);
 
-   tickProvider.CheckResult(_T("|"));
-
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));       // creating a queue sets an 
+                                                            // internal maintenance timer
    Output(functionName + _T(" - stop"));
 }
 

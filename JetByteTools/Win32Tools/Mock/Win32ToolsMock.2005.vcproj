@@ -813,6 +813,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MockTickCount64Provider.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MockTickCountProvider.cpp"
 				>
 			</File>
@@ -823,6 +827,10 @@
 			>
 			<File
 				RelativePath=".\LoggingCallbackTimer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MockTickCount64Provider.h"
 				>
 			</File>
 			<File

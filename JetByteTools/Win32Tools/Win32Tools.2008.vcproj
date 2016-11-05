@@ -863,6 +863,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CallbackTimerQueueEx.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CriticalSection.cpp"
 				>
 			</File>
@@ -928,6 +932,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CallbackTimerQueueEx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CriticalSection.h"
 				>
 			</File>
@@ -972,6 +980,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TickCount64Provider.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TickCountProvider.h"
 				>
 			</File>
@@ -1005,6 +1017,10 @@
 			</File>
 			<File
 				RelativePath=".\IProvideTickCount.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IProvideTickCount64.h"
 				>
 			</File>
 			<File

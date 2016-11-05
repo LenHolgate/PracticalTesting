@@ -1,14 +1,8 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
-#pragma once
-#endif
-
-#ifndef JETBYTE_TOOLS_MOCK_REFERENCE_COUNTED_INCLUDED__
-#define JETBYTE_TOOLS_MOCK_REFERENCE_COUNTED_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockReferenceCounted.h 
+// File: MockTickCount64Provider.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2005 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -24,47 +18,77 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools\Admin\Admin.h"
+
+#include "MockTickCount64Provider.h"
+
+#include "JetByteTools\Win32Tools\Utils.h"
+
+#pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+// Requires Windows Vista or later due to use of InterlockedExchange64()
+///////////////////////////////////////////////////////////////////////////////
+
+#if (_WIN32_WINNT >= 0x0600) 
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using JetByteTools::Win32::ToString;
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
+namespace Win32 {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CMockReferenceCounted
+// CMockTickCount64Provider
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A mock object that implements AddRef() and Release() and so can be used
-/// where reference counted objects might be required.
-/// \ingroup CPlusPlusToolsMocks
-
-class CMockReferenceCounted : public JetByteTools::Test::CTestLog
+CMockTickCount64Provider::CMockTickCount64Provider()
+   :  m_tickCount(0)
 {
-   public :
+}
 
-      CMockReferenceCounted();
+CMockTickCount64Provider::CMockTickCount64Provider(
+   const ULONGLONG tickCount)
+   :  m_tickCount(tickCount)
+{
+}
 
-      void AddRef();
+void CMockTickCount64Provider::SetTickCount(
+   const ULONGLONG tickCount)
+{
+   ::InterlockedExchange64(const_cast<LONGLONG *>(reinterpret_cast<volatile LONGLONG*>(&m_tickCount)), tickCount);
+}
 
-      void Release();
+ULONGLONG CMockTickCount64Provider::GetTickCount64() const
+{
+   LogMessage(_T("GetTickCount: ") + ToString(m_tickCount));
+   
+   return m_tickCount;
+}
 
-   private :
-
-      long m_ref;
-};
-  
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Mock
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_MOCK_REFERENCE_COUNTED_INCLUDED__
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of InterlockedExchange64()
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // (_WIN32_WINNT >= 0x0600)
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: MockReferenceCounted.h
+// End of file: MockTickCount64Provider.cpp
 ///////////////////////////////////////////////////////////////////////////////
+

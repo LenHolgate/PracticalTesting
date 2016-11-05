@@ -50,27 +50,8 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    m_thread.Start();
 }
 
-CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const Milliseconds maxTimeout,
-   const IProvideTickCount &tickProvider)
-   :  m_thread(*this),
-      m_timerQueue(maxTimeout, tickProvider),
-      m_shutdown(false)
-{   
-   m_thread.Start();
-}
-
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
    :  m_thread(*this),
-      m_shutdown(false)
-{
-   m_thread.Start();
-}
-
-CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const Milliseconds maxTimeout)
-   :  m_thread(*this),
-      m_timerQueue(maxTimeout),
       m_shutdown(false)
 {
    m_thread.Start();

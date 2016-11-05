@@ -25,6 +25,7 @@
 #include "JetByteTools\TestTools\TestException.h"
 
 #include "CallbackTimerQueueTest.h"
+#include "CallbackTimerQueueExTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
@@ -79,6 +80,11 @@ int main(int /*argc*/, char * /*argv[ ]*/)
       }
 
       CCallbackTimerQueueTest::TestAll();
+
+#if (_WIN32_WINNT >= 0x0600) 
+      CCallbackTimerQueueExTest::TestAll();
+#endif
+
       CThreadedCallbackTimerQueueTest::TestAll();
 
       ok = true;

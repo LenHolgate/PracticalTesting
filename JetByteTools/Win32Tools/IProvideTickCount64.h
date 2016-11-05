@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_TEST_EXPANDABLE_BUFFER_TEST_INCLUDED__
-#define JETBYTE_TOOLS_TEST_EXPANDABLE_BUFFER_TEST_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_I_PROVIDE_TICK_COUNT_64_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_I_PROVIDE_TICK_COUNT_64_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: ExpandableBufferTest.h 
+// File: IProvideTickCount64.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -24,64 +24,54 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <wtypes.h>
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Test {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CExpandableBufferTest
+// IProvideTickCount64
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A test for TExpandableBuffer
-/// \test
-/// \ingroup CPlusPlusToolsTests
+/// An interface that provides access to the operating system 
+/// <a href="http://msdn2.microsoft.com/en-us/library/ms724411(VS.85).aspx">GetTickCount64()</a> 
+/// call. Code can access this service via an instance to IProvideTickCount64 so 
+/// that the provider can be replaced (usually for testing purposes). 
+/// See <a href= "http://www.lenholgate.com/archives/000311.html">here</a> 
+/// for more details.
+/// \ingroup Timers
+/// \ingroup Interfaces
+/// \ingroup ProtectedDestructors
 
-class CExpandableBufferTest
+class IProvideTickCount64
 {
-   public :
+   public : 
 
-      /// Runs all the tests.
+      /// Returns the current tick count.
 
-      static void TestAll();
+      virtual ULONGLONG GetTickCount64() const = 0;
 
-      /// Tests the construction of a TExpandableBuffer of various types.
+   protected :
+
+		/// We never delete instances of this interface; you must manage the 
+		/// lifetime of the class that implements it.
       
-      static void TestConstruct();
-
-      /// Tests assignment.
-      
-      static void TestAssign();
-
-      /// Tests copy construction.
-
-      static void TestCopyConstruct();
-
-      /// Tests that TExpandableBuffer::Expand() is non destructive.
-      
-      static void TestExpand();
-
-      /// Tests that TExpandableBuffer::Resize() is destructive.
-
-      static void TestResize();
-
-      /// Tests that TExpandableBuffer::ReleaseBuffer() passes ownership to
-      /// the caller.
-
-      static void TestRelease();
+      ~IProvideTickCount64() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Test
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_TEST_EXPANDABLE_BUFFER_TEST_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_I_PROVIDE_TICK_COUNT_64_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: ExpandableBufferTest.h
+// End of file: IProvideTickCount64.h
 ///////////////////////////////////////////////////////////////////////////////

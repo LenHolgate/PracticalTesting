@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
-#define JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
+#ifndef JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_EX_INCLUDED__
+#define JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_EX_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueue.h
+// File: CallbackTimerQueueEx.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -25,9 +25,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "IQueueTimers.h"
-#include "CriticalSection.h"
 
 #include <map>
+
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#if (_WIN32_WINNT >= 0x0600) 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -40,10 +45,10 @@ namespace Win32 {
 // Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
-class IProvideTickCount;
+class IProvideTickCount64;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueue
+// CCallbackTimerQueueEx
 ///////////////////////////////////////////////////////////////////////////////
 
 /// A class that manages a group of timers that implement IQueueTimers::Timer 
@@ -59,25 +64,24 @@ class IProvideTickCount;
 /// this wrap point and an exception will be thrown. GetMaximumTimeout() does
 /// not report the reducing maximum timeout as the wrap point approaches, it
 /// will always return 4294967294ms.
- 
 /// \ingroup Timers
 
-class CCallbackTimerQueue : public IQueueTimers
+class CCallbackTimerQueueEx : public IQueueTimers
 {
    public :
 
       /// Create a timer queue.
 
-      CCallbackTimerQueue();
+      CCallbackTimerQueueEx();
 
       /// Create a timer queue that uses the provdided instance of 
-      /// IProvideTickCount to obtain its tick counts rather than getting
+      /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system.
       
-      explicit CCallbackTimerQueue(
-         const IProvideTickCount &tickProvider);
+      explicit CCallbackTimerQueueEx(
+         const IProvideTickCount64 &tickProvider);
 
-      ~CCallbackTimerQueue();
+      ~CCallbackTimerQueueEx();
 
       /// Get the number of milliseconds until the next timer is due to fire.
       /// Or INFINITE if no timer is set.
@@ -139,38 +143,18 @@ class CCallbackTimerQueue : public IQueueTimers
       void MarkHandleUnset(
          Handle handle);
 
-      void SetMaintenanceTimer();
-
-      ULONGLONG GetTickCount64();
-
       TimerQueue m_queue;
 
       HandleMap m_handleMap;
 
-      const IProvideTickCount &m_tickProvider;
+      const IProvideTickCount64 &m_tickProvider;
 
       const Milliseconds m_maxTimeout;
 
-      LARGE_INTEGER m_lastCount;
-
-      CCriticalSection m_criticalSection;
-
-      Handle m_maintenanceTimer;
-
-      class MaintenanceTimerHandler : public IQueueTimers::Timer
-      {
-         // Implement IQueueTimers::Timer 
-
-         virtual void OnTimer(
-            IQueueTimers::Timer::UserData userData);
-      };
-
-      MaintenanceTimerHandler m_maintenanceTimerHandler;
-
 		/// No copies do not implement
-      CCallbackTimerQueue(const CCallbackTimerQueue &rhs);
+      CCallbackTimerQueueEx(const CCallbackTimerQueueEx &rhs);
 		/// No copies do not implement
-      CCallbackTimerQueue &operator=(const CCallbackTimerQueue &rhs);
+      CCallbackTimerQueueEx &operator=(const CCallbackTimerQueueEx &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -180,8 +164,14 @@ class CCallbackTimerQueue : public IQueueTimers
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_INCLUDED__
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // (_WIN32_WINNT >= 0x0600)
+
+#endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_EX_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueue.h
+// End of file: CallbackTimerQueueEx.h
 ///////////////////////////////////////////////////////////////////////////////

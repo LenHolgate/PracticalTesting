@@ -26,6 +26,7 @@
 
 #include "LoggingCallbackTimer.h"
 #include "MockTickCountProvider.h"
+#include "MockTickCount64Provider.h"
 
 #endif // JETBYTE_TOOLS_WIN32_MOCK_PRECOMPILED_HEADER_INCLUDED__
 

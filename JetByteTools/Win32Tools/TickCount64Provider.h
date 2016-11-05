@@ -1,8 +1,14 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_TICK_COUNT_64_PROVIDER_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_TICK_COUNT_64_PROVIDER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockReferenceCounted.cpp
+// File: TickCount64Provider.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -18,56 +24,58 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
-
-#include "MockReferenceCounted.h"
-
-#include "JetByteTools\Win32Tools\Utils.h"
+#include "IProvideTickCount64.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
+// Requires Windows Vista or later due to use of GetTickCount64()
 ///////////////////////////////////////////////////////////////////////////////
 
-using JetByteTools::Win32::ToString;
+#if (_WIN32_WINNT >= 0x0600) 
 
-//////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Mock {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CMockReferenceCounted
+// CTickCount64Provider
 ///////////////////////////////////////////////////////////////////////////////
 
-CMockReferenceCounted::CMockReferenceCounted()
-   :  m_ref(1)
+/// A class that implements IProvideTickCount64 and returns the tick count 
+/// directly from a call to the operating system 
+/// <a href="http://msdn2.microsoft.com/en-us/library/ms724411(VS.85).aspx">GetTickCount64()</a>
+/// function. 
+/// See <a href="http://www.lenholgate.com/archives/000311.html">here</a> for 
+/// more details.
+/// \ingroup Timers
+
+class CTickCount64Provider: public IProvideTickCount64
 {
-}
+   public : 
 
-void CMockReferenceCounted::AddRef()
-{
-   m_ref++;
-
-   LogMessage(_T("AddRef: ") + ToString(m_ref));
-}
-
-void CMockReferenceCounted::Release()
-{
-   m_ref--;
-
-   LogMessage(_T("Release: ") + ToString(m_ref));
-}
+      virtual ULONGLONG GetTickCount64() const
+      {
+         return ::GetTickCount64();
+      }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Mock
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: ExpandableBufferTest.cpp
+// Requires Windows Vista or later due to use of GetTickCount64()
 ///////////////////////////////////////////////////////////////////////////////
 
+#endif // (_WIN32_WINNT >= 0x0600)
+
+#endif // JETBYTE_TOOLS_WIN32_TICK_COUNT_64_PROVIDER_INCLUDED__
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: TickCount64Provider.h
+///////////////////////////////////////////////////////////////////////////////

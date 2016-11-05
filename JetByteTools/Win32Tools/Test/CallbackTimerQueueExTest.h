@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_MOCK_NODE_LIST_NODE_INCLUDED__
-#define JETBYTE_TOOLS_MOCK_NODE_LIST_NODE_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: MockNodeListNode.h 
+// File: CallbackTimerQueueExTest.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2008 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -24,42 +24,64 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "..\NodeList.h"
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#if (_WIN32_WINNT >= 0x0600) 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
-namespace Mock {
+namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CMockNodeListNode
+// CCallbackTimerQueueExTest
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A mock object that derives from CNodeList::Node and so can be stored in
-/// a CNodeList or a TNodeList<CMockNodeListNode>.
-/// \ingroup CPlusPlusToolsMocks
+/// A test for CCallbackTimerQueue
+/// \test
+/// \ingroup Win32ToolsTests
 
-class CMockNodeListNode : public CNodeList::Node
+class CCallbackTimerQueueExTest
 {
    public :
 
-      CMockNodeListNode()
-      {
-
-      }
+      static void TestAll();
+      static void TestConstruct();
+      static void TestCreateTimer();
+      static void TestDestroyTimer();
+      static void TestTimer();
+      static void TestMultipleTimers();
+      static void TestCancelTimer();
+      static void TestCancelExpiredTimer();
+      static void TestGetMaxTimeout();
+      static void TestMaxTimeout();
+      static void TestSetTimerPastTickCount64CountWrap();
+      static void TestResetTimer();
+      static void TestOneShotTimer();
+      static void TestActiveTimersAtDestructionTime();
 };
-  
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Mock
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Mock
+} // End of namespace Test
+} // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_MOCK_NODE_LIST_NODE_INCLUDED__
+///////////////////////////////////////////////////////////////////////////////
+// Requires Windows Vista or later due to use of GetTickCount64()
+///////////////////////////////////////////////////////////////////////////////
+
+#endif // (_WIN32_WINNT >= 0x0600)
+
+#endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: MockNodeListNode.h
+// End of file: CallbackTimerQueueExTest.h
 ///////////////////////////////////////////////////////////////////////////////
