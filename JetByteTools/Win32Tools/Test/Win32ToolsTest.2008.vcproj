@@ -1002,6 +1002,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CallbackTimerWheelTest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CallbackTimerWheelTest.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ThreadedCallbackTimerQueueTest.cpp"
 				>
 			</File>
@@ -1181,14 +1189,6 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\CallbackTimerWheelTest.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\CallbackTimerWheelTest.h"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

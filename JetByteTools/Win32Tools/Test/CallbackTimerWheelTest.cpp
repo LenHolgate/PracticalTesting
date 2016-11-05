@@ -83,6 +83,7 @@ void CCallbackTimerWheelTest::TestAll(
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetMaximumTimeout);
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetNextTimeout);
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestSetTimerWhenNowNotEqualToCurrent);
+   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestOnShotTimerSetTimerWhenNowNotEqualToCurrent);
 }
 
 void CCallbackTimerWheelTest::TestConstruct()
@@ -277,13 +278,13 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowNotEqualToCurrent()
 
       CLoggingCallbackTimer timer;
 
-      const Milliseconds timeout = 1000;
+      const Milliseconds timeout1 = 1000;
 
       Milliseconds now = 0;
 
-      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout, 1, now);
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout1, 1, now);
 
-      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
 
@@ -293,7 +294,7 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowNotEqualToCurrent()
 
       tickProvider.SetTickCount(now);        // time moves on
 
-      expectedTimeout = CalculateExpectedTimeout(timeout, now, 0);
+      expectedTimeout = CalculateExpectedTimeout(timeout1, now, 0);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
 
@@ -302,9 +303,11 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowNotEqualToCurrent()
       // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
       // though the timer wheel thinks that the current time is 0.
 
-      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout, 2, now);
+      const Milliseconds timeout2 = 500;
 
-      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout2, 2, now);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout2, now, now);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
 
@@ -312,6 +315,72 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowNotEqualToCurrent()
 
       (void)handle1;
       (void)handle2;
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowNotEqualToCurrent()
+{
+   CMockTickCountProvider tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   CMockTimerQueueMonitor monitor;
+
+   {
+      static const Milliseconds maximumTimeout = 4000;
+
+      static const Milliseconds timerGranularity = 15;
+
+      CCallbackTimerWheel timerWheel(monitor, maximumTimeout, timerGranularity, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout1 = 1000;
+
+      Milliseconds now = 0;
+
+      timerWheel.SetTimer(timer, timeout1, 1);
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now = 200;
+
+      tickProvider.SetTickCount(now);        // time moves on
+
+      expectedTimeout = CalculateExpectedTimeout(timeout1, now, 0);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
+      // though the timer wheel thinks that the current time is 0.
+
+      const Milliseconds timeout2 = 500;
+
+      timerWheel.SetTimer(timer, timeout2, 2);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout2, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up

@@ -61,6 +61,7 @@ class CCallbackTimerWheelTest :
       static void TestGetMaximumTimeout();
       static void TestGetNextTimeout();
       static void TestSetTimerWhenNowNotEqualToCurrent();
+      static void TestOnShotTimerSetTimerWhenNowNotEqualToCurrent();
 
 
       // Test traits...
@@ -70,7 +71,8 @@ class CCallbackTimerWheelTest :
          maxTimeout = 4000,
          creationQueriesTicks = true,
          creationCreatesTimer = false,
-         setQueriesTicks = false,
+         setQueriesTicks = true,
+         failedSetQueriesTicks = true,
          handleTimeoutQueriesTicksPerTimer = false,
          timersAtSameTimeAreExpiredInOrderSet = false,
 

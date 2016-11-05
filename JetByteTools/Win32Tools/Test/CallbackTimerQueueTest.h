@@ -51,6 +51,7 @@ struct CCallbackTimerQueueTestTraits
       creationQueriesTicks = true,
       creationCreatesTimer = true,
       setQueriesTicks = true,
+      failedSetQueriesTicks = false,
       handleTimeoutQueriesTicksPerTimer = true,
       timersAtSameTimeAreExpiredInOrderSet = true,
 

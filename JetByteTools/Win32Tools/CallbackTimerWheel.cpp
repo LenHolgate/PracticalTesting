@@ -389,7 +389,7 @@ void CCallbackTimerWheel::HandleTimeouts()
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
 
-   m_monitor.OnTimerDeleted();
+            m_monitor.OnTimerDeleted();
 
 #endif
          }
@@ -449,11 +449,15 @@ bool CCallbackTimerWheel::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
-   if (timeout > m_maximumTimeout)
+   const Milliseconds now = m_tickCountProvider.GetTickCount();
+
+   const Milliseconds actualTimeout = timeout + (now - m_currentTime);
+
+   if (actualTimeout > m_maximumTimeout)
    {
       throw CException(
          _T("CCallbackTimerWheel::SetTimer()"), 
-         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(timeout));
+         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(actualTimeout) + _T(" (") + ToString(timeout) + _T(")"));
    }
 
    TimerData &data = ValidateHandle(handle);
@@ -462,7 +466,7 @@ bool CCallbackTimerWheel::SetTimer(
 
    data.UpdateData(timer, userData);
 
-   InsertTimer(timeout, data, wasPending);
+   InsertTimer(actualTimeout, data, wasPending);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
 
@@ -478,18 +482,22 @@ void CCallbackTimerWheel::SetTimer(
    const Milliseconds timeout,
    const IQueueTimers::UserData userData)
 {
-   if (timeout > m_maximumTimeout)
+   const Milliseconds now = m_tickCountProvider.GetTickCount();
+
+   const Milliseconds actualTimeout = timeout + (now - m_currentTime);
+
+   if (actualTimeout > m_maximumTimeout)
    {
       throw CException(
          _T("CCallbackTimerWheel::SetTimer()"), 
-         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(timeout));
+         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(actualTimeout) + _T(" (") + ToString(timeout) + _T(")"));
    }
 
    TimerData *pData = new TimerData(timer, userData);
 
    OnTimerCreated(pData);
 
-   InsertTimer(timeout, *pData);
+   InsertTimer(actualTimeout, *pData);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
 

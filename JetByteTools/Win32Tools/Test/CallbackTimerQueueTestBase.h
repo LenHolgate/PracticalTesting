@@ -167,6 +167,10 @@ class TCallbackTimerQueueTestBase
          TickProvider &tickProvider,
          const Milliseconds expectedTickCount = 0);
 
+      static void CheckTickProviderFailedSetTimerResults(
+         TickProvider &tickProvider,
+         const Milliseconds expectedTickCount = 0);
+
       static void CheckTickProviderHandleTimeoutsResults(
          const size_t numDifferentTimes,
          TickProvider &tickProvider,
@@ -1652,13 +1656,13 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
 
       THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
 
-      tickProvider.CheckNoResults();
+      CheckTickProviderFailedSetTimerResults(tickProvider, initialTickCount);
 
       THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle));
 
       THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
 
-      tickProvider.CheckNoResults();
+      CheckTickProviderFailedSetTimerResults(tickProvider, initialTickCount);
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
@@ -2781,6 +2785,14 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderSetTimerResults(
 }
 
 template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderFailedSetTimerResults(
+   P &tickProvider,
+   const Milliseconds expectedTickCount = 0)
+{
+   CheckTickProviderResults(T::failedSetQueriesTicks, tickProvider, expectedTickCount);
+}
+
+template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderHandleTimeoutsResults(
    const size_t numDifferentTimes,
    P &tickProvider,
@@ -2842,16 +2854,16 @@ Milliseconds TCallbackTimerQueueTestBase<Q, T, P>::CalculateExpectedTimeout(
       return timeout - (now - timerSetTime);
    }
 
-   const Milliseconds expectedTimeout = ((timeout / T::timerGranularity) + 1) * T::timerGranularity;
+   const Milliseconds absoluteTimeout = timerSetTime + timeout;
 
-   const Milliseconds expectedAbsoluteTimeout = timerSetTime + expectedTimeout;
+   const Milliseconds expectedTimeout = ((absoluteTimeout / T::timerGranularity) + 1) * T::timerGranularity;
 
-   if (expectedAbsoluteTimeout < now)
+   if (expectedTimeout < now)
    {
       return 0;
    }
 
-   return expectedAbsoluteTimeout - now;
+   return expectedTimeout - now;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

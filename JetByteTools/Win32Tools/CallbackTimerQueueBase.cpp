@@ -155,6 +155,12 @@ CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 
 #endif
    }
+
+   for (TimerQueue::iterator it = m_queue.begin(); it != m_queue.end(); ++it)
+   {
+      delete (it->second);
+   }
+
 }
 
 CCallbackTimerQueueBase::Handle CCallbackTimerQueueBase::CreateTimer()
@@ -507,6 +513,8 @@ void CCallbackTimerQueueBase::HandleTimeouts()
             }
          }
       }
+
+      delete pTimers;
    }
 }
 
