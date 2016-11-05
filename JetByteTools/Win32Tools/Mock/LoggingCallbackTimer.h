@@ -74,7 +74,7 @@ class CLoggingCallbackTimer :
 
       CAutoResetEvent m_timerEvent;
 
-      volatile unsigned long m_numTimerEvents;
+      volatile long m_numTimerEvents;
 
       // No copies do not implement
       CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);

@@ -140,6 +140,9 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       class TimerData;
 
+      Milliseconds CalculateTimeout(
+         const Milliseconds timeout);
+
       Handle OnTimerCreated(
          TimerData *pData);
 

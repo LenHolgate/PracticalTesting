@@ -4,16 +4,16 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,6 +26,7 @@
 #include "..\Mock\MockTickCount64Provider.h"
 #include "..\Mock\LoggingCallbackTimer.h"
 #include "..\Mock\MockTimerQueue.h"
+#include "..\Mock\MockThreadedCallbackTimerQueueMonitor.h"
 
 #include "JetByteTools\TestTools\TestException.h"
 #include "JetByteTools\TestTools\RunTest.h"
@@ -48,6 +49,7 @@ using JetByteTools::Win32::Mock::CMockTickCountProvider;
 using JetByteTools::Win32::Mock::CMockTickCount64Provider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
 using JetByteTools::Win32::Mock::CMockTimerQueue;
+using JetByteTools::Win32::Mock::CMockThreadedCallbackTimerQueueMonitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -108,6 +110,8 @@ void CThreadedCallbackTimerQueueTest::TestAll(
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTimerWheel);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTimerWheelNoLock);
 
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMonitorTimerWithLock);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMonitorTimerNoLock);
 }
 
 void CThreadedCallbackTimerQueueTest::TestConstructBestForPlatform()
@@ -123,6 +127,36 @@ void CThreadedCallbackTimerQueueTest::TestConstructBestForPlatform()
    {
       CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::BestForPlatformNoLock);
    }
+
+   CMockThreadedCallbackTimerQueueMonitor monitor;
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::BestForPlatform, monitor);
+   }
+
+#if (_WIN32_WINNT >= 0x0600)
+
+   monitor.CheckNoResults();
+
+#else
+
+   monitor.CheckResult(_T("|OnTimerCreated|OnTimerSet|OnTimerDestroyed: Was Pending|OnTimerDeleted|"));
+
+#endif
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::BestForPlatformNoLock, monitor);
+   }
+
+#if (_WIN32_WINNT >= 0x0600)
+
+   monitor.CheckNoResults();
+
+#else
+
+   monitor.CheckResult(_T("|OnTimerCreated|OnTimerSet|OnTimerDestroyed: Was Pending|OnTimerDeleted|"));
+
+#endif
 }
 
 void CThreadedCallbackTimerQueueTest::TestConstructTickCount64()
@@ -171,7 +205,7 @@ void CThreadedCallbackTimerQueueTest::TestConstructHybridTickCount64()
 
       CThreadedCallbackTimerQueue timerQueue(tickProvider);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));       // creating a queue sets an 
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));       // creating a queue sets an
                                                                // internal maintenance timer
 
       CThreadedCallbackTimerQueue timerQueue2(tickProvider, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
@@ -416,6 +450,74 @@ void CThreadedCallbackTimerQueueTest::TestMultipleTimersTimerWheelNoLock()
    TestMultipleTimers(timerWheel, CThreadedCallbackTimerQueue::DispatchTimersWithLock);
 }
 
+void CThreadedCallbackTimerQueueTest::TestMonitorTimerWithLock()
+{
+   CMockTimerQueue queue;
+
+   CMockThreadedCallbackTimerQueueMonitor monitor;
+
+   CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock, monitor);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   CLoggingCallbackTimer timer;
+
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
+
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|GetNextTimeout|"));
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+   monitor.CheckResult(_T("|OnTimerProcessingStarted|OnTimerProcessingStopped|"));
+#else
+   monitor.CheckNoResults();
+#endif
+}
+
+void CThreadedCallbackTimerQueueTest::TestMonitorTimerNoLock()
+{
+   CMockTimerQueue queue;
+
+   CMockThreadedCallbackTimerQueueMonitor monitor;
+
+   CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersNoLock, monitor);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   CLoggingCallbackTimer timer;
+
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
+
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|EndTimeoutHandling|GetNextTimeout|"));
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+   monitor.CheckResult(_T("|OnTimerProcessingStarted|OnTimerProcessingStopped|"));
+#else
+   monitor.CheckNoResults();
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Static helper functions
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,7 +636,7 @@ static void TestMultipleTimers(
 
 } // End of namespace Test
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadedCallbackTimerQueueTest.cpp

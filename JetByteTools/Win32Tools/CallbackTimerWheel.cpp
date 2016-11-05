@@ -4,16 +4,16 @@
 //
 // Copyright 2010 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,15 +29,11 @@
 
 #pragma hdrstop
 
-#include "JetByteTools\TestTools\TestException.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using std::min;
-
-using JetByteTools::Test::CTestSkippedException;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -319,7 +315,7 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
 
       delete pData;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
       m_monitor.OnTimerDeleted();
 
@@ -333,24 +329,24 @@ Milliseconds CCallbackTimerWheel::GetNextTimeout()
 {
    Milliseconds nextTimeout = INFINITE;
 
-   // We need to work out the time difference between now and the first timer that is set. 
+   // We need to work out the time difference between now and the first timer that is set.
 
    if (!m_pFirstTimerSetHint)
    {
-      m_pFirstTimerSetHint = GetFirstTimerSet(); 
+      m_pFirstTimerSetHint = GetFirstTimerSet();
    }
 
    if (m_pFirstTimerSetHint)
    {
       // A timer is set! Calculate the timeout in ms
 
-      nextTimeout = static_cast<Milliseconds>(((m_pFirstTimerSetHint > m_pNow ? (m_pFirstTimerSetHint - m_pNow) : (m_pNow - m_pFirstTimerSetHint)) + 1) * m_timerGranularity);
+      nextTimeout = static_cast<Milliseconds>(((m_pFirstTimerSetHint >= m_pNow ? (m_pFirstTimerSetHint - m_pNow) : (m_pTimersEnd - m_pNow + m_pFirstTimerSetHint - m_pTimersStart)) + 1) * m_timerGranularity);
 
       const Milliseconds now = m_tickCountProvider.GetTickCount();
 
       if (now != m_currentTime)
       {
-         // Time has moved on, adjust the next timeout to take into account the difference between now and 
+         // Time has moved on, adjust the next timeout to take into account the difference between now and
          // the timer wheel's view of the current time...
 
          const Milliseconds timeDiff = (now > m_currentTime ? now - m_currentTime : m_currentTime - now);
@@ -363,6 +359,13 @@ Milliseconds CCallbackTimerWheel::GetNextTimeout()
          {
             nextTimeout -= timeDiff;
          }
+      }
+
+      if (nextTimeout > m_maximumTimeout)
+      {
+         throw CException(
+            _T("CCallbackTimerWheel::GetNextTimeout()"), 
+            _T("Next timeout: ") + ToString(nextTimeout) + _T(" is larger than max: ") + ToString(m_maximumTimeout));
       }
    }
 
@@ -387,7 +390,7 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetFirstTimerSet() const
 
       if (!pFirstTimer)
       {
-         // We havent yet found our first timer, now scan from the start of the array to 
+         // We havent yet found our first timer, now scan from the start of the array to
          // now...
 
          for (TimerData **p = m_pTimersStart; !pFirstTimer && p < m_pNow; ++p)
@@ -422,7 +425,7 @@ void CCallbackTimerWheel::HandleTimeouts()
 
          pTimers = pTimer->OnTimer();
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
          m_monitor.OnTimer();
 
@@ -434,7 +437,7 @@ void CCallbackTimerWheel::HandleTimeouts()
 
             delete pTimer;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
             m_monitor.OnTimerDeleted();
 
@@ -451,7 +454,7 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerWheel::BeginTimeoutHandling()
    if (m_handlingTimeouts != InvalidTimeoutHandleValue)
    {
       throw CException(
-         _T("CCallbackTimerWheel::BeginTimeoutHandling()"), 
+         _T("CCallbackTimerWheel::BeginTimeoutHandling()"),
          _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
    }
 
@@ -479,16 +482,23 @@ void CCallbackTimerWheel::HandleTimeout(
 #pragma warning(push, 4)
 #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerWheel::HandleTimeout()"), 
+         _T("CCallbackTimerWheel::HandleTimeout()"),
          _T("Invalid timeout handle: ") + ToString(handle));
 #pragma warning(pop)
    }
-   
+
    TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
 
    while (pTimers)
    {
       pTimers = pTimers->HandleTimeout();
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+
+         m_monitor.OnTimer();
+
+#endif
+
    }
 }
 
@@ -502,7 +512,7 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 #pragma warning(push, 4)
 #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerWheel::EndTimeoutHandling()"), 
+         _T("CCallbackTimerWheel::EndTimeoutHandling()"),
          _T("Invalid timeout handle: ") + ToString(handle));
 #pragma warning(pop)
    }
@@ -526,7 +536,7 @@ void CCallbackTimerWheel::EndTimeoutHandling(
       {
          delete pDeadTimer;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
          m_monitor.OnTimerDeleted();
 
@@ -549,7 +559,7 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
 {
    m_handles.insert(pData);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnTimerCreated();
 
@@ -558,22 +568,37 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
    return reinterpret_cast<Handle>(pData);
 }
 
-bool CCallbackTimerWheel::SetTimer(
-   const Handle &handle,
-   Timer &timer,
-   const Milliseconds timeout,
-   const UserData userData)
+Milliseconds CCallbackTimerWheel::CalculateTimeout(
+   const Milliseconds timeout)
 {
    const Milliseconds now = m_tickCountProvider.GetTickCount();
+
+   if (m_numTimersSet == 0)
+   {
+      m_currentTime = now;
+
+      m_pNow = m_pTimersStart;
+   }
 
    const Milliseconds actualTimeout = timeout + (now - m_currentTime);
 
    if (actualTimeout > m_maximumTimeout)
    {
       throw CException(
-         _T("CCallbackTimerWheel::SetTimer()"), 
+         _T("CCallbackTimerWheel::CalculateTimeout()"),
          _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(actualTimeout) + _T(" (") + ToString(timeout) + _T(")"));
    }
+
+   return actualTimeout;
+}
+
+bool CCallbackTimerWheel::SetTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData)
+{
+   Milliseconds actualTimeout = CalculateTimeout(timeout);
 
    TimerData &data = ValidateHandle(handle);
 
@@ -583,7 +608,7 @@ bool CCallbackTimerWheel::SetTimer(
 
    InsertTimer(actualTimeout, data, wasPending);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnTimerSet(wasPending);
 
@@ -597,16 +622,7 @@ void CCallbackTimerWheel::SetTimer(
    const Milliseconds timeout,
    const IQueueTimers::UserData userData)
 {
-   const Milliseconds now = m_tickCountProvider.GetTickCount();
-
-   const Milliseconds actualTimeout = timeout + (now - m_currentTime);
-
-   if (actualTimeout > m_maximumTimeout)
-   {
-      throw CException(
-         _T("CCallbackTimerWheel::SetTimer()"), 
-         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(actualTimeout) + _T(" (") + ToString(timeout) + _T(")"));
-   }
+   Milliseconds actualTimeout = CalculateTimeout(timeout);
 
    TimerData *pData = new TimerData(timer, userData);
 
@@ -614,7 +630,7 @@ void CCallbackTimerWheel::SetTimer(
 
    InsertTimer(actualTimeout, *pData);
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnOneOffTimerSet();
 
@@ -657,7 +673,7 @@ bool CCallbackTimerWheel::CancelTimer(
       OnTimerCancelled();
    }
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnTimerCancelled(wasPending);
 
@@ -684,7 +700,7 @@ bool CCallbackTimerWheel::DestroyTimer(
 
    handle = InvalidHandleValue;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnTimerDestroyed(wasPending);
 
@@ -698,7 +714,7 @@ bool CCallbackTimerWheel::DestroyTimer(
    {
       delete &data;
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
    m_monitor.OnTimerDeleted();
 
@@ -746,7 +762,7 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
 #pragma warning(push, 4)
 #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerWheel::ValidateHandle()"), 
+         _T("CCallbackTimerWheel::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
 #pragma warning(pop)
    }
@@ -758,7 +774,7 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
 #pragma warning(push, 4)
 #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerWheel::ValidateHandle()"), 
+         _T("CCallbackTimerWheel::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
 #pragma warning(pop)
    }
@@ -1020,7 +1036,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer(
    if (!data.pTimer)
    {
       throw CException(
-         _T("CCallbackTimerWheel::TimerData::OnTimer()"), 
+         _T("CCallbackTimerWheel::TimerData::OnTimer()"),
          _T("Internal Error: Timer not set"));
    }
 
@@ -1087,14 +1103,14 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::TimeoutHandlingC
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerWheel::TimerData::Data::Data()
-   :  pTimer(0), 
+   :  pTimer(0),
       userData(0)
 {
 
 }
 
 CCallbackTimerWheel::TimerData::Data::Data(
-   Timer &timer, 
+   Timer &timer,
    UserData userData_)
    :  pTimer(&timer),
       userData(userData_)
@@ -1124,7 +1140,7 @@ static size_t CalculateNumberOfTimers(
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CallbackTimerWheel.cpp

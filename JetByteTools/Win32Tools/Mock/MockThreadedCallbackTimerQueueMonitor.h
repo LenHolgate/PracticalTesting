@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_MOCK_THREADED_CALLBACK_TIMER_QUEUE_MONITOR_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MOCK_THREADED_CALLBACK_TIMER_QUEUE_MONITOR_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueExTest.h
+// File: MockThreadedCallbackTimerQueueMonitor.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2008 JetByte Limited.
+// Copyright 2010 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -24,82 +24,77 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CallbackTimerQueueTestBase.h"
+#include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\CallbackTimerQueueEx.h"
-
-#include "..\Mock\MockTickCount64Provider.h"
+#include "..\IMonitorThreadedCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
-namespace Test {
+namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueExTest
+// CMockThreadedCallbackTimerQueueMonitor
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CCallbackTimerQueueExTestTraits
-{
-   enum traits
-   {
-      timerGranularity = 1,
-      maxTimeout = 4294967294,
-      creationQueriesTicks = false,
-      creationCreatesTimer = false,
-      setQueriesTicks = true,
-      failedSetQueriesTicks = false,
-      handleTimeoutQueriesTicksPerTimer = true,
-      timersAtSameTimeAreExpiredInOrderSet = true,
+/// A mock object that implements IMonitorCallbackTimerQueue.
+/// \ingroup Win32ToolsMocks
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
-      monitoringEnabled = true
-
-#else
-
-      monitoringEnabled = false
-
-#endif
-
-   };
-
-   static const _tstring shortName;
-};
-
-/// A test for CCallbackTimerQueue
-/// \test
-/// \ingroup Win32ToolsTests
-
-class CCallbackTimerQueueExTest :
-   public TCallbackTimerQueueTestBase<
-      CCallbackTimerQueueEx,
-      CCallbackTimerQueueExTestTraits,
-      JetByteTools::Win32::Mock::CMockTickCount64Provider>
+class CMockThreadedCallbackTimerQueueMonitor :
+   public IMonitorThreadedCallbackTimerQueue,
+   public JetByteTools::Test::CTestLog
 {
    public :
 
-      static void TestAll(
-         JetByteTools::Test::CTestMonitor &monitor);
+      CMockThreadedCallbackTimerQueueMonitor();
 
-      static void TestGetMaxTimeout();
-      static void TestMaxTimeout();
-      static void TestSetTimerPastTickCount64CountWrap();
+      // Implement IMonitorThreadedCallbackTimerQueue
+
+      virtual void OnTimerProcessingContention(
+         const ContentionLocation location);
+
+      virtual void OnTimerProcessingStarted();
+
+      virtual void OnTimerProcessingStopped();
+
+      virtual void OnTimerCreated();
+
+      virtual void OnOneOffTimerSet();
+
+      virtual void OnTimerSet(
+         const bool wasPending);
+
+      virtual void OnTimer();
+
+      virtual void OnTimerCancelled(
+         const bool wasPending);
+
+      virtual void OnTimerDestroyed(
+         const bool wasPending);
+
+      virtual void OnTimerDeleted();
+
+   private :
+
+      /// No copies do not implement
+      CMockThreadedCallbackTimerQueueMonitor(const CMockThreadedCallbackTimerQueueMonitor &rhs);
+      /// No copies do not implement
+      CMockThreadedCallbackTimerQueueMonitor &operator=(const CMockThreadedCallbackTimerQueueMonitor &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Mock
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
-#endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_MOCK_THREADED_CALLBACK_TIMER_QUEUE_MONITOR_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueueExTest.h
+// End of file: MockThreadedCallbackTimerQueueMonitor.h
 ///////////////////////////////////////////////////////////////////////////////

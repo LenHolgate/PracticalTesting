@@ -1689,16 +1689,35 @@ _tstring GetTempPath()
 {
    const DWORD spaceRequired = ::GetTempPath(0, 0);
 
+   if (spaceRequired == 0)
+   {
+      const DWORD lastError = GetLastError();
+
+      throw CWin32Exception(_T("GetTempPath()"), lastError);
+   }
+
    _tstring directory;
 
    directory.resize(spaceRequired - 1);
 
-   const DWORD spaceUsed = 1 + ::GetTempPath(spaceRequired, const_cast<TCHAR*>(directory.c_str()));
+   const DWORD spaceUsed = ::GetTempPath(spaceRequired, const_cast<TCHAR*>(directory.c_str()));
 
-   if (spaceRequired != spaceUsed)
+   if (spaceUsed == 0)
    {
-      throw CException(_T("GetTempPath()"), _T("Failed to get temp path"));
+      const DWORD lastError = GetLastError();
+
+      throw CWin32Exception(_T("GetTempPath()"), lastError);
    }
+
+   if (spaceUsed > spaceRequired)
+   {
+      throw CException(
+         _T("GetTempPath()"), 
+         _T("Failed to get temp path, second call needed more space ") + ToString(spaceUsed) + 
+         _T(" than first call allocated ") + ToString(spaceRequired));
+   }
+
+   directory.resize(spaceUsed);
 
    return directory;
 }

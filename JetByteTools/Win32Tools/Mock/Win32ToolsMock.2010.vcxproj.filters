@@ -35,6 +35,9 @@
     <ClCompile Include="TestCallbackTimerWheel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MockThreadedCallbackTimerQueueMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PrecompiledHeader.h">
@@ -56,6 +59,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TestCallbackTimerWheel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MockThreadedCallbackTimerQueueMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

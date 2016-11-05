@@ -5,21 +5,21 @@
 #ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_WHEEL_TEST_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_WHEEL_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerWheelTest.h 
+// File: CallbackTimerWheelTest.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2010 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ namespace Test {
 
 class CCallbackTimerWheelTest :
    public TCallbackTimerQueueTestBase<
-      JetByteTools::Win32::Mock::CTestCallbackTimerWheel, 
+      JetByteTools::Win32::Mock::CTestCallbackTimerWheel,
       CCallbackTimerWheelTest,
       JetByteTools::Win32::Mock::CMockTickCountProvider>
 {
@@ -61,8 +61,12 @@ class CCallbackTimerWheelTest :
       static void TestGetMaximumTimeout();
       static void TestGetNextTimeout();
       static void TestSetTimerWhenNowNotEqualToCurrent();
+      static void TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrent();
+      static void TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
       static void TestOnShotTimerSetTimerWhenNowNotEqualToCurrent();
-
+      static void TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrent();
+      static void TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
+      static void TestGetNextTimeoutWhenWheelWraps();
 
       // Test traits...
       enum traits
@@ -76,7 +80,7 @@ class CCallbackTimerWheelTest :
          handleTimeoutQueriesTicksPerTimer = false,
          timersAtSameTimeAreExpiredInOrderSet = false,
 
-   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
          monitoringEnabled = true
 
@@ -97,7 +101,7 @@ class CCallbackTimerWheelTest :
 
 } // End of namespace Test
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_WHEEL_TEST_INCLUDED__
 

@@ -550,6 +550,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LoggingCallbackTimer.cpp" />
+    <ClCompile Include="MockThreadedCallbackTimerQueueMonitor.cpp" />
     <ClCompile Include="MockTickCount64Provider.cpp" />
     <ClCompile Include="MockTickCountProvider.cpp" />
     <ClCompile Include="MockTimerQueue.cpp" />
@@ -580,6 +581,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoggingCallbackTimer.h" />
+    <ClInclude Include="MockThreadedCallbackTimerQueueMonitor.h" />
     <ClInclude Include="MockTickCount64Provider.h" />
     <ClInclude Include="MockTickCountProvider.h" />
     <ClInclude Include="MockTimerQueue.h" />

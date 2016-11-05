@@ -76,7 +76,7 @@ class CMockTimerQueueMonitor :
 
    private :
 
-      volatile unsigned long m_numTimersActive;
+      volatile long m_numTimersActive;
 
       /// No copies do not implement
       CMockTimerQueueMonitor(const CMockTimerQueueMonitor &rhs);

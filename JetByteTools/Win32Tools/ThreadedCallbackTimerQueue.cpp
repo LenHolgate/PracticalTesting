@@ -4,16 +4,16 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
 
 CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -216,7 +216,7 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -232,12 +232,12 @@ void CThreadedCallbackTimerQueue::SetThreadName(
 }
 
 bool CThreadedCallbackTimerQueue::SetTimer(
-   const Handle &handle, 
+   const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData)
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -248,7 +248,7 @@ bool CThreadedCallbackTimerQueue::SetTimer(
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -264,7 +264,7 @@ bool CThreadedCallbackTimerQueue::SetTimer(
 bool CThreadedCallbackTimerQueue::CancelTimer(
    const Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -275,7 +275,7 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -291,7 +291,7 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
 bool CThreadedCallbackTimerQueue::DestroyTimer(
    Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -302,7 +302,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -314,7 +314,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
 bool CThreadedCallbackTimerQueue::DestroyTimer(
    const Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -325,7 +325,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -339,7 +339,7 @@ void CThreadedCallbackTimerQueue::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -350,7 +350,7 @@ void CThreadedCallbackTimerQueue::SetTimer(
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -388,7 +388,7 @@ int CThreadedCallbackTimerQueue::Run() throw()
                if (timeout == 0)
                {
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
                   ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -398,22 +398,27 @@ int CThreadedCallbackTimerQueue::Run() throw()
 
                      lock.Enter();
                   }
-
-                  m_monitor.OnTimerProcessingStarted();
-
-                  m_spTimerQueue->HandleTimeouts();
-
-                  m_monitor.OnTimerProcessingStopped();
-
 #else
 
                   ICriticalSection::Owner lock(m_criticalSection);
 
+#endif
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+
+                  m_monitor.OnTimerProcessingStarted();
+
+#endif
+
                   m_spTimerQueue->HandleTimeouts();
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+
+                  m_monitor.OnTimerProcessingStopped();
 
 #endif
                }
-               else 
+               else
                {
                   m_stateChangeEvent.Wait(timeout);
                }
@@ -430,7 +435,7 @@ int CThreadedCallbackTimerQueue::Run() throw()
                   IManageTimerQueue::TimeoutHandle handle = IManageTimerQueue::InvalidTimeoutHandleValue;
 
                   {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
                      ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -441,11 +446,15 @@ int CThreadedCallbackTimerQueue::Run() throw()
                         lock.Enter();
                      }
 
-                     m_monitor.OnTimerProcessingStarted();
-
 #else
 
                      ICriticalSection::Owner lock(m_criticalSection);
+
+#endif
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+
+                     m_monitor.OnTimerProcessingStarted();
 
 #endif
 
@@ -456,7 +465,7 @@ int CThreadedCallbackTimerQueue::Run() throw()
                   {
                      m_spTimerQueue->HandleTimeout(handle);
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
                      ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -476,14 +485,14 @@ int CThreadedCallbackTimerQueue::Run() throw()
                      m_spTimerQueue->EndTimeoutHandling(handle);
                   }
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 
                   m_monitor.OnTimerProcessingStopped();
 
 #endif
 
                }
-               else 
+               else
                {
                   m_stateChangeEvent.Wait(timeout);
                }
@@ -501,6 +510,10 @@ int CThreadedCallbackTimerQueue::Run() throw()
    {
       OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - SEH Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
    }
+   catch(const std::exception &e)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
+   }
    JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
    {
       OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Unexpected exception"));
@@ -511,7 +524,7 @@ int CThreadedCallbackTimerQueue::Run() throw()
 
 Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 {
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
 
    ICriticalSection::PotentialOwner lock(m_criticalSection);
 
@@ -522,7 +535,7 @@ Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
       lock.Enter();
    }
 
-#else 
+#else
 
    ICriticalSection::Owner lock(m_criticalSection);
 
@@ -564,7 +577,7 @@ static IManageTimerQueue *CreateTimerQueue(
    {
       case CThreadedCallbackTimerQueue::BestForPlatform :
 
-#if (_WIN32_WINNT >= 0x0600) 
+#if (_WIN32_WINNT >= 0x0600)
 
          return new CCallbackTimerQueueEx(monitor);
 
@@ -572,33 +585,33 @@ static IManageTimerQueue *CreateTimerQueue(
 
          return new CCallbackTimerQueue(monitor);
 
-#endif 
+#endif
 
       break;
 
       case CThreadedCallbackTimerQueue::TickCount64 :
 
-#if (_WIN32_WINNT >= 0x0600)  
+#if (_WIN32_WINNT >= 0x0600)
 
       return new CCallbackTimerQueueEx(monitor);
 
 #else
 
    throw CException(
-      _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"), 
+      _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
       _T("Currently unsupported on this platform."));
 
 #endif
 
       break;
 
-      case CThreadedCallbackTimerQueue::HybridTickCount64 : 
+      case CThreadedCallbackTimerQueue::HybridTickCount64 :
 
          return new CCallbackTimerQueue(monitor);
 
       break;
 
-      //case CThreadedCallbackTimerQueue::TickCount32 : 
+      //case CThreadedCallbackTimerQueue::TickCount32 :
 
       //   // In case we need to support the old implementation
 
@@ -606,7 +619,7 @@ static IManageTimerQueue *CreateTimerQueue(
    }
 
    throw CException(
-      _T("CThreadedCallbackTimerQueue::CreateTimerQueue()"), 
+      _T("CThreadedCallbackTimerQueue::CreateTimerQueue()"),
       _T("Unexpected value for timerQueueImplementation: ") + ToString(timerQueueImplementation));
 }
 
@@ -617,19 +630,19 @@ static bool DispatchWithLock(
    if (onlyAllowDispatchBits && (timerQueueImplementation & CLASS_MASK) != 0)
    {
       throw CException(
-         _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"), 
+         _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
          _T("TimerQueueImplementation should only specify dispatch option. TickProvider implies implementation"));
    }
 
    return (static_cast<DWORD>(timerQueueImplementation) & DISPATCH_MASK) == CThreadedCallbackTimerQueue::DispatchTimersWithLock;
-}  
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadedCallbackTimerQueue.cpp

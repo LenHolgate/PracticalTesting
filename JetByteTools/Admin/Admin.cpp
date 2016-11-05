@@ -454,17 +454,24 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DUMP_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG enabled: NO")
 #endif
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED enabled: YES")
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED enabled: NO")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING enabled: NO")
 #endif
 
-#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED enabled: YES")
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED enabled: NO")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING enabled: NO")
 #endif
+
+#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_CONTENTION_MONITORING enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_CONTENTION_MONITORING enabled: NO")
+#endif
+
 
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")
 #pragma JETBYTE_MESSAGE("")

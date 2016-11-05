@@ -279,6 +279,9 @@
 				RelativePath=".\LoggingCallbackTimer.cpp">
 			</File>
 			<File
+				RelativePath=".\MockThreadedCallbackTimerQueueMonitor.cpp">
+			</File>
+			<File
 				RelativePath=".\MockTickCount64Provider.cpp">
 			</File>
 			<File
@@ -299,6 +302,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath=".\LoggingCallbackTimer.h">
+			</File>
+			<File
+				RelativePath=".\MockThreadedCallbackTimerQueueMonitor.h">
 			</File>
 			<File
 				RelativePath=".\MockTickCount64Provider.h">

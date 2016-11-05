@@ -27,6 +27,7 @@
 #include "LoggingCallbackTimer.h"
 #include "MockTickCountProvider.h"
 #include "MockTickCount64Provider.h"
+#include "MockThreadedCallbackTimerQueueMonitor.h"
 #include "MockTimerQueue.h"
 #include "MockTimerQueueMonitor.h"
 #include "TestCallbackTimerWheel.h"
