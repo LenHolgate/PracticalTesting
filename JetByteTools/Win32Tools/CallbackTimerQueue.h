@@ -36,11 +36,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#pragma warning(disable: 4786)
+
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #endif
+
+#include <list>
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -76,6 +81,8 @@ class CCallbackTimerQueue
 
       typedef ULONG_PTR Handle;
 
+      struct TimerData;
+
       CCallbackTimerQueue();
 
       explicit CCallbackTimerQueue(
@@ -87,6 +94,8 @@ class CCallbackTimerQueue
       CCallbackTimerQueue(
          const DWORD maxTimeout,
          const IProvideTickCount &tickProvider);
+
+      ~CCallbackTimerQueue();
 
       Handle SetTimer(
          Timer &timer,
@@ -102,11 +111,17 @@ class CCallbackTimerQueue
 
    private :
 
-      const IProvideTickCount &m_tickProvider;
+      typedef std::list<TimerData *> TimerQueue;
 
-      Timer *m_pTimer;
-      DWORD m_nextTimeout;
-      UserData m_userData;
+      typedef std::map<Handle, TimerQueue::iterator> HandleMap;
+
+      TimerQueue m_queue;
+
+      HandleMap m_handleMap;
+
+      TimerQueue::iterator m_wrapPoint;
+
+      const IProvideTickCount &m_tickProvider;
 
       const DWORD m_maxTimeout;
 

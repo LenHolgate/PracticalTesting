@@ -64,8 +64,8 @@ class CCallbackTimerQueueTest
       static void TestTimer();
       static void TestMultipleTimers();
       static void TestCancelTimer();
-      static void TestTickCountWrap();
       static void TestMaxTimeout();
+      static void TestTickCountWrap();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

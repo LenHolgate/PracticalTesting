@@ -416,7 +416,7 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 
    timerQueue.HandleTimeouts();
 
-   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+   tickProvider.CheckResult(_T("|GetTickCount: 100|GetTickCount: 100|"));
 
    timer1.CheckResult(_T("|"));
    timer2.CheckResult(_T("|OnTimer: 2|"));
@@ -437,7 +437,7 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 
    timerQueue.HandleTimeouts();
 
-   tickProvider.CheckResult(_T("|GetTickCount: 155|"));
+   tickProvider.CheckResult(_T("|GetTickCount: 155|GetTickCount: 155|GetTickCount: 155|"));
 
    timer1.CheckResult(_T("|"));
    timer2.CheckResult(_T("|"));
@@ -458,7 +458,7 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 
    timerQueue.HandleTimeouts();
 
-   tickProvider.CheckResult(_T("|GetTickCount: 201|"));
+   tickProvider.CheckResult(_T("|GetTickCount: 201|GetTickCount: 201|GetTickCount: 201|"));
 
    timer1.CheckResult(_T("|"));
    timer2.CheckResult(_T("|"));
@@ -490,7 +490,7 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 
    THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|GetTickCount: 300|"));
+   tickProvider.CheckResult(_T("|"));
 
 //   timerQueue.SetTimer(timer1, 100, 1);
 //   timerQueue.SetTimer(timer2, 200, 2);
@@ -516,3 +516,4 @@ void CCallbackTimerQueueTest::TestMultipleTimers()
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CallbackTimerQueueTest.cpp
 ///////////////////////////////////////////////////////////////////////////////
+
