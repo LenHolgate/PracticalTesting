@@ -49,6 +49,7 @@ struct CCallbackTimerQueueExTestTraits
       timerGranularity = 1,
       maxTimeout = 4294967294,
       creationQueriesTicks = false,
+      creationCreatesTimer = false,
       setQueriesTicks = true,
       handleTimeoutQueriesTicksPerTimer = true,
       timersAtSameTimeAreExpiredInOrderSet = true,

@@ -94,11 +94,11 @@ int main(int /*argc*/, char * /*argv[ ]*/)
       CTestMonitor monitor(_T("Win32 Tools"), includePerformanceTests, stopOnFailure);
 
       CCallbackTimerWheelTest::TestAll(monitor);
-      CThreadedCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueExTest::TestAll(monitor);
+      CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
-      const size_t expectedTests = 151;
+      const size_t expectedTests = 152;
 
       ok = monitor.Report(expectedTests);
    }

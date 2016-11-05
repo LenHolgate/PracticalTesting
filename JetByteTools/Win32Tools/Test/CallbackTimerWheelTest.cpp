@@ -24,6 +24,7 @@
 
 #include "..\Mock\MockTickCountProvider.h"
 #include "..\Mock\LoggingCallbackTimer.h"
+#include "..\Mock\MockTimerQueueMonitor.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 #include "JetByteTools\Win32Tools\DebugTrace.h"
@@ -57,6 +58,7 @@ using JetByteTools::Test::CTestMonitor;
 
 using JetByteTools::Win32::Mock::CMockTickCountProvider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
+using JetByteTools::Win32::Mock::CMockTimerQueueMonitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -75,13 +77,12 @@ const _tstring CCallbackTimerWheelTest::shortName = _T("  W - ");
 void CCallbackTimerWheelTest::TestAll(
    CTestMonitor &monitor)
 {
-   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetNextTimeout);
-
    Base::TestAll(monitor, _T("CCallbackTimerWheel"));
 
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestConstruct);
-
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetMaximumTimeout);
+   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestGetNextTimeout);
+   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestSetTimerWhenNowNotEqualToCurrent);
 }
 
 void CCallbackTimerWheelTest::TestConstruct()
@@ -94,52 +95,96 @@ void CCallbackTimerWheelTest::TestConstruct()
       CCallbackTimerWheel CallbackTimerWheel(maximumTimeout);
    }
 
+   CMockTimerQueueMonitor monitor;
+
+   {
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout);
+
+      CheckConstructionResults(monitor);
+   }
+
+   CheckDestructionResults(monitor);
+
    {
       CCallbackTimerWheel CallbackTimerWheel(maximumTimeout, timerGranularity);
    }
+
+   {
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout, timerGranularity);
+
+      CheckConstructionResults(monitor);
+   }
+
+   CheckDestructionResults(monitor);
 
    CMockTickCountProvider tickProvider;
 
    {
       CCallbackTimerWheel CallbackTimerWheel(maximumTimeout, tickProvider);
+
+      CheckConstructionResults(tickProvider);
    }
 
-   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   {
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+   }
+
+   CheckDestructionResults(monitor);
 
    {
       CCallbackTimerWheel CallbackTimerWheel(maximumTimeout, timerGranularity, tickProvider);
+
+      CheckConstructionResults(tickProvider);
    }
 
-   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   {
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout, timerGranularity, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+   }
+
+   CheckDestructionResults(monitor);
 }
 
 void CCallbackTimerWheelTest::TestGetMaximumTimeout()
 {
    CMockTickCountProvider tickProvider;
 
+   tickProvider.logTickCount = false;
+
+   CMockTimerQueueMonitor monitor;
+
    {
       static const Milliseconds maximumTimeout = 4000;
 
-      CCallbackTimerWheel CallbackTimerWheel(maximumTimeout, tickProvider);
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout, tickProvider);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      CheckConstructionResults(monitor, tickProvider);
 
       THROW_ON_FAILURE_EX(maximumTimeout == CallbackTimerWheel.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
    }
+
+   CheckDestructionResults(monitor);
 
    {
       static const Milliseconds maximumTimeout = 10;
 
-      CCallbackTimerWheel CallbackTimerWheel(maximumTimeout, tickProvider);
+      CCallbackTimerWheel CallbackTimerWheel(monitor, maximumTimeout, tickProvider);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      CheckConstructionResults(monitor, tickProvider);
 
       THROW_ON_FAILURE_EX(maximumTimeout == CallbackTimerWheel.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
    }
+
+   CheckDestructionResults(monitor);
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
 
 void CCallbackTimerWheelTest::TestGetNextTimeout()
@@ -148,14 +193,16 @@ void CCallbackTimerWheelTest::TestGetNextTimeout()
 
    tickProvider.logTickCount = false;
 
+   CMockTimerQueueMonitor monitor;
+
    {
       static const Milliseconds maximumTimeout = 4000;
 
       static const Milliseconds timerGranularity = 15;
 
-      CCallbackTimerWheel timerWheel(maximumTimeout, timerGranularity, tickProvider);
+      CCallbackTimerWheel timerWheel(monitor, maximumTimeout, timerGranularity, tickProvider);
 
-      tickProvider.CheckResult(_T("|GetTickCount|"));
+      CheckConstructionResults(monitor, tickProvider);
 
       THROW_ON_FAILURE_EX(INFINITE == timerWheel.GetNextTimeout());
 
@@ -201,6 +248,73 @@ void CCallbackTimerWheelTest::TestGetNextTimeout()
 
       (void)handle1;
    }
+
+   CheckDestructionResults(monitor, _T("|OnTimerCreated|OnTimerSet|OnTimerDeleted|"));
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+void CCallbackTimerWheelTest::TestSetTimerWhenNowNotEqualToCurrent()
+{
+   CMockTickCountProvider tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   CMockTimerQueueMonitor monitor;
+
+   {
+      static const Milliseconds maximumTimeout = 4000;
+
+      static const Milliseconds timerGranularity = 15;
+
+      CCallbackTimerWheel timerWheel(monitor, maximumTimeout, timerGranularity, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 1000;
+
+      Milliseconds now = 0;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout, 1, now);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now = 200;
+
+      tickProvider.SetTickCount(now);        // time moves on
+
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, 0);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
+      // though the timer wheel thinks that the current time is 0.
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout, 2, now);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      (void)handle1;
+      (void)handle2;
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
 
 ///////////////////////////////////////////////////////////////////////////////

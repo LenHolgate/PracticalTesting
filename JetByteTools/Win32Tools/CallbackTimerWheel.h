@@ -57,7 +57,16 @@ class CCallbackTimerWheel : public IManageTimerQueue
       explicit CCallbackTimerWheel(
          const Milliseconds maximumTimeout);
 
+      explicit CCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
+         const Milliseconds maximumTimeout);
+
       CCallbackTimerWheel(
+         const Milliseconds maximumTimeout,
+         const Milliseconds timerGranularity);
+
+      CCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
          const Milliseconds maximumTimeout,
          const Milliseconds timerGranularity);
 
@@ -66,6 +75,17 @@ class CCallbackTimerWheel : public IManageTimerQueue
          const IProvideTickCount &tickCountProvider);
 
       CCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
+         const Milliseconds maximumTimeout,
+         const IProvideTickCount &tickCountProvider);
+
+      CCallbackTimerWheel(
+         const Milliseconds maximumTimeout,
+         const Milliseconds timerGranularity,
+         const IProvideTickCount &tickCountProvider);
+
+      CCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
          const Milliseconds maximumTimeout,
          const Milliseconds timerGranularity,
          const IProvideTickCount &tickCountProvider);
@@ -120,10 +140,13 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       class TimerData;
 
+      Handle OnTimerCreated(
+         TimerData *pData);
+
       void InsertTimer(
          const Milliseconds timeout,
          TimerData &data,
-         const bool wasSet);
+         const bool wasPending = false);
 
       static TimerData **CreateTimerWheel(
          const size_t numTimers);
@@ -140,6 +163,8 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       TimerData **GetTimerAtOffset(
          const size_t offset) const;
+
+      IMonitorCallbackTimerQueue &m_monitor;
 
       const Milliseconds m_maximumTimeout;
 

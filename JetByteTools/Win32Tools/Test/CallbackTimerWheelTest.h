@@ -59,8 +59,9 @@ class CCallbackTimerWheelTest :
 
       static void TestConstruct();
       static void TestGetMaximumTimeout();
-
       static void TestGetNextTimeout();
+      static void TestSetTimerWhenNowNotEqualToCurrent();
+
 
       // Test traits...
       enum traits
@@ -68,6 +69,7 @@ class CCallbackTimerWheelTest :
          timerGranularity = 15,
          maxTimeout = 4000,
          creationQueriesTicks = true,
+         creationCreatesTimer = false,
          setQueriesTicks = false,
          handleTimeoutQueriesTicksPerTimer = false,
          timersAtSameTimeAreExpiredInOrderSet = false,

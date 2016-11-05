@@ -47,8 +47,8 @@ CTestCallbackTimerWheel::CTestCallbackTimerWheel()
 }
 
 CTestCallbackTimerWheel::CTestCallbackTimerWheel(
-   IMonitorCallbackTimerQueue & /*monitor*/)
-   :  CCallbackTimerWheel(4000)
+   IMonitorCallbackTimerQueue &monitor)
+   :  CCallbackTimerWheel(monitor, 4000)
 {
 
 }
@@ -61,9 +61,9 @@ CTestCallbackTimerWheel::CTestCallbackTimerWheel(
 }
 
 CTestCallbackTimerWheel::CTestCallbackTimerWheel(
-   IMonitorCallbackTimerQueue & /*monitor*/,
+   IMonitorCallbackTimerQueue &monitor,
    const IProvideTickCount &tickProvider)
-   :  CCallbackTimerWheel(4000, tickProvider)
+   :  CCallbackTimerWheel(monitor, 4000, tickProvider)
 {
 
 }

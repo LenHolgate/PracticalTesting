@@ -84,8 +84,7 @@ class TCallbackTimerQueueTestBase
 
       typedef TCallbackTimerQueueTestBase<TimerQueue, QueueTraits, TickProvider> Base;
 
-      static void TestConstructWithMonitoring();
-      static void TestConstructWithoutMonitoring();
+      static void TestConstruct();
       static void TestCreateTimer();
       static void TestDestroyTimer();
       static void TestGetNextTimeoutNoTimersSet();
@@ -136,130 +135,48 @@ class TCallbackTimerQueueTestBase
          const JetByteTools::Win32::_tstring &className);
 
       static IQueueTimers::Handle CreateAndSetTimer(
-         JetByteTools::Test::CTestLog &tickProvider,
+         TickProvider &tickProvider,
          IQueueTimers &timerQueue, 
          IQueueTimers::Timer &timer, 
          const Milliseconds timeout,
-         const IQueueTimers::UserData userData)
-      {
-         const _tstring functionName = _T("CreateAndSetTimer");
-
-         IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-         THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
-
-         THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
-
-         CheckTickProviderSetTimerResults(tickProvider);
-
-         return handle;
-      }
-
-   private :
+         const IQueueTimers::UserData userData,
+         const Milliseconds expectedTickCount = 0);
 
       static void CheckConstructionResults(
-         JetByteTools::Test::CTestLog &tickProvider,
-         const Milliseconds expectedTickCount = 0)
-      {
-         CheckTickProviderResults(QueueTraits::creationQueriesTicks, tickProvider, expectedTickCount);
-      }
+         TickProvider &tickProvider,
+         const Milliseconds expectedTickCount = 0);
 
       static void CheckTickProviderResults(
          const bool callQueriesTickCount,
-         JetByteTools::Test::CTestLog &tickProvider,
-         const Milliseconds expectedTickCount)
-      {
-         if (callQueriesTickCount)
-         {
-            tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
-         }
-         else
-         {
-            tickProvider.CheckNoResults();
-         }
-      }
+         TickProvider  &tickProvider,
+         const Milliseconds expectedTickCount);
 
       static void CheckConstructionResults(
-         JetByteTools::Test::CTestLog &tickProvider,
          JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
-         const Milliseconds expectedTickCount = 0)
-      {
-         CheckTickProviderResults(QueueTraits::creationQueriesTicks, tickProvider, expectedTickCount);
+         TickProvider &tickProvider,
+         const Milliseconds expectedTickCount = 0);
 
-         if (QueueTraits::creationQueriesTicks)
-         {
-            monitor.CheckResult(_T("TODO"));
-         }
-         else
-         {
-            monitor.CheckNoResults();
-         }
-      }
+      static void CheckConstructionResults(
+         JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor);
+
+      static void CheckDestructionResults(
+         JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
+         const JetByteTools::Win32::_tstring &additional = _T("|"));
 
       static void CheckTickProviderSetTimerResults(
-         JetByteTools::Test::CTestLog &tickProvider,
-         const Milliseconds expectedTickCount = 0)
-      {
-         CheckTickProviderResults(QueueTraits::setQueriesTicks, tickProvider, expectedTickCount);
-      }
+         TickProvider &tickProvider,
+         const Milliseconds expectedTickCount = 0);
 
       static void CheckTickProviderHandleTimeoutsResults(
          const size_t numDifferentTimes,
-         JetByteTools::Test::CTestLog &tickProvider,
+         TickProvider &tickProvider,
          const Milliseconds expectedTickCount = 0,
-         const bool moreTimersSet = true)
-      {
-         if (QueueTraits::handleTimeoutQueriesTicksPerTimer)
-         {
-            if (numDifferentTimes)
-            {
-               const _tstring expectedTickCountAsString = ToString(expectedTickCount);
-
-               _tstring result;
-
-               const size_t numCalls = numDifferentTimes + (moreTimersSet ? 1 : 0);
-
-               for (size_t i = 0; i < numCalls; ++i)
-               {
-                  result += _T("|GetTickCount: ") + expectedTickCountAsString;
-               }
-
-               result += _T("|");
-
-               tickProvider.CheckResult(result);
-            }
-            else
-            {
-               tickProvider.CheckNoResults();
-            }
-         }
-         else
-         {
-            tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
-         }
-      }
+         const bool moreTimersSet = true);
 
       static Milliseconds CalculateExpectedTimeout(
          const Milliseconds timeout,
          const Milliseconds now = 0,
-         const Milliseconds timerSetTime = 0)
-      {
-         if (QueueTraits::timerGranularity == 1)
-         {
-            return timeout - (now - timerSetTime);
-         }
-
-         const Milliseconds expectedTimeout = ((timeout / QueueTraits::timerGranularity) + 1) * QueueTraits::timerGranularity;
-
-         const Milliseconds expectedAbsoluteTimeout = timerSetTime + expectedTimeout;
-
-         if (expectedAbsoluteTimeout < now)
-         {
-            return 0;
-         }
-
-         return expectedAbsoluteTimeout - now;
-      }
+         const Milliseconds timerSetTime = 0);
 };
 
 template <class Q, class T, class P>
@@ -267,13 +184,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    JetByteTools::Test::CTestMonitor &monitor,
    const JetByteTools::Win32::_tstring &className)
 {
-   if (T::monitoringEnabled)
-   {
-      RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestConstructWithMonitoring);
-   }
-
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestConstructWithoutMonitoring);
-
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestConstruct);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCreateTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestDestroyTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestGetNextTimeoutNoTimersSet);
@@ -322,7 +233,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestConstructWithMonitoring()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestConstruct()
 {
    {
       Q timerQueue;
@@ -332,61 +243,28 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestConstructWithMonitoring()
 
    {
       Q timerQueue(tickProvider);
-   }
 
-   CheckConstructionResults(tickProvider);
+      CheckConstructionResults(tickProvider);
+   }
 
    JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
 
    {
       Q timerQueue(monitor);
+
+      CheckConstructionResults(monitor);
    }
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
-
-   monitor.CheckNoResults();
-
-#endif
+   CheckDestructionResults(monitor);
 
    {
       Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
    }
 
-   CheckConstructionResults(tickProvider);
+   CheckDestructionResults(monitor);
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
-
-   monitor.CheckNoResults();
-
-#endif
-}
-
-template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestConstructWithoutMonitoring()
-{
-   {
-      Q timerQueue;
-   }
-
-   P tickProvider;
-
-   {
-      Q timerQueue(tickProvider);
-   }
-
-   CheckConstructionResults(tickProvider);
-
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
-
-   {
-      Q timerQueue(monitor);
-   }
-
-   {
-      Q timerQueue(monitor, tickProvider);
-   }
-
-   CheckConstructionResults(tickProvider);
 }
 
 template <class Q, class T, class P>
@@ -399,7 +277,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCreateTimer()
    {
       Q timerQueue(monitor, tickProvider);
 
-      CheckConstructionResults(tickProvider);
+      CheckConstructionResults(monitor, tickProvider);
 
       IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
@@ -421,7 +299,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
    {
       Q timerQueue(monitor, tickProvider);
 
-      CheckConstructionResults(tickProvider);
+      CheckConstructionResults(monitor, tickProvider);
 
       IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
@@ -548,14 +426,12 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, /*timerGranularity, */tickProvider);
 
       CheckConstructionResults(tickProvider);
-
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
 
       CLoggingCallbackTimer timer;
 
@@ -563,29 +439,25 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 
       const Milliseconds timeout = 1000;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
-
-      timer.CheckNoResults();
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(1);
 
       THROW_ON_FAILURE_EX(expectedTimeout - 1 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 1|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(20);
 
       THROW_ON_FAILURE_EX(expectedTimeout - 20 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 20|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(2000);
 
@@ -593,7 +465,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 2000|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -611,19 +483,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
 
       CheckConstructionResults(tickProvider);
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
       CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, userData));
-
-      timer.CheckNoResults();
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
 
       THROW_ON_FAILURE_EX(true == timerQueue.SetTimer(handle, timer, 1200, userData));
 
@@ -699,19 +563,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
 
       CheckConstructionResults(tickProvider);
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
       CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, userData));
-
-      timer.CheckNoResults();
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
 
       THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle));
 
@@ -730,6 +586,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -741,45 +599,37 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      const _tstring expectedTimeoutTickResults = _T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|");
-
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckResult(_T("|OnTimer: 1|"));
 
@@ -800,6 +650,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -807,39 +659,35 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 1000;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue == h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      const _tstring expectedTimeoutTickResults = _T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|");
-
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       h = timerQueue.BeginTimeoutHandling();
 
@@ -847,7 +695,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -885,6 +733,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -896,19 +746,21 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+      const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
-      tickProvider.SetTickCount(100);
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      tickProvider.SetTickCount(expectedTimeout);
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -927,6 +779,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -938,19 +792,21 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+      const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
-      tickProvider.SetTickCount(100);
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      tickProvider.SetTickCount(expectedTimeout);
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -975,6 +831,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -986,23 +844,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1010,7 +862,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(timeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1031,6 +883,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestEndTimeoutHandlingWithInvalidHand
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1038,19 +892,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestEndTimeoutHandlingWithInvalidHand
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1058,7 +910,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestEndTimeoutHandlingWithInvalidHand
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1083,6 +935,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutWithInvalidHandleFai
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1090,19 +944,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutWithInvalidHandleFai
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1110,7 +962,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutWithInvalidHandleFai
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1143,6 +995,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1150,19 +1004,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1170,7 +1022,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1201,6 +1053,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1208,27 +1062,27 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
-      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      tickProvider.SetTickCount(expectedTimeout);
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1238,9 +1092,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
       CLoggingCallbackTimer timer2;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, 100, 2));
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2));
 
-      CheckTickProviderSetTimerResults(tickProvider, 100);
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
 
       timerQueue.HandleTimeout(h);
 
@@ -1248,10 +1104,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
       timer2.CheckNoResults();
 
       tickProvider.CheckNoResults();
-      
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.EndTimeoutHandling(h);
 
@@ -1260,21 +1116,23 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      tickProvider.SetTickCount(200);
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
       timer2.CheckNoResults();
@@ -1310,6 +1168,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1317,19 +1177,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1337,7 +1195,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1374,6 +1232,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1381,19 +1241,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1401,7 +1259,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1441,6 +1299,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1448,27 +1308,27 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
-      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      tickProvider.SetTickCount(expectedTimeout);
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1484,15 +1344,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
       CLoggingCallbackTimer timer2;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, 100, 2));
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2));
 
-      CheckTickProviderSetTimerResults(tickProvider, 100);
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
 
       timer2.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.EndTimeoutHandling(h);
 
@@ -1501,21 +1363,23 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      tickProvider.SetTickCount(200);
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       h = timerQueue.BeginTimeoutHandling();
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
       timer2.CheckNoResults();
@@ -1551,6 +1415,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1558,19 +1424,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1578,7 +1442,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1615,6 +1479,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1622,19 +1488,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
@@ -1642,7 +1506,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
       THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
 
-      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
@@ -1683,6 +1547,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1692,35 +1558,27 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      const _tstring expectedTimeoutTickResults = _T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|");
-
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckResult(_T("|OnTimer: 1|"));
 
@@ -1773,24 +1631,22 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
 
    P tickProvider(initialTickCount);
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
       CheckConstructionResults(tickProvider, initialTickCount);
 
-      CLoggingCallbackTimer timer;
-
       const Milliseconds maxTimeout = timerQueue.GetMaximumTimeout();
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+      CLoggingCallbackTimer timer;
 
-      tickProvider.CheckNoResults();
+      const IQueueTimers::UserData userData = 1;
 
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, maxTimeout, userData);
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, maxTimeout, 1));
-
-      CheckTickProviderSetTimerResults(tickProvider, initialTickCount);
+//      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       const Milliseconds illegalTimeout = maxTimeout + 1;
 
@@ -1819,6 +1675,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
    JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
+
+   tickProvider.logTickCount = false;
 
    {
       Q timerQueue(monitor, tickProvider);
@@ -1853,11 +1711,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer1.CheckNoResults();
       timer2.CheckNoResults();
@@ -1872,9 +1730,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      _tstring currentTicksAsString = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
@@ -1891,17 +1747,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       now += expectedTimeout + 5;
 
       tickProvider.SetTickCount(now);
 
-      currentTicksAsString = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
@@ -1918,7 +1772,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       expectedTimeout = CalculateExpectedTimeout(timeout4, now);
 
@@ -1926,11 +1780,9 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.SetTickCount(now);
 
-      currentTicksAsString = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
@@ -1947,17 +1799,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       now += expectedTimeout;
 
       tickProvider.SetTickCount(now);
 
-      currentTicksAsString = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(currentTicksAsString);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
@@ -1992,6 +1842,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -1999,23 +1851,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
-
-      tickProvider.CheckNoResults();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
-
       const Milliseconds timeout1 = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout1, 1));
+      const IQueueTimers::UserData userData = 1;
 
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout1, userData);
 
       const Milliseconds expectedTimeout1 = CalculateExpectedTimeout(timeout1);
 
       THROW_ON_FAILURE_EX(expectedTimeout1 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       const Milliseconds timeout2 = 90;
 
@@ -2027,7 +1873,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       THROW_ON_FAILURE_EX(expectedTimeout2 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       Milliseconds now = expectedTimeout2;
 
@@ -2035,13 +1881,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      _tstring nowTickResults = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
-      tickProvider.CheckResult(nowTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(nowTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckResult(_T("|OnTimer: 2|"));
 
@@ -2055,11 +1899,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       CheckTickProviderSetTimerResults(tickProvider, expectedTimeout2);
 
-      const Milliseconds expectedTimeout3 = CalculateExpectedTimeout(timeout3);
+      const Milliseconds expectedTimeout3 = CalculateExpectedTimeout(timeout3, now, now);
 
       THROW_ON_FAILURE_EX(expectedTimeout3 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(nowTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       now += expectedTimeout3;
 
@@ -2067,13 +1911,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      nowTickResults = _T("|GetTickCount: ") + ToString(now) + _T("|");
-
-      tickProvider.CheckResult(nowTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(nowTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckResult(_T("|OnTimer: 3|"));
 
@@ -2094,6 +1936,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -2105,33 +1949,37 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 
       CLoggingCallbackTimer timer;
 
-      timerQueue.SetTimer(timer, 100, 1);
+      const Milliseconds timeout = 100;
+
+      timerQueue.SetTimer(timer, timeout, 1);
 
       CheckTickProviderSetTimerResults(tickProvider);
 
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
-   
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      tickProvider.SetTickCount(100);
+      tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timer.CheckResult(_T("|OnTimer: 1|"));
 
@@ -2157,13 +2005,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle1 = timerQueue.CreateTimer();
+      const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle1);
+      const IQueueTimers::UserData userData = 1;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle1, timer, 100, 1));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
       IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
 
@@ -2181,18 +2027,24 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 {
+   if (!T::monitoringEnabled)
+   {
+      SKIP_TEST_EX(_T("Monitoring is not enabled"));
+   }
+
    JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
-      CheckConstructionResults(tickProvider, monitor);
+      CheckConstructionResults(monitor, tickProvider);
 
       CLoggingCallbackTimer timer;
 
@@ -2218,11 +2070,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       monitor.CheckResult(_T("|OnTimerCancelled|"));
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+      const Milliseconds timeout = 100;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
 
       monitor.CheckResult(_T("|OnTimerSet|"));
 
-      tickProvider.SetTickCount(100);
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
@@ -2244,7 +2102,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, 1));
 
       monitor.CheckResult(_T("|OnTimerSet|"));
 
@@ -2252,11 +2110,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       monitor.CheckResult(_T("|OnTimerDestroyed: Was Pending|OnTimerDeleted|"));
 
-      timerQueue.SetTimer(timer, 100, 2);
+      timerQueue.SetTimer(timer, timeout, 2);
 
       monitor.CheckResult(_T("|OnTimerCreated|OnOneOffTimerSet|"));
 
-      tickProvider.SetTickCount(200);
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
@@ -2268,22 +2130,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-      timerQueue.SetTimer(timer, 100, 3);
+      timerQueue.SetTimer(timer, timeout, 3);
 
       monitor.CheckResult(_T("|OnTimerCreated|OnOneOffTimerSet|"));
    }
 
-   monitor.CheckResult(_T("|OnTimerDeleted|"));       // The pending 'one off' timer is deleted in the destructor
+   CheckDestructionResults(
+      monitor, 
+      _T("|OnTimerDeleted|"));       // The pending 'one off' timer is deleted in the destructor
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());
 }
-#else
-template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
-{
-   SKIP_TEST_EX(_T("Monitoring not enabled"));
-}
-#endif
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandleTimeouts()
@@ -2292,6 +2149,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -2299,45 +2158,27 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle1 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle1);
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle1, timer, timeout, 1));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 1);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle2);
-
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle2, timer, timeout, 2));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 2);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      IQueueTimers::Handle handle3 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle3);
-
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle3, timer, timeout, 3));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle3 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 3);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle2));
 
@@ -2345,19 +2186,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      const _tstring expectedTimeoutTickResults = _T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|");
-
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       if (T::timersAtSameTimeAreExpiredInOrderSet)
       {
@@ -2385,6 +2224,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 
    P tickProvider;
 
+   tickProvider.logTickCount = false;
+
    {
       Q timerQueue(monitor, tickProvider);
 
@@ -2392,45 +2233,27 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 
       CLoggingCallbackTimer timer;
 
-      IQueueTimers::Handle handle1 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle1);
-
       const Milliseconds timeout = 100;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle1, timer, timeout, 1));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 1);
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle2);
-
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle2, timer, timeout, 2));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 2);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      IQueueTimers::Handle handle3 = timerQueue.CreateTimer();
-
-      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle3);
-
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle3, timer, timeout, 3));
-
-      CheckTickProviderSetTimerResults(tickProvider);
+      IQueueTimers::Handle handle3 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, 3);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle2));
 
@@ -2438,19 +2261,17 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
 
-      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       tickProvider.SetTickCount(expectedTimeout);
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      const _tstring expectedTimeoutTickResults = _T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|");
-
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
 
-      tickProvider.CheckResult(expectedTimeoutTickResults);
+      tickProvider.CheckResult(_T("|GetTickCount|"));
 
       timerQueue.HandleTimeout(h);
 
@@ -2851,6 +2672,186 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - BeginTimeoutHandling (100,000 timers - average of ") + ToString(numRuns) + _T(" runs)"));
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+IQueueTimers::Handle TCallbackTimerQueueTestBase<Q, T, P>::CreateAndSetTimer(
+   P &tickProvider,
+   IQueueTimers &timerQueue, 
+   IQueueTimers::Timer &timer, 
+   const Milliseconds timeout,
+   const IQueueTimers::UserData userData,
+   const Milliseconds expectedTickCount)
+{
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+   CheckTickProviderSetTimerResults(tickProvider, expectedTickCount);
+
+   return handle;
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
+   P &tickProvider,
+   const Milliseconds expectedTickCount = 0)
+{
+   CheckTickProviderResults(T::creationQueriesTicks, tickProvider, expectedTickCount);
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderResults(
+   const bool callQueriesTickCount,
+   P &tickProvider,
+   const Milliseconds expectedTickCount)
+{
+   if (callQueriesTickCount)
+   {
+      if (tickProvider.logTickCount)
+      {
+         tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
+      }
+      else
+      {
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+      }
+   }
+   else
+   {
+      tickProvider.CheckNoResults();
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
+   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
+   P &tickProvider,
+   const Milliseconds expectedTickCount = 0)
+{
+   CheckConstructionResults(monitor);
+
+   CheckTickProviderResults(T::creationQueriesTicks, tickProvider, expectedTickCount);
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
+   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor)
+{
+   if (T::monitoringEnabled && T::creationCreatesTimer)
+   {
+      monitor.CheckResult(_T("|OnTimerCreated|OnTimerSet|"));
+   }
+   else
+   {
+      monitor.CheckNoResults();
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckDestructionResults(
+   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
+   const JetByteTools::Win32::_tstring &additional = _T("|"))
+{
+   if (T::monitoringEnabled)
+   {
+      if (T::creationCreatesTimer)
+      {
+         monitor.CheckResult(_T("|OnTimerDestroyed: Was Pending|OnTimerDeleted") + additional);
+      }
+      else
+      {
+         monitor.CheckResult(additional);
+      }
+   }
+   else
+   {
+      monitor.CheckNoResults();
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderSetTimerResults(
+   P &tickProvider,
+   const Milliseconds expectedTickCount = 0)
+{
+   CheckTickProviderResults(T::setQueriesTicks, tickProvider, expectedTickCount);
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderHandleTimeoutsResults(
+   const size_t numDifferentTimes,
+   P &tickProvider,
+   const Milliseconds expectedTickCount = 0,
+   const bool moreTimersSet = true)
+{
+   if (T::handleTimeoutQueriesTicksPerTimer)
+   {
+      if (numDifferentTimes)
+      {
+         const _tstring expectedTickCountAsString = ToString(expectedTickCount);
+
+         _tstring result;
+
+         const size_t numCalls = numDifferentTimes + (moreTimersSet ? 1 : 0);
+
+         for (size_t i = 0; i < numCalls; ++i)
+         {
+            if (tickProvider.logTickCount)
+            {
+               result += _T("|GetTickCount: ") + expectedTickCountAsString;
+            }
+            else
+            {
+               result += _T("|GetTickCount");
+            }
+         }
+
+         result += _T("|");
+
+         tickProvider.CheckResult(result);
+      }
+      else
+      {
+         tickProvider.CheckNoResults();
+      }
+   }
+   else
+   {
+      if (tickProvider.logTickCount)
+      {
+         tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
+      }
+      else
+      {
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+      }
+   }
+}
+
+template <class Q, class T, class P>
+Milliseconds TCallbackTimerQueueTestBase<Q, T, P>::CalculateExpectedTimeout(
+   const Milliseconds timeout,
+   const Milliseconds now = 0,
+   const Milliseconds timerSetTime = 0)
+{
+   if (T::timerGranularity == 1)
+   {
+      return timeout - (now - timerSetTime);
+   }
+
+   const Milliseconds expectedTimeout = ((timeout / T::timerGranularity) + 1) * T::timerGranularity;
+
+   const Milliseconds expectedAbsoluteTimeout = timerSetTime + expectedTimeout;
+
+   if (expectedAbsoluteTimeout < now)
+   {
+      return 0;
+   }
+
+   return expectedAbsoluteTimeout - now;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

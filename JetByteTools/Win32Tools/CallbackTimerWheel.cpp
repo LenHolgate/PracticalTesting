@@ -82,6 +82,8 @@ class CCallbackTimerWheel::TimerData
          CCallbackTimerWheel::Timer &timer,
          const CCallbackTimerWheel::UserData userData);
 
+      bool DeleteAfterTimeout() const;
+
       bool CancelTimer();
 
       void UpdateData(
@@ -92,18 +94,19 @@ class CCallbackTimerWheel::TimerData
          TimerData **ppPrevious,
          TimerData *pNext);
 
-
       TimerData *OnTimer();
+
+   private :
 
       TimerData **m_ppPrevious;
 
       TimerData *m_pNext;
 
-   private :
-
       CCallbackTimerWheel::Timer *m_pTimer;
 
       CCallbackTimerWheel::UserData m_userData;
+
+      const bool m_deleteAfterTimeout;
 
       /// No copies do not implement
       TimerData(const TimerData &rhs);
@@ -117,7 +120,26 @@ class CCallbackTimerWheel::TimerData
 
 CCallbackTimerWheel::CCallbackTimerWheel(
    const Milliseconds maximumTimeout)
-   :  m_maximumTimeout(maximumTimeout),
+   :  m_monitor(s_monitor),
+      m_maximumTimeout(maximumTimeout),
+      m_timerGranularity(s_defaultTimerGranularity),
+      m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
+      m_tickCountProvider(s_tickProvider),
+      m_currentTime(m_tickCountProvider.GetTickCount()),
+      m_pTimersStart(CreateTimerWheel(m_numTimers)),
+      m_pTimersEnd(m_pTimersStart + m_numTimers),
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
+{
+
+}
+
+CCallbackTimerWheel::CCallbackTimerWheel(
+   IMonitorCallbackTimerQueue &monitor,
+   const Milliseconds maximumTimeout)
+   :  m_monitor(monitor),
+      m_maximumTimeout(maximumTimeout),
       m_timerGranularity(s_defaultTimerGranularity),
       m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
       m_tickCountProvider(s_tickProvider),
@@ -134,7 +156,27 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 CCallbackTimerWheel::CCallbackTimerWheel(
    const Milliseconds maximumTimeout,
    const Milliseconds timerGranularity)
-   :  m_maximumTimeout(maximumTimeout),
+   :  m_monitor(s_monitor),
+      m_maximumTimeout(maximumTimeout),
+      m_timerGranularity(timerGranularity),
+      m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
+      m_tickCountProvider(s_tickProvider),
+      m_currentTime(m_tickCountProvider.GetTickCount()),
+      m_pTimersStart(CreateTimerWheel(m_numTimers)),
+      m_pTimersEnd(m_pTimersStart + m_numTimers),
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
+{
+
+}
+
+CCallbackTimerWheel::CCallbackTimerWheel(
+   IMonitorCallbackTimerQueue &monitor,
+   const Milliseconds maximumTimeout,
+   const Milliseconds timerGranularity)
+   :  m_monitor(monitor),
+      m_maximumTimeout(maximumTimeout),
       m_timerGranularity(timerGranularity),
       m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
       m_tickCountProvider(s_tickProvider),
@@ -151,7 +193,27 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 CCallbackTimerWheel::CCallbackTimerWheel(
    const Milliseconds maximumTimeout,
    const IProvideTickCount &tickCountProvider)
-   :  m_maximumTimeout(maximumTimeout),
+   :  m_monitor(s_monitor),
+      m_maximumTimeout(maximumTimeout),
+      m_timerGranularity(s_defaultTimerGranularity),
+      m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
+      m_tickCountProvider(tickCountProvider),
+      m_currentTime(m_tickCountProvider.GetTickCount()),
+      m_pTimersStart(CreateTimerWheel(m_numTimers)),
+      m_pTimersEnd(m_pTimersStart + m_numTimers),
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
+{
+
+}
+
+CCallbackTimerWheel::CCallbackTimerWheel(
+   IMonitorCallbackTimerQueue &monitor,
+   const Milliseconds maximumTimeout,
+   const IProvideTickCount &tickCountProvider)
+   :  m_monitor(monitor),
+      m_maximumTimeout(maximumTimeout),
       m_timerGranularity(s_defaultTimerGranularity),
       m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
       m_tickCountProvider(tickCountProvider),
@@ -169,7 +231,28 @@ CCallbackTimerWheel::CCallbackTimerWheel(
    const Milliseconds maximumTimeout,
    const Milliseconds timerGranularity,
    const IProvideTickCount &tickCountProvider)
-   :  m_maximumTimeout(maximumTimeout),
+   :  m_monitor(s_monitor),
+      m_maximumTimeout(maximumTimeout),
+      m_timerGranularity(timerGranularity),
+      m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
+      m_tickCountProvider(tickCountProvider),
+      m_currentTime(m_tickCountProvider.GetTickCount()),
+      m_pTimersStart(CreateTimerWheel(m_numTimers)),
+      m_pTimersEnd(m_pTimersStart + m_numTimers),
+      m_pNow(m_pTimersStart),
+      m_pFirstTimerSetHint(0),
+      m_numTimersSet(0)
+{
+
+}
+
+CCallbackTimerWheel::CCallbackTimerWheel(
+   IMonitorCallbackTimerQueue &monitor,
+   const Milliseconds maximumTimeout,
+   const Milliseconds timerGranularity,
+   const IProvideTickCount &tickCountProvider)
+   :  m_monitor(monitor),
+      m_maximumTimeout(maximumTimeout),
       m_timerGranularity(timerGranularity),
       m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
       m_tickCountProvider(tickCountProvider),
@@ -190,6 +273,12 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
       TimerData *pData = *it;
 
       delete pData;
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+      m_monitor.OnTimerDeleted();
+
+#endif
    }
 
    delete [] m_pTimersStart;
@@ -282,7 +371,28 @@ void CCallbackTimerWheel::HandleTimeouts()
    {
       while (pTimers)
       {
-         pTimers = pTimers->OnTimer();
+         TimerData *pTimer = pTimers;
+
+         pTimers = pTimer->OnTimer();
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+         m_monitor.OnTimer();
+
+#endif
+
+         if (pTimer->DeleteAfterTimeout())
+         {
+            m_handles.erase(pTimer);
+
+            delete pTimer;
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerDeleted();
+
+#endif
+         }
 
          --m_numTimersSet;
       }
@@ -316,7 +426,19 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 {
    TimerData *pData = new TimerData();
 
+   return OnTimerCreated(pData);
+}
+
+CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
+   TimerData *pData)
+{
    m_handles.insert(pData);
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerCreated();
+
+#endif
 
    return reinterpret_cast<Handle>(pData);
 }
@@ -336,13 +458,19 @@ bool CCallbackTimerWheel::SetTimer(
 
    TimerData &data = ValidateHandle(handle);
 
-   const bool wasSet = data.CancelTimer();
+   const bool wasPending = data.CancelTimer();
 
    data.UpdateData(timer, userData);
 
-   InsertTimer(timeout, data, wasSet);
+   InsertTimer(timeout, data, wasPending);
 
-   return wasSet;
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerSet(wasPending);
+
+#endif
+
+   return wasPending;
 }
 
 void CCallbackTimerWheel::SetTimer(
@@ -350,17 +478,30 @@ void CCallbackTimerWheel::SetTimer(
    const Milliseconds timeout,
    const IQueueTimers::UserData userData)
 {
-   (void)timer;
-   (void)timeout;
-   (void)userData;
+   if (timeout > m_maximumTimeout)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::SetTimer()"), 
+         _T("Timeout is too long. Max is: ") + ToString(m_maximumTimeout) + _T(" tried to set: ") + ToString(timeout));
+   }
 
-   throw CTestSkippedException(_T("CCallbackTimerWheel::SetTimer()"), _T("Not implemented"));
+   TimerData *pData = new TimerData(timer, userData);
+
+   OnTimerCreated(pData);
+
+   InsertTimer(timeout, *pData);
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnOneOffTimerSet();
+
+#endif
 }
 
 void CCallbackTimerWheel::InsertTimer(
    const Milliseconds timeout,
    TimerData &data,
-   const bool wasSet)
+   const bool wasPending)
 {
    const size_t timerOffset = timeout / m_timerGranularity;
 
@@ -370,7 +511,7 @@ void CCallbackTimerWheel::InsertTimer(
 
    m_pFirstTimerSetHint = 0;
 
-   if (!wasSet)
+   if (!wasPending)
    {
       if (0 == ++m_numTimersSet)
       {
@@ -386,14 +527,20 @@ bool CCallbackTimerWheel::CancelTimer(
 {
    TimerData &data = ValidateHandle(handle);
 
-   const bool wasSet = data.CancelTimer();
+   const bool wasPending = data.CancelTimer();
 
-   if (wasSet)
+   if (wasPending)
    {
       OnTimerCancelled();
    }
 
-   return wasSet;
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerCancelled(wasPending);
+
+#endif
+
+   return wasPending;
 }
 
 void CCallbackTimerWheel::OnTimerCancelled()
@@ -408,7 +555,7 @@ bool CCallbackTimerWheel::DestroyTimer(
 {
    TimerData &data = ValidateHandle(handle);
 
-   const bool wasSet = data.CancelTimer();
+   const bool wasPending = data.CancelTimer();
 
    m_handles.erase(&data);
 
@@ -416,12 +563,20 @@ bool CCallbackTimerWheel::DestroyTimer(
 
    delete &data;
 
-   if (wasSet)
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+   m_monitor.OnTimerDestroyed(wasPending);
+
+   m_monitor.OnTimerDeleted();
+
+#endif
+
+   if (wasPending)
    {
       OnTimerCancelled();
    }
 
-   return wasSet;
+   return wasPending;
 }
 
 bool CCallbackTimerWheel::DestroyTimer(
@@ -450,6 +605,13 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
    Handles::const_iterator it = m_handles.find(pData);
 
    if (it == m_handles.end())
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::ValidateHandle()"), 
+         _T("Invalid timer handle: ") + ToString(handle));
+   }
+
+   if (pData->DeleteAfterTimeout())
    {
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"), 
@@ -525,8 +687,8 @@ CCallbackTimerWheel::TimerData::TimerData()
    :  m_ppPrevious(0),
       m_pNext(0),
       m_pTimer(0),
-      m_userData(0)
-
+      m_userData(0),
+      m_deleteAfterTimeout(false)
 {
 
 }
@@ -537,9 +699,15 @@ CCallbackTimerWheel::TimerData::TimerData(
    :  m_ppPrevious(0),
       m_pNext(0),
       m_pTimer(&timer),
-      m_userData(userData)
+      m_userData(userData),
+      m_deleteAfterTimeout(true)
 {
 
+}
+
+bool CCallbackTimerWheel::TimerData::DeleteAfterTimeout() const
+{
+   return m_deleteAfterTimeout;
 }
 
 bool CCallbackTimerWheel::TimerData::CancelTimer()
@@ -570,6 +738,13 @@ void CCallbackTimerWheel::TimerData::UpdateData(
    CCallbackTimerWheel::Timer &timer,
    CCallbackTimerWheel::UserData userData)
 {
+   if (m_deleteAfterTimeout)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::TimerData::UpdateData()"),
+         _T("Internal Error: Can't update one shot timers or timers pending deletion"));
+   }
+
    m_pTimer = &timer;
 
    m_userData = userData;

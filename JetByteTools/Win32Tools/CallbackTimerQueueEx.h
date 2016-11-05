@@ -70,14 +70,14 @@ class CCallbackTimerQueueEx : public CCallbackTimerQueueBase
       CCallbackTimerQueueEx();
 
       /// Create a timer queue and monitor it with the supplied monitor.
-      
+
       explicit CCallbackTimerQueueEx(
          IMonitorCallbackTimerQueue &monitor);
 
       /// Create a timer queue that uses the provdided instance of 
       /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system.
-      
+
       explicit CCallbackTimerQueueEx(
          const IProvideTickCount64 &tickProvider);
 
@@ -97,9 +97,9 @@ class CCallbackTimerQueueEx : public CCallbackTimerQueueBase
 
       const IProvideTickCount64 &m_tickProvider;
 
-		/// No copies do not implement
+      /// No copies do not implement
       CCallbackTimerQueueEx(const CCallbackTimerQueueEx &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CCallbackTimerQueueEx &operator=(const CCallbackTimerQueueEx &rhs);
 };
 
