@@ -114,11 +114,13 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       class TimerData;
 
-      typedef std::multimap<ULONGLONG, TimerData *> TimerQueue;
+      typedef std::set<TimerData *> TimersAtThisTime;
 
-      typedef std::map<TimerData *, TimerQueue::iterator> HandleMap;
+      typedef std::map<ULONGLONG, TimersAtThisTime *> TimerQueue;
 
-      typedef std::set<TimeoutHandle> TimeoutHandles;
+      typedef std::pair<TimerQueue::iterator, TimersAtThisTime::iterator> TimerLocation;
+
+      typedef std::map<TimerData *, TimerLocation> HandleMap;
 
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
@@ -144,25 +146,23 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
       virtual ULONGLONG GetTickCount64() = 0;
 
       TimeoutHandle GetTimeoutHandle(
-         TimerData *pData);
+         TimersAtThisTime *pTimers);
 
-      TimerData *ValidateTimeoutHandle(
+      TimersAtThisTime *ValidateTimeoutHandle(
          IManageTimerQueue::TimeoutHandle &handle);
 
-      TimerData *EraseTimeoutHandle(
+      TimersAtThisTime *EraseTimeoutHandle(
          IManageTimerQueue::TimeoutHandle &handle);
 
       TimerQueue m_queue;
 
       HandleMap m_handleMap;
 
-      TimeoutHandles m_timeoutHandles;
-
       IMonitorCallbackTimerQueue &m_monitor;
 
       const Milliseconds m_maxTimeout;
 
-      bool m_handlingTimeouts;
+      TimeoutHandle m_handlingTimeouts;
 
       /// No copies do not implement
       CCallbackTimerQueueBase(const CCallbackTimerQueueBase &rhs);

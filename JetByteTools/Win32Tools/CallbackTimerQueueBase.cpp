@@ -127,7 +127,7 @@ IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
    :  m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false)
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -136,7 +136,7 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    IMonitorCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false)
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -323,9 +323,19 @@ void CCallbackTimerQueueBase::InsertTimer(
    TimerData * const pData,
    const ULONGLONG absoluteTimeout)
 {
-   TimerQueue::iterator it = m_queue.insert(TimerQueue::value_type(absoluteTimeout, pData));
+   typedef std::pair<TimerQueue::iterator, bool> Result;
 
-   m_handleMap[pData] = it;
+   Result result = m_queue.insert(TimerQueue::value_type(absoluteTimeout, static_cast<TimersAtThisTime*>(0)));
+
+   if (result.second)
+   {
+      result.first->second = new TimersAtThisTime();
+   }
+
+   TimersAtThisTime::iterator it = result.first->second->insert(pData).first;
+   
+   m_handleMap[pData] = TimerLocation(result.first, it);
+
 }
 
 bool CCallbackTimerQueueBase::SetInternalTimer(
@@ -379,10 +389,23 @@ bool CCallbackTimerQueueBase::CancelTimer(
    const HandleMap::iterator &it)
 {
    bool wasPending = false;
-   
-   if (it->second != m_queue.end())
+
+   TimerLocation &location = it->second;
+
+   if (location.first != m_queue.end())
    {
-      m_queue.erase(it->second);
+      TimersAtThisTime *pTimers = location.first->second;
+
+      TimersAtThisTime::iterator tat_it = location.second;
+
+      pTimers->erase(tat_it);
+
+      if (0 == pTimers->size())
+      {
+         m_queue.erase(location.first);
+
+         delete pTimers;                        // cache these??
+      }
 
       MarkHandleUnset(handle);
 
@@ -400,9 +423,16 @@ Milliseconds CCallbackTimerQueueBase::GetNextTimeout()
 
    if (it != m_queue.end())
    {
-      if (it->second->IsInternalTimer(this))
+      TimersAtThisTime *pTimers = it->second;
+
+      if (pTimers->size() == 1)
       {
-         it++;
+         TimerData *pData = *(pTimers->begin());
+
+         if (pData->IsInternalTimer(this))
+         {
+            it++;
+         }
       }
 
       if (it != m_queue.end())
@@ -433,52 +463,61 @@ void CCallbackTimerQueueBase::HandleTimeouts()
    {
       TimerQueue::iterator it = m_queue.begin();
       
-      TimerData *pData = it->second;
+      TimersAtThisTime *pTimers = it->second;
 
       m_queue.erase(it);
 
-      Handle handle = reinterpret_cast<Handle>(pData);
-
-      MarkHandleUnset(handle);
-
-      pData->OnTimer();
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
-
-      m_monitor.OnTimer();
-
-#endif
-
-      if (pData->DeleteAfterTimeout())
+      //No need to lock queue any more...
+      
       {
-         m_handleMap.erase(pData);
+         for (TimersAtThisTime::const_iterator it = pTimers->begin(), end = pTimers->end(); 
+            it != end; 
+            ++it)
+         {
+            TimerData *pData = *it;
 
-         delete pData;
+            MarkTimerUnset(pData);
+
+            pData->OnTimer();
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
 
-         m_monitor.OnTimerDeleted();
+            m_monitor.OnTimer();
 
 #endif
 
+            if (pData->DeleteAfterTimeout())
+            {
+               m_handleMap.erase(pData);
+
+               delete pData;
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+               m_monitor.OnTimerDeleted();
+
+#endif
+
+            }
+         }
       }
    }
 }
 
 IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::GetTimeoutHandle(
-   TimerData *pData)
+   TimersAtThisTime *pTimers)
 {
-   TimeoutHandle handle = reinterpret_cast<TimeoutHandle>(pData);
+   TimeoutHandle handle = reinterpret_cast<TimeoutHandle>(pTimers);
 
-   m_timeoutHandles.insert(handle);
+   m_handlingTimeouts = handle;
 
    return handle;
 }
 
-CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::ValidateTimeoutHandle(
+CCallbackTimerQueueBase::TimersAtThisTime *CCallbackTimerQueueBase::ValidateTimeoutHandle(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   if (m_timeoutHandles.end() == m_timeoutHandles.find(handle))
+   if (m_handlingTimeouts != handle)
    {
 // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
 // it's due to some confusion, and even if it isn't then it's not that crucial...
@@ -489,14 +528,14 @@ CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::ValidateTimeoutHand
          _T("Invalid timeout handle: ") + ToString(handle));
 #pragma warning(pop)
    }
-   
-   return reinterpret_cast<TimerData *>(handle);
+
+   return reinterpret_cast<TimersAtThisTime *>(handle);
 }
 
-CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::EraseTimeoutHandle(
+CCallbackTimerQueueBase::TimersAtThisTime *CCallbackTimerQueueBase::EraseTimeoutHandle(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   if (0 == m_timeoutHandles.erase(handle))
+   if (m_handlingTimeouts != handle)
    {
 // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
 // it's due to some confusion, and even if it isn't then it's not that crucial...
@@ -508,12 +547,14 @@ CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::EraseTimeoutHandle(
 #pragma warning(pop)
    }
 
-   return reinterpret_cast<TimerData *>(handle);
+   m_handlingTimeouts = InvalidTimeoutHandleValue;
+
+   return reinterpret_cast<TimersAtThisTime *>(handle);
 }
 
 IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 {
-   if (m_handlingTimeouts)
+   if (m_handlingTimeouts != InvalidTimeoutHandleValue)
    {
       throw CException(
          _T("CCallbackTimerQueueBase::BeginTimeoutHandling()"), 
@@ -524,32 +565,41 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 
    if (0 == GetNextTimeout())
    {
-      m_handlingTimeouts = true;
-
       TimerQueue::iterator it = m_queue.begin();
       
-      TimerData *pData = it->second;
+      TimersAtThisTime *pTimers = it->second;
 
       m_queue.erase(it);
+
+      // timeout handle is now a reference to timeouts at this time...
 
       // Need to duplicate the timer data so that a call to SetTimer that occurs after 
       // this call returns but before a call to HandleTimeout with this timer doesn't 
       // cause the timer that is about to happen to be changed before it actually 
       // "goes off"...
 
-      pData->PrepareForHandleTimeout();
+      timeoutHandle = GetTimeoutHandle(pTimers);
 
-      timeoutHandle = GetTimeoutHandle(pData);
-
-      if (pData->DeleteAfterTimeout())
       {
-         m_handleMap.erase(pData);
+         for (TimersAtThisTime::const_iterator it = pTimers->begin(), end = pTimers->end(); 
+            it != end; 
+            ++it)
+         {
+            TimerData *pData = *it;
+
+            pData->PrepareForHandleTimeout();
+
+            if (pData->DeleteAfterTimeout())
+            {
+               m_handleMap.erase(pData);
          
-         // pData will be cleaned up after we've processed the timeout
-      }
-      else
-      {
-         MarkTimerUnset(pData);
+               // pData will be cleaned up after we've processed the timeout
+            }
+            else
+            {
+               MarkTimerUnset(pData);
+            }
+         }
       }
    }
 
@@ -559,25 +609,38 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 void CCallbackTimerQueueBase::HandleTimeout(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   TimerData *pData = ValidateTimeoutHandle(handle);
+   TimersAtThisTime *pTimers = ValidateTimeoutHandle(handle);
+
+   for (TimersAtThisTime::const_iterator it = pTimers->begin(), end = pTimers->end(); 
+      it != end; 
+      ++it)
+   {
+      TimerData *pData = *it;
 
       pData->HandleTimeout();
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
 
-   m_monitor.OnTimer();
+      m_monitor.OnTimer();
 
 #endif
+   }
 }
 
 void CCallbackTimerQueueBase::EndTimeoutHandling(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   TimerData *pData = EraseTimeoutHandle(handle);
+   TimersAtThisTime *pTimers = EraseTimeoutHandle(handle);
 
-   if (pData->DeleteAfterTimeout())
+   for (TimersAtThisTime::const_iterator it = pTimers->begin(), end = pTimers->end(); 
+      it != end; 
+      ++it)
    {
-      delete pData;
+      TimerData *pData = *it;
+
+      if (pData->DeleteAfterTimeout())
+      {
+         delete pData;
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
 
@@ -585,13 +648,14 @@ void CCallbackTimerQueueBase::EndTimeoutHandling(
 
 #endif
 
-   }
-   else
-   {
-      pData->TimeoutHandlingComplete();
+      }
+      else
+      {
+         pData->TimeoutHandlingComplete();      
+      }
    }
 
-   m_handlingTimeouts = false;
+   delete pTimers;
 }
 
 void CCallbackTimerQueueBase::MarkHandleUnset(
@@ -603,7 +667,9 @@ void CCallbackTimerQueueBase::MarkHandleUnset(
 void CCallbackTimerQueueBase::MarkTimerUnset(
    TimerData *pData)
 {
-   m_handleMap[pData] = m_queue.end();
+   static TimersAtThisTime notUsed;
+   
+   m_handleMap[pData] = TimerLocation(m_queue.end(), notUsed.end());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

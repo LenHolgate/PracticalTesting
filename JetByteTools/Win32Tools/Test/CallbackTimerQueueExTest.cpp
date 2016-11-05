@@ -1430,7 +1430,7 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
 
       timerQueue.HandleTimeouts();
 
-      tickProvider.CheckResult(_T("|GetTickCount: 155|GetTickCount: 155|GetTickCount: 155|"));
+      tickProvider.CheckResult(_T("|GetTickCount: 155|GetTickCount: 155|"));
 
       timer1.CheckNoResults();
       timer2.CheckNoResults();
