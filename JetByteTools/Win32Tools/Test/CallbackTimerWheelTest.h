@@ -24,17 +24,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Classes defined in other files...
-///////////////////////////////////////////////////////////////////////////////
+#include "CallbackTimerQueueTestBase.h"
 
-namespace JetByteTools 
-{
-   namespace Test
-   {
-      class CTestMonitor;
-   }
-}
+#include "..\Mock\TestCallbackTimerWheel.h"
+
+#include "..\Mock\MockTickCountProvider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -52,7 +46,11 @@ namespace Test {
 /// \test
 /// \ingroup Win32ToolsTests
 
-class CCallbackTimerWheelTest
+class CCallbackTimerWheelTest :
+   public TCallbackTimerQueueTestBase<
+      JetByteTools::Win32::Mock::CTestCallbackTimerWheel, 
+      CCallbackTimerWheelTest,
+      JetByteTools::Win32::Mock::CMockTickCountProvider>
 {
    public :
 
@@ -60,22 +58,28 @@ class CCallbackTimerWheelTest
          JetByteTools::Test::CTestMonitor &monitor);
 
       static void TestConstruct();
-      static void TestGetNextTimeoutNoTimersSet();
       static void TestGetMaximumTimeout();
-      static void TestHandleTimeoutsNoTimersSetNoTimePassed();
-      static void TestHandleTimeoutsNoTimersSet();
-      static void TestCreateTimer();
-      static void TestDestroyTimer();
-      static void TestSetTimer();
-      static void TestGetNextTimeoutWithTimerSet();
-      static void TestSetTimerAlreadySet();
-      static void TestCancelTimerNotSet();
-      static void TestCancelTimer();
 
-      static void PerfTestCreateTimer();
-      static void PerfTestSetTimer();
-      static void PerfTestSetDifferentTimers();
-      static void PerfTestSetDifferentTimersSameTimes();
+      // Test traits...
+      enum traits
+      {
+         timerGranularity = 15,
+         creationQueriesTicks = true,
+         setQueriesTicks = false,
+
+   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+         monitoringEnabled = true
+
+   #else
+
+         monitoringEnabled = false
+
+   #endif
+
+      };
+
+      static const _tstring shortName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

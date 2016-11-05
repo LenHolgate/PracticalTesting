@@ -709,6 +709,7 @@
   <ItemGroup>
     <ClInclude Include="CallbackTimerQueueExTest.h" />
     <ClInclude Include="CallbackTimerQueueTest.h" />
+    <ClInclude Include="CallbackTimerQueueTestBase.h" />
     <ClInclude Include="CallbackTimerWheelTest.h" />
     <ClInclude Include="ThreadedCallbackTimerQueueTest.h" />
   </ItemGroup>

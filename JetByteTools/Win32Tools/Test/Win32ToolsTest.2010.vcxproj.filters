@@ -44,5 +44,8 @@
     <ClInclude Include="CallbackTimerWheelTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
+    <ClInclude Include="CallbackTimerQueueTestBase.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

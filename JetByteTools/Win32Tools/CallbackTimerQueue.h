@@ -71,7 +71,7 @@ class CCallbackTimerQueue : public CCallbackTimerQueueBase
       CCallbackTimerQueue();
 
       /// Create a timer queue and monitor it with the supplied monitor.
-      
+
       explicit CCallbackTimerQueue(
          IMonitorCallbackTimerQueue &monitor);
 

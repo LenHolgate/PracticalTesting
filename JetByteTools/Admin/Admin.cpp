@@ -460,6 +460,12 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED enabled: NO")
 #endif
 
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED enabled: NO")
+#endif
+
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")
 #pragma JETBYTE_MESSAGE("")
 #pragma JETBYTE_MESSAGE("")

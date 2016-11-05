@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_WHEEL_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_WHEEL_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueExTest.h 
+// File: TestCallbackTimerWheel.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2008 JetByte Limited.
+// Copyright 2010 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -24,77 +24,71 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CallbackTimerQueueTestBase.h"
-
-#include "..\CallbackTimerQueueEx.h"
-
-#include "..\Mock\MockTickCount64Provider.h"
+#include "..\CallbackTimerWheel.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools 
+{
+   namespace Win32 
+   {
+      class IProvideTickCount;
+      class IMonitorCallbackTimerQueue;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
-namespace Test {
+namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueExTest
+// CTestCallbackTimerWheel
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CCallbackTimerQueueExTestTraits
+/// A mock object that implements IMonitorCallbackTimerQueue.
+/// \ingroup Win32ToolsMocks
+
+class CTestCallbackTimerWheel : public CCallbackTimerWheel
 {
-   enum traits
-   {
-      timerGranularity = 1,
-      creationQueriesTicks = false,
-      setQueriesTicks = true,
+   public : 
 
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+      CTestCallbackTimerWheel();
 
-      monitoringEnabled = true
+      explicit CTestCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor);
 
-#else
+      /// Create a timer queue that uses the provdided instance of 
+      /// IProvideTickCount to obtain its tick counts rather than getting
+      /// them directly from the system.
 
-      monitoringEnabled = false
+      explicit CTestCallbackTimerWheel(
+         const IProvideTickCount &tickProvider);
 
-#endif
+      /// Create a timer queue that uses the provdided instance of 
+      /// IProvideTickCount to obtain its tick counts rather than getting
+      /// them directly from the system. Monitor it with the supplied monitor.
 
-   };
-
-   static const _tstring shortName;
-};
-
-/// A test for CCallbackTimerQueue
-/// \test
-/// \ingroup Win32ToolsTests
-
-class CCallbackTimerQueueExTest :
-   public TCallbackTimerQueueTestBase<
-      CCallbackTimerQueueEx, 
-      CCallbackTimerQueueExTestTraits, 
-      JetByteTools::Win32::Mock::CMockTickCount64Provider>
-{
-   public :
-
-      static void TestAll(
-         JetByteTools::Test::CTestMonitor &monitor);
-
-      static void TestGetMaxTimeout();
-      static void TestMaxTimeout();
-      static void TestSetTimerPastTickCount64CountWrap();
+      CTestCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
+         const IProvideTickCount &tickProvider);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Win32::Test
+// Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Test
+} // End of namespace Mock
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_MOCK_TEST_CALLBACK_TIMER_WHEEL_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueueExTest.h
+// End of file: TestCallbackTimerWheel.h
 ///////////////////////////////////////////////////////////////////////////////

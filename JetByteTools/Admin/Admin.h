@@ -577,6 +577,10 @@ namespace JetByteTools
 #define JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED 0
 #endif
 
+#ifndef JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED
+#define JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED 0
+#endif
+
 #include "Warnings.h"
 #include "Todo.h"
 

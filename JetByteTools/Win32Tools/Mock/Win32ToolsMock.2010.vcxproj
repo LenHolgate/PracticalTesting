@@ -576,6 +576,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Create</PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Level4</WarningLevel>
     </ClCompile>
+    <ClCompile Include="TestCallbackTimerWheel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoggingCallbackTimer.h" />
@@ -584,6 +585,7 @@
     <ClInclude Include="MockTimerQueue.h" />
     <ClInclude Include="MockTimerQueueMonitor.h" />
     <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="TestCallbackTimerWheel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

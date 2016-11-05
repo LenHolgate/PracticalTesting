@@ -155,7 +155,7 @@ static void PureCallHandler()
 
 int __cdecl _purecall(void)
 {
-	JetByteTools::Test::PureCallHandler();
+   JetByteTools::Test::PureCallHandler();
 
    return 0;
 }

@@ -24,17 +24,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Classes defined in other files...
-///////////////////////////////////////////////////////////////////////////////
+#include "CallbackTimerQueueTestBase.h"
 
-namespace JetByteTools 
-{
-   namespace Test
-   {
-      class CTestMonitor;
-   }
-}
+#include "..\CallbackTimerQueue.h"
+
+#include "..\Mock\MockTickCountProvider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -48,53 +42,47 @@ namespace Test {
 // CCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
+struct CCallbackTimerQueueTestTraits
+{
+   enum traits
+   {
+      timerGranularity = 1,
+      creationQueriesTicks = true,
+      setQueriesTicks = true,
+
+#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING_DISABLED == 0)
+
+      monitoringEnabled = true
+
+#else
+
+      monitoringEnabled = false
+
+#endif
+
+   };
+
+   static const _tstring shortName;
+};
+
 /// A test for CCallbackTimerQueue
 /// \test
 /// \ingroup Win32ToolsTests
 
-class CCallbackTimerQueueTest
+class CCallbackTimerQueueTest :
+   public TCallbackTimerQueueTestBase<
+      CCallbackTimerQueue, 
+      CCallbackTimerQueueTestTraits,
+      JetByteTools::Win32::Mock::CMockTickCountProvider>
 {
    public :
 
       static void TestAll(
          JetByteTools::Test::CTestMonitor &monitor);
 
-      static void TestConstruct();
-      static void TestCreateTimer();
-      static void TestDestroyTimer();
-      static void TestTimer();
-      static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling();
-      static void TestBeginTimeoutHandlingEndTimeoutHandling();
-      static void TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail();
-      static void TestMultipleCallsToEndTimeoutHandlingFail();
-      static void TestEndTimeoutHandlingWithInvalidHandleFails();
-      static void TestHandleTimeoutWithInvalidHandleFails();
-      static void TestMultipleCallsToHandleTimeoutFail();
-      static void TestBeginTimeoutHandlingSetTimer();
-      static void TestBeginTimeoutHandlingCancelTimer();
-      static void TestBeginTimeoutHandlingDestroyTimer();
-      static void TestMultipleTimers();
-      static void TestCancelTimer();
-      static void TestCancelExpiredTimer();
-      static void TestMaxTimeout();
       static void TestTickCountWrap();
       static void TestTickCountWrap2();
       static void TestTickCountWrap3();
-      static void TestGetMaxTimeout();
-      static void TestSetTimerPastTickCount64CountWrap();
-      static void TestResetTimer();
-      static void TestOneShotTimer();
-      static void TestActiveTimersAtDestructionTime();
-      static void TestMonitoring();
-      static void TestCancelOneOfManyTimersAndThenHandleTimeouts();
-      static void TestCancelOneOfManyTimersAndThenBeginTimeoutHandling();
-
-      static void PerfTestCreateTimer();
-      static void PerfTestSetTimer();
-      static void PerfTestSetDifferentTimers();
-      static void PerfTestSetDifferentTimersSameTimes();
-      static void PerfTestHandleTimeouts();
-      static void PerfTestBeginTimeoutHandling();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

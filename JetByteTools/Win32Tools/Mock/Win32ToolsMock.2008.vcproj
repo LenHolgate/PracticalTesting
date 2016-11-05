@@ -847,6 +847,10 @@
 				RelativePath=".\MockTimerQueueMonitor.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TestCallbackTimerWheel.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -870,6 +874,10 @@
 			</File>
 			<File
 				RelativePath=".\MockTimerQueueMonitor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TestCallbackTimerWheel.h"
 				>
 			</File>
 		</Filter>

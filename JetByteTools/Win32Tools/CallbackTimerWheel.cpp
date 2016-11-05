@@ -140,7 +140,7 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 
 CCallbackTimerWheel::CCallbackTimerWheel(
    const Milliseconds maximumTimeout,
-   IProvideTickCount &tickCountProvider)
+   const IProvideTickCount &tickCountProvider)
    :  m_maximumTimeout(maximumTimeout),
       m_timerGranularity(s_defaultTimerGranularity),
       m_numTimers(CalculateNumberOfTimers(m_maximumTimeout, m_timerGranularity)),
@@ -183,16 +183,20 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
 
 Milliseconds CCallbackTimerWheel::GetNextTimeout()
 {
+   throw CException(_T("CCallbackTimerWheel::GetNextTimeout()"), _T("Not implemented"));
+
    return INFINITE;
 }
 
 void CCallbackTimerWheel::HandleTimeouts()
 {
-
+   throw CException(_T("CCallbackTimerWheel::HandleTimeouts()"), _T("Not implemented"));
 }
 
 IManageTimerQueue::TimeoutHandle CCallbackTimerWheel::BeginTimeoutHandling()
 {
+   throw CException(_T("CCallbackTimerWheel::BeginTimeoutHandling()"), _T("Not implemented"));
+
    return InvalidTimeoutHandleValue;
 }
 
@@ -200,12 +204,16 @@ void CCallbackTimerWheel::HandleTimeout(
    IManageTimerQueue::TimeoutHandle &handle)
 {
    (void)handle;
+
+   throw CException(_T("CCallbackTimerWheel::HandleTimeout()"), _T("Not implemented"));
 }
 
 void CCallbackTimerWheel::EndTimeoutHandling(
    IManageTimerQueue::TimeoutHandle &handle)
 {
    (void)handle;
+
+   throw CException(_T("CCallbackTimerWheel::EndTimeoutHandling()"), _T("Not implemented"));
 }
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
@@ -249,6 +257,8 @@ void CCallbackTimerWheel::SetTimer(
    (void)timer;
    (void)timeout;
    (void)userData;
+
+   throw CException(_T("CCallbackTimerWheel::SetTimer()"), _T("Not implemented"));
 }
 
 void CCallbackTimerWheel::InsertTimer(

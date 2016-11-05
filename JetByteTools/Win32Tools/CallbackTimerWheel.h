@@ -63,7 +63,7 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       CCallbackTimerWheel(
          const Milliseconds maximumTimeout,
-         IProvideTickCount &tickCountProvider);
+         const IProvideTickCount &tickCountProvider);
 
       CCallbackTimerWheel(
          const Milliseconds maximumTimeout,
