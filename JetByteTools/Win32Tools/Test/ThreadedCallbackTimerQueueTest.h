@@ -1,5 +1,11 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_TEST_THREADED_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_TEST_THREADED_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: ThreadedCallbackTimerQueueTest.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -30,17 +36,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
 //
@@ -49,71 +44,34 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
+// Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CThreadedCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+class CThreadedCallbackTimerQueueTest
 {
-   CSEHException::Translator sehTranslator;
+   public :
 
-   bool ok = false;
+      static void TestAll();
+      static void TestConstruct();
+      static void TestTimer();
+      static void TestMultipleTimers();
+};
 
-   try
-   {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32::Test
+///////////////////////////////////////////////////////////////////////////////
 
-      ok = true;
-   }
-   catch(const CTestException &e)
-   {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const char *p)
-   {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
-
-      ok = false;
-   }
-
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
-
-   return ok ? 0 : 1;
-}
+} // End of namespace Test
+} // End of namespace Win32
+} // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -122,7 +80,8 @@ int main(int /*argc*/, char * /*argv[ ]*/)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
-///////////////////////////////////////////////////////////////////////////////
+#endif // JETBYTE_TOOLS_WIN32_TEST_THREADED_CALLBACK_TIMER_QUEUE_TEST_INCLUDED__
 
+///////////////////////////////////////////////////////////////////////////////
+// End of file: ThreadedCallbackTimerQueueTest.h
+///////////////////////////////////////////////////////////////////////////////

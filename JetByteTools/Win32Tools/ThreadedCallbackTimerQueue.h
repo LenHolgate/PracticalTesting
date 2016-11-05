@@ -1,5 +1,11 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#define JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: ThreadedCallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2004 JetByte Limited.
@@ -30,16 +36,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "CallbackTimerQueue.h"
+#include "Thread.h"
+#include "AutoResetEvent.h"
+#include "CriticalSection.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -49,71 +49,73 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CThreadedCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+class CThreadedCallbackTimerQueue : 
+   private CThread, 
+   private CCallbackTimerQueue
 {
-   CSEHException::Translator sehTranslator;
+   public :
 
-   bool ok = false;
+      CThreadedCallbackTimerQueue();
 
-   try
-   {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
+      explicit CThreadedCallbackTimerQueue(
+         const DWORD maxTimeout);
 
-      ok = true;
-   }
-   catch(const CTestException &e)
-   {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      explicit CThreadedCallbackTimerQueue(
+         const IProvideTickCount &tickProvider);
 
-      ok = false;
-   }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      CThreadedCallbackTimerQueue(
+         const DWORD maxTimeout,
+         const IProvideTickCount &tickProvider);
 
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      ~CThreadedCallbackTimerQueue();
 
-      ok = false;
-   }
-   catch(const char *p)
-   {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
+      Handle SetTimer(
+         Timer &timer,
+         const DWORD timeoutMillis,
+         const UserData userData);
 
-      ok = false;
-   }
+      bool CancelTimer(
+         Handle handle);
 
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
+   private :
 
-   return ok ? 0 : 1;
-}
+      DWORD GetNextTimeout();
+
+      void InitiateShutdown();
+
+      void SignalStateChange();
+
+      // Implement CThread
+
+      virtual int Run();
+
+      mutable CCriticalSection m_criticalSection;
+
+      CAutoResetEvent m_stateChangeEvent;
+
+      volatile bool m_shutdown;
+
+      // No copies do not implement
+      CThreadedCallbackTimerQueue(const CThreadedCallbackTimerQueue &rhs);
+      CThreadedCallbackTimerQueue &operator=(const CThreadedCallbackTimerQueue &rhs);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Win32
+} // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Lint options
@@ -122,7 +124,8 @@ int main(int /*argc*/, char * /*argv[ ]*/)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
-///////////////////////////////////////////////////////////////////////////////
+#endif // JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
 
+///////////////////////////////////////////////////////////////////////////////
+// End of file: ThreadedCallbackTimerQueue.h
+///////////////////////////////////////////////////////////////////////////////

@@ -156,6 +156,14 @@ SOURCE=.\CallbackTimerQueueTest.cpp
 
 SOURCE=.\CallbackTimerQueueTest.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\ThreadedCallbackTimerQueueTest.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ThreadedCallbackTimerQueueTest.h
+# End Source File
 # End Group
 # End Target
 # End Project

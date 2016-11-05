@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: Thread.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2002 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,99 +30,129 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
+#include "Thread.h"
+#include "Win32Exception.h"
 
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include <process.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CThread
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+CThread::CThread()
+   :  m_hThread(0)
 {
-   CSEHException::Translator sehTranslator;
 
-   bool ok = false;
-
-   try
+}
+      
+CThread::~CThread()
+{
+   if (m_hThread != 0)
    {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
+      ::CloseHandle(m_hThread);
+   }
+}
 
+HANDLE CThread::GetHandle() const
+{
+   return m_hThread;
+}
+
+void CThread::Start()
+{
+   if (m_hThread == 0)
+   {
+      unsigned int threadID = 0;
+
+      m_hThread = (HANDLE)::_beginthreadex(0, 0, ThreadFunction, (void*)this, 0, &threadID);
+
+      if (m_hThread == 0)
+      {
+         throw CWin32Exception(_T("CThread::Start() - _beginthreadex"), errno);
+      }
+   }
+   else
+   {
+      throw CException(_T("CThread::Start()"), _T("Thread already running - you can only call Start() once!"));
+   }
+}
+
+void CThread::Wait() const
+{
+   if (!Wait(INFINITE))
+   {
+      throw CException(_T("CThread::Wait()"), _T("Unexpected timeout on infinite wait"));
+   }
+}
+
+bool CThread::Wait(DWORD timeoutMillis) const
+{
+   bool ok;
+
+   DWORD result = ::WaitForSingleObject(m_hThread, timeoutMillis);
+
+   if (result == WAIT_TIMEOUT)
+   {
+      ok = false;
+   }
+   else if (result == WAIT_OBJECT_0)
+   {
       ok = true;
    }
-   catch(const CTestException &e)
+   else
    {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
+      throw CWin32Exception(_T("CThread::Wait() - WaitForSingleObject"), ::GetLastError());
    }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+    
+   return ok;
+}
 
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+unsigned int __stdcall CThread::ThreadFunction(void *pV)
+{
+   int result = 0;
 
-      ok = false;
-   }
-   catch(const char *p)
+   CThread* pThis = (CThread*)pV;
+   
+   if (pThis)
    {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
-
-      ok = false;
+      try
+      {
+         result = pThis->Run();
+      }
+      catch(...)
+      {
+      }
    }
 
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
+   return result;
+}
 
-   return ok ? 0 : 1;
+void CThread::Terminate(
+   DWORD exitCode /* = 0 */)
+{
+   if (!::TerminateThread(m_hThread, exitCode))
+   {
+      throw CWin32Exception(_T("CThread::Terminate() - TerminateThread"), ::GetLastError());
+   }
+
+   m_hThread = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
+} // End of namespace Win32
+} // End of namespace JetByteTools 
+
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
+// End of file: Thread.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

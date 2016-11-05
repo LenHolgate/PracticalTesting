@@ -79,7 +79,6 @@ static const DWORD s_timeoutMax = s_tickCountMax / 4 * 3;
 // CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
    :  m_tickProvider(tickProvider),

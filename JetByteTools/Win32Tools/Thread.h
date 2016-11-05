@@ -1,8 +1,14 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_THREAD_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_THREAD_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: Thread.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2002 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,99 +36,65 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#ifndef _WINDOWS_
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CThread
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+class CThread 
 {
-   CSEHException::Translator sehTranslator;
+   public :
+   
+      CThread();
+      
+      virtual ~CThread();
 
-   bool ok = false;
+      HANDLE GetHandle() const;
 
-   try
-   {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
+      void Wait() const;
 
-      ok = true;
-   }
-   catch(const CTestException &e)
-   {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      bool Wait(DWORD timeoutMillis) const;
 
-      ok = false;
-   }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      void Start();
 
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      void Terminate(
+         DWORD exitCode = 0);
 
-      ok = false;
-   }
-   catch(const char *p)
-   {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
+   private :
 
-      ok = false;
-   }
+      virtual int Run() = 0;
 
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
+      static unsigned int __stdcall ThreadFunction(void *pV);
 
-   return ok ? 0 : 1;
-}
+      HANDLE m_hThread;
+
+      // No copies do not implement
+      CThread(const CThread &rhs);
+      CThread &operator=(const CThread &rhs);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
+} // End of namespace Win32
+} // End of namespace JetByteTools 
+
+#endif // JETBYTE_TOOLS_WIN32_THREAD_INCLUDED__
+
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
+// End of file: Thread.h
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: AutoResetEvent.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 1997 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,99 +30,42 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "AutoResetEvent.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CAutoResetEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+CAutoResetEvent::CAutoResetEvent(
+   bool initialState /* = false */)
+   :  CEvent(0, false, initialState)
 {
-   CSEHException::Translator sehTranslator;
 
-   bool ok = false;
-
-   try
-   {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
-
-      ok = true;
-   }
-   catch(const CTestException &e)
-   {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-
-      ok = false;
-   }
-   catch(const char *p)
-   {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
-
-      ok = false;
-   }
-
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
-
-   return ok ? 0 : 1;
 }
 
+CAutoResetEvent::CAutoResetEvent(
+   const _tstring &name, 
+   bool initialState /* = false */)
+   :  CEvent(0, false, initialState, name)
+{
+   
+}
+ 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
+} // End of namespace Win32
+} // End of namespace JetByteTools 
+
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
+// End of file: AutoResetEvent.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

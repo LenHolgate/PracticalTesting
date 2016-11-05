@@ -1,8 +1,14 @@
+#if defined (_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
+
+#ifndef JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Test.cpp
+// File: Event.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 1997 JetByte Limited.
 //
 // JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
 // licence to use, modify and redistribute this software in source and binary 
@@ -30,99 +36,73 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
+#ifndef _WINDOWS_
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
 
-#include "JetByteTools\TestTools\TestException.h"
-
-#include "CallbackTimerQueueTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "tstring.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -save
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using std::cout;
-using std::endl;
-using std::string;
-
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CSEHException;
-
-using JetByteTools::Test::CTestException;
-
-using namespace JetByteTools::Win32::Test;
+namespace JetByteTools {
+namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Program Entry Point
+// CEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-int main(int /*argc*/, char * /*argv[ ]*/)
+class CEvent 
 {
-   CSEHException::Translator sehTranslator;
+   public :
+   
+      CEvent(
+         LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+         bool manualReset,
+         bool initialState);
+   
+      CEvent(
+         LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+         bool manualReset,
+         bool initialState,
+         const _tstring &name);
+      
+      virtual ~CEvent();
 
-   bool ok = false;
+      HANDLE GetEvent() const;
 
-   try
-   {
-      CCallbackTimerQueueTest::TestAll();
-      CThreadedCallbackTimerQueueTest::TestAll();
+      void Wait() const;
 
-      ok = true;
-   }
-   catch(const CTestException &e)
-   {
-      cout << "Test Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      bool Wait(
+         DWORD timeoutMillis) const;
 
-      ok = false;
-   }
-   catch(const CException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      void Reset();
 
-      ok = false;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      void Set();
 
-      ok = false;
-   }
-   catch(const char *p)
-   {
-      cout << "Exception: " << p << endl;
-   }
-   catch(...)
-   {
-      cout << "Unexpected exception" << endl;
+      void Pulse();
 
-      ok = false;
-   }
+   private :
 
-   cout << "Test " << (ok ? "Passed" : "Failed") << endl;
+      HANDLE m_hEvent;
 
-   return ok ? 0 : 1;
-}
+      // No copies do not implement
+      CEvent(const CEvent &rhs);
+      CEvent &operator=(const CEvent &rhs);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Lint options
-//
-//lint -restore
-//
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// End of file: Test.cpp
-///////////////////////////////////////////////////////////////////////////////
+} // End of namespace Win32
+} // End of namespace JetByteTools 
 
+#endif // JETBYTE_TOOLS_WIN32_EVENT_INCLUDED__
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: Event.h
+///////////////////////////////////////////////////////////////////////////////
