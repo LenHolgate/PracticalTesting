@@ -24,10 +24,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IManageTimerQueue.h"
-
-#include <map>
-#include <set>
+#include "CallbackTimerQueueBase.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -64,7 +61,7 @@ class IProvideTickCount;
  
 /// \ingroup Timers
 
-class CCallbackTimerQueue : public IManageTimerQueue
+class CCallbackTimerQueue : public CCallbackTimerQueueBase
 {
    public :
 
@@ -81,95 +78,13 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       virtual ~CCallbackTimerQueue();
 
-      // Implement IManageTimerQueue
-
-      virtual Milliseconds GetNextTimeout();
-
-      virtual void HandleTimeouts();
-
-      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
-
-      virtual void HandleTimeout(
-         IManageTimerQueue::TimeoutHandle &handle);
-
-      virtual void EndTimeoutHandling(
-         IManageTimerQueue::TimeoutHandle &handle);
-
-      // Implement IQueueTimers
-      // We need to fully specify the IQueueTimers types to get around a bug in 
-      // doxygen 1.5.2
-
-      virtual IQueueTimers::Handle CreateTimer();
-
-      virtual bool SetTimer(
-         const IQueueTimers::Handle &handle, 
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
-
-      virtual bool CancelTimer(
-         const IQueueTimers::Handle &handle);
-
-      virtual bool DestroyTimer(
-         IQueueTimers::Handle &handle);
-
-      virtual bool DestroyTimer(
-         const IQueueTimers::Handle &handle);
-
-      virtual void SetTimer(
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
-
-      virtual Milliseconds GetMaximumTimeout() const;
-
    private :
-
-      class TimerData;
-
-      typedef std::multimap<ULONGLONG, TimerData *> TimerQueue;
-
-      typedef std::map<Handle, TimerQueue::iterator> HandleMap;
-
-      typedef std::set<TimeoutHandle> TimeoutHandles;
-
-      HandleMap::iterator ValidateHandle(
-         const Handle &handle);
-
-      bool CancelTimer(
-         const Handle &handle,
-         const HandleMap::iterator &it);
-
-      void InsertTimer(
-         const Handle &handle,
-         TimerData * const pData,
-         const Milliseconds timeout);
-
-      void MarkHandleUnset(
-         Handle handle);
 
       void SetMaintenanceTimer();
 
-      ULONGLONG GetTickCount64();
-
-      TimeoutHandle GetTimeoutHandle(
-         TimerData *pData);
-
-      TimerData *ValidateTimeoutHandle(
-         IManageTimerQueue::TimeoutHandle &handle);
-
-      TimerData *EraseTimeoutHandle(
-         IManageTimerQueue::TimeoutHandle &handle);
-
-      TimerQueue m_queue;
-
-      HandleMap m_handleMap;
-
-      TimeoutHandles m_timeoutHandles;
+      virtual ULONGLONG GetTickCount64();
 
       const IProvideTickCount &m_tickProvider;
-
-      const Milliseconds m_maxTimeout;
 
       LARGE_INTEGER m_lastCount;
 
@@ -186,8 +101,6 @@ class CCallbackTimerQueue : public IManageTimerQueue
       friend class MaintenanceTimerHandler;
 
       MaintenanceTimerHandler m_maintenanceTimerHandler;
-
-      bool m_handlingTimeouts;
 
 		/// No copies do not implement
       CCallbackTimerQueue(const CCallbackTimerQueue &rhs);

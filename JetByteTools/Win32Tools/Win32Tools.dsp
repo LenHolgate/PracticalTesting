@@ -169,6 +169,10 @@ SOURCE=.\CallbackTimerQueue.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\CallbackTimerQueueBase.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\CallbackTimerQueueEx.cpp
 # End Source File
 # Begin Source File
@@ -234,6 +238,10 @@ SOURCE=.\AutoResetEvent.h
 # Begin Source File
 
 SOURCE=.\CallbackTimerQueue.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CallbackTimerQueueBase.h
 # End Source File
 # Begin Source File
 
