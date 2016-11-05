@@ -27,7 +27,7 @@
 #include "IManageTimerQueue.h"
 
 #include <map>
-#include <set>
+#include <deque>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -114,11 +114,13 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       class TimerData;
 
-      typedef std::set<TimerData *> TimersAtThisTime;
+      typedef std::deque<TimerData *> Timers;
+
+      typedef std::pair<size_t, Timers> TimersAtThisTime;
 
       typedef std::map<ULONGLONG, TimersAtThisTime *> TimerQueue;
 
-      typedef std::pair<TimerQueue::iterator, TimersAtThisTime::iterator> TimerLocation;
+      typedef std::pair<TimerQueue::iterator, size_t> TimerLocation;
 
       typedef std::map<TimerData *, TimerLocation> HandleMap;
 

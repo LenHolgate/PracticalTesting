@@ -96,7 +96,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
       CCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueExTest::TestAll(monitor);
 
-      const size_t expectedTests = 83;
+      const size_t expectedTests = 87;
 
       ok = monitor.Report(expectedTests);
    }
