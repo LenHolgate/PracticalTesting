@@ -26,8 +26,8 @@
 
 #include "IManageTimerQueue.h"
 
-#include <map>
-#include <deque>
+#include "IntrusiveMultiMap.h"
+#include "IntrusiveSet.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -112,24 +112,48 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
    private :
 
+      class TimerDataSetNodeAccessor;
+
       class TimerData;
 
-      typedef std::deque<TimerData *> Timers;
+      class TimerDataIntrusiveMultiMapNodeKeyAccessor
+      {
+         public :
 
-      typedef std::pair<size_t, Timers> TimersAtThisTime;
+            static ULONGLONG GetKeyFromT(
+               const TimerData *pNode);
+      };
 
-      typedef std::map<ULONGLONG, TimersAtThisTime *> TimerQueue;
+      class TimerDataIntrusiveMultiMapNodeAccessor
+      {
+         public :
 
-      typedef std::pair<TimerQueue::iterator, size_t> TimerLocation;
+            static CIntrusiveMultiMapNode * GetNodeFromT(
+               const TimerData *pData);
 
-      typedef std::map<TimerData *, TimerLocation> HandleMap;
+            static TimerData *GetTFromNode(
+               const CIntrusiveMultiMapNode *pNode);
 
-      HandleMap::iterator ValidateHandle(
+            static TimerData *GetTFromNode(
+               const CIntrusiveRedBlackTreeNode *pNode);
+      };
+
+      typedef TIntrusiveMultiMap<
+         TimerData,
+         ULONGLONG,
+         TimerDataIntrusiveMultiMapNodeKeyAccessor,
+         std::less<ULONGLONG>,
+         TimerDataIntrusiveMultiMapNodeAccessor> TimerQueue;
+
+      typedef TIntrusiveSet<TimerData> ActiveHandles;
+
+      TimerData *ValidateHandle(
          const Handle &handle);
 
+      TimerData *CreateTimerInternal();
+
       bool CancelTimer(
-         const Handle &handle,
-         const HandleMap::iterator &it);
+         TimerData *pData);
 
       void InsertTimer(
          TimerData * const pData,
@@ -139,32 +163,21 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
          TimerData * const pData,
          const ULONGLONG absoluteTimeout);
 
-      void MarkHandleUnset(
-         const Handle &handle);
-
-      void MarkTimerUnset(
-         TimerData *pData);
-
       virtual ULONGLONG GetTickCount64() = 0;
-
-      TimeoutHandle GetTimeoutHandle(
-         TimersAtThisTime *pTimers);
-
-      TimersAtThisTime *ValidateTimeoutHandle(
-         IManageTimerQueue::TimeoutHandle &handle);
-
-      TimersAtThisTime *EraseTimeoutHandle(
-         IManageTimerQueue::TimeoutHandle &handle);
 
       TimerQueue m_queue;
 
-      HandleMap m_handleMap;
+      ActiveHandles m_activeHandles;
 
       IMonitorCallbackTimerQueue &m_monitor;
 
       const Milliseconds m_maxTimeout;
 
       TimeoutHandle m_handlingTimeouts;
+
+      TimeoutHandle m_nextTimeoutHandle;
+
+      TimerData *m_pTimeoutsToBeHandled;
 
       /// No copies do not implement
       CCallbackTimerQueueBase(const CCallbackTimerQueueBase &rhs);
