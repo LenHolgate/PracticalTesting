@@ -73,6 +73,9 @@ class CCallbackTimerQueueExTest
       static void TestBeginTimeoutHandlingSetTimer();
       static void TestBeginTimeoutHandlingCancelTimer();
       static void TestBeginTimeoutHandlingDestroyTimer();
+      static void TestHandleTimeoutSetTimer();
+      static void TestHandleTimeoutCancelTimer();
+      static void TestHandleTimeoutDestroyTimer();
       static void TestMultipleTimers();
       static void TestCancelTimer();
       static void TestCancelExpiredTimer();

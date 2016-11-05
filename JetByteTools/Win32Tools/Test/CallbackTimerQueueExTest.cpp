@@ -83,6 +83,9 @@ void CCallbackTimerQueueExTest::TestAll(
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingSetTimer);
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingCancelTimer);
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingDestroyTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestHandleTimeoutSetTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestHandleTimeoutCancelTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestHandleTimeoutDestroyTimer);
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestCancelTimer);
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestCancelExpiredTimer);
    RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestResetTimer);
@@ -689,6 +692,196 @@ void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingDestroyTimer()
    timerQueue.HandleTimeout(h);
 
    timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+}
+
+void CCallbackTimerQueueExTest::TestHandleTimeoutSetTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+
+   // now call set timer to set a new timer whilst the current time is going off...
+   // note that this should return false (not currently set) and the new timer and 
+   // user data should not affect the timer that is in the process of going off.
+
+   CLoggingCallbackTimer timer2;
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, 100, 2));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer2.CheckNoResults();
+      
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   tickProvider.SetTickCount(200);
+
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckNoResults();
+   timer2.CheckResult(_T("|OnTimer: 2|"));
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestHandleTimeoutCancelTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+
+   // now call cancel timer to cancel the timer that is going off...
+   // Note that this should return false (not currently set) and should not 
+   // affect the timer that is in the process of going off.
+
+   THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
+
+   tickProvider.CheckNoResults();
+      
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestHandleTimeoutDestroyTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+
+   // now call destroy timer to destroy the timer that is going off...
+   // Note that this should return false (not currently set) and should NOT 
+   // affect the timer that is in the process of going off, but SHOULD result
+   // in all resources being cleaned up when the time has gone off.
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
 
    tickProvider.CheckNoResults();
       

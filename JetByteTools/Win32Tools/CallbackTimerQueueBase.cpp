@@ -66,6 +66,8 @@ class CCallbackTimerQueueBase::TimerData
 
       void SetDeleteAfterTimeout();
 
+      void TimeoutHandlingComplete();
+
    private :
    
       struct Data
@@ -91,6 +93,8 @@ class CCallbackTimerQueueBase::TimerData
       Data m_timedout;
 
       bool m_deleteAfterTimeout;
+
+      bool m_processingTimeout;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -487,6 +491,10 @@ void CCallbackTimerQueueBase::EndTimeoutHandling(
    {
       delete pData;
    }
+   else
+   {
+      pData->TimeoutHandlingComplete();      
+   }
 
    m_handlingTimeouts = false;
 }
@@ -502,7 +510,8 @@ void CCallbackTimerQueueBase::MarkHandleUnset(
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueBase::TimerData::TimerData()
-   :  m_deleteAfterTimeout(false)
+   :  m_deleteAfterTimeout(false),
+      m_processingTimeout(false)
 {
 }
 
@@ -510,7 +519,8 @@ CCallbackTimerQueueBase::TimerData::TimerData(
    Timer &timer,
    UserData userData)
    :  m_active(timer, userData),
-      m_deleteAfterTimeout(true)
+      m_deleteAfterTimeout(true),
+      m_processingTimeout(false)
 {
 }
 
@@ -549,6 +559,8 @@ void CCallbackTimerQueueBase::TimerData::OnTimer(
 
 void CCallbackTimerQueueBase::TimerData::PrepareForHandleTimeout()
 {
+   m_processingTimeout = true;
+
    m_timedout = m_active;
 
    m_active.Clear();
@@ -559,6 +571,11 @@ void CCallbackTimerQueueBase::TimerData::HandleTimeout()
    OnTimer(m_timedout);
 
    m_timedout.Clear();
+}
+
+void CCallbackTimerQueueBase::TimerData::TimeoutHandlingComplete()
+{
+   m_processingTimeout = false;
 }
 
 bool CCallbackTimerQueueBase::TimerData::DeleteAfterTimeout() const
@@ -574,7 +591,7 @@ bool CCallbackTimerQueueBase::TimerData::IsInternalTimer(
 
 bool CCallbackTimerQueueBase::TimerData::HasTimedOut() const
 { 
-   return m_timedout.pTimer != 0;
+   return m_processingTimeout;
 }
 
 void CCallbackTimerQueueBase::TimerData::SetDeleteAfterTimeout()
