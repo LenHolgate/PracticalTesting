@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Win32Tools"
-	ProjectGUID="{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
-	RootNamespace="Win32Tools"
+	Name="PTMallocTools"
+	ProjectGUID="{023F574F-F5BE-4B45-913B-6951CD39D43F}"
+	RootNamespace="PTMallocTools"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -855,100 +855,88 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\AutoResetEvent.cpp"
+				RelativePath=".\Malloc.c"
 				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueue.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueBase.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueEx.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerWheel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CriticalSection.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DebugTrace.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Event.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Exception.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ManualResetEvent.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageLog.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PerformanceCounter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SEHException.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SimpleMessageLog.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHandle.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHeapHandle.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\StringConverter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Thread.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadAffinity.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadLocalStorage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ToString.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Utils.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Win32Exception.cpp"
-				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -956,87 +944,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath=".\AutoResetEvent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueBase.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueEx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerWheel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ConditionalSmartPointer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CriticalSection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DebugTrace.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Event.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Exception.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ExpandableBuffer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ManualResetEvent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullCallbackTimerQueueMonitor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullMessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullThreadedCallbackTimerQueueMonitor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OSVersionInfo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PerformanceCounter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SEHException.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SimpleMessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHandle.h"
+				RelativePath=".\Malloc.h"
 				>
 			</File>
 			<File
@@ -1044,108 +952,192 @@
 				>
 			</File>
 			<File
-				RelativePath=".\STLHeapAllocator.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StringConverter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Thread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadAffinity.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadLocalStorage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TickCount64Provider.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TickCountProvider.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ToString.h"
-				>
-			</File>
-			<File
-				RelativePath=".\tstring.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Utils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Win32Exception.h"
+				RelativePath=".\STLAllocator.h"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="Interfaces"
+			Name="PTMalloc"
 			>
 			<File
-				RelativePath=".\ICriticalSection.cpp"
+				RelativePath=".\ptmalloc3\lran2.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ICriticalSection.h"
+				RelativePath=".\ptmalloc3\malloc-2.8.3.h"
 				>
 			</File>
 			<File
-				RelativePath=".\IKernelObjectName.h"
+				RelativePath=".\ptmalloc3\malloc-private.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ILogMessages.h"
+				RelativePath=".\ptmalloc3\malloc.c"
 				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\IManageTimerQueue.h"
+				RelativePath=".\ptmalloc3\ptmalloc3.c"
 				>
-			</File>
-			<File
-				RelativePath=".\IMonitorCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IMonitorThreadedCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IProvideTickCount.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IProvideTickCount64.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IQueueTimers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IRunnable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IWaitable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IWaitable.h"
-				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter

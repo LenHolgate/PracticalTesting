@@ -52,6 +52,20 @@ class CCallbackTimerQueueBase::TimerData
          Timer &timer,
          UserData userData);
 
+      inline static void *operator new(
+         size_t size, 
+         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
+      {
+         return allocator.Allocate(size);
+      }
+
+      inline static void operator delete(
+         void *p, 
+         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
+      {
+         allocator.Deallocate(p);
+      }
+
       void OnTimer();
 
       void PrepareForHandleTimeout();
@@ -125,7 +139,12 @@ IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
-   :  m_monitor(s_monitor),
+   :  m_timersAllocator(m_hMalloc),
+      m_timerQueueAllocator(m_hMalloc),
+      m_handleMapAllocator(m_hMalloc),
+      m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
+      m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
+      m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
@@ -134,7 +153,12 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase()
 
 CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    IMonitorCallbackTimerQueue &monitor)
-   :  m_monitor(monitor),
+   :  m_timersAllocator(m_hMalloc),
+      m_timerQueueAllocator(m_hMalloc),
+      m_handleMapAllocator(m_hMalloc),
+      m_queue(std::less<ULONGLONG>(), m_timerQueueAllocator),
+      m_handleMap(std::less<TimerData *>(), m_handleMapAllocator),
+      m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
@@ -143,11 +167,11 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase(
 
 CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 {
-   for (HandleMap::iterator it = m_handleMap.begin(); it != m_handleMap.end(); ++it)
+   for (HandleMap::iterator it = m_handleMap.begin(), end = m_handleMap.end(); it != end; ++it)
    {
       TimerData *pData = reinterpret_cast<TimerData*>(it->first);
 
-      delete pData;
+      m_hMalloc.Destroy(pData);
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 
@@ -156,16 +180,22 @@ CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 #endif
    }
 
-   for (TimerQueue::iterator it = m_queue.begin(); it != m_queue.end(); ++it)
+   m_handleMap.clear();
+
+   for (TimerQueue::iterator it = m_queue.begin(), end = m_queue.end(); it != end; ++it)
    {
-      delete (it->second);
+      TimersAtThisTime *pData = it->second;
+
+      m_hMalloc.Destroy(pData);
    }
+
+   m_queue.clear();
 
 }
 
 CCallbackTimerQueueBase::Handle CCallbackTimerQueueBase::CreateTimer()
 {
-   TimerData *pData = new TimerData();
+   TimerData *pData = new(m_hMalloc)TimerData();
 
    MarkTimerUnset(pData);
 
@@ -249,7 +279,7 @@ bool CCallbackTimerQueueBase::DestroyTimer(
    }
    else
    {
-      delete pData;
+      m_hMalloc.Destroy(pData);
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 
@@ -282,7 +312,7 @@ void CCallbackTimerQueueBase::SetTimer(
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
-   TimerData *pData = new TimerData(timer, userData);
+   TimerData *pData = new(m_hMalloc)TimerData(timer, userData);
 
    InsertTimer(pData, timeout);
 
@@ -335,7 +365,9 @@ void CCallbackTimerQueueBase::InsertTimer(
 
    if (result.second)
    {
-      result.first->second = new TimersAtThisTime();
+      TimersAtThisTime *pTimers = new(m_hMalloc.Allocate(sizeof(TimersAtThisTime)))TimersAtThisTime(0, Timers(m_timersAllocator));
+
+      result.first->second = pTimers;
    }
 
    const size_t offset = result.first->second->second.size();
@@ -413,7 +445,7 @@ bool CCallbackTimerQueueBase::CancelTimer(
       {
          m_queue.erase(location.first);
 
-         delete pTimers;                        // cache these??
+         m_hMalloc.Destroy(pTimers);
       }
 
       MarkHandleUnset(handle);
@@ -501,7 +533,7 @@ void CCallbackTimerQueueBase::HandleTimeouts()
                {
                   m_handleMap.erase(pData);
 
-                  delete pData;
+                  m_hMalloc.Destroy(pData);
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 
@@ -514,7 +546,7 @@ void CCallbackTimerQueueBase::HandleTimeouts()
          }
       }
 
-      delete pTimers;
+      m_hMalloc.Destroy(pTimers);
    }
 }
 
@@ -662,7 +694,7 @@ void CCallbackTimerQueueBase::EndTimeoutHandling(
       {
          if (pData->DeleteAfterTimeout())
          {
-            delete pData;
+            m_hMalloc.Destroy(pData);
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 
@@ -678,7 +710,7 @@ void CCallbackTimerQueueBase::EndTimeoutHandling(
       }
    }
 
-   delete pTimers;
+   m_hMalloc.Destroy(pTimers);
 }
 
 void CCallbackTimerQueueBase::MarkHandleUnset(

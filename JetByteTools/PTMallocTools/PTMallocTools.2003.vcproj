@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
-	Name="Win32Tools"
-	ProjectGUID="{35398882-A0F7-4F96-970A-6D414E45F173}"
+	Version="7.10"
+	Name="PTMallocTools"
+	ProjectGUID="{7F00ABB4-92BD-4E46-A3DF-553CD4FC67DC}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Unicode Debug No PreComp|Win32"
-			OutputDirectory=".\Output\VS2002\UDebugNoPreComp"
-			IntermediateDirectory=".\Output\VS2002\UDebugNoPreComp"
+			OutputDirectory=".\Output\VS2003\UDebugNoPreComp"
+			IntermediateDirectory=".\Output\VS2003\UDebugNoPreComp"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -28,9 +28,9 @@
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				AssemblerListingLocation=".\Output\VS2002\UDebugNoPreComp/"
-				ObjectFile=".\Output\VS2002\UDebugNoPreComp/"
-				ProgramDataBaseFileName=".\Output\VS2002\UDebugNoPreComp/"
+				AssemblerListingLocation=".\Output\VS2003\UDebugNoPreComp/"
+				ObjectFile=".\Output\VS2003\UDebugNoPreComp/"
+				ProgramDataBaseFileName=".\Output\VS2003\UDebugNoPreComp/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -39,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Output\VS2002\UDebugNoPreComp\Win32Tools.lib"
+				OutputFile=".\Output\VS2003\UDebugNoPreComp\PTMallocTools.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -55,11 +55,17 @@
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Output\VS2002\Debug"
-			IntermediateDirectory=".\Output\VS2002\Debug"
+			OutputDirectory=".\Output\VS2003\Debug"
+			IntermediateDirectory=".\Output\VS2003\Debug"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -75,10 +81,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Output\VS2002\Debug/Win32Tools.pch"
-				AssemblerListingLocation=".\Output\VS2002\Debug/"
-				ObjectFile=".\Output\VS2002\Debug/"
-				ProgramDataBaseFileName=".\Output\VS2002\Debug/"
+				PrecompiledHeaderFile=".\Output\VS2003\Debug/PTMallocTools.pch"
+				AssemblerListingLocation=".\Output\VS2003\Debug/"
+				ObjectFile=".\Output\VS2003\Debug/"
+				ProgramDataBaseFileName=".\Output\VS2003\Debug/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -87,7 +93,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Output\VS2002\Debug\Win32Tools.lib"
+				OutputFile=".\Output\VS2003\Debug\PTMallocTools.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -103,11 +109,17 @@
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug|Win32"
-			OutputDirectory=".\Output\VS2002\UDebug"
-			IntermediateDirectory=".\Output\VS2002\UDebug"
+			OutputDirectory=".\Output\VS2003\UDebug"
+			IntermediateDirectory=".\Output\VS2003\UDebug"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -123,10 +135,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Output\VS2002\UDebug/Win32Tools.pch"
-				AssemblerListingLocation=".\Output\VS2002\UDebug/"
-				ObjectFile=".\Output\VS2002\UDebug/"
-				ProgramDataBaseFileName=".\Output\VS2002\UDebug/"
+				PrecompiledHeaderFile=".\Output\VS2003\UDebug/PTMallocTools.pch"
+				AssemblerListingLocation=".\Output\VS2003\UDebug/"
+				ObjectFile=".\Output\VS2003\UDebug/"
+				ProgramDataBaseFileName=".\Output\VS2003\UDebug/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -135,7 +147,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Output\VS2002\UDebug\Win32Tools.lib"
+				OutputFile=".\Output\VS2003\UDebug\PTMallocTools.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -151,11 +163,17 @@
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Output\VS2002\Release"
-			IntermediateDirectory=".\Output\VS2002\Release"
+			OutputDirectory=".\Output\VS2003\Release"
+			IntermediateDirectory=".\Output\VS2003\Release"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -172,19 +190,18 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Output\VS2002\Release/Win32Tools.pch"
-				AssemblerListingLocation=".\Output\VS2002\Release/"
-				ObjectFile=".\Output\VS2002\Release/"
-				ProgramDataBaseFileName=".\Output\VS2002\Release/"
+				PrecompiledHeaderFile=".\Output\VS2003\Release/PTMallocTools.pch"
+				AssemblerListingLocation=".\Output\VS2003\Release/"
+				ObjectFile=".\Output\VS2003\Release/"
+				ProgramDataBaseFileName=".\Output\VS2003\Release/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Output\VS2002\Release\Win32Tools.lib"
+				OutputFile=".\Output\VS2003\Release\PTMallocTools.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -200,11 +217,17 @@
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Unicode Release|Win32"
-			OutputDirectory=".\Output\VS2002\URelease"
-			IntermediateDirectory=".\Output\VS2002\URelease"
+			OutputDirectory=".\Output\VS2003\URelease"
+			IntermediateDirectory=".\Output\VS2003\URelease"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -221,19 +244,18 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Output\VS2002\URelease/Win32Tools.pch"
-				AssemblerListingLocation=".\Output\VS2002\URelease/"
-				ObjectFile=".\Output\VS2002\URelease/"
-				ProgramDataBaseFileName=".\Output\VS2002\URelease/"
+				PrecompiledHeaderFile=".\Output\VS2003\URelease/PTMallocTools.pch"
+				AssemblerListingLocation=".\Output\VS2003\URelease/"
+				ObjectFile=".\Output\VS2003\URelease/"
+				ProgramDataBaseFileName=".\Output\VS2003\URelease/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Output\VS2002\URelease\Win32Tools.lib"
+				OutputFile=".\Output\VS2003\URelease\PTMallocTools.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -249,232 +271,144 @@
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="AutoResetEvent.cpp">
-			</File>
-			<File
-				RelativePath="CallbackTimerQueue.cpp">
-			</File>
-			<File
-				RelativePath="CallbackTimerQueueBase.cpp">
-			</File>
-			<File
-				RelativePath="CallbackTimerQueueEx.cpp">
-			</File>
-			<File
-				RelativePath="CallbackTimerWheel.cpp">
-			</File>
-			<File
-				RelativePath="CriticalSection.cpp">
-			</File>
-			<File
-				RelativePath="DebugTrace.cpp">
-			</File>
-			<File
-				RelativePath="Event.cpp">
-			</File>
-			<File
-				RelativePath="Exception.cpp">
-			</File>
-			<File
-				RelativePath="ManualResetEvent.cpp">
-			</File>
-			<File
-				RelativePath="MessageLog.cpp">
-			</File>
-			<File
-				RelativePath="PerformanceCounter.cpp">
-			</File>
-			<File
-				RelativePath="SEHException.cpp">
-			</File>
-			<File
-				RelativePath="SimpleMessageLog.cpp">
-			</File>
-			<File
-				RelativePath="SmartHandle.cpp">
-			</File>
-			<File
-				RelativePath="SmartHeapHandle.cpp">
-			</File>
-			<File
-				RelativePath="StringConverter.cpp">
-			</File>
-			<File
-				RelativePath="Thread.cpp">
-			</File>
-			<File
-				RelativePath="ThreadAffinity.cpp">
-			</File>
-			<File
-				RelativePath="ThreadLocalStorage.cpp">
-			</File>
-			<File
-				RelativePath="ThreadedCallbackTimerQueue.cpp">
-			</File>
-			<File
-				RelativePath="ToString.cpp">
-			</File>
-			<File
-				RelativePath="Utils.cpp">
-			</File>
-			<File
-				RelativePath="Win32Exception.cpp">
+				RelativePath=".\Malloc.c">
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="AutoResetEvent.h">
+				RelativePath=".\Malloc.h">
 			</File>
 			<File
-				RelativePath="CallbackTimerQueue.h">
+				RelativePath=".\SmartHeapHandle.h">
 			</File>
 			<File
-				RelativePath="CallbackTimerQueueBase.h">
-			</File>
-			<File
-				RelativePath="CallbackTimerQueueEx.h">
-			</File>
-			<File
-				RelativePath="CallbackTimerWheel.h">
-			</File>
-			<File
-				RelativePath="ConditionalSmartPointer.h">
-			</File>
-			<File
-				RelativePath="CriticalSection.h">
-			</File>
-			<File
-				RelativePath="DebugTrace.h">
-			</File>
-			<File
-				RelativePath="Event.h">
-			</File>
-			<File
-				RelativePath="Exception.h">
-			</File>
-			<File
-				RelativePath="ExpandableBuffer.h">
-			</File>
-			<File
-				RelativePath="ManualResetEvent.h">
-			</File>
-			<File
-				RelativePath="MessageLog.h">
-			</File>
-			<File
-				RelativePath="NullCallbackTimerQueueMonitor.h">
-			</File>
-			<File
-				RelativePath="NullMessageLog.h">
-			</File>
-			<File
-				RelativePath="NullThreadedCallbackTimerQueueMonitor.h">
-			</File>
-			<File
-				RelativePath="OSVersionInfo.h">
-			</File>
-			<File
-				RelativePath="PerformanceCounter.h">
-			</File>
-			<File
-				RelativePath="SEHException.h">
-			</File>
-			<File
-				RelativePath="STLHeapAllocator.h">
-			</File>
-			<File
-				RelativePath="SimpleMessageLog.h">
-			</File>
-			<File
-				RelativePath="SmartHandle.h">
-			</File>
-			<File
-				RelativePath="SmartHeapHandle.h">
-			</File>
-			<File
-				RelativePath="StringConverter.h">
-			</File>
-			<File
-				RelativePath="Thread.h">
-			</File>
-			<File
-				RelativePath="ThreadAffinity.h">
-			</File>
-			<File
-				RelativePath="ThreadLocalStorage.h">
-			</File>
-			<File
-				RelativePath="ThreadedCallbackTimerQueue.h">
-			</File>
-			<File
-				RelativePath="TickCount64Provider.h">
-			</File>
-			<File
-				RelativePath="TickCountProvider.h">
-			</File>
-			<File
-				RelativePath="ToString.h">
-			</File>
-			<File
-				RelativePath="Utils.h">
-			</File>
-			<File
-				RelativePath="Win32Exception.h">
-			</File>
-			<File
-				RelativePath="tstring.h">
+				RelativePath=".\STLAllocator.h">
 			</File>
 		</Filter>
 		<Filter
-			Name="Interfaces"
+			Name="PTMalloc"
 			Filter="">
 			<File
-				RelativePath="ICriticalSection.cpp">
+				RelativePath=".\ptmalloc3\lran2.h">
 			</File>
 			<File
-				RelativePath="ICriticalSection.h">
+				RelativePath=".\ptmalloc3\malloc-2.8.3.h">
 			</File>
 			<File
-				RelativePath="IKernelObjectName.h">
+				RelativePath=".\ptmalloc3\malloc-private.h">
 			</File>
 			<File
-				RelativePath="ILogMessages.h">
+				RelativePath=".\ptmalloc3\malloc.c">
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="IManageTimerQueue.h">
-			</File>
-			<File
-				RelativePath="IMonitorCallbackTimerQueue.h">
-			</File>
-			<File
-				RelativePath="IMonitorThreadedCallbackTimerQueue.h">
-			</File>
-			<File
-				RelativePath="IProvideTickCount.h">
-			</File>
-			<File
-				RelativePath="IProvideTickCount64.h">
-			</File>
-			<File
-				RelativePath="IQueueTimers.h">
-			</File>
-			<File
-				RelativePath="IRunnable.h">
-			</File>
-			<File
-				RelativePath="IWaitable.cpp">
-			</File>
-			<File
-				RelativePath="IWaitable.h">
+				RelativePath=".\ptmalloc3\ptmalloc3.c">
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter

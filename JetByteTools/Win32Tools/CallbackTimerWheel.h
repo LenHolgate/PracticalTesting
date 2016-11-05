@@ -28,6 +28,9 @@
 
 #include "IManageTimerQueue.h"
 
+#include "JetByteTools\PTMallocTools\STLAllocator.h"
+#include "JetByteTools\PTMallocTools\SmartHeapHandle.h"
+
 #include <WTypes.h>
 
 #include <set>
@@ -195,7 +198,11 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       size_t m_numTimersSet;
 
-      typedef std::set<TimerData *> Handles;
+      typedef std::set<TimerData *, std::less<TimerData *>, JetByteTools::PTMalloc::CSTLAllocator<TimerData *> > Handles;
+
+      JetByteTools::PTMalloc::CSmartHeapHandle m_hMalloc;
+
+      JetByteTools::PTMalloc::CSTLAllocator<TimerData *> m_handlesAllocator;
 
       Handles m_handles;
 

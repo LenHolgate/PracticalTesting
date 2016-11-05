@@ -43,9 +43,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>Win32Tools</ProjectName>
-    <ProjectGuid>{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}</ProjectGuid>
-    <RootNamespace>Win32Tools</RootNamespace>
+    <ProjectName>PTMallocTools</ProjectName>
+    <ProjectGuid>{1D5FD24B-B537-4B22-B2A0-BF323DF4F868}</ProjectGuid>
+    <RootNamespace>PTMallocTools</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" Label="Configuration">
@@ -589,20 +589,28 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AutoResetEvent.cpp" />
-    <ClCompile Include="CallbackTimerQueue.cpp" />
-    <ClCompile Include="CallbackTimerQueueBase.cpp" />
-    <ClCompile Include="CallbackTimerQueueEx.cpp" />
-    <ClCompile Include="CallbackTimerWheel.cpp" />
-    <ClCompile Include="CriticalSection.cpp" />
-    <ClCompile Include="DebugTrace.cpp" />
-    <ClCompile Include="Event.cpp" />
-    <ClCompile Include="Exception.cpp" />
-    <ClCompile Include="ICriticalSection.cpp" />
-    <ClCompile Include="IWaitable.cpp" />
-    <ClCompile Include="ManualResetEvent.cpp" />
-    <ClCompile Include="MessageLog.cpp" />
-    <ClCompile Include="PerformanceCounter.cpp" />
+    <ClCompile Include="Malloc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">NotUsing</PrecompiledHeader>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level4</WarningLevel>
@@ -625,65 +633,58 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Create</PrecompiledHeader>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Level4</WarningLevel>
     </ClCompile>
-    <ClCompile Include="SEHException.cpp" />
-    <ClCompile Include="SimpleMessageLog.cpp" />
-    <ClCompile Include="SmartHandle.cpp" />
-    <ClCompile Include="SmartHeapHandle.cpp" />
-    <ClCompile Include="StringConverter.cpp" />
-    <ClCompile Include="Thread.cpp" />
-    <ClCompile Include="ThreadAffinity.cpp" />
-    <ClCompile Include="ThreadedCallbackTimerQueue.cpp" />
-    <ClCompile Include="ThreadLocalStorage.cpp" />
-    <ClCompile Include="ToString.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Win32Exception.cpp" />
+    <ClCompile Include="ptmalloc3\malloc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="ptmalloc3\ptmalloc3.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AutoResetEvent.h" />
-    <ClInclude Include="CallbackTimerQueue.h" />
-    <ClInclude Include="CallbackTimerQueueBase.h" />
-    <ClInclude Include="CallbackTimerQueueEx.h" />
-    <ClInclude Include="CallbackTimerWheel.h" />
-    <ClInclude Include="ConditionalSmartPointer.h" />
-    <ClInclude Include="CriticalSection.h" />
-    <ClInclude Include="DebugTrace.h" />
-    <ClInclude Include="Event.h" />
-    <ClInclude Include="Exception.h" />
-    <ClInclude Include="ExpandableBuffer.h" />
-    <ClInclude Include="ICriticalSection.h" />
-    <ClInclude Include="IKernelObjectName.h" />
-    <ClInclude Include="ILogMessages.h" />
-    <ClInclude Include="IManageTimerQueue.h" />
-    <ClInclude Include="IMonitorCallbackTimerQueue.h" />
-    <ClInclude Include="IMonitorThreadedCallbackTimerQueue.h" />
-    <ClInclude Include="IProvideTickCount.h" />
-    <ClInclude Include="IProvideTickCount64.h" />
-    <ClInclude Include="IQueueTimers.h" />
-    <ClInclude Include="IRunnable.h" />
-    <ClInclude Include="IWaitable.h" />
-    <ClInclude Include="ManualResetEvent.h" />
-    <ClInclude Include="MessageLog.h" />
-    <ClInclude Include="NullCallbackTimerQueueMonitor.h" />
-    <ClInclude Include="NullMessageLog.h" />
-    <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
-    <ClInclude Include="OSVersionInfo.h" />
-    <ClInclude Include="PerformanceCounter.h" />
-    <ClInclude Include="SEHException.h" />
-    <ClInclude Include="SimpleMessageLog.h" />
-    <ClInclude Include="SmartHandle.h" />
+    <ClInclude Include="Malloc.h" />
+    <ClInclude Include="ptmalloc3\lran2.h" />
+    <ClInclude Include="ptmalloc3\malloc-2.8.3.h" />
+    <ClInclude Include="ptmalloc3\malloc-private.h" />
     <ClInclude Include="SmartHeapHandle.h" />
-    <ClInclude Include="STLHeapAllocator.h" />
-    <ClInclude Include="StringConverter.h" />
-    <ClInclude Include="Thread.h" />
-    <ClInclude Include="ThreadAffinity.h" />
-    <ClInclude Include="ThreadedCallbackTimerQueue.h" />
-    <ClInclude Include="ThreadLocalStorage.h" />
-    <ClInclude Include="TickCount64Provider.h" />
-    <ClInclude Include="TickCountProvider.h" />
-    <ClInclude Include="ToString.h" />
-    <ClInclude Include="tstring.h" />
-    <ClInclude Include="Utils.h" />
-    <ClInclude Include="Win32Exception.h" />
+    <ClInclude Include="STLAllocator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

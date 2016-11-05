@@ -95,6 +95,9 @@
     <ClCompile Include="CallbackTimerWheel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SmartHeapHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h">
@@ -224,6 +227,12 @@
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="CallbackTimerWheel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLHeapAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SmartHeapHandle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,7 @@
 // File: PrecompiledHeader.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2010 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -18,53 +18,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/// \file JetByteTools\Win32Tools\PrecompiledHeader.cpp
+/// \file JetByteTools\PTMallocTools\PrecompiledHeader.cpp
 /// This file is compiled to produce the precompiled header in builds which use 
 /// it.
 /// \ingroup Precomp
 
 #include "JetByteTools\Admin\Admin.h"
 
-#include <wtypes.h>
-
-#include "AutoResetEvent.h"
-#include "CallbackTimerQueue.h"
-#include "CallbackTimerQueueEx.h"
-#include "CallbackTimerWheel.h"
-#include "CriticalSection.h"
-#include "DebugTrace.h"
-#include "Event.h"
-#include "Exception.h"
-#include "ICriticalSection.h"
-#include "IKernelObjectName.h"
-#include "IProvideTickCount.h"
-#include "IQueueTimers.h"
-#include "IRunnable.h"
-#include "IWaitable.h"
-#include "ManualResetEvent.h"
-#include "NullCallbackTimerQueueMonitor.h"
-#include "NullMessageLog.h"
-#include "NullThreadedCallbackTimerQueueMonitor.h"
-#include "PerformanceCounter.h"
-#include "SEHException.h"
-#include "SimpleMessageLog.h"
+#include "Malloc.h"
 #include "SmartHeapHandle.h"
-#include "StringConverter.h"
-#include "Thread.h"
-#include "ThreadAffinity.h"
-#include "ThreadedCallbackTimerQueue.h"
-#include "TickCountProvider.h"
-#include "TickCount64Provider.h"
-#include "tstring.h"
-#include "Utils.h"
-#include "Win32Exception.h"
-
-// There's an issue with VS2002 where the ordering of includes is important
-// with regards to the secure CRT stuff, until I spend the time to get it
-// right, keep this at the end of the precompiled header..
-#include "JetByteTools\Admin\SecureCRT.h"
-
-#include "JetByteTools\Win32Tools\ExpandableBuffer.h"
+#include "STLAllocator.h"
 
 #pragma hdrstop
 

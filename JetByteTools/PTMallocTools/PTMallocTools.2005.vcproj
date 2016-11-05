@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
-	Name="Win32Tools"
-	ProjectGUID="{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
-	RootNamespace="Win32Tools"
-	TargetFrameworkVersion="131072"
+	Version="8.00"
+	Name="PTMallocTools"
+	ProjectGUID="{0F72F867-43B2-40CC-9FB0-25339820A9E7}"
 	>
 	<Platforms>
 		<Platform
@@ -20,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Unicode Debug No PreComp|Win32"
-			OutputDirectory=".\Output\VS2008\UDebugNoPreComp"
-			IntermediateDirectory=".\Output\VS2008\UDebugNoPreComp"
+			OutputDirectory=".\Output\VS2005\UDebugNoPreComp"
+			IntermediateDirectory=".\Output\VS2005\UDebugNoPreComp"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -63,7 +61,6 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -100,8 +97,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug No PreComp|x64"
-			OutputDirectory=".\Output\VS2008-x64\UDebugNoPreComp\"
-			IntermediateDirectory=".\Output\VS2008-x64\UDebugNoPreComp\"
+			OutputDirectory=".\Output\VS2005-x64\UDebugNoPreComp"
+			IntermediateDirectory=".\Output\VS2005-x64\UDebugNoPreComp"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -144,10 +141,9 @@
 				WarningLevel="4"
 				WarnAsError="true"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -184,8 +180,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Output\VS2008\Debug"
-			IntermediateDirectory=".\Output\VS2008\Debug"
+			OutputDirectory=".\Output\VS2005\Debug"
+			IntermediateDirectory=".\Output\VS2005\Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -229,7 +225,6 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -266,8 +261,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory=".\Output\VS2008-x64\Debug\"
-			IntermediateDirectory=".\Output\VS2008-x64\Debug\"
+			OutputDirectory=".\Output\VS2005-x64\Debug"
+			IntermediateDirectory=".\Output\VS2005-x64\Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -309,10 +304,9 @@
 				WarningLevel="4"
 				WarnAsError="true"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -349,8 +343,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug|Win32"
-			OutputDirectory=".\Output\VS2008\UDebug"
-			IntermediateDirectory=".\Output\VS2008\UDebug"
+			OutputDirectory=".\Output\VS2005\UDebug"
+			IntermediateDirectory=".\Output\VS2005\UDebug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -394,7 +388,6 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -431,8 +424,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Debug|x64"
-			OutputDirectory=".\Output\VS2008-x64\UDebug\"
-			IntermediateDirectory=".\Output\VS2008-x64\UDebug\"
+			OutputDirectory=".\Output\VS2005-x64\UDebug"
+			IntermediateDirectory=".\Output\VS2005-x64\UDebug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -474,10 +467,9 @@
 				WarningLevel="4"
 				WarnAsError="true"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -514,8 +506,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Output\VS2008\Release"
-			IntermediateDirectory=".\Output\VS2008\Release"
+			OutputDirectory=".\Output\VS2005\Release"
+			IntermediateDirectory=".\Output\VS2005\Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -542,7 +534,7 @@
 				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -558,9 +550,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -597,8 +587,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory=".\Output\VS2008-x64\Release\"
-			IntermediateDirectory=".\Output\VS2008-x64\Release\"
+			OutputDirectory=".\Output\VS2005-x64\Release"
+			IntermediateDirectory=".\Output\VS2005-x64\Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -626,7 +616,7 @@
 				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32;_SECURE_SCL=0"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -641,10 +631,8 @@
 				WarningLevel="4"
 				WarnAsError="true"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
+				Detect64BitPortabilityProblems="true"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -681,8 +669,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Release|Win32"
-			OutputDirectory=".\Output\VS2008\URelease"
-			IntermediateDirectory=".\Output\VS2008\URelease"
+			OutputDirectory=".\Output\VS2005\URelease"
+			IntermediateDirectory=".\Output\VS2005\URelease"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -709,7 +697,7 @@
 				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -725,9 +713,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -764,8 +750,8 @@
 		</Configuration>
 		<Configuration
 			Name="Unicode Release|x64"
-			OutputDirectory=".\Output\VS2008-x64\URelease\"
-			IntermediateDirectory=".\Output\VS2008-x64\URelease\"
+			OutputDirectory=".\Output\VS2005-x64\URelease"
+			IntermediateDirectory=".\Output\VS2005-x64\URelease"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -793,7 +779,7 @@
 				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS;_SECURE_SCL=0"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="0"
@@ -808,10 +794,8 @@
 				WarningLevel="4"
 				WarnAsError="true"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
+				Detect64BitPortabilityProblems="true"
 				CompileAs="0"
-				DisableSpecificWarnings="4627"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -855,100 +839,88 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\AutoResetEvent.cpp"
+				RelativePath=".\Malloc.c"
 				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueue.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueBase.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueEx.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerWheel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CriticalSection.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DebugTrace.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Event.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Exception.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ManualResetEvent.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageLog.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PerformanceCounter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SEHException.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SimpleMessageLog.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHandle.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHeapHandle.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\StringConverter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Thread.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadAffinity.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadLocalStorage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\ToString.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Utils.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Win32Exception.cpp"
-				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -956,87 +928,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath=".\AutoResetEvent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueBase.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerQueueEx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CallbackTimerWheel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ConditionalSmartPointer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CriticalSection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DebugTrace.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Event.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Exception.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ExpandableBuffer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ManualResetEvent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullCallbackTimerQueueMonitor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullMessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NullThreadedCallbackTimerQueueMonitor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OSVersionInfo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PerformanceCounter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SEHException.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SimpleMessageLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SmartHandle.h"
+				RelativePath=".\Malloc.h"
 				>
 			</File>
 			<File
@@ -1044,108 +936,212 @@
 				>
 			</File>
 			<File
-				RelativePath=".\STLHeapAllocator.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StringConverter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Thread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadAffinity.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreadLocalStorage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TickCount64Provider.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TickCountProvider.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ToString.h"
-				>
-			</File>
-			<File
-				RelativePath=".\tstring.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Utils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Win32Exception.h"
+				RelativePath=".\STLAllocator.h"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="Interfaces"
+			Name="PTMalloc"
 			>
 			<File
-				RelativePath=".\ICriticalSection.cpp"
+				RelativePath=".\ptmalloc3\lran2.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ICriticalSection.h"
+				RelativePath=".\ptmalloc3\malloc-2.8.3.h"
 				>
 			</File>
 			<File
-				RelativePath=".\IKernelObjectName.h"
+				RelativePath=".\ptmalloc3\malloc-private.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ILogMessages.h"
+				RelativePath=".\ptmalloc3\malloc.c"
 				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\IManageTimerQueue.h"
+				RelativePath=".\ptmalloc3\ptmalloc3.c"
 				>
-			</File>
-			<File
-				RelativePath=".\IMonitorCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IMonitorThreadedCallbackTimerQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IProvideTickCount.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IProvideTickCount64.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IQueueTimers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IRunnable.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IWaitable.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IWaitable.h"
-				>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug No PreComp|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter

@@ -696,6 +696,9 @@
     <ProjectReference Include="..\..\Admin\Admin.2010.vcxproj">
       <Project>{f7bbf14a-a173-49c5-af88-ebc99a2c9a8b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\PTMallocTools\PTMallocTools.2010.vcxproj">
+      <Project>{1d5fd24b-b537-4b22-b2a0-bf323df4f868}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\TestTools\TestTools.2010.vcxproj">
       <Project>{8ad287cb-15b7-48da-99c7-8fdc792b79f2}</Project>
     </ProjectReference>
