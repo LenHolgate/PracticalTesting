@@ -78,6 +78,20 @@ class CCallbackTimerWheel::TimerData
          CCallbackTimerWheel::Timer &timer,
          const CCallbackTimerWheel::UserData userData);
 
+      inline static void *operator new(
+         size_t size, 
+         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
+      {
+         return allocator.Allocate(size);
+      }
+
+      inline static void operator delete(
+         void *p, 
+         JetByteTools::PTMalloc::CSmartHeapHandle &allocator)
+      {
+         allocator.Deallocate(p);
+      }
+
       bool DeleteAfterTimeout() const;
 
       bool CancelTimer();
@@ -164,6 +178,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -183,6 +199,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -202,6 +220,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -222,6 +242,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -241,6 +263,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -261,6 +285,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -281,6 +307,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -302,6 +330,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
+      m_handlesAllocator(m_hMalloc),
+      m_handles(std::less<TimerData *>(), m_handlesAllocator),
       m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
@@ -313,7 +343,7 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
    {
       TimerData *pData = *it;
 
-      delete pData;
+      m_hMalloc.Destroy(pData);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
@@ -435,7 +465,7 @@ void CCallbackTimerWheel::HandleTimeouts()
          {
             m_handles.erase(pTimer);
 
-            delete pTimer;
+            m_hMalloc.Destroy(pTimer);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
@@ -534,7 +564,7 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 
       if (pDeadTimer)
       {
-         delete pDeadTimer;
+         m_hMalloc.Destroy(pDeadTimer);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
@@ -549,7 +579,7 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 {
-   TimerData *pData = new TimerData();
+   TimerData *pData = new(m_hMalloc)TimerData();
 
    return OnTimerCreated(pData);
 }
@@ -624,7 +654,7 @@ void CCallbackTimerWheel::SetTimer(
 {
    Milliseconds actualTimeout = CalculateTimeout(timeout);
 
-   TimerData *pData = new TimerData(timer, userData);
+   TimerData *pData = new(m_hMalloc)TimerData(timer, userData);
 
    OnTimerCreated(pData);
 
@@ -712,7 +742,7 @@ bool CCallbackTimerWheel::DestroyTimer(
    }
    else
    {
-      delete &data;
+      m_hMalloc.Destroy(&data);
 
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
 
