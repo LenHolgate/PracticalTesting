@@ -424,7 +424,7 @@ int CThreadedCallbackTimerQueue::Run() throw()
             while (!m_shutdown)
             {
                const Milliseconds timeout = GetNextTimeout();
-          
+
                if (timeout == 0)
                {
                   IManageTimerQueue::TimeoutHandle handle = IManageTimerQueue::InvalidTimeoutHandleValue;

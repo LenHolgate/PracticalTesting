@@ -161,8 +161,14 @@ class CCallbackTimerWheel : public IManageTimerQueue
       TimerData *GetTimersToProcess(
          const Milliseconds now);
 
+      TimerData *GetAllTimersToProcess(
+         const Milliseconds now);
+
       TimerData **GetTimerAtOffset(
          const size_t offset) const;
+
+      TimerData *PrepareTimersForHandleTimeout(
+         TimerData *pTimers);
 
       IMonitorCallbackTimerQueue &m_monitor;
 
@@ -190,6 +196,8 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       Handles m_handles;
 
+      TimeoutHandle m_handlingTimeouts;
+      
       /// No copies do not implement
       CCallbackTimerWheel(const CCallbackTimerWheel &rhs);
       /// No copies do not implement

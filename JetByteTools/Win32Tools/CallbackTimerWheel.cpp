@@ -94,7 +94,22 @@ class CCallbackTimerWheel::TimerData
          TimerData **ppPrevious,
          TimerData *pNext);
 
+      bool HasTimedOut() const;
+
+      void SetDeleteAfterTimeout();
+
       TimerData *OnTimer();
+
+      void Unlink();
+
+      void AddTimedOutTimers(
+         TimerData *pTimers);
+
+      TimerData *PrepareForHandleTimeout();
+
+      TimerData *HandleTimeout();
+
+      TimerData *TimeoutHandlingComplete();
 
    private :
 
@@ -102,11 +117,33 @@ class CCallbackTimerWheel::TimerData
 
       TimerData *m_pNext;
 
-      CCallbackTimerWheel::Timer *m_pTimer;
+      TimerData *m_pNextTimedout;
 
-      CCallbackTimerWheel::UserData m_userData;
+      struct Data
+      {
+         Data();
 
-      const bool m_deleteAfterTimeout;
+         Data(
+            CCallbackTimerWheel::Timer &timer,
+            CCallbackTimerWheel::UserData userData);
+
+         void Clear();
+
+         CCallbackTimerWheel::Timer *pTimer;
+
+         CCallbackTimerWheel::UserData userData;
+      };
+
+      TimerData * OnTimer(
+         const Data &data);
+
+      Data m_active;
+
+      Data m_timedout;
+
+      bool m_processingTimeout;
+
+      bool m_deleteAfterTimeout;
 
       /// No copies do not implement
       TimerData(const TimerData &rhs);
@@ -130,7 +167,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -148,7 +186,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -166,7 +205,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -185,7 +225,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -203,7 +244,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -222,7 +264,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -241,7 +284,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -261,7 +305,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
-      m_numTimersSet(0)
+      m_numTimersSet(0),
+      m_handlingTimeouts(InvalidTimeoutHandleValue)
 {
 
 }
@@ -367,7 +412,9 @@ void CCallbackTimerWheel::HandleTimeouts()
 {
    const Milliseconds now = m_tickCountProvider.GetTickCount();
 
-   while (TimerData *pTimers = GetTimersToProcess(now))
+   TimerData *pTimers = 0;
+
+   while (m_numTimersSet && (0 != (pTimers = GetTimersToProcess(now))))
    {
       while (pTimers)
       {
@@ -401,25 +448,93 @@ void CCallbackTimerWheel::HandleTimeouts()
 
 IManageTimerQueue::TimeoutHandle CCallbackTimerWheel::BeginTimeoutHandling()
 {
-   throw CTestSkippedException(_T("CCallbackTimerWheel::BeginTimeoutHandling()"), _T("Not implemented"));
+   if (m_handlingTimeouts != InvalidTimeoutHandleValue)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::BeginTimeoutHandling()"), 
+         _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
+   }
 
-   return InvalidTimeoutHandleValue;
+   TimeoutHandle timeoutHandle = InvalidTimeoutHandleValue;
+
+   TimerData *pTimers = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
+
+   if (pTimers)
+   {
+      timeoutHandle = reinterpret_cast<TimeoutHandle>(pTimers);
+
+      m_handlingTimeouts = timeoutHandle;
+   }
+
+   return timeoutHandle;
 }
 
 void CCallbackTimerWheel::HandleTimeout(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   (void)handle;
+   if (m_handlingTimeouts != handle)
+   {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
+      throw CException(
+         _T("CCallbackTimerWheel::HandleTimeout()"), 
+         _T("Invalid timeout handle: ") + ToString(handle));
+#pragma warning(pop)
+   }
+   
+   TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
 
-   throw CTestSkippedException(_T("CCallbackTimerWheel::HandleTimeout()"), _T("Not implemented"));
+   while (pTimers)
+   {
+      pTimers = pTimers->HandleTimeout();
+   }
 }
 
 void CCallbackTimerWheel::EndTimeoutHandling(
    IManageTimerQueue::TimeoutHandle &handle)
 {
-   (void)handle;
+   if (m_handlingTimeouts != handle)
+   {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
+      throw CException(
+         _T("CCallbackTimerWheel::EndTimeoutHandling()"), 
+         _T("Invalid timeout handle: ") + ToString(handle));
+#pragma warning(pop)
+   }
 
-   throw CTestSkippedException(_T("CCallbackTimerWheel::EndTimeoutHandling()"), _T("Not implemented"));
+   m_handlingTimeouts = InvalidTimeoutHandleValue;
+
+   TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
+
+   TimerData *pDeadTimer = 0;
+
+   while (pTimers)
+   {
+      if (pTimers->DeleteAfterTimeout())
+      {
+         pDeadTimer = pTimers;
+      }
+
+      pTimers = pTimers->TimeoutHandlingComplete();
+
+      if (pDeadTimer)
+      {
+         delete pDeadTimer;
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
+         m_monitor.OnTimerDeleted();
+
+#endif
+
+         pDeadTimer = 0;
+      }
+   }
 }
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
@@ -569,15 +684,27 @@ bool CCallbackTimerWheel::DestroyTimer(
 
    handle = InvalidHandleValue;
 
-   delete &data;
-
 #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
 
    m_monitor.OnTimerDestroyed(wasPending);
 
+#endif
+
+   if (data.HasTimedOut())
+   {
+      data.SetDeleteAfterTimeout();
+   }
+   else
+   {
+      delete &data;
+
+#if (JETBYTE_PERF_TIMER_WHEEL_MONITORING_DISABLED == 0)
+
    m_monitor.OnTimerDeleted();
 
 #endif
+
+   }
 
    if (wasPending)
    {
@@ -614,19 +741,102 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
 
    if (it == m_handles.end())
    {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"), 
          _T("Invalid timer handle: ") + ToString(handle));
+#pragma warning(pop)
    }
 
    if (pData->DeleteAfterTimeout())
    {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"), 
          _T("Invalid timer handle: ") + ToString(handle));
+#pragma warning(pop)
    }
 
    return *pData;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetAllTimersToProcess(
+   const Milliseconds now)
+{
+   TimerData *pTimers = 0;
+
+   TimerData *pLastTimer = 0;
+
+   // Round 'now' down to the timer granularity
+
+   const Milliseconds thisTime = ((now / m_timerGranularity) * m_timerGranularity);
+
+   while (m_numTimersSet && m_currentTime != thisTime)
+   {
+      TimerData **ppTimers = GetTimerAtOffset(0);
+
+      TimerData *pTheseTimers = *ppTimers;
+
+      if (pTheseTimers)
+      {
+         pTheseTimers->Unlink();
+
+         if (!pTimers)
+         {
+            pTimers = pTheseTimers;
+         }
+
+         if (pLastTimer)
+         {
+            pLastTimer->AddTimedOutTimers(pTheseTimers);
+         }
+
+         pLastTimer = PrepareTimersForHandleTimeout(pTheseTimers);
+      }
+
+      // Step along the wheel...
+
+      m_pNow++;
+
+      if (m_pNow >= m_pTimersEnd)
+      {
+         m_pNow = m_pTimersStart + (m_pNow - m_pTimersEnd);
+      }
+
+      m_currentTime += m_timerGranularity;
+   }
+
+   m_currentTime = thisTime;
+
+   if (pTimers)
+   {
+      m_pFirstTimerSetHint = 0;
+   }
+
+   return pTimers;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::PrepareTimersForHandleTimeout(
+   TimerData *pTimers)
+{
+   TimerData *pLastTimer = pTimers;
+
+   while (pTimers)
+   {
+      pLastTimer = pTimers;
+
+      pTimers = pTimers->PrepareForHandleTimeout();
+
+      m_numTimersSet--;
+   }
+
+   return pLastTimer;
 }
 
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
@@ -643,6 +853,11 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
       TimerData **ppTimers = GetTimerAtOffset(0);
 
       pTimers = *ppTimers;
+
+      if (pTimers)
+      {
+         pTimers->Unlink();
+      }
 
       // Step along the wheel...
 
@@ -694,8 +909,8 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::CreateTimerWheel(
 CCallbackTimerWheel::TimerData::TimerData()
    :  m_ppPrevious(0),
       m_pNext(0),
-      m_pTimer(0),
-      m_userData(0),
+      m_pNextTimedout(0),
+      m_processingTimeout(false),
       m_deleteAfterTimeout(false)
 {
 
@@ -706,8 +921,9 @@ CCallbackTimerWheel::TimerData::TimerData(
    CCallbackTimerWheel::UserData userData)
    :  m_ppPrevious(0),
       m_pNext(0),
-      m_pTimer(&timer),
-      m_userData(userData),
+      m_pNextTimedout(0),
+      m_active(timer, userData),
+      m_processingTimeout(false),
       m_deleteAfterTimeout(true)
 {
 
@@ -734,14 +950,24 @@ bool CCallbackTimerWheel::TimerData::CancelTimer()
       m_ppPrevious = 0;
       m_pNext = 0;
 
-      m_pTimer = 0;
-      m_userData = 0;
+      m_active.Clear();
 
       timerWasSet = true;
    }
 
    return timerWasSet;
 }
+
+bool CCallbackTimerWheel::TimerData::HasTimedOut() const
+{
+   return m_processingTimeout;
+}
+
+void CCallbackTimerWheel::TimerData::SetDeleteAfterTimeout()
+{
+   m_deleteAfterTimeout = true;
+}
+
 void CCallbackTimerWheel::TimerData::UpdateData(
    CCallbackTimerWheel::Timer &timer,
    CCallbackTimerWheel::UserData userData)
@@ -753,9 +979,9 @@ void CCallbackTimerWheel::TimerData::UpdateData(
          _T("Internal Error: Can't update one shot timers or timers pending deletion"));
    }
 
-   m_pTimer = &timer;
+   m_active.pTimer = &timer;
 
-   m_userData = userData;
+   m_active.userData = userData;
 }
 
 void CCallbackTimerWheel::TimerData::SetTimer(
@@ -783,27 +1009,103 @@ void CCallbackTimerWheel::TimerData::SetTimer(
 
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer()
 {
-   if (!m_pTimer)
+   m_ppPrevious = 0;
+
+   return OnTimer(m_active);
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer(
+   const Data &data)
+{
+   if (!data.pTimer)
    {
       throw CException(
          _T("CCallbackTimerWheel::TimerData::OnTimer()"), 
          _T("Internal Error: Timer not set"));
    }
 
-   m_ppPrevious = 0;
+   data.pTimer->OnTimer(data.userData);
 
-   TimerData *pNext = m_pNext;
+   return m_processingTimeout ? m_pNextTimedout : m_pNext;
+}
 
-   if (m_pNext)
+void CCallbackTimerWheel::TimerData::Unlink()
+{
+   if (m_ppPrevious)
    {
-      m_pNext->m_ppPrevious = 0;
+      *m_ppPrevious = 0;
+
+      m_ppPrevious = 0;
    }
+}
+
+void CCallbackTimerWheel::TimerData::AddTimedOutTimers(
+   TimerData *pTimers)
+{
+   m_pNextTimedout = pTimers;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::PrepareForHandleTimeout()
+{
+   m_processingTimeout = true;
+
+   m_timedout = m_active;
+
+   m_active.Clear();
+
+   m_pNextTimedout = m_pNext;
 
    m_pNext = 0;
 
-   m_pTimer->OnTimer(m_userData);
+   m_ppPrevious = 0;
+
+   return m_pNextTimedout;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::HandleTimeout()
+{
+   TimerData *pNextTimedout = OnTimer(m_timedout);
+
+   m_timedout.Clear();
+
+   return pNextTimedout;
+}
+
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::TimeoutHandlingComplete()
+{
+   m_processingTimeout = false;
+
+   TimerData *pNext = m_pNextTimedout;
+
+   m_pNextTimedout = 0;
 
    return pNext;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerWheel::TimerData::Data
+///////////////////////////////////////////////////////////////////////////////
+
+CCallbackTimerWheel::TimerData::Data::Data()
+   :  pTimer(0), 
+      userData(0)
+{
+
+}
+
+CCallbackTimerWheel::TimerData::Data::Data(
+   Timer &timer, 
+   UserData userData_)
+   :  pTimer(&timer),
+      userData(userData_)
+{
+
+}
+
+void CCallbackTimerWheel::TimerData::Data::Clear()
+{
+   pTimer = 0;
+   userData = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

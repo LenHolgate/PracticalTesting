@@ -2279,7 +2279,14 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 
       timerQueue.HandleTimeout(h);
 
-      timer.CheckResult(_T("|OnTimer: 1|OnTimer: 3|"));
+      if (T::timersAtSameTimeAreExpiredInOrderSet)
+      {
+         timer.CheckResult(_T("|OnTimer: 1|OnTimer: 3|"));
+      }
+      else
+      {
+         timer.CheckResult(_T("|OnTimer: 3|OnTimer: 1|"));
+      }
 
       timerQueue.EndTimeoutHandling(h);
 

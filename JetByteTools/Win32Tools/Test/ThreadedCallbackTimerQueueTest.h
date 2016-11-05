@@ -62,6 +62,7 @@ class CThreadedCallbackTimerQueueTest
       static void TestConstructTickCount64();
       static void TestConstructHybridTickCount64();
       static void TestConstructCustomQueue();
+      static void TestConstructWithTimerWheel();
 
       static void TestBeginShutdown();
       static void TestWaitForShutdownToComplete();
@@ -73,11 +74,15 @@ class CThreadedCallbackTimerQueueTest
       static void TestTimerTickCount64NoLock();
       static void TestTimerHybridTickCount64();
       static void TestTimerHybridTickCount64NoLock();
+      static void TestTimerTimerWheel();
+      static void TestTimerTimerWheelNoLock();
 
       static void TestMultipleTimersTickCount64();
       static void TestMultipleTimersTickCount64NoLock();
       static void TestMultipleTimersHybridTickCount64();
       static void TestMultipleTimersHybridTickCount64NoLock();
+      static void TestMultipleTimersTimerWheel();
+      static void TestMultipleTimersTimerWheelNoLock();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
