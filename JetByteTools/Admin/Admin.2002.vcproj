@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="Admin"
+	ProjectGUID="{966E309B-9FBA-446B-9F7F-8C7B434E9CC3}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -22,7 +23,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="_DEBUG,_LIB,WIN32,_WIN32_WINNT=0x0400"
+				PreprocessorDefinitions="_DEBUG,_LIB,WIN32"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\Output\VS2002\Debug/Admin.pch"
@@ -67,7 +68,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,_WIN32_WINNT=0x0400"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -77,6 +78,7 @@
 				ProgramDataBaseFileName=".\Output\VS2002\Release/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				ForcedIncludeFiles="Warnings.h"/>
 			<Tool
@@ -112,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS,_WIN32_WINNT=0x0400"
+				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\Output\VS2002\UDebug/Admin.pch"
@@ -157,7 +159,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS,_WIN32_WINNT=0x0400"
+				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -167,6 +169,7 @@
 				ProgramDataBaseFileName=".\Output\VS2002\URelease/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				ForcedIncludeFiles="Warnings.h"/>
 			<Tool
@@ -202,7 +205,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
-				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS,_WIN32_WINNT=0x0400"
+				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\Output\VS2002\UDebugNoPreComp/Admin.pch"
@@ -247,10 +250,48 @@
 				RelativePath=".\NoPlatformSDK.h">
 			</File>
 			<File
+				RelativePath="SecureCRT.h">
+			</File>
+			<File
+				RelativePath="TargetWindowsVersion.h">
+			</File>
+			<File
 				RelativePath=".\Todo.h">
 			</File>
 			<File
+				RelativePath="Types.h">
+			</File>
+			<File
 				RelativePath=".\Warnings.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			Filter="">
+			<File
+				RelativePath="Docs\Doxyfile.developer">
+			</File>
+			<File
+				RelativePath="Docs\Doxyfile.user">
+			</File>
+			<File
+				RelativePath="Docs\Groups.txt">
+			</File>
+			<File
+				RelativePath="Docs\Overview.txt">
+			</File>
+			<File
+				RelativePath="Docs\ProgrammingConcepts.txt">
+			</File>
+			<File
+				RelativePath="Docs\Testing.txt">
+			</File>
+		</Filter>
+		<Filter
+			Name="Source Files"
+			Filter="">
+			<File
+				RelativePath="Admin.cpp">
 			</File>
 		</Filter>
 	</Files>

@@ -4,29 +4,17 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -36,8 +24,11 @@
 #include "Utils.h"
 #include "Exception.h"
 #include "TickCountProvider.h"
+#include "SEHException.h"
 
 #pragma hdrstop
+
+#pragma warning(disable: 4355)  // 'this' used as base member initialiser
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -52,40 +43,44 @@ namespace Win32 {
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
-   :  m_timerQueue(tickProvider),
+   :  m_thread(*this),
+      m_timerQueue(tickProvider),
       m_shutdown(false)
 {
-   Start();
+   m_thread.Start();
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const DWORD maxTimeout,
+   const Milliseconds maxTimeout,
    const IProvideTickCount &tickProvider)
-   :  m_timerQueue(maxTimeout, tickProvider),
+   :  m_thread(*this),
+      m_timerQueue(maxTimeout, tickProvider),
       m_shutdown(false)
 {   
-   Start();
+   m_thread.Start();
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
-   :  m_shutdown(false)
+   :  m_thread(*this),
+      m_shutdown(false)
 {
-   Start();
+   m_thread.Start();
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const DWORD maxTimeout)
-   :  m_timerQueue(maxTimeout),
+   const Milliseconds maxTimeout)
+   :  m_thread(*this),
+      m_timerQueue(maxTimeout),
       m_shutdown(false)
 {
-   Start();
+   m_thread.Start();
 }
 
 CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
 {
    InitiateShutdown();
 
-   Wait();
+   m_thread.Wait();
 }
 
 CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
@@ -98,12 +93,12 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 bool CThreadedCallbackTimerQueue::SetTimer(
    const Handle &handle, 
    Timer &timer,
-   const DWORD timeoutMillis,
+   const Milliseconds timeout,
    const UserData userData)
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
-   const bool wasPending = m_timerQueue.SetTimer(handle, timer, timeoutMillis, userData);
+   const bool wasPending = m_timerQueue.SetTimer(handle, timer, timeout, userData);
 
    SignalStateChange();
 
@@ -130,40 +125,70 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
    return m_timerQueue.DestroyTimer(handle);
 }
 
+bool CThreadedCallbackTimerQueue::DestroyTimer(
+   const Handle &handle)
+{
+   CCriticalSection::Owner lock(m_criticalSection);
+
+   return m_timerQueue.DestroyTimer(handle);
+}
+
 void CThreadedCallbackTimerQueue::SetTimer(
    Timer &timer,
-   const DWORD timeoutMillis,
+   const Milliseconds timeout,
    const UserData userData)
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
-   m_timerQueue.SetTimer(timer, timeoutMillis, userData);
+   m_timerQueue.SetTimer(timer, timeout, userData);
 
    SignalStateChange();
 }
 
-int CThreadedCallbackTimerQueue::Run()
+Milliseconds CThreadedCallbackTimerQueue::GetMaximumTimeout() const
 {
-   while (!m_shutdown)
-   {
-      DWORD timeout = GetNextTimeout();
-    
-      if (timeout == 0)
-      {
-         CCriticalSection::Owner lock(m_criticalSection);
+   return m_timerQueue.GetMaximumTimeout();
+}
+
+int CThreadedCallbackTimerQueue::Run() throw()
+{
+   CSEHException::Translator sehTranslator;
    
-         m_timerQueue.HandleTimeouts();
-      }
-      else 
+   try
+   {
+      while (!m_shutdown)
       {
-         m_stateChangeEvent.Wait(timeout);
+         const Milliseconds timeout = GetNextTimeout();
+    
+         if (timeout == 0)
+         {
+            CCriticalSection::Owner lock(m_criticalSection);
+   
+            m_timerQueue.HandleTimeouts();
+         }
+         else 
+         {
+            m_stateChangeEvent.Wait(timeout);
+         }
       }
    }
-   
+   catch(const CException &e)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
+   }
+   catch(const CSEHException &e)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - SEH Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
+   }
+   catch(...)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Unexpected exception"));
+   }
+
    return 0;
 }
 
-DWORD CThreadedCallbackTimerQueue::GetNextTimeout()
+Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 {
    CCriticalSection::Owner lock(m_criticalSection);
 
@@ -180,6 +205,12 @@ void CThreadedCallbackTimerQueue::InitiateShutdown()
 void CThreadedCallbackTimerQueue::SignalStateChange()
 {
    m_stateChangeEvent.Set();
+}
+
+void CThreadedCallbackTimerQueue::OnThreadTerminationException(
+   const _tstring & /*message*/)
+{
+   // derived class could/should log?
 }
 
 ///////////////////////////////////////////////////////////////////////////////

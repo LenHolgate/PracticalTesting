@@ -279,72 +279,6 @@
 				RelativePath=".\LoggingCallbackTimer.cpp">
 			</File>
 			<File
-				RelativePath=".\MockDirectoryChangeMonitorCallback..cpp">
-				<FileConfiguration
-					Name="Unicode Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug No PreComp|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\MockFileChangeMonitorCallback.cpp">
-				<FileConfiguration
-					Name="Unicode Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug No PreComp|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release|Win32"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\MockTickCountProvider.cpp">
 			</File>
 		</Filter>
@@ -353,12 +287,6 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath=".\LoggingCallbackTimer.h">
-			</File>
-			<File
-				RelativePath=".\MockDirectoryChangeMonitorCallback.h">
-			</File>
-			<File
-				RelativePath=".\MockFileChangeMonitorCallback.h">
 			</File>
 			<File
 				RelativePath=".\MockTickCountProvider.h">
@@ -407,6 +335,13 @@
 			</File>
 			<File
 				RelativePath=".\PrecompiledHeader.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			Filter="">
+			<File
+				RelativePath=".\Docs\Groups.txt">
 			</File>
 		</Filter>
 	</Files>

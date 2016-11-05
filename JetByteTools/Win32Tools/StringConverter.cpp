@@ -4,29 +4,17 @@
 //
 // Copyright 2003 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -34,8 +22,16 @@
 
 #include "StringConverter.h"
 #include "Win32Exception.h"
+#include "Utils.h"
 
 #pragma hdrstop
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using std::string;
+using std::wstring;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -45,62 +41,217 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Static helper functions 
-///////////////////////////////////////////////////////////////////////////////
-
-static std::wstring InternalAtoW(
-   const char *pInput,
-   const size_t inputLength);
-
-static std::string InternalWtoA(
-   const wchar_t *pInput,
-   const size_t inputLength);
-
-///////////////////////////////////////////////////////////////////////////////
 // CStringConverter
 ///////////////////////////////////////////////////////////////////////////////
 
+// Ato
+
 _tstring CStringConverter::AtoT(
-   const std::string &input)
+   const string &input)
 {
 #ifdef _UNICODE
-	return AtoW(input);
+	return AtoW(input.c_str(), GetStringLength<int>(input));
 #else
 	return input;
 #endif
 }
 
-std::string CStringConverter::TtoA(
-   const _tstring &input)
+_tstring CStringConverter::AtoT(
+   const char *pInput)
+{
+   if (!pInput)
+   {
+      return _T("");
+   }
+
+   return AtoT(pInput, GetStringLengthAsInt(pInput));
+}
+
+_tstring CStringConverter::AtoT(
+   const char *pInput,
+   const int inputLength)
 {
 #ifdef _UNICODE
-	return WtoA(input);
+	return AtoW(pInput, inputLength);
 #else
-	return input;
+	return _tstring(pInput, inputLength);
 #endif
 }
 
-std::wstring CStringConverter::TtoW(
-   const _tstring &input)
+wstring CStringConverter::AtoW(
+   const string &input)
+{
+	return AtoW(input.c_str(), GetStringLength<int>(input));
+}
+
+wstring CStringConverter::AtoW(
+   const char *pInput)
+{
+   if (!pInput)
+   {
+      return L"";
+   }
+
+   return AtoW(pInput, GetStringLengthAsInt(pInput));
+}
+
+wstring CStringConverter::AtoW(
+   const char *pInput,
+   const int inputLength)
+{
+	wstring result;
+
+   if (inputLength != 0)
+   {
+	   result.resize(inputLength);
+
+	   if (0 ==::MultiByteToWideChar(
+         CP_ACP, 
+         0, 
+         pInput, 
+         inputLength, 
+         const_cast<wchar_t *>(result.c_str()), 
+         GetStringLength<int>(result)))
+	   {
+		   throw CWin32Exception(_T("CStringConverter::AtoW()"), ::GetLastError());
+	   }
+   }
+
+	return result;
+}
+
+BSTR CStringConverter::AtoBSTR(
+   const string &input)
+{
+   const wstring output = AtoW(input.c_str(), GetStringLength<int>(input));
+
+   return ::SysAllocStringLen(output.c_str(), GetStringLength<UINT>(output));
+}
+
+BSTR CStringConverter::AtoBSTR(
+   const char *pInput,
+   const int inputLength)
+{
+   const wstring output = AtoW(pInput, inputLength);
+
+   return ::SysAllocStringLen(output.c_str(), GetStringLength<unsigned int>(output));
+}
+
+// Wto
+
+_tstring CStringConverter::WtoT(
+   const wstring &input)
 {
 #ifdef _UNICODE
 	return input;
 #else
-	return AtoW(input);
+	return WtoA(input.c_str(), GetStringLength<int>(input));
 #endif
 }
 
 _tstring CStringConverter::WtoT(
-   const std::wstring &input)
+   const wchar_t *pInput)
+{
+   if (!pInput)
+   {
+      return _T("");
+   }
+
+   return WtoT(pInput, GetStringLengthAsInt(pInput));
+}
+
+_tstring CStringConverter::WtoT(
+   const wchar_t *pInput,
+   const int inputLength)
+{
+#ifdef _UNICODE
+	return _tstring(pInput, inputLength);
+#else
+	return WtoA(pInput, inputLength);
+#endif
+}
+
+string CStringConverter::WtoA(
+   const wstring &input)
+{
+	return WtoA(input.c_str(), GetStringLength<int>(input));
+}
+
+string CStringConverter::WtoA(
+   const wchar_t *pInput)
+{
+   if (!pInput)
+   {
+      return "";
+   }
+
+   return WtoA(pInput, GetStringLengthAsInt(pInput));
+}
+
+string CStringConverter::WtoA(
+   const wchar_t *pInput,
+   const int inputLength)
+{
+	string result;
+
+	if (inputLength != 0)
+	{
+		result.resize(inputLength);
+
+		if (0 == ::WideCharToMultiByte(
+         CP_ACP, 
+         0, 
+         pInput, 
+         inputLength, 
+         const_cast<char *>(result.c_str()), 
+         GetStringLength<int>(result) + 1, 0, 0))
+		{
+			throw CWin32Exception(_T("CStringConverter::WtoA()"), ::GetLastError());
+		}
+	}
+
+	return result;
+}
+
+BSTR CStringConverter::WtoBSTR(
+   const wstring &input)
+{
+   return ::SysAllocStringLen(input.c_str(), GetStringLengthAsUInt(input));
+}
+
+// Tto
+
+string CStringConverter::TtoA(
+   const _tstring &input)
+{
+#ifdef _UNICODE
+	return WtoA(input.c_str(), GetStringLength<int>(input));
+#else
+	return input;
+#endif
+}
+
+wstring CStringConverter::TtoW(
+   const _tstring &input)
 {
 #ifdef _UNICODE
 	return input;
 #else
-	return WtoA(input);
+	return AtoW(input.c_str(), GetStringLength<int>(input));
 #endif
 }
 
-std::string CStringConverter::BSTRtoA(
+BSTR CStringConverter::TtoBSTR(
+   const _tstring &input)
+{
+   const wstring output = TtoW(input);
+
+   return ::SysAllocStringLen(output.c_str(), GetStringLength<UINT>(output));
+}
+
+// BSTRto
+
+string CStringConverter::BSTRtoA(
 	const BSTR bstr)
 {
 	if (::SysStringLen(bstr) == 0)
@@ -108,7 +259,7 @@ std::string CStringConverter::BSTRtoA(
 		return "";
 	}
 
-   return InternalWtoA(bstr, ::SysStringLen(bstr));
+   return WtoA(bstr, ::SysStringLen(bstr));
 }
 
 _tstring CStringConverter::BSTRtoT(
@@ -122,11 +273,11 @@ _tstring CStringConverter::BSTRtoT(
 #ifdef _UNICODE
    return bstr;
 #else
-	return InternalWtoA(bstr, ::SysStringLen(bstr));
+	return WtoA(bstr, ::SysStringLen(bstr));
 #endif
 }
 
-std::wstring CStringConverter::BSTRtoW(
+wstring CStringConverter::BSTRtoW(
 	const BSTR bstr)
 {
 	if (::SysStringLen(bstr) == 0)
@@ -137,56 +288,32 @@ std::wstring CStringConverter::BSTRtoW(
    return bstr;
 }
 
-std::wstring CStringConverter::AtoW(
-   const std::string &input)
+wstring CStringConverter::UTF8toW(
+   const string &input)
 {
-	return InternalAtoW(input.c_str(), input.length());
-}
+   const int inputLength = GetStringLength<int>(input);
 
-std::string CStringConverter::WtoA(
-   const std::wstring &input)
-{
-	return InternalWtoA(input.c_str(), input.length());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions 
-///////////////////////////////////////////////////////////////////////////////
-
-static std::wstring InternalAtoW(
-   const char *pInput,
-   const size_t inputLength)
-{
-	std::wstring result;
+	wstring result;
 
    if (inputLength != 0)
    {
 	   result.resize(inputLength);
 
-	   if (0 ==::MultiByteToWideChar(CP_ACP, 0, pInput, inputLength, const_cast<wchar_t *>(result.c_str()), result.length()))
+      const int numChars = ::MultiByteToWideChar(
+         CP_UTF8, 
+         0, 
+         input.c_str(), 
+         inputLength, 
+         const_cast<wchar_t *>(result.c_str()), 
+         GetStringLength<int>(result));
+
+	   if (0 == numChars)
 	   {
-		   throw CWin32Exception(_T("CStringConverter::AtoW()"), ::GetLastError());
+		   throw CWin32Exception(_T("CStringConverter::UTF8toW()"), ::GetLastError());
 	   }
+
+      result.resize(numChars);
    }
-
-	return result;
-}
-
-static std::string InternalWtoA(
-   const wchar_t *pInput,
-   const size_t inputLength)
-{
-	std::string result;
-
-	if (inputLength != 0)
-	{
-		result.resize(inputLength);
-
-		if (0 == ::WideCharToMultiByte(CP_ACP, 0, pInput, inputLength, const_cast<char *>(result.c_str()), result.length() + 1, 0, 0))
-		{
-			throw CWin32Exception(_T("CStringConverter::WtoA()"), ::GetLastError());
-		}
-	}
 
 	return result;
 }

@@ -15,6 +15,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "C++Tools"="..\C++Tools\C++Tools.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "TestTools"=..\TestTools\TestTools.dsp - Package Owner=<4>
 
 Package=<5>
@@ -70,6 +82,15 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name C++Tools
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Mock32Tools
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TestExe
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Admin
     End Project Dependency
 }}}
 

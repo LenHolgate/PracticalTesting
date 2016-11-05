@@ -4,35 +4,24 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools\Admin\Admin.h"
 
 #include "Event.h"
+#include "IKernelObjectName.h"
 #include "Win32Exception.h"
 
 #pragma hdrstop
@@ -49,9 +38,14 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 static HANDLE Create(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
+   SECURITY_ATTRIBUTES *pEventAttributes, 
    bool bManualReset, 
    bool bInitialState, 
+   LPCTSTR lpName,
+   const CEvent::CreationFlags creationFlags);
+
+static HANDLE Create(
+   SECURITY_ATTRIBUTES *pEventAttributes, 
    LPCTSTR lpName);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,62 +53,31 @@ static HANDLE Create(
 ///////////////////////////////////////////////////////////////////////////////
 
 CEvent::CEvent(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState)
-   :  m_hEvent(Create(lpEventAttributes, bManualReset, bInitialState, 0))
+   SECURITY_ATTRIBUTES *pEventAttributes, 
+   ResetType resetType, 
+   InitialState initialState)
+   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), 0, CEvent::CreateOrConnect))
 {
 
 }
 
 CEvent::CEvent(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
-   const _tstring &name)
-   :  m_hEvent(Create(lpEventAttributes, bManualReset, bInitialState, name.c_str()))
+   SECURITY_ATTRIBUTES *pEventAttributes, 
+   ResetType resetType, 
+   InitialState initialState,
+   const IKernelObjectName &name,
+   const CreationFlags creationFlags)
+   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), name.GetName().c_str(), creationFlags))
 {
 
 }
 
-CEvent::~CEvent()
+CEvent::CEvent(
+   SECURITY_ATTRIBUTES *pEventAttributes, 
+   const IKernelObjectName &name)
+   :  m_hEvent(Create(pEventAttributes, name.GetName().c_str()))
 {
-   ::CloseHandle(m_hEvent);
-}
 
-HANDLE CEvent::GetEvent() const
-{
-   return m_hEvent;
-}
-
-void CEvent::Wait() const
-{
-   if (!Wait(INFINITE))
-   {
-      throw CException(_T("CEvent::Wait()"), _T("Unexpected timeout on infinite wait"));
-   }
-}
-
-bool CEvent::Wait(DWORD timeoutMillis) const
-{
-   bool ok;
-
-   DWORD result = ::WaitForSingleObject(m_hEvent, timeoutMillis);
-
-   if (result == WAIT_TIMEOUT)
-   {
-      ok = false;
-   }
-   else if (result == WAIT_OBJECT_0)
-   {
-      ok = true;
-   }
-   else
-   {
-      throw CWin32Exception(_T("CEvent::Wait() - WaitForSingleObject"), ::GetLastError());
-   }
-    
-   return ok;
 }
 
 void CEvent::Reset()
@@ -141,24 +104,70 @@ void CEvent::Pulse()
    }
 }
 
+HANDLE CEvent::GetWaitHandle() const
+{
+   return m_hEvent;
+}
+
+void CEvent::Wait() const
+{
+   IWaitable::Wait(m_hEvent);
+}
+
+bool CEvent::Wait(
+   const Milliseconds timeout) const
+{
+   return IWaitable::Wait(m_hEvent, timeout);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Static helper methods
 ///////////////////////////////////////////////////////////////////////////////
 
 static HANDLE Create(
-   LPSECURITY_ATTRIBUTES lpEventAttributes, 
-   bool bManualReset, 
-   bool bInitialState, 
+   SECURITY_ATTRIBUTES *pEventAttributes, 
    LPCTSTR lpName)
 {
-   HANDLE hEvent = ::CreateEvent(lpEventAttributes, bManualReset, bInitialState, lpName);
+   static const bool notUsedWhenConnecting = false;
+
+   return Create(pEventAttributes, notUsedWhenConnecting, notUsedWhenConnecting, lpName, CEvent::ConnectToExisting);
+}
+
+
+static HANDLE Create(
+   SECURITY_ATTRIBUTES *pEventAttributes, 
+   bool bManualReset, 
+   bool bInitialState, 
+   LPCTSTR lpName,
+   const CEvent::CreationFlags creationFlags)
+{
+   ::SetLastError(ERROR_SUCCESS);
+
+   CSmartHandle hEvent(::CreateEvent(pEventAttributes, bManualReset, bInitialState, lpName));
+
+   const DWORD lastError = ::GetLastError();
 
    if (hEvent == NULL)
    {
-      throw CWin32Exception(_T("CEvent::Create()"), ::GetLastError());
+      throw CWin32Exception(_T("CEvent::Create()"), lastError);
    }
 
-   return hEvent;
+   if (creationFlags == CEvent::CreateNew)
+   {
+      if (lastError == ERROR_ALREADY_EXISTS)
+      {
+         throw CWin32Exception(_T("CEvent::Create()"), lastError);
+      }
+   }
+   else if (creationFlags == CEvent::ConnectToExisting)
+   {
+      if (lastError != ERROR_ALREADY_EXISTS)
+      {
+         throw CWin32Exception(_T("CEvent::Create()"), ERROR_NOT_FOUND);
+      }
+   }
+
+   return hEvent.Detach();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

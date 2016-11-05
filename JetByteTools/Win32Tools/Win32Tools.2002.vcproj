@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="Win32Tools"
+	ProjectGUID="{35398882-A0F7-4F96-970A-6D414E45F173}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -20,12 +21,13 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Output\VS2002\UDebugNoPreComp/Win32Tools.pch"
 				AssemblerListingLocation=".\Output\VS2002\UDebugNoPreComp/"
 				ObjectFile=".\Output\VS2002\UDebugNoPreComp/"
 				ProgramDataBaseFileName=".\Output\VS2002\UDebugNoPreComp/"
@@ -68,6 +70,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,_LIB,WIN32"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -111,9 +114,11 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -157,10 +162,12 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
@@ -171,6 +178,7 @@
 				ProgramDataBaseFileName=".\Output\VS2002\Release/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -203,10 +211,12 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
@@ -217,6 +227,7 @@
 				ProgramDataBaseFileName=".\Output\VS2002\URelease/"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -245,90 +256,148 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\AutoResetEvent.cpp">
+				RelativePath="AutoResetEvent.cpp">
 			</File>
 			<File
-				RelativePath=".\CallbackTimerQueue.cpp">
+				RelativePath="CallbackTimerQueue.cpp">
 			</File>
 			<File
-				RelativePath=".\CriticalSection.cpp">
+				RelativePath="CriticalSection.cpp">
 			</File>
 			<File
-				RelativePath=".\Event.cpp">
+				RelativePath="DebugTrace.cpp">
 			</File>
 			<File
-				RelativePath=".\Exception.cpp">
+				RelativePath="Event.cpp">
 			</File>
 			<File
-				RelativePath=".\SEHException.cpp">
+				RelativePath="Exception.cpp">
 			</File>
 			<File
-				RelativePath=".\StringConverter.cpp">
+				RelativePath="SEHException.cpp">
 			</File>
 			<File
-				RelativePath=".\Thread.cpp">
+				RelativePath="SimpleMessageLog.cpp">
 			</File>
 			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.cpp">
+				RelativePath="SmartHandle.cpp">
 			</File>
 			<File
-				RelativePath=".\Utils.cpp">
+				RelativePath="StringConverter.cpp">
 			</File>
 			<File
-				RelativePath=".\Win32Exception.cpp">
+				RelativePath="Thread.cpp">
+			</File>
+			<File
+				RelativePath="ThreadLocalStorage.cpp">
+			</File>
+			<File
+				RelativePath="ThreadedCallbackTimerQueue.cpp">
+			</File>
+			<File
+				RelativePath="Utils.cpp">
+			</File>
+			<File
+				RelativePath="Win32Exception.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\AutoResetEvent.h">
+				RelativePath="AutoResetEvent.h">
 			</File>
 			<File
-				RelativePath=".\CallbackTimerQueue.h">
+				RelativePath="CallbackTimerQueue.h">
 			</File>
 			<File
-				RelativePath=".\CriticalSection.h">
+				RelativePath="CriticalSection.h">
 			</File>
 			<File
-				RelativePath=".\Event.h">
+				RelativePath="DebugTrace.h">
 			</File>
 			<File
-				RelativePath=".\Exception.h">
+				RelativePath="Event.h">
 			</File>
 			<File
-				RelativePath=".\SEHException.h">
+				RelativePath="Exception.h">
 			</File>
 			<File
-				RelativePath=".\StringConverter.h">
+				RelativePath="SEHException.h">
 			</File>
 			<File
-				RelativePath=".\Thread.h">
+				RelativePath="SimpleMessageLog.h">
 			</File>
 			<File
-				RelativePath=".\ThreadedCallbackTimerQueue.h">
+				RelativePath="SmartHandle.h">
 			</File>
 			<File
-				RelativePath=".\TickCountProvider.h">
+				RelativePath="StringConverter.h">
 			</File>
 			<File
-				RelativePath=".\Utils.h">
+				RelativePath="Thread.h">
 			</File>
 			<File
-				RelativePath=".\Win32Exception.h">
+				RelativePath="ThreadLocalStorage.h">
 			</File>
 			<File
-				RelativePath=".\tstring.h">
+				RelativePath="ThreadedCallbackTimerQueue.h">
+			</File>
+			<File
+				RelativePath="TickCountProvider.h">
+			</File>
+			<File
+				RelativePath="Utils.h">
+			</File>
+			<File
+				RelativePath="Win32Exception.h">
+			</File>
+			<File
+				RelativePath="tstring.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			Filter="">
+			<File
+				RelativePath="Docs\Doxyfile.developer">
+			</File>
+			<File
+				RelativePath="Docs\Doxyfile.user">
+			</File>
+			<File
+				RelativePath="Docs\Groups.txt">
+			</File>
+			<File
+				RelativePath="Docs\Overview.txt">
 			</File>
 		</Filter>
 		<Filter
 			Name="Interfaces"
 			Filter="">
 			<File
-				RelativePath=".\IProvideTickCount.h">
+				RelativePath="ICriticalSection.cpp">
 			</File>
 			<File
-				RelativePath=".\IQueueTimers.h">
+				RelativePath="ICriticalSection.h">
+			</File>
+			<File
+				RelativePath="IKernelObjectName.h">
+			</File>
+			<File
+				RelativePath="IProvideTickCount.h">
+			</File>
+			<File
+				RelativePath="IQueueTimers.h">
+			</File>
+			<File
+				RelativePath="IRunnable.h">
+			</File>
+			<File
+				RelativePath="IWaitable.cpp">
+			</File>
+			<File
+				RelativePath="IWaitable.h">
 			</File>
 		</Filter>
 		<Filter
@@ -341,7 +410,7 @@
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"
-						WarningLevel="4"/>
+						WarningLevel="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">

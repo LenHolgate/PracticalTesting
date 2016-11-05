@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="TestTools"
+	ProjectGUID="{5A45CE6E-2BB6-4582-ADAF-9D1F0D21033E}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

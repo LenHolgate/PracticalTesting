@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="Win32Tools"
+	ProjectGUID="{7F00ABB4-92BD-4E46-A3DF-553CD4FC67DC}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -24,9 +25,9 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Output\VS2003\UDebugNoPreComp/Win32Tools.pch"
 				AssemblerListingLocation=".\Output\VS2003\UDebugNoPreComp/"
 				ObjectFile=".\Output\VS2003\UDebugNoPreComp/"
 				ProgramDataBaseFileName=".\Output\VS2003\UDebugNoPreComp/"
@@ -75,6 +76,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,_LIB,WIN32"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -128,6 +130,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_LIB,WIN32,_MBCS"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="3"
@@ -182,6 +185,7 @@
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="NDEBUG,_LIB,WIN32"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
@@ -235,6 +239,7 @@
 				AdditionalIncludeDirectories="..\..\,$(STLPORT_ROOT)\stlport"
 				PreprocessorDefinitions="NDEBUG,UNICODE,_LIB,WIN32,_MBCS"
 				StringPooling="TRUE"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
@@ -290,13 +295,28 @@
 				RelativePath=".\CriticalSection.cpp">
 			</File>
 			<File
+				RelativePath=".\DebugTrace.cpp">
+			</File>
+			<File
 				RelativePath=".\Event.cpp">
 			</File>
 			<File
 				RelativePath=".\Exception.cpp">
 			</File>
 			<File
+				RelativePath=".\ICriticalSection.cpp">
+			</File>
+			<File
+				RelativePath=".\IWaitable.cpp">
+			</File>
+			<File
 				RelativePath=".\SEHException.cpp">
+			</File>
+			<File
+				RelativePath=".\SimpleMessageLog.cpp">
+			</File>
+			<File
+				RelativePath=".\SmartHandle.cpp">
 			</File>
 			<File
 				RelativePath=".\StringConverter.cpp">
@@ -306,6 +326,9 @@
 			</File>
 			<File
 				RelativePath=".\ThreadedCallbackTimerQueue.cpp">
+			</File>
+			<File
+				RelativePath=".\ThreadLocalStorage.cpp">
 			</File>
 			<File
 				RelativePath=".\Utils.cpp">
@@ -327,13 +350,40 @@
 				RelativePath=".\CriticalSection.h">
 			</File>
 			<File
+				RelativePath=".\DebugTrace.h">
+			</File>
+			<File
 				RelativePath=".\Event.h">
 			</File>
 			<File
 				RelativePath=".\Exception.h">
 			</File>
 			<File
+				RelativePath=".\ICriticalSection.h">
+			</File>
+			<File
+				RelativePath=".\IKernelObjectName.h">
+			</File>
+			<File
+				RelativePath=".\IProvideTickCount.h">
+			</File>
+			<File
+				RelativePath=".\IQueueTimers.h">
+			</File>
+			<File
+				RelativePath=".\IRunnable.h">
+			</File>
+			<File
+				RelativePath=".\IWaitable.h">
+			</File>
+			<File
 				RelativePath=".\SEHException.h">
+			</File>
+			<File
+				RelativePath=".\SimpleMessageLog.h">
+			</File>
+			<File
+				RelativePath=".\SmartHandle.h">
 			</File>
 			<File
 				RelativePath=".\StringConverter.h">
@@ -343,6 +393,9 @@
 			</File>
 			<File
 				RelativePath=".\ThreadedCallbackTimerQueue.h">
+			</File>
+			<File
+				RelativePath=".\ThreadLocalStorage.h">
 			</File>
 			<File
 				RelativePath=".\TickCountProvider.h">
@@ -360,12 +413,6 @@
 		<Filter
 			Name="Interfaces"
 			Filter="">
-			<File
-				RelativePath=".\IProvideTickCount.h">
-			</File>
-			<File
-				RelativePath=".\IQueueTimers.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="Precompiled Header"
@@ -377,7 +424,7 @@
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"
-						WarningLevel="4"/>
+						WarningLevel="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">

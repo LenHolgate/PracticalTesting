@@ -20,9 +20,8 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="NDEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -45,7 +44,7 @@
 				OutputFile=".\Output\VS2002\URelease/Win32ToolsTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				ProgramDatabaseFile=".\Output\VS2002\URelease/Win32ToolsTest.pdb"
 				SubSystem="1"/>
 			<Tool
@@ -76,9 +75,8 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -101,7 +99,7 @@
 				OutputFile=".\Output\VS2002\Release/Win32ToolsTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				ProgramDatabaseFile=".\Output\VS2002\Release/Win32ToolsTest.pdb"
 				SubSystem="1"/>
 			<Tool
@@ -132,9 +130,8 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -155,7 +152,7 @@
 				OutputFile=".\Output\VS2002\UDebugNoPreComp/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2002\UDebugNoPreComp/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -187,9 +184,8 @@
 			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -212,7 +208,7 @@
 				OutputFile=".\Output\VS2002\UDebug/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2002\UDebug/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -244,9 +240,8 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -269,7 +264,7 @@
 				OutputFile=".\Output\VS2002\Debug/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2002\Debug/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -328,22 +323,16 @@
 			Name="Tests"
 			Filter="">
 			<File
-				RelativePath=".\CallbackTimerQueueTest.cpp">
+				RelativePath="CallbackTimerQueueTest.cpp">
 			</File>
 			<File
-				RelativePath=".\CallbackTimerQueueTest.h">
+				RelativePath="CallbackTimerQueueTest.h">
 			</File>
 			<File
-				RelativePath=".\StringConverterTest.cpp">
+				RelativePath="ThreadedCallbackTimerQueueTest.cpp">
 			</File>
 			<File
-				RelativePath=".\StringConverterTest.h">
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueueTest.cpp">
-			</File>
-			<File
-				RelativePath=".\ThreadedCallbackTimerQueueTest.h">
+				RelativePath="ThreadedCallbackTimerQueueTest.h">
 			</File>
 		</Filter>
 		<Filter
@@ -386,6 +375,13 @@
 						UsePrecompiledHeader="1"
 						WarningLevel="4"/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Documentation"
+			Filter="">
+			<File
+				RelativePath="Docs\Groups.txt">
 			</File>
 		</Filter>
 	</Files>

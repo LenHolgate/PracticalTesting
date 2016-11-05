@@ -4,29 +4,17 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -34,6 +22,7 @@
 
 #include "CriticalSection.h"
 #include "Utils.h"
+#include "Win32Exception.h"
 
 #pragma hdrstop
 
@@ -50,19 +39,27 @@ namespace Win32 {
 
 CCriticalSection::CCriticalSection()
 {
+   // Can fail under low memory conditions and rase a STATUS_NO_MEMORY 
+   // exception.
+
    ::InitializeCriticalSection(&m_crit);
 }
 
 CCriticalSection::CCriticalSection(
-   const size_t spinCount)
+   const DWORD spinCount)
 {
 #if(_WIN32_WINNT >= 0x0403)
-   ::InitializeCriticalSectionAndSpinCount(&m_crit, spinCount);
+   if (!::InitializeCriticalSectionAndSpinCount(&m_crit, spinCount))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CCriticalSection::CCriticalSection()"), lastError);
+   }
 #else
    spinCount;
    ::InitializeCriticalSection(&m_crit);
-   
-   OutputEx(_T("CCriticalSection::CCriticalSection() - spin count specified but _WIN32_WINNT < 0x0403, spin count not used"));
+
+   OutputDebugString(_T("CCriticalSection::CCriticalSection() - spin count specified but _WIN32_WINNT < 0x0403, spin count not used\n"));
 #endif
 }
       
@@ -71,15 +68,30 @@ CCriticalSection::~CCriticalSection()
    ::DeleteCriticalSection(&m_crit);
 }
 
+/*
 #if(_WIN32_WINNT >= 0x0400)
 bool CCriticalSection::TryEnter()
 {
    return ToBool(::TryEnterCriticalSection(&m_crit));
 }
 #endif
+*/
+
+void CCriticalSection::SetSpinCount(
+   const DWORD spinCount)
+{
+#if (_WIN32_WINNT >= 0x0403)
+   ::SetCriticalSectionSpinCount(&m_crit, spinCount);
+#else
+   OutputDebugString(_T("CCriticalSection::SetSpinCount() - _WIN32_WINNT < 0x0403, spin count not used\n"));
+#endif
+}
 
 void CCriticalSection::Enter()
 {
+   // can fail if there's contention and the event can't be created and will
+   // raise an EXCEPTION_INVALID_HANDLE exception.
+
    ::EnterCriticalSection(&m_crit);
 }
 
@@ -88,46 +100,6 @@ void CCriticalSection::Leave()
    ::LeaveCriticalSection(&m_crit);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CCriticalSection::Owner
-///////////////////////////////////////////////////////////////////////////////
-
-CCriticalSection::Owner::Owner(
-   CCriticalSection &crit)
-   : m_crit(crit)
-{
-   m_crit.Enter();
-}
-
-CCriticalSection::Owner::~Owner()
-{
-   m_crit.Leave();
-}
-     
-///////////////////////////////////////////////////////////////////////////////
-// CCriticalSection::ConditionalOwner
-///////////////////////////////////////////////////////////////////////////////
-
-CCriticalSection::ConditionalOwner::ConditionalOwner(
-   CCriticalSection &crit,
-   bool lock)
-   :  m_crit(crit),
-      m_lock(lock)
-{
-   if (m_lock)
-   {
-      m_crit.Enter();
-   }
-}
-
-CCriticalSection::ConditionalOwner::~ConditionalOwner()
-{
-   if (m_lock)
-   {
-      m_crit.Leave();
-   }
-}
- 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////

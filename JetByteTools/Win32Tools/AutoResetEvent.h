@@ -10,29 +10,17 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,21 +37,64 @@ namespace Win32 {
 // CAutoResetEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-class CAutoResetEvent : public CEvent
+/// A class that wraps the operating system 
+/// <a href="http://msdn2.microsoft.com/en-us/library/ms682655.aspx">Event API</a> 
+/// and exposes just the interface for an auto reset event.
+/// \ingroup Synchronization
+/// \ingroup KernelObjects
+
+class CAutoResetEvent : public IWaitable
 {
    public :
    
+      /// Create an anonymous CAutoResetEvent object for in-process use.
+
       explicit CAutoResetEvent(
-         bool initialState = false);
+         CEvent::InitialState initialState = CEvent::NonSignaled,
+         SECURITY_ATTRIBUTES *pSecurityAttributes = 0);
       
+      /// Create a new named CAutoResetEvent object or connect to an existing
+      /// one with the same name, for cross-process use.
+
       explicit CAutoResetEvent(
-         const _tstring &name, 
-         bool initialState = false);
+         const IKernelObjectName &name, 
+         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         CEvent::InitialState initialState = CEvent::NonSignaled);
+
+      /// Create a new named CAutoResetEvent object or connect to an existing
+      /// one with the same name, for cross-process use. Use the CreationFlags
+      /// to force creation only or connection only if required.
+
+      CAutoResetEvent(
+         const IKernelObjectName &name, 
+         const CEvent::CreationFlags creationFlags, 
+         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         CEvent::InitialState initialState = CEvent::NonSignaled); 
+
+      /// Set the event to the signalled state.
+
+      void Set();
+
+      /// Pulse the event. Releases one waiting thread and resets the event.
+
+      void Pulse();
+
+      // Implement IWaitable
+
+      HANDLE GetWaitHandle() const;
+
+      void Wait() const;
+
+      bool Wait(
+         const Milliseconds timeout) const;
 
    private :
 
-      // No copies do not implement
+      CEvent m_event;
+
+		/// No copies do not implement
       CAutoResetEvent(const CAutoResetEvent &rhs);
+		/// No copies do not implement
       CAutoResetEvent &operator=(const CAutoResetEvent &rhs);
 };
 

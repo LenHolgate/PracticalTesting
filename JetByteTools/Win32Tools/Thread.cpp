@@ -4,35 +4,24 @@
 //
 // Copyright 2002 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools\Admin\Admin.h"
 
 #include "Thread.h"
+#include "StringConverter.h"
 #include "Win32Exception.h"
 
 #pragma hdrstop
@@ -47,40 +36,80 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
+// CThreadNameInfo
+///////////////////////////////////////////////////////////////////////////////
+
+class CThreadNameInfo
+{
+   public :
+
+      static const DWORD CurrentThreadID;
+
+      static void SetThreadName(
+         DWORD threadID, 
+         const std::string &threadName);
+
+      DWORD GetSize() const;
+
+      ULONG_PTR *GetData() const;
+
+   private :
+
+      CThreadNameInfo(
+         const DWORD threadId,
+         const char *pThreadName);
+
+      const DWORD_PTR m_type;
+      const LPCSTR m_pName; 
+      const DWORD_PTR m_threadID; 
+      const DWORD_PTR m_flags; 
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // CThread
 ///////////////////////////////////////////////////////////////////////////////
 
-CThread::CThread()
-   :  m_hThread(0)
+CThread::CThread(
+   IRunnable &runnable)
+   :  m_threadID(0),
+      m_runnable(runnable)
+{
+
+}
+
+CThread::~CThread()
 {
 
 }
       
-CThread::~CThread()
+bool CThread::WasStarted() const
 {
-   if (m_hThread != 0)
-   {
-      ::CloseHandle(m_hThread);
-   }
-}
-
-HANDLE CThread::GetHandle() const
-{
-   return m_hThread;
+   return INVALID_HANDLE_VALUE != m_hThread;
 }
 
 void CThread::Start()
 {
-   if (m_hThread == 0)
+   Start(false);
+}
+
+void CThread::StartSuspended()
+{
+   Start(true);
+}
+
+void CThread::Start(
+   bool startSuspended)
+{
+   if (!WasStarted())
    {
-      unsigned int threadID = 0;
+      const uintptr_t result = ::_beginthreadex(0, 0, ThreadFunction, (void*)this, startSuspended, reinterpret_cast<unsigned int*>(&m_threadID));
 
-      m_hThread = (HANDLE)::_beginthreadex(0, 0, ThreadFunction, (void*)this, 0, &threadID);
-
-      if (m_hThread == 0)
+      if (result == 0)
       {
          throw CWin32Exception(_T("CThread::Start() - _beginthreadex"), errno);
       }
+
+      m_hThread = reinterpret_cast<HANDLE>(result);
    }
    else
    {
@@ -88,39 +117,100 @@ void CThread::Start()
    }
 }
 
-void CThread::Wait() const
+void CThread::StartWithPriority(
+   const int priority)
 {
-   if (!Wait(INFINITE))
-   {
-      throw CException(_T("CThread::Wait()"), _T("Unexpected timeout on infinite wait"));
-   }
+   StartSuspended();
+
+   SetThreadPriority(priority);
+
+   Resume();
 }
 
-bool CThread::Wait(DWORD timeoutMillis) const
+
+void CThread::Resume() 
 {
-   #pragma TODO("base class? Waitable?")
-
-   bool ok;
-
-   DWORD result = ::WaitForSingleObject(m_hThread, timeoutMillis);
-
-   if (result == WAIT_TIMEOUT)
+   if (WasStarted())
    {
-      ok = false;
-   }
-   else if (result == WAIT_OBJECT_0)
-   {
-      ok = true;
+      if (-1 == ::ResumeThread(m_hThread))
+      {
+         throw CWin32Exception(_T("CThread::Resume()"), ::GetLastError());
+      }
    }
    else
    {
-      throw CWin32Exception(_T("CThread::Wait() - WaitForSingleObject"), ::GetLastError());
+      throw CException(_T("CThread::Resume()"), _T("Thread has not been started!"));
    }
-    
-   return ok;
 }
 
-unsigned int __stdcall CThread::ThreadFunction(void *pV)
+void CThread::EnableThreadPriorityBoost()
+{
+   if (!::SetThreadPriorityBoost(m_hThread, FALSE))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CThread::EnableThreadPriorityBoost()"), lastError);
+   }
+}
+
+void CThread::DisableThreadPriorityBoost()
+{
+   if (!::SetThreadPriorityBoost(m_hThread, TRUE))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CThread::DisableThreadPriorityBoost()"), lastError);
+   }
+}
+
+bool CThread::ThreadPriorityBoostEnabled() const
+{
+   BOOL disabled;
+
+   if (!::GetThreadPriorityBoost(m_hThread, &disabled))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CThread::ThreadPriorityBoostEnabled()"), lastError);
+   }
+
+   return !disabled;
+}
+
+void CThread::SetThreadPriority(
+   const int priority)
+{
+   if (!::SetThreadPriority(m_hThread, priority))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("CThread::SetThreadPriority()"), lastError);
+   }
+}
+
+int CThread::GetThreadPriority() const
+{
+   return ::GetThreadPriority(m_hThread);
+}
+
+HANDLE CThread::GetWaitHandle() const
+{
+   return m_hThread.GetWaitHandle();
+}
+
+void CThread::Wait() const
+{
+   m_hThread.Wait();
+}
+
+bool CThread::Wait(
+   const Milliseconds timeout) const
+{
+   return m_hThread.Wait(timeout);
+}
+
+unsigned int __stdcall CThread::ThreadFunction(
+   void *pV)
 {
    int result = 0;
 
@@ -130,10 +220,11 @@ unsigned int __stdcall CThread::ThreadFunction(void *pV)
    {
       try
       {
-         result = pThis->Run();
+         result = pThis->m_runnable.Run();
       }
       catch(...)
       {
+         result = 666;
       }
    }
 
@@ -141,14 +232,97 @@ unsigned int __stdcall CThread::ThreadFunction(void *pV)
 }
 
 void CThread::Terminate(
-   DWORD exitCode /* = 0 */)
+   DWORD exitCode)
 {
    if (!::TerminateThread(m_hThread, exitCode))
    {
       throw CWin32Exception(_T("CThread::Terminate() - TerminateThread"), ::GetLastError());
    }
 
-   m_hThread = 0;
+   m_hThread = INVALID_HANDLE_VALUE;
+}
+
+void CThread::SetThreadName(
+   const _tstring &threadName) const
+{
+   if (WasStarted())
+   {
+      SetThreadName(m_threadID, threadName);
+   }
+   else
+   {
+      throw CException(_T("CThread::SetThreadName()"), _T("Thread has not been started!"));
+   }
+}
+
+void CThread::SetCurrentThreadName(
+   const _tstring &threadName)
+{
+   SetThreadName(CThreadNameInfo::CurrentThreadID, threadName);
+}
+
+void CThread::SetThreadName(
+   DWORD threadID, 
+   const _tstring &threadName)
+{
+   const std::string narrowString = CStringConverter::TtoA(threadName);
+   
+   CThreadNameInfo::SetThreadName(threadID, narrowString);
+}
+
+bool CThread::IsThisThread() const
+{
+   bool isThisThread = false;
+
+   if (WasStarted())
+   {
+      isThisThread = (::GetCurrentThreadId() == m_threadID);
+   }
+
+   return isThisThread;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CThreadNameInfo
+///////////////////////////////////////////////////////////////////////////////
+
+const DWORD CThreadNameInfo::CurrentThreadID = 0xFFFFFFFF;
+
+CThreadNameInfo::CThreadNameInfo(
+   DWORD threadID,
+   const char *pThreadName)
+   :  m_type(0x1000),
+      m_pName(pThreadName),
+      m_threadID(threadID),
+      m_flags(0)
+{
+}
+
+DWORD CThreadNameInfo::GetSize() const
+{
+   // We pass 4 ULONG_PTR sized items to the debugger...
+
+   return 4;   
+}
+
+ULONG_PTR *CThreadNameInfo::GetData() const
+{
+   return reinterpret_cast<ULONG_PTR*>(const_cast<CThreadNameInfo *>(this));
+}
+
+void CThreadNameInfo::SetThreadName(
+   DWORD threadID, 
+   const std::string &threadName)
+{
+   CThreadNameInfo info(threadID, threadName.c_str());
+
+   __try
+   {
+	   ::RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
+   }
+   __except(EXCEPTION_CONTINUE_EXECUTION)
+   {
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

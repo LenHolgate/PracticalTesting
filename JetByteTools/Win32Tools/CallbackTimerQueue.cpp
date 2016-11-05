@@ -71,15 +71,17 @@ class CCallbackTimerQueue::TimerData
 
 static const CTickCountProvider s_tickProvider;
 
-static const DWORD s_tickCountMax = 0xFFFFFFFF;
+static const Milliseconds s_tickCountMax = 0xFFFFFFFF;
 
-static const DWORD s_timeoutMax = s_tickCountMax / 4 * 3;
+static const Milliseconds s_timeoutMax = (s_tickCountMax / 4) * 3;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Static members
 ///////////////////////////////////////////////////////////////////////////////
 
-CCallbackTimerQueue::Handle CCallbackTimerQueue::InvalidHandleValue = 0;
+#pragma TODO("Move to its own file?")
+
+IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueue
@@ -87,48 +89,62 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::InvalidHandleValue = 0;
 
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
-   :  m_tickProvider(tickProvider),
+   :  m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2),
+      m_tickProvider(tickProvider),
       m_maxTimeout(s_timeoutMax),
-      m_pCurrentQueue(&m_queue1),
-      m_pWrappedQueue(&m_queue2)
+      m_lastWrappedTimerSetTicks(0)
 {   
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
-   const DWORD maxTimeout,
+   const Milliseconds maxTimeout,
    const IProvideTickCount &tickProvider)
-   :  m_tickProvider(tickProvider),
+   :  m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2),
+      m_tickProvider(tickProvider),
       m_maxTimeout(maxTimeout),
-      m_pCurrentQueue(&m_queue1),
-      m_pWrappedQueue(&m_queue2)
+      m_lastWrappedTimerSetTicks(0)
 {   
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue()
-   :  m_tickProvider(s_tickProvider),
+   :  m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2),
+      m_tickProvider(s_tickProvider),
       m_maxTimeout(s_timeoutMax),
-      m_pCurrentQueue(&m_queue1),
-      m_pWrappedQueue(&m_queue2)
+      m_lastWrappedTimerSetTicks(0)
 {
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
-   const DWORD maxTimeout)
-   :  m_tickProvider(s_tickProvider),
+   const Milliseconds maxTimeout)
+   :  m_pCurrentQueue(&m_queue1),
+      m_pWrappedQueue(&m_queue2),
+      m_tickProvider(s_tickProvider),
       m_maxTimeout(maxTimeout),
-      m_pCurrentQueue(&m_queue1),
-      m_pWrappedQueue(&m_queue2)
+      m_lastWrappedTimerSetTicks(0)
 {
 }
 
 CCallbackTimerQueue::~CCallbackTimerQueue()
 {
-   for (HandleMap::iterator it = m_handleMap.begin(); it != m_handleMap.end(); ++it)
+   try
    {
-      TimerData *pData = reinterpret_cast<TimerData*>(it->first);
+      for (HandleMap::iterator it = m_handleMap.begin(); it != m_handleMap.end(); ++it)
+      {
+         TimerData *pData = reinterpret_cast<TimerData*>(it->first);
 
-      delete pData;
+         delete pData;
+      }
    }
+   catch(...)
+   {
+#pragma TODO("what exception should we be catching here???")
+   }
+
+   m_pCurrentQueue = 0;
+   m_pWrappedQueue = 0;
 }
 
 CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
@@ -139,18 +155,20 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
 
    MarkHandleUnset(handle);
 
-   return handle;
+   return reinterpret_cast<Handle>(pData);
 }
 
 bool CCallbackTimerQueue::SetTimer(
    const Handle &handle, 
    Timer &timer,
-   const DWORD timeoutMillis,
+   const Milliseconds timeout,
    const UserData userData)
 {
-   bool wrapped = false;
+   HandleTimeouts();
 
-   const DWORD timeout = GetAbsoluteTimeout(timeoutMillis, wrapped);
+   const Milliseconds now = m_tickProvider.GetTickCount();
+
+   const Milliseconds absoluteTimeout = GetAbsoluteTimeout(timeout, now);
 
    HandleMap::iterator it = ValidateHandle(handle);
 
@@ -160,7 +178,7 @@ bool CCallbackTimerQueue::SetTimer(
 
    pData->UpdateData(timer, userData);
 
-   InsertTimer(handle, pData, timeout, wrapped);
+   InsertTimer(handle, pData, absoluteTimeout, now);
 
    return wasPending;
 }
@@ -189,50 +207,69 @@ bool CCallbackTimerQueue::DestroyTimer(
    return wasPending;
 }
 
+bool CCallbackTimerQueue::DestroyTimer(
+   const Handle &handle)
+{
+   Handle handle_ = handle;
+
+   return DestroyTimer(handle_);
+}
+
 void CCallbackTimerQueue::SetTimer(
    Timer &timer,
-   const DWORD timeoutMillis,
+   const Milliseconds timeout,
    const UserData userData)
 {
-   bool wrapped = false;
+   HandleTimeouts();
 
-   const DWORD timeout = GetAbsoluteTimeout(timeoutMillis, wrapped);
+   const Milliseconds now = m_tickProvider.GetTickCount();
+
+   const Milliseconds absoluteTimeout = GetAbsoluteTimeout(timeout, now);
 
    TimerData *pData = new TimerData(timer, userData);
 
    Handle handle = reinterpret_cast<Handle>(pData);
 
-   InsertTimer(handle, pData, timeout, wrapped);
+   InsertTimer(handle, pData, absoluteTimeout, now);
 }
 
-
-DWORD CCallbackTimerQueue::GetAbsoluteTimeout(
-   const DWORD timeoutMillis,
-   bool &wrapped) const
+Milliseconds CCallbackTimerQueue::GetMaximumTimeout() const
 {
-   if (timeoutMillis > m_maxTimeout)
+   return m_maxTimeout;
+}
+
+Milliseconds CCallbackTimerQueue::GetAbsoluteTimeout(
+   const Milliseconds timeout,
+   const Milliseconds now) const
+{
+   if (timeout > m_maxTimeout)
    {
       throw CException(_T("CCallbackTimerQueue::GetAbsoluteTimeout()"), _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
-   const DWORD now = m_tickProvider.GetTickCount();
+   const Milliseconds absoluteTimeout = now + timeout;
 
-   const DWORD timeout = now + timeoutMillis;
-
-   wrapped = (timeout < now);
-
-   return timeout;
+   return absoluteTimeout;
 }
 
 void CCallbackTimerQueue::InsertTimer(
    const Handle &handle,
    TimerData * const pData,
-   const DWORD timeoutMillis,
-   const bool wrapped)
+   const Milliseconds timeout,
+   const Milliseconds now)
 {
-   TimerQueue *pQueue = wrapped ? m_pWrappedQueue : m_pCurrentQueue;         
+   TimerQueue *pQueue = m_pCurrentQueue;         
 
-   TimerQueue::iterator it = pQueue->insert(TimerQueue::value_type(timeoutMillis, pData));
+   const bool wrapped = (timeout < now);
+
+   if (wrapped)
+   {
+      pQueue = m_pWrappedQueue;
+
+      m_lastWrappedTimerSetTicks = now;
+   }
+
+   TimerQueue::iterator it = pQueue->insert(TimerQueue::value_type(timeout, pData));
 
    m_handleMap[handle] = HandleMapValue(pQueue, it);
 }
@@ -244,7 +281,12 @@ CCallbackTimerQueue::HandleMap::iterator CCallbackTimerQueue::ValidateHandle(
 
    if (it == m_handleMap.end())
    {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
       throw CException(_T("CCallbackTimerQueue::ValidateHandle()"), _T("Invalid timer handle: ") + ToString(handle));
+#pragma warning(pop)
    }
    
    return it;
@@ -272,16 +314,20 @@ bool CCallbackTimerQueue::CancelTimer(
    return wasPending;
 }
 
-DWORD CCallbackTimerQueue::GetNextTimeout() const
+Milliseconds CCallbackTimerQueue::GetNextTimeout() 
 {
    bool haveTimer = true;
 
-   DWORD timeUntilTimeout = INFINITE;
+   bool wrapped = false;
+
+   Milliseconds timeUntilTimeout = INFINITE;
 
    TimerQueue::const_iterator it = m_pCurrentQueue->begin();
 
    if (it == m_pCurrentQueue->end())
    {
+      wrapped = true;
+
       it = m_pWrappedQueue->begin();
 
       if (it == m_pWrappedQueue->end())
@@ -292,15 +338,22 @@ DWORD CCallbackTimerQueue::GetNextTimeout() const
 
    if (haveTimer)
    {
-      const DWORD now = m_tickProvider.GetTickCount();
+      const Milliseconds now = m_tickProvider.GetTickCount();
 
-      const DWORD timeout = it->first;
+      const Milliseconds timeout = it->first;
 
       timeUntilTimeout = timeout - now;
 
       if (timeUntilTimeout > s_timeoutMax)
       {
          timeUntilTimeout = 0;
+      }
+
+      if (wrapped && now < m_lastWrappedTimerSetTicks)
+      {
+         m_lastWrappedTimerSetTicks = 0;
+
+         std::swap(m_pCurrentQueue, m_pWrappedQueue);
       }
    }  
 
@@ -313,13 +366,6 @@ void CCallbackTimerQueue::HandleTimeouts()
    {
       TimerQueue::iterator it = m_pCurrentQueue->begin();
       
-      if (it == m_pCurrentQueue->end())
-      {
-         std::swap(m_pCurrentQueue, m_pWrappedQueue);
-
-         it = m_pCurrentQueue->begin();
-      }
-
       TimerData *pData = it->second;
 
       m_pCurrentQueue->erase(it);

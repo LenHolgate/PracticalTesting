@@ -45,54 +45,87 @@ class IProvideTickCount;
 // CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
+/// A class that manages a group of timers that implement IQueueTimers::Timer 
+/// and which have their IQueueTimers::Timer::OnTimer() method called when the 
+/// timer expires. You must manually manage the handling and processing of 
+/// timeouts by calling HandleTimeouts() every GetNextTimeout() milliseconds.
+/// See <a href="http://www.lenholgate.com/archives/000342.html">here</a> for 
+/// more details.
+/// \ingroup Timers
+
 class CCallbackTimerQueue : public IQueueTimers
 {
    public :
 
+      /// Create a timer queue.
+
       CCallbackTimerQueue();
 
+      /// Create a timer queue with the specified maximum timeout value.
+      
       explicit CCallbackTimerQueue(
-         const DWORD maxTimeout);
+         const Milliseconds maxTimeout);
 
+      /// Create a timer queue that uses the provdided instance of 
+      /// IProvideTickCount to obtain its tick counts rather than getting
+      /// them directly from the system.
+      
       explicit CCallbackTimerQueue(
          const IProvideTickCount &tickProvider);
 
+      /// Create a timer queue with the specified maximum timeout value
+      /// and that uses the provdided instance of IProvideTickCount to 
+      /// obtain its tick counts rather than getting them directly from 
+      /// the system.
+      
       CCallbackTimerQueue(
-         const DWORD maxTimeout,
+         const Milliseconds maxTimeout,
          const IProvideTickCount &tickProvider);
 
       ~CCallbackTimerQueue();
 
-      DWORD GetNextTimeout() const;
+      /// Get the number of milliseconds until the next timer is due to fire.
+      /// Or INFINITE if no timer is set.
+      
+      Milliseconds GetNextTimeout();
 
+      /// Process any timers that have timed out.
+      
       void HandleTimeouts();
 
       // Implement IQueueTimers
+      // We need to fully specify the IQueueTimers types to get around a bug in 
+      // doxygen 1.5.2
 
-      virtual Handle CreateTimer();
+      virtual IQueueTimers::Handle CreateTimer();
 
       virtual bool SetTimer(
-         const Handle &handle, 
-         Timer &timer,
-         const DWORD timeoutMillis,
-         const UserData userData);
+         const IQueueTimers::Handle &handle, 
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         const IQueueTimers::UserData userData);
 
       virtual bool CancelTimer(
-         const Handle &handle);
+         const IQueueTimers::Handle &handle);
 
       virtual bool DestroyTimer(
-         Handle &handle);
+         IQueueTimers::Handle &handle);
+
+      virtual bool DestroyTimer(
+         const IQueueTimers::Handle &handle);
 
       virtual void SetTimer(
-         Timer &timer,
-         const DWORD timeoutMillis,
-         const UserData userData);
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         const IQueueTimers::UserData userData);
+
+      virtual Milliseconds GetMaximumTimeout() const;
 
    private :
 
       class TimerData;
 
-      typedef std::multimap<DWORD, TimerData *> TimerQueue;
+      typedef std::multimap<Milliseconds, TimerData *> TimerQueue;
 
       typedef std::pair<TimerQueue *, TimerQueue::iterator> HandleMapValue;
 
@@ -105,15 +138,15 @@ class CCallbackTimerQueue : public IQueueTimers
          const Handle &handle,
          const HandleMap::iterator &it);
 
-      DWORD GetAbsoluteTimeout(
-         const DWORD timeoutMillis,
-         bool &wrapped) const;
+      Milliseconds GetAbsoluteTimeout(
+         const Milliseconds timeout,
+         const Milliseconds now) const;
 
       void InsertTimer(
          const Handle &handle,
          TimerData * const pData,
-         const DWORD timeoutMillis,
-         const bool wrapped);
+         const Milliseconds timeout,
+         const Milliseconds now);
 
       void MarkHandleUnset(
          Handle handle);
@@ -128,10 +161,13 @@ class CCallbackTimerQueue : public IQueueTimers
 
       const IProvideTickCount &m_tickProvider;
 
-      const DWORD m_maxTimeout;
+      const Milliseconds m_maxTimeout;
 
-      // No copies do not implement
+      Milliseconds m_lastWrappedTimerSetTicks;
+
+		/// No copies do not implement
       CCallbackTimerQueue(const CCallbackTimerQueue &rhs);
+		/// No copies do not implement
       CCallbackTimerQueue &operator=(const CCallbackTimerQueue &rhs);
 };
 

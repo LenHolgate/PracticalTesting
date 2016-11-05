@@ -10,37 +10,23 @@
 //
 // Copyright 1997 JetByte Limited.
 //
-// JetByte Limited grants you ("Licensee") a non-exclusive, royalty free, 
-// licence to use, modify and redistribute this software in source and binary 
-// code form, provided that i) this copyright notice and licence appear on all 
-// copies of the software; and ii) Licensee does not utilize the software in a 
-// manner which is disparaging to JetByte Limited.
-//
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
 // or non-infringement, are hereby excluded. JetByte Limited and its licensors 
 // shall not be liable for any damages suffered by licensee as a result of 
-// using, modifying or distributing the software or its derivatives. In no
-// event will JetByte Limited be liable for any lost revenue, profit or data,
-// or for direct, indirect, special, consequential, incidental or punitive
-// damages, however caused and regardless of the theory of liability, arising 
-// out of the use of or inability to use software, even if JetByte Limited 
-// has been advised of the possibility of such damages.
-//
-// This software is not designed or intended for use in on-line control of 
-// aircraft, air traffic, aircraft navigation or aircraft communications; or in 
-// the design, construction, operation or maintenance of any nuclear 
-// facility. Licensee represents and warrants that it will not use or 
-// redistribute the Software for such purposes. 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _WINDOWS_
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
+#include <wtypes.h>
+
+#include "ICriticalSection.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -53,69 +39,52 @@ namespace Win32 {
 // CCriticalSection
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCriticalSection 
+/// A class that wraps the operating system 
+/// <a href="http://msdn2.microsoft.com/en-us/library/ms682530.aspx">Critical Section API</a>
+/// and that implements the ICriticalSection interface.
+/// The addition of the ICriticalSection interface has increased the size of 
+/// this object and added a layer of indirection into the Enter() and Leave() 
+/// calls. If this proves to be a performance problem then we can simply create
+/// a 'CSmallAndFastCriticalSection which doesn't inherit from the interface.
+/// \ingroup Synchronization
+
+class CCriticalSection : public ICriticalSection
 {
    public :
    
-      class Owner
-      {
-         public:
-
-            explicit Owner(
-               CCriticalSection &crit);
-
-            ~Owner();
-      
-         private :
-
-            CCriticalSection &m_crit;
-
-            // No copies do not implement
-            Owner(const Owner &rhs);
-            Owner &operator=(const Owner &rhs);
-      };
-
-      class ConditionalOwner
-      {
-         public:
-
-            ConditionalOwner(
-               CCriticalSection &crit,
-               bool look);
-
-            ~ConditionalOwner();
-      
-         private :
-
-            CCriticalSection &m_crit;
-
-            const bool m_lock;
-
-            // No copies do not implement
-            ConditionalOwner(const ConditionalOwner &rhs);
-            ConditionalOwner &operator=(const ConditionalOwner &rhs);
-      };
+      /// Creates a critical section object.
 
       CCriticalSection();
 
-      explicit CCriticalSection(       // only actually does anything if > NT 4 Sp3
-         const size_t spinCount);      
+      /// Creates a critical section object and allows you to specify the spin 
+      /// count. Note that this only works on systems that are later than
+      /// NT 4 Service Pack 3.
+
+      explicit CCriticalSection(       
+         const DWORD spinCount);      
       
       ~CCriticalSection();
 
-#if(_WIN32_WINNT >= 0x0400)
-      bool TryEnter();
-#endif
-      void Enter();
+      void SetSpinCount(
+         const DWORD spinCount);      
 
-      void Leave();
+      // Implement ICriticalSection
+
+      virtual void Enter();
+
+      virtual void Leave();
+
+//#if(_WIN32_WINNT >= 0x0400)
+//      bool TryEnter();
+//#endif
 
    private :
 
       CRITICAL_SECTION m_crit;
 
-      // No copies do not implement
+		/// No copies do not implement
       CCriticalSection(const CCriticalSection &rhs);
+		/// No copies do not implement
       CCriticalSection &operator=(const CCriticalSection &rhs);
 };
 

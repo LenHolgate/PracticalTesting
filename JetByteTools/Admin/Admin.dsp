@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Output\VC6\Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MT /W4 /GX /O2 /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /c
+# ADD CPP /nologo /MT /W4 /WX /GX /Zi /O2 /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /FD /c
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -67,7 +67,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Output\VC6\Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W4 /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /GZ /c
+# ADD CPP /nologo /MTd /W4 /WX /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /FD /GZ /c
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
 # ADD RSC /l 0x809 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -90,7 +90,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Output\VC6\UDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\\" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W4 /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /GZ /c
+# ADD CPP /nologo /MTd /W4 /WX /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /FD /GZ /c
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
 # ADD RSC /l 0x809 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -113,7 +113,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Output\VC6\URelease"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\..\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MT /W4 /GX /O2 /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "NDEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /c
+# ADD CPP /nologo /MT /W4 /WX /GX /Zi /O2 /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "NDEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /FD /c
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -136,7 +136,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Output\VC6\UDebugNoPreComp"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W4 /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /GZ /c
-# ADD CPP /nologo /MTd /W4 /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /D _WIN32_WINNT=0x0400 /FD /GZ /c
+# ADD CPP /nologo /MTd /W4 /WX /GX /Zi /Od /I "..\..\\" /I "$(STLPORT_ROOT)\stlport" /FI"Warnings.h" /D "_DEBUG" /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "WIN32" /D "_MBCS" /FD /GZ /c
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
 # ADD RSC /l 0x809 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -168,11 +168,59 @@ SOURCE=.\NoPlatformSDK.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SecureCRT.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TargetWindowsVersion.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Todo.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Types.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Warnings.h
+# End Source File
+# End Group
+# Begin Group "Documentation"
+
+# PROP Default_Filter "*.*"
+# Begin Source File
+
+SOURCE=.\Docs\Doxyfile.developer
+# End Source File
+# Begin Source File
+
+SOURCE=.\Docs\Doxyfile.user
+# End Source File
+# Begin Source File
+
+SOURCE=.\Docs\Groups.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\Docs\Overview.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\Docs\ProgrammingConcepts.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\Docs\Testing.txt
+# End Source File
+# End Group
+# Begin Group "Source Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Admin.cpp
 # End Source File
 # End Group
 # End Target

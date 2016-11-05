@@ -1,0 +1,73 @@
+///////////////////////////////////////////////////////////////////////////////
+// File: MockReferenceCounted.cpp
+///////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2004 JetByte Limited.
+//
+// This software is provided "as is" without a warranty of any kind. All 
+// express or implied conditions, representations and warranties, including
+// any implied warranty of merchantability, fitness for a particular purpose
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
+// shall not be liable for any damages suffered by licensee as a result of 
+// using the software. In no event will JetByte Limited be liable for any 
+// lost revenue, profit or data, or for direct, indirect, special, 
+// consequential, incidental or punitive damages, however caused and regardless 
+// of the theory of liability, arising out of the use of or inability to use 
+// software, even if JetByte Limited has been advised of the possibility of 
+// such damages.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#include "JetByteTools\Admin\Admin.h"
+
+#include "MockReferenceCounted.h"
+
+#include "JetByteTools\Win32Tools\Utils.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using JetByteTools::Win32::ToString;
+
+//////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Mock
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Mock {
+
+///////////////////////////////////////////////////////////////////////////////
+// CMockReferenceCounted
+///////////////////////////////////////////////////////////////////////////////
+
+CMockReferenceCounted::CMockReferenceCounted()
+   :  m_ref(1)
+{
+}
+
+void CMockReferenceCounted::AddRef()
+{
+   m_ref++;
+
+   LogMessage(_T("AddRef: ") + ToString(m_ref));
+}
+
+void CMockReferenceCounted::Release()
+{
+   m_ref--;
+
+   LogMessage(_T("Release: ") + ToString(m_ref));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Mock
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Mock
+} // End of namespace JetByteTools 
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: ExpandableBufferTest.cpp
+///////////////////////////////////////////////////////////////////////////////
+

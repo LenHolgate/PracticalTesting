@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="NDEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -44,7 +44,7 @@
 				OutputFile=".\Output\VS2003\URelease/Win32ToolsTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				ProgramDatabaseFile=".\Output\VS2003\URelease/Win32ToolsTest.pdb"
 				SubSystem="1"/>
 			<Tool
@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="NDEBUG,_CONSOLE,WIN32"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -105,7 +105,7 @@
 				OutputFile=".\Output\VS2003\Release/Win32ToolsTest.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				ProgramDatabaseFile=".\Output\VS2003\Release/Win32ToolsTest.pdb"
 				SubSystem="1"/>
 			<Tool
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -164,7 +164,7 @@
 				OutputFile=".\Output\VS2003\UDebugNoPreComp/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2003\UDebugNoPreComp/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -203,7 +203,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,UNICODE,_CONSOLE,WIN32,_MBCS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -226,7 +226,7 @@
 				OutputFile=".\Output\VS2003\UDebug/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2003\UDebug/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -264,9 +264,8 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/EHa"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport"
+				AdditionalIncludeDirectories="..\..\..\,$(STLPORT_ROOT)\stlport,$(MOCK32_ROOT)\include"
 				PreprocessorDefinitions="_DEBUG,_CONSOLE,WIN32"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -289,7 +288,7 @@
 				OutputFile=".\Output\VS2003\Debug/Win32ToolsTest.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib,$(MOCK32_ROOT)\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Output\VS2003\Debug/Win32ToolsTest.pdb"
 				SubSystem="1"/>
@@ -360,12 +359,6 @@
 			</File>
 			<File
 				RelativePath=".\CallbackTimerQueueTest.h">
-			</File>
-			<File
-				RelativePath=".\StringConverterTest.cpp">
-			</File>
-			<File
-				RelativePath=".\StringConverterTest.h">
 			</File>
 			<File
 				RelativePath=".\ThreadedCallbackTimerQueueTest.cpp">

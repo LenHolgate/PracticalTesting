@@ -165,16 +165,6 @@ SOURCE=.\LoggingCallbackTimer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MockDirectoryChangeMonitorCallback..cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\MockFileChangeMonitorCallback.cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
 SOURCE=.\MockTickCountProvider.cpp
 # End Source File
 # End Group
@@ -184,14 +174,6 @@ SOURCE=.\MockTickCountProvider.cpp
 # Begin Source File
 
 SOURCE=.\LoggingCallbackTimer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MockDirectoryChangeMonitorCallback.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MockFileChangeMonitorCallback.h
 # End Source File
 # Begin Source File
 
@@ -233,6 +215,14 @@ SOURCE=.\PrecompiledHeader.cpp
 # Begin Source File
 
 SOURCE=.\PrecompiledHeader.h
+# End Source File
+# End Group
+# Begin Group "Documentation"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Docs\Groups.txt
 # End Source File
 # End Group
 # End Target
