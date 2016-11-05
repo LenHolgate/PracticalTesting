@@ -187,34 +187,6 @@ SOURCE=.\Types.h
 SOURCE=.\Warnings.h
 # End Source File
 # End Group
-# Begin Group "Documentation"
-
-# PROP Default_Filter "*.*"
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.developer
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.user
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Groups.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Overview.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\ProgrammingConcepts.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Testing.txt
-# End Source File
-# End Group
 # Begin Group "Source Files"
 
 # PROP Default_Filter ""

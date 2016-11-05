@@ -1114,34 +1114,6 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<Filter
-			Name="Documentation"
-			>
-			<File
-				RelativePath=".\Docs\Doxyfile.developer"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Doxyfile.user"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Groups.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\MainPage.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Overview.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\ReleaseNotes.txt"
-				>
-			</File>
-		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

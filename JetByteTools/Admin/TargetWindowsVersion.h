@@ -40,11 +40,14 @@
 #define NTDDI_VERSION   0x06000000     // VISTA
 #define _WIN32_WINNT    0x0600         // VISTA
 
-/// * BluetoothTools needs NTDDI_WINXPSP2
-/// * DebugTools needs NTDDI_WIN2KSP1
-/// * APIHookTools needs _WIN32_WINNT_WINXP
-/// * Everything else would be happy with NTDDI_WIN2K.
+/// If you want to target Vista (and use Vista specific functionality) then 
+/// you must have one of the following versions of the Platdorm SDK (Windows
+/// SDK) installed:
+/// 0x060A - v6.0a - Vista
+/// 0x0610 - v6.1 - Windows Server 2008 and .Net Framework 3.5
+/// or later..
 
+#define JETBYTE_PLATFORM_SDK_VERSION   0x0610   
 
 #endif // JETBYTE_TOOLS_ADMIN_TARGET_WINDOWS_VERSION_INCLUDED__
 

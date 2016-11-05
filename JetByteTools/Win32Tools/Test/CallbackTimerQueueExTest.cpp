@@ -26,28 +26,20 @@
 #include "..\Mock\LoggingCallbackTimer.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
 
 #include "JetByteTools\TestTools\TestException.h"
+#include "JetByteTools\TestTools\RunTest.h"
 
 #pragma hdrstop
 
 #include "..\CallbackTimerQueueEx.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
-///////////////////////////////////////////////////////////////////////////////
-
-#if (_WIN32_WINNT >= 0x0600) 
-
-///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Test::CTestException;
-
-using JetByteTools::Win32::Output;
-using JetByteTools::Win32::_tstring;
+using JetByteTools::Test::CTestMonitor;
 
 using JetByteTools::Win32::Mock::CMockTickCount64Provider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
@@ -74,29 +66,36 @@ static CCallbackTimerQueueEx::Handle CreateAndSetTimer(
 // CCallbackTimerQueueExTest
 ///////////////////////////////////////////////////////////////////////////////
 
-void CCallbackTimerQueueExTest::TestAll()
+void CCallbackTimerQueueExTest::TestAll(
+   CTestMonitor &monitor)
 {
-   TestConstruct();
-   TestCreateTimer();
-   TestDestroyTimer();
-   TestTimer();
-   TestCancelTimer();
-   TestCancelExpiredTimer();
-   TestResetTimer();
-   TestGetMaxTimeout();
-   TestSetTimerPastTickCount64CountWrap();
-   TestMaxTimeout();
-   TestMultipleTimers();
-   TestOneShotTimer();
-   TestActiveTimersAtDestructionTime();
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestConstruct);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestCreateTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestDestroyTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingEndTimeoutHandling);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestMultipleCallsToEndTimeoutHandlingFail);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestEndTimeoutHandlingWithInvalidHandleFails);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestHandleTimeoutWithInvalidHandleFails);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestMultipleCallsToHandleTimeoutFail);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingSetTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingCancelTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestBeginTimeoutHandlingDestroyTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestCancelTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestCancelExpiredTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestResetTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestGetMaxTimeout);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestSetTimerPastTickCount64CountWrap);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestMaxTimeout);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestMultipleTimers);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestOneShotTimer);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestActiveTimersAtDestructionTime);
 }
 
 void CCallbackTimerQueueExTest::TestConstruct()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestConstruct");
-   
-   Output(functionName + _T(" - start"));
-
    CCallbackTimerQueueEx timerQueue;
 
    CMockTickCount64Provider tickProvider;
@@ -104,16 +103,10 @@ void CCallbackTimerQueueExTest::TestConstruct()
    CCallbackTimerQueueEx timerQueue2(tickProvider);
 
    tickProvider.CheckNoResults();
-
-   Output(functionName + _T(" - stop"));
 }
 
 void CCallbackTimerQueueExTest::TestCreateTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestCreateTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
@@ -122,19 +115,13 @@ void CCallbackTimerQueueExTest::TestCreateTimer()
 
    CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 }
 
 void CCallbackTimerQueueExTest::TestDestroyTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestDestroyTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
@@ -143,58 +130,52 @@ void CCallbackTimerQueueExTest::TestDestroyTimer()
 
    CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
    CCallbackTimerQueueEx::Handle handleCopy = handle;
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue == handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue == handle);
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_NO_EXCEPTION_1(functionName, timerQueue.DestroyTimer, handleCopy);
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handleCopy);
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_NO_EXCEPTION_1(functionName, timerQueue.DestroyTimer, CCallbackTimerQueueEx::InvalidHandleValue);
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, CCallbackTimerQueueEx::InvalidHandleValue);
 
-   tickProvider.CheckResult(_T("|"));
-
-   Output(functionName + _T(" - stop"));
+   tickProvider.CheckNoResults();
 }
 
 void CCallbackTimerQueueExTest::TestTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
    CLoggingCallbackTimer timer;
 
    CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 100, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
    
@@ -202,15 +183,15 @@ void CCallbackTimerQueueExTest::TestTimer()
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   timer.CheckResult(_T("|"));
+   timer.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
    tickProvider.SetTickCount(100);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|"));
 
@@ -220,26 +201,513 @@ void CCallbackTimerQueueExTest::TestTimer()
 
    timer.CheckResult(_T("|OnTimer: 1|"));
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
 
-   Output(functionName + _T(" - stop"));
+void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue == h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   timer.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckNoResults();
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingEndTimeoutHandling()
+{
+   // You do NOT need to call HandleTimeout() on the timeoutHandle that you 
+   // get from BeginTimeoutHandling()
+
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckNoResults();
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.EndTimeoutHandling(h);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckNoResults();
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   THROW_ON_NO_EXCEPTION_EX(timerQueue.BeginTimeoutHandling);
+
+   tickProvider.CheckNoResults();
+
+   timer.CheckNoResults();
+
+   timerQueue.EndTimeoutHandling(h);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestMultipleCallsToEndTimeoutHandlingFail()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckNoResults();
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.EndTimeoutHandling(h);
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.EndTimeoutHandling, h);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestEndTimeoutHandlingWithInvalidHandleFails()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.EndTimeoutHandling, IManageTimerQueue::InvalidTimeoutHandleValue);
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestHandleTimeoutWithInvalidHandleFails()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.HandleTimeout, IManageTimerQueue::InvalidTimeoutHandleValue);
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.HandleTimeout, h);
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestMultipleCallsToHandleTimeoutFail()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.HandleTimeout, h);
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingSetTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   // now call set timer to set a new timer whilst the current time is going off...
+   // note that this should return false (not currently set) and the new timer and 
+   // user data should not affect the timer that is in the process of going off.
+
+   CLoggingCallbackTimer timer2;
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, 100, 2));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+   timer2.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   tickProvider.SetTickCount(200);
+
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 200|"));
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckNoResults();
+   timer2.CheckResult(_T("|OnTimer: 2|"));
+
+   tickProvider.CheckNoResults();
+      
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+   timer2.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingCancelTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   // now call cancel timer to cancel the timer that is going off...
+   // Note that this should return false (not currently set) and should not 
+   // affect the timer that is in the process of going off.
+
+   THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
+
+   tickProvider.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+}
+
+void CCallbackTimerQueueExTest::TestBeginTimeoutHandlingDestroyTimer()
+{
+   CMockTickCount64Provider tickProvider;
+
+   CCallbackTimerQueueEx timerQueue(tickProvider);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
+
+   tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+   tickProvider.SetTickCount(100);
+
+   IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+   THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+   
+   tickProvider.CheckResult(_T("|GetTickCount: 100|"));
+
+   timer.CheckNoResults();
+
+   // now call destroy timer to destroy the timer that is going off...
+   // Note that this should return false (not currently set) and should NOT 
+   // affect the timer that is in the process of going off, but SHOULD result
+   // in all resources being cleaned up when the time has gone off.
+
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+
+   tickProvider.CheckNoResults();
+
+   timerQueue.HandleTimeout(h);
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   tickProvider.CheckNoResults();
+      
+   timerQueue.EndTimeoutHandling(h);
+
+   timer.CheckNoResults();
+
+   tickProvider.CheckNoResults();
+
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
 }
 
 void CCallbackTimerQueueExTest::TestCancelTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestCancelTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
    CLoggingCallbackTimer timer;
 
@@ -247,58 +715,52 @@ void CCallbackTimerQueueExTest::TestCancelTimer()
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 100, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
    
-   THROW_ON_FAILURE(functionName, true == timerQueue.CancelTimer(handle));
+   THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle));
 
-   timer.CheckResult(_T("|"));
+   timer.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(handle));
+   THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
 
    CCallbackTimerQueueEx::Handle invalid = 0;
 
-   THROW_ON_NO_EXCEPTION_1(functionName, timerQueue.CancelTimer, invalid);
+   THROW_ON_NO_EXCEPTION_EX_1(timerQueue.CancelTimer, invalid);
 
    tickProvider.SetTickCount(100);
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
    timerQueue.HandleTimeouts();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   timer.CheckResult(_T("|"));
+   timer.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 }
 
 void CCallbackTimerQueueExTest::TestCancelExpiredTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestCancelExpiredTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
    CLoggingCallbackTimer timer;
 
@@ -306,19 +768,19 @@ void CCallbackTimerQueueExTest::TestCancelExpiredTimer()
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 100, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
    
    tickProvider.SetTickCount(100);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|"));
 
@@ -328,29 +790,23 @@ void CCallbackTimerQueueExTest::TestCancelExpiredTimer()
 
    timer.CheckResult(_T("|OnTimer: 1|"));
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(handle));
+   THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
 
-   timer.CheckResult(_T("|"));
+   timer.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 }
 
 void CCallbackTimerQueueExTest::TestGetMaxTimeout()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestMaxTimeout");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    {
@@ -360,7 +816,7 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
    
       CLoggingCallbackTimer timer;
 
-      THROW_ON_FAILURE(functionName, 4294967294 == timerQueue.GetMaximumTimeout());
+      THROW_ON_FAILURE_EX(4294967294 == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
 
@@ -375,20 +831,14 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
 
       tickProvider.SetTickCount(beforeRollOver);
 
-      THROW_ON_FAILURE(functionName, 4294967294 == timerQueue.GetMaximumTimeout());
+      THROW_ON_FAILURE_EX(4294967294 == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
    }
-
-   Output(functionName + _T(" - stop"));
 }
 
 void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap");
-   
-   Output(functionName + _T(" - start"));
-
    const ULONGLONG rollOver = 0;
    const ULONGLONG beforeRollOver = rollOver - 1000;
 
@@ -400,37 +850,37 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
    CLoggingCallbackTimer timer;
 
    CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
    // Set a single timer for 100ms after the tick count rolls to 0.
 
-   THROW_ON_NO_EXCEPTION_4(functionName, timerQueue.SetTimer, handle, timer, 1100, 1);
+   THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, 1100, 1);
 
    tickProvider.CheckResult(resultBeforeRollOver);
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.CancelTimer(handle));
+   THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
 
    // Set a single timer for 1ms before the tick count rolls to 0.
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 999, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 999, 1));
 
    tickProvider.CheckResult(resultBeforeRollOver);
 
-   THROW_ON_FAILURE(functionName, 999 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(999 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(resultBeforeRollOver);
 
@@ -440,7 +890,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
    // The timer expired 1ms ago...
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));      
 
@@ -456,11 +906,11 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
    // Set a single timer for 1000ms time.
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 1000, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, 1));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 1000 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(1000 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
@@ -468,7 +918,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
    tickProvider.SetTickCount(1000);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 1000|"));
 
@@ -482,19 +932,13 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
    // Check that there are no more timers to go off.
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 }
 
 void CCallbackTimerQueueExTest::TestMaxTimeout()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestMaxTimeout");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider(1000);
 
    {
@@ -510,50 +954,44 @@ void CCallbackTimerQueueExTest::TestMaxTimeout()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+      THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-      THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, maxTimeout, 1));
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, maxTimeout, 1));
 
       tickProvider.CheckResult(_T("|GetTickCount: 1000|"));
 
       const Milliseconds illegalTimeout = maxTimeout + 1;
 
-      THROW_ON_NO_EXCEPTION_4(functionName, timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
+      THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE(functionName, true == timerQueue.CancelTimer(handle));
+      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle));
 
-      THROW_ON_NO_EXCEPTION_4(functionName, timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
+      THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, illegalTimeout, 1);
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
       timer.CheckNoResults();
       tickProvider.CheckNoResults();
    }
-
-   Output(functionName + _T(" - stop"));
 }
 
 void CCallbackTimerQueueExTest::TestMultipleTimers()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestMultipleTimers");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
 
    tickProvider.CheckNoResults();
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
    CLoggingCallbackTimer timer1;
    CLoggingCallbackTimer timer2;
@@ -577,7 +1015,7 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
       _T("|GetTickCount: 0")
       _T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
@@ -585,16 +1023,16 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   timer1.CheckResult(_T("|"));
-   timer2.CheckResult(_T("|"));
-   timer3.CheckResult(_T("|"));
-   timer4.CheckResult(_T("|"));
-   timer5.CheckResult(_T("|"));
-   timer6.CheckResult(_T("|"));
+   timer1.CheckNoResults();
+   timer2.CheckNoResults();
+   timer3.CheckNoResults();
+   timer4.CheckNoResults();
+   timer5.CheckNoResults();
+   timer6.CheckNoResults();
 
    tickProvider.SetTickCount(100);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|"));
 
@@ -602,20 +1040,20 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|GetTickCount: 100|"));
 
-   timer1.CheckResult(_T("|"));
+   timer1.CheckNoResults();
    timer2.CheckResult(_T("|OnTimer: 2|"));
-   timer3.CheckResult(_T("|"));
-   timer4.CheckResult(_T("|"));
-   timer5.CheckResult(_T("|"));
-   timer6.CheckResult(_T("|"));
+   timer3.CheckNoResults();
+   timer4.CheckNoResults();
+   timer5.CheckNoResults();
+   timer6.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, 50 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(50 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|"));
 
    tickProvider.SetTickCount(155);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 155|"));
 
@@ -623,20 +1061,20 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
 
    tickProvider.CheckResult(_T("|GetTickCount: 155|GetTickCount: 155|GetTickCount: 155|"));
 
-   timer1.CheckResult(_T("|"));
-   timer2.CheckResult(_T("|"));
-   timer3.CheckResult(_T("|"));
+   timer1.CheckNoResults();
+   timer2.CheckNoResults();
+   timer3.CheckNoResults();
    timer4.CheckResult(_T("|OnTimer: 4|"));
    timer5.CheckResult(_T("|OnTimer: 5|"));
-   timer6.CheckResult(_T("|"));
+   timer6.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, 5 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(5 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 155|"));
 
    tickProvider.SetTickCount(201);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 201|"));
 
@@ -644,20 +1082,20 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
 
    tickProvider.CheckResult(_T("|GetTickCount: 201|GetTickCount: 201|GetTickCount: 201|"));
 
-   timer1.CheckResult(_T("|"));
-   timer2.CheckResult(_T("|"));
+   timer1.CheckNoResults();
+   timer2.CheckNoResults();
    timer3.CheckResult(_T("|OnTimer: 3|"));
-   timer4.CheckResult(_T("|"));
-   timer5.CheckResult(_T("|"));
+   timer4.CheckNoResults();
+   timer5.CheckNoResults();
    timer6.CheckResult(_T("|OnTimer: 6|"));
 
-   THROW_ON_FAILURE(functionName, 99 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(99 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 201|"));
 
    tickProvider.SetTickCount(300);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 300|"));
 
@@ -666,35 +1104,29 @@ void CCallbackTimerQueueExTest::TestMultipleTimers()
    tickProvider.CheckResult(_T("|GetTickCount: 300|"));
 
    timer1.CheckResult(_T("|OnTimer: 1|"));
-   timer2.CheckResult(_T("|"));
-   timer3.CheckResult(_T("|"));
-   timer4.CheckResult(_T("|"));
-   timer5.CheckResult(_T("|"));
-   timer6.CheckResult(_T("|"));
+   timer2.CheckNoResults();
+   timer3.CheckNoResults();
+   timer4.CheckNoResults();
+   timer5.CheckNoResults();
+   timer6.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
 //   timerQueue.SetTimer(timer1, 100, 1);
 //   timerQueue.SetTimer(timer2, 200, 2);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle1));
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle2));
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle3));
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle4));
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle5));
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle6));
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle1));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle3));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle4));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle5));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle6));
 }
 
 void CCallbackTimerQueueExTest::TestResetTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestResetTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
@@ -705,27 +1137,27 @@ void CCallbackTimerQueueExTest::TestResetTimer()
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 100, 1));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 100, 1));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
    
-   THROW_ON_FAILURE(functionName, true == timerQueue.SetTimer(handle, timer, 90, 2));
+   THROW_ON_FAILURE_EX(true == timerQueue.SetTimer(handle, timer, 90, 2));
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 90 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(90 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
    tickProvider.SetTickCount(90);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 90|"));
 
@@ -735,21 +1167,21 @@ void CCallbackTimerQueueExTest::TestResetTimer()
 
    timer.CheckResult(_T("|OnTimer: 2|"));
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 110, 3));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 110, 3));
 
    tickProvider.CheckResult(_T("|GetTickCount: 90|"));
 
-   THROW_ON_FAILURE(functionName, 110 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(110 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 90|"));
 
    tickProvider.SetTickCount(200);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 200|"));
 
@@ -759,30 +1191,24 @@ void CCallbackTimerQueueExTest::TestResetTimer()
 
    timer.CheckResult(_T("|OnTimer: 3|"));
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.DestroyTimer(handle));
-
-   Output(functionName + _T(" - stop"));
+   THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 }
 
 void CCallbackTimerQueueExTest::TestOneShotTimer()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestOneShotTimer");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    CCallbackTimerQueueEx timerQueue(tickProvider);
 
    tickProvider.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
+   tickProvider.CheckNoResults();
 
    CLoggingCallbackTimer timer;
 
@@ -790,7 +1216,7 @@ void CCallbackTimerQueueExTest::TestOneShotTimer()
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
    
@@ -798,15 +1224,15 @@ void CCallbackTimerQueueExTest::TestOneShotTimer()
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
-   timer.CheckResult(_T("|"));
+   timer.CheckNoResults();
 
-   THROW_ON_FAILURE(functionName, 100 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(100 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
    tickProvider.SetTickCount(100);
 
-   THROW_ON_FAILURE(functionName, 0 == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
    tickProvider.CheckResult(_T("|GetTickCount: 100|"));
 
@@ -816,19 +1242,13 @@ void CCallbackTimerQueueExTest::TestOneShotTimer()
 
    timer.CheckResult(_T("|OnTimer: 1|"));
 
-   THROW_ON_FAILURE(functionName, INFINITE == timerQueue.GetNextTimeout());
+   THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-   tickProvider.CheckResult(_T("|"));
-
-   Output(functionName + _T(" - stop"));
+   tickProvider.CheckNoResults();
 }
 
 void CCallbackTimerQueueExTest::TestActiveTimersAtDestructionTime()
 {
-   const _tstring functionName = _T("CCallbackTimerQueueExTest::TestActiveTimersAtDestructionTime");
-   
-   Output(functionName + _T(" - start"));
-
    CMockTickCount64Provider tickProvider;
 
    {
@@ -840,15 +1260,15 @@ void CCallbackTimerQueueExTest::TestActiveTimersAtDestructionTime()
 
       CCallbackTimerQueueEx::Handle handle1 = timerQueue.CreateTimer();
 
-      THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle1);
+      THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle1);
 
-      THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle1, timer, 100, 1));
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle1, timer, 100, 1));
 
       tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
       CCallbackTimerQueueEx::Handle handle2 = timerQueue.CreateTimer();
 
-      THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle2);
+      THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle2);
 
       timerQueue.SetTimer(timer, 250, 1);
 
@@ -856,10 +1276,8 @@ void CCallbackTimerQueueExTest::TestActiveTimersAtDestructionTime()
 
       timerQueue.HandleTimeouts();
 
-      timer.CheckResult(_T("|"));
+      timer.CheckNoResults();
    }
-
-   Output(functionName + _T(" - stop"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -876,9 +1294,9 @@ static CCallbackTimerQueueEx::Handle CreateAndSetTimer(
 
    CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueueEx::InvalidHandleValue != handle);
+   THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, timeout, userData));
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
 
    return handle;
 }
@@ -892,12 +1310,6 @@ static CCallbackTimerQueueEx::Handle CreateAndSetTimer(
 } // End of namespace JetByteTools 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // (_WIN32_WINNT >= 0x0600)
-
-///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueueExTest.cpp
+// End of file: CallbackTimerQueueTest.cpp
 ///////////////////////////////////////////////////////////////////////////////
 

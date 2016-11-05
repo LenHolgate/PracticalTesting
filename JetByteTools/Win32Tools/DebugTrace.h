@@ -54,7 +54,7 @@ class CDebugTrace : public JetByteTools::CMessageLog
       /// be used to support \ref RAII "scope based" log installation and 
       /// removal.
       /// \ingroup Logging
-		/// \ingroup RAII
+      /// \ingroup RAII
 
       class LogInstaller
       {

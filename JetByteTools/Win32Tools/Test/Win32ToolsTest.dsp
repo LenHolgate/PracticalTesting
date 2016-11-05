@@ -178,6 +178,14 @@ SOURCE=.\Test.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\CallbackTimerQueueExTest.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\CallbackTimerQueueExTest.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\CallbackTimerQueueTest.cpp
 # End Source File
 # Begin Source File
@@ -224,14 +232,6 @@ SOURCE=.\PrecompiledHeader.cpp
 
 !ENDIF 
 
-# End Source File
-# End Group
-# Begin Group "Documentation"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\Docs\Groups.txt
 # End Source File
 # End Group
 # End Target

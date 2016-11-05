@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_I_RUNNABLE_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_I_RUNNABLE_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_OS_VERSION_INFO_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_OS_VERSION_INFO_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IRunnable.h
+// File: OSVersionInfo.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2007 JetByte Limited.
+// Copyright 2004 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -24,6 +24,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <wtypes.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,31 +34,29 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// IRunnable
+// COSVersionInfo
 ///////////////////////////////////////////////////////////////////////////////
 
-/// An interface to code that can be Run() on a thread. Usually passed to the
-/// CThread constructor.
-/// \ingroup Threading
-/// \ingroup Interfaces
-/// \ingroup ProtectedDestructors
+/// A simple class that wraps, and initialises, an OSVERSIONINFO structure. 
+/// \ingroup Win32
 
-class IRunnable
+class COSVersionInfo : public OSVERSIONINFO 
 {
-   public :
+   public:
+      
+      /// Calls ::GetVersionEx() on the structure that the class wraps and so
+      /// fully constructs a usable OSVERSIONINFO structure.
 
-      /// The return value is the exit code of the thread that is run to 
-      /// execute the code.
-      /// \ingroup NoThrowSpec
-   
-      virtual int Run() throw() = 0;
+      COSVersionInfo() 
+      { 
+         dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+         ::GetVersionEx(this); 
+      }
 
-   protected :
-
-      /// We never delete instances of this interface; you must manage the 
-      /// lifetime of the class that implements it.
-
-      ~IRunnable() {}
+      bool IsVistaOrLater() const
+      {
+         return (dwPlatformId == VER_PLATFORM_WIN32_NT) && (dwMajorVersion >= 6); 
+      }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,8 +66,9 @@ class IRunnable
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_I_RUNNABLE_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_OS_VERSION_INFO_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: IRunnable.h
+// End of file: OSVersionInfo.h
 ///////////////////////////////////////////////////////////////////////////////
+

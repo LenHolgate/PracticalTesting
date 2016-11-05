@@ -50,9 +50,9 @@ _tstring CStringConverter::AtoT(
    const string &input)
 {
 #ifdef _UNICODE
-	return AtoW(input.c_str(), GetStringLength<int>(input));
+   return AtoW(input.c_str(), GetStringLength<int>(input));
 #else
-	return input;
+   return input;
 #endif
 }
 
@@ -72,16 +72,16 @@ _tstring CStringConverter::AtoT(
    const int inputLength)
 {
 #ifdef _UNICODE
-	return AtoW(pInput, inputLength);
+   return AtoW(pInput, inputLength);
 #else
-	return _tstring(pInput, inputLength);
+   return _tstring(pInput, inputLength);
 #endif
 }
 
 wstring CStringConverter::AtoW(
    const string &input)
 {
-	return AtoW(input.c_str(), GetStringLength<int>(input));
+   return AtoW(input.c_str(), GetStringLength<int>(input));
 }
 
 wstring CStringConverter::AtoW(
@@ -99,25 +99,25 @@ wstring CStringConverter::AtoW(
    const char *pInput,
    const int inputLength)
 {
-	wstring result;
+   wstring result;
 
    if (inputLength != 0)
    {
-	   result.resize(inputLength);
+      result.resize(inputLength);
 
-	   if (0 ==::MultiByteToWideChar(
+      if (0 ==::MultiByteToWideChar(
          CP_ACP, 
          0, 
          pInput, 
          inputLength, 
          const_cast<wchar_t *>(result.c_str()), 
          GetStringLength<int>(result)))
-	   {
-		   throw CWin32Exception(_T("CStringConverter::AtoW()"), ::GetLastError());
-	   }
+      {
+         throw CWin32Exception(_T("CStringConverter::AtoW()"), ::GetLastError());
+      }
    }
 
-	return result;
+   return result;
 }
 
 BSTR CStringConverter::AtoBSTR(
@@ -143,9 +143,9 @@ _tstring CStringConverter::WtoT(
    const wstring &input)
 {
 #ifdef _UNICODE
-	return input;
+   return input;
 #else
-	return WtoA(input.c_str(), GetStringLength<int>(input));
+   return WtoA(input.c_str(), GetStringLength<int>(input));
 #endif
 }
 
@@ -165,16 +165,16 @@ _tstring CStringConverter::WtoT(
    const int inputLength)
 {
 #ifdef _UNICODE
-	return _tstring(pInput, inputLength);
+   return _tstring(pInput, inputLength);
 #else
-	return WtoA(pInput, inputLength);
+   return WtoA(pInput, inputLength);
 #endif
 }
 
 string CStringConverter::WtoA(
    const wstring &input)
 {
-	return WtoA(input.c_str(), GetStringLength<int>(input));
+   return WtoA(input.c_str(), GetStringLength<int>(input));
 }
 
 string CStringConverter::WtoA(
@@ -192,25 +192,25 @@ string CStringConverter::WtoA(
    const wchar_t *pInput,
    const int inputLength)
 {
-	string result;
+   string result;
 
-	if (inputLength != 0)
-	{
-		result.resize(inputLength);
+   if (inputLength != 0)
+   {
+      result.resize(inputLength);
 
-		if (0 == ::WideCharToMultiByte(
+      if (0 == ::WideCharToMultiByte(
          CP_ACP, 
          0, 
          pInput, 
          inputLength, 
          const_cast<char *>(result.c_str()), 
          GetStringLength<int>(result) + 1, 0, 0))
-		{
-			throw CWin32Exception(_T("CStringConverter::WtoA()"), ::GetLastError());
-		}
-	}
+      {
+         throw CWin32Exception(_T("CStringConverter::WtoA()"), ::GetLastError());
+      }
+   }
 
-	return result;
+   return result;
 }
 
 BSTR CStringConverter::WtoBSTR(
@@ -225,9 +225,9 @@ string CStringConverter::TtoA(
    const _tstring &input)
 {
 #ifdef _UNICODE
-	return WtoA(input.c_str(), GetStringLength<int>(input));
+   return WtoA(input.c_str(), GetStringLength<int>(input));
 #else
-	return input;
+   return input;
 #endif
 }
 
@@ -235,9 +235,9 @@ wstring CStringConverter::TtoW(
    const _tstring &input)
 {
 #ifdef _UNICODE
-	return input;
+   return input;
 #else
-	return AtoW(input.c_str(), GetStringLength<int>(input));
+   return AtoW(input.c_str(), GetStringLength<int>(input));
 #endif
 }
 
@@ -252,38 +252,38 @@ BSTR CStringConverter::TtoBSTR(
 // BSTRto
 
 string CStringConverter::BSTRtoA(
-	const BSTR bstr)
+   const BSTR bstr)
 {
-	if (::SysStringLen(bstr) == 0)
-	{
-		return "";
-	}
+   if (::SysStringLen(bstr) == 0)
+   {
+      return "";
+   }
 
    return WtoA(bstr, ::SysStringLen(bstr));
 }
 
 _tstring CStringConverter::BSTRtoT(
-	const BSTR bstr)
+   const BSTR bstr)
 {
-	if (::SysStringLen(bstr) == 0)
-	{
-		return _T("");
-	}
+   if (::SysStringLen(bstr) == 0)
+   {
+      return _T("");
+   }
 
 #ifdef _UNICODE
    return bstr;
 #else
-	return WtoA(bstr, ::SysStringLen(bstr));
+   return WtoA(bstr, ::SysStringLen(bstr));
 #endif
 }
 
 wstring CStringConverter::BSTRtoW(
-	const BSTR bstr)
+   const BSTR bstr)
 {
-	if (::SysStringLen(bstr) == 0)
-	{
-		return L"";
-	}
+   if (::SysStringLen(bstr) == 0)
+   {
+      return L"";
+   }
 
    return bstr;
 }
@@ -293,11 +293,11 @@ wstring CStringConverter::UTF8toW(
 {
    const int inputLength = GetStringLength<int>(input);
 
-	wstring result;
+   wstring result;
 
    if (inputLength != 0)
    {
-	   result.resize(inputLength);
+      result.resize(inputLength);
 
       const int numChars = ::MultiByteToWideChar(
          CP_UTF8, 
@@ -307,15 +307,15 @@ wstring CStringConverter::UTF8toW(
          const_cast<wchar_t *>(result.c_str()), 
          GetStringLength<int>(result));
 
-	   if (0 == numChars)
-	   {
-		   throw CWin32Exception(_T("CStringConverter::UTF8toW()"), ::GetLastError());
-	   }
+      if (0 == numChars)
+      {
+         throw CWin32Exception(_T("CStringConverter::UTF8toW()"), ::GetLastError());
+      }
 
       result.resize(numChars);
    }
 
-	return result;
+   return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

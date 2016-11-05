@@ -50,11 +50,11 @@ class CTestLog
 
       CTestLog();
 
-		explicit CTestLog(
-			CTestLog *pLinkedLog);
+      explicit CTestLog(
+         CTestLog *pLinkedLog);
 
       CTestLog(
-			CTestLog *pLinkedLog,
+         CTestLog *pLinkedLog,
          const JetByteTools::Win32::_tstring &separator);
 
       void ClearLog();
@@ -83,9 +83,9 @@ class CTestLog
          const std::string &expectedResult, 
          DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
 
-		void CheckResultFromFile(
-			const JetByteTools::Win32::_tstring &fileName,
-			const bool fileContainsLineEndBars = false);
+      void CheckResultFromFile(
+         const JetByteTools::Win32::_tstring &fileName,
+         const bool fileContainsLineEndBars = false);
 
    protected :
 
@@ -95,11 +95,11 @@ class CTestLog
          DisplayOnFailureMode displayOnFailure = DisplayOnFailure);
 
       JetByteTools::Win32::_tstring GetFileName(
-			const JetByteTools::Win32::_tstring &fileName);
+         const JetByteTools::Win32::_tstring &fileName);
 
    private :
 
-		unsigned int m_fileNumber;
+      unsigned int m_fileNumber;
 
       const JetByteTools::Win32::_tstring m_separator;
 
@@ -109,11 +109,11 @@ class CTestLog
 
       mutable Log m_log;
 
-		CTestLog *m_pLog;
+      CTestLog *m_pLog;
 
-		// no copies - do not implement
-		CTestLog(const CTestLog &rhs);
-		CTestLog &operator=(const CTestLog &rhs);
+      // no copies - do not implement
+      CTestLog(const CTestLog &rhs);
+      CTestLog &operator=(const CTestLog &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

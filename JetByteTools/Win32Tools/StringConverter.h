@@ -116,13 +116,13 @@ class CStringConverter
       // BSTRto
 
       static _tstring BSTRtoT(
-	      const BSTR bstr);
+         const BSTR bstr);
 
       static std::string BSTRtoA(
-	      const BSTR bstr);
+         const BSTR bstr);
 
       static std::wstring BSTRtoW(
-	      const BSTR bstr);
+         const BSTR bstr);
 
       // UTF8to
 

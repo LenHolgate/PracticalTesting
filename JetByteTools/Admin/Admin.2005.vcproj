@@ -784,14 +784,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ForwardDeclareWinsockTypes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MSCoreE.h"
-				>
-			</File>
-			<File
 				RelativePath=".\NoPlatformSDK.h"
 				>
 			</File>
@@ -812,15 +804,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\UsingMFC.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Warnings.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WinsockWrapper.h"
 				>
 			</File>
 			<Filter
@@ -839,42 +823,6 @@
 					>
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="Documentation"
-			>
-			<File
-				RelativePath=".\Docs\Doxyfile.developer"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Doxyfile.user"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Groups.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\MainPage.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Overview.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\ProgrammingConcepts.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\ReleaseNotes.txt"
-				>
-			</File>
-			<File
-				RelativePath=".\Docs\Testing.txt"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Source Files"

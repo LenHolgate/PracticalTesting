@@ -24,12 +24,15 @@
 
 #pragma hdrstop
 
+#include "JetByteTools\Win32Tools\OSVersionInfo.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Win32::CException;
 using JetByteTools::Win32::_tstring;
+using JetByteTools::Win32::COSVersionInfo;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Email::Test
@@ -53,6 +56,39 @@ CTestException::CTestException(
    const _tstring &message)
    :  CException(where, message)
 {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CTestSkippedException
+///////////////////////////////////////////////////////////////////////////////
+
+CTestSkippedException::CTestSkippedException(
+   const _tstring &message)
+   :  CException(_T(""), message)
+{
+}
+
+CTestSkippedException::CTestSkippedException(
+   const _tstring &where, 
+   const _tstring &message)
+   :  CException(where, message)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TestRequiresVistaOrLater
+///////////////////////////////////////////////////////////////////////////////
+
+void TestRequiresVistaOrLater()
+{
+#if (_WIN32_WINNT >= 0x0600) 
+   if (!COSVersionInfo().IsVistaOrLater())
+   {
+      throw CTestSkippedException(_T("Functionality not supported on this platform"));
+   }
+#else
+   throw CTestSkippedException(_T("Functionality not supported on this platform"));
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

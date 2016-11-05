@@ -66,13 +66,10 @@ class CSEHException
 
       _tstring GetWhere() const;
 
-      _tstring GetMessage() const; 
+      const _tstring &GetMessage() const; 
 
    protected :
       
-      const _tstring m_where;
-      const _tstring m_message;
-
       const unsigned int m_code;
 
       EXCEPTION_POINTERS *m_pPointers;

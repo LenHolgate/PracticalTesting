@@ -323,6 +323,12 @@
 			Name="Tests"
 			Filter="">
 			<File
+				RelativePath="CallbackTimerQueueExTest.cpp">
+			</File>
+			<File
+				RelativePath="CallbackTimerQueueExTest.h">
+			</File>
+			<File
 				RelativePath="CallbackTimerQueueTest.cpp">
 			</File>
 			<File
@@ -375,13 +381,6 @@
 						UsePrecompiledHeader="1"
 						WarningLevel="4"/>
 				</FileConfiguration>
-			</File>
-		</Filter>
-		<Filter
-			Name="Documentation"
-			Filter="">
-			<File
-				RelativePath="Docs\Groups.txt">
 			</File>
 		</Filter>
 	</Files>

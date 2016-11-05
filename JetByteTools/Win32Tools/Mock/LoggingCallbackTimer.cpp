@@ -32,6 +32,8 @@
 
 using JetByteTools::Win32::ToString;
 
+using JetByteTools::Test::CTestLog;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,10 +50,24 @@ CLoggingCallbackTimer::CLoggingCallbackTimer()
 {
 }
 
+CLoggingCallbackTimer::CLoggingCallbackTimer(
+   CTestLog &linkedLog)
+   :  CTestLog(&linkedLog)
+{
+}
+
+bool CLoggingCallbackTimer::WaitForTimer(
+   const Milliseconds timeout)
+{
+   return m_timerEvent.Wait(timeout);
+}
+
 void CLoggingCallbackTimer::OnTimer(
    UserData userData)
 {
    LogMessage(_T("OnTimer: ") + ToString(userData));
+
+   m_timerEvent.Set();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

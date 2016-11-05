@@ -25,6 +25,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools 
+{
+   namespace Test
+   {
+      class CTestMonitor;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -44,11 +56,23 @@ class CCallbackTimerQueueTest
 {
    public :
 
-      static void TestAll();
+      static void TestAll(
+         JetByteTools::Test::CTestMonitor &monitor);
+
       static void TestConstruct();
       static void TestCreateTimer();
       static void TestDestroyTimer();
       static void TestTimer();
+      static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling();
+      static void TestBeginTimeoutHandlingEndTimeoutHandling();
+      static void TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail();
+      static void TestMultipleCallsToEndTimeoutHandlingFail();
+      static void TestEndTimeoutHandlingWithInvalidHandleFails();
+      static void TestHandleTimeoutWithInvalidHandleFails();
+      static void TestMultipleCallsToHandleTimeoutFail();
+      static void TestBeginTimeoutHandlingSetTimer();
+      static void TestBeginTimeoutHandlingCancelTimer();
+      static void TestBeginTimeoutHandlingDestroyTimer();
       static void TestMultipleTimers();
       static void TestCancelTimer();
       static void TestCancelExpiredTimer();

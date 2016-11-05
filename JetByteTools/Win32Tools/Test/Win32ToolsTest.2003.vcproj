@@ -355,6 +355,12 @@
 			Name="Tests"
 			Filter="">
 			<File
+				RelativePath=".\CallbackTimerQueueExTest.cpp">
+			</File>
+			<File
+				RelativePath=".\CallbackTimerQueueExTest.h">
+			</File>
+			<File
 				RelativePath=".\CallbackTimerQueueTest.cpp">
 			</File>
 			<File

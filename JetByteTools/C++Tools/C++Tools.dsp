@@ -223,25 +223,5 @@ SOURCE=.\TypeSafeTypedef.h
 
 # PROP Default_Filter ""
 # End Group
-# Begin Group "Documentation"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.developer
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.user
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Groups.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Overview.txt
-# End Source File
-# End Group
 # End Target
 # End Project

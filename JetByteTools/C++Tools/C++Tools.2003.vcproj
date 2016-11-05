@@ -317,22 +317,6 @@
 			Filter="">
 		</Filter>
 		<Filter
-			Name="Documentation"
-			Filter="">
-			<File
-				RelativePath=".\Docs\Doxyfile.developer">
-			</File>
-			<File
-				RelativePath=".\Docs\Doxyfile.user">
-			</File>
-			<File
-				RelativePath=".\Docs\Groups.txt">
-			</File>
-			<File
-				RelativePath=".\Docs\Overview.txt">
-			</File>
-		</Filter>
-		<Filter
 			Name="Interfaces"
 			Filter="">
 			<File

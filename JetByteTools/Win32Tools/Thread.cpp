@@ -318,7 +318,7 @@ void CThreadNameInfo::SetThreadName(
 
    __try
    {
-	   ::RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
+      ::RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
    }
    __except(EXCEPTION_CONTINUE_EXECUTION)
    {

@@ -24,7 +24,6 @@
 #include "Utils.h"
 #include "Exception.h"
 #include "TickCountProvider.h"
-#include "ICriticalSection.h"
 
 #pragma hdrstop
 
@@ -55,18 +54,44 @@ class CCallbackTimerQueue::TimerData
 
       void OnTimer();
 
-      bool IsOneShotTimer() const;
+      void PrepareForHandleTimeout();
+
+      void HandleTimeout();
+
+      bool DeleteAfterTimeout() const;
 
       bool IsMaintenanceTimer(
          const CCallbackTimerQueue *pQueue) const;
 
+      bool HasTimedOut() const;
+
+      void SetDeleteAfterTimeout();
+
    private :
    
-      Timer *m_pTimer;
-      
-      UserData m_userData;
+      struct Data
+      {
+         Data();
 
-      const bool m_oneShotTimer;
+         Data(
+            Timer &timer, 
+            UserData userData);
+
+         void Clear();
+
+         Timer *pTimer;
+      
+         UserData userData;
+      };
+
+      void OnTimer(
+         const Data &data);
+
+      Data m_active;
+
+      Data m_timedout;
+
+      bool m_deleteAfterTimeout;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,16 +121,21 @@ static const LARGE_INTEGER s_zeroLargeInteger;  // Rely on static init to provid
 
 IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
 
+IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 0;
+
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
+
+#pragma TODO("Remove the duplication between this and CCallbackTimerQueueEx")
 
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount &tickProvider)
    :  m_tickProvider(tickProvider),
       m_maxTimeout(s_timeoutMax),
       m_lastCount(s_zeroLargeInteger),
-      m_maintenanceTimer(CreateTimer())
+      m_maintenanceTimer(CreateTimer()),
+      m_handlingTimeouts(false)
 {   
    SetMaintenanceTimer();
 }
@@ -114,7 +144,8 @@ CCallbackTimerQueue::CCallbackTimerQueue()
    :  m_tickProvider(s_tickProvider),
       m_maxTimeout(s_timeoutMax),
       m_lastCount(s_zeroLargeInteger),
-      m_maintenanceTimer(CreateTimer())
+      m_maintenanceTimer(CreateTimer()),
+      m_handlingTimeouts(false)
 {
    SetMaintenanceTimer();
 }
@@ -190,7 +221,14 @@ bool CCallbackTimerQueue::DestroyTimer(
 
    m_handleMap.erase(it);
 
-   delete pData;
+   if (pData->HasTimedOut())
+   {
+      pData->DeleteAfterTimeout();
+   }
+   else
+   {
+      delete pData;
+   }
 
    handle = InvalidHandleValue;
 
@@ -237,8 +275,6 @@ ULONGLONG CCallbackTimerQueue::GetTickCount64()
 
    if (m_lastCount.LowPart < lastCount)
    {
-      ICriticalSection::Owner lock(m_criticalSection);
-
       if (m_lastCount.LowPart < lastCount)
       {
          m_lastCount.HighPart++;
@@ -362,11 +398,127 @@ void CCallbackTimerQueue::HandleTimeouts()
 
       pData->OnTimer();
 
-      if (pData->IsOneShotTimer())
+      if (pData->DeleteAfterTimeout())
       {
-         DestroyTimer(handle);
+         m_handleMap.erase(handle);
+
+         delete pData;
       }
    }
+}
+
+IManageTimerQueue::TimeoutHandle CCallbackTimerQueue::GetTimeoutHandle(
+   TimerData *pData)
+{
+   TimeoutHandle handle = reinterpret_cast<TimeoutHandle>(pData);
+
+   m_timeoutHandles.insert(handle);
+
+   return handle;
+}
+
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::ValidateTimeoutHandle(
+   IManageTimerQueue::TimeoutHandle &handle)
+{
+   if (m_timeoutHandles.end() == m_timeoutHandles.find(handle))
+   {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
+      throw CException(
+         _T("CCallbackTimerQueue::ValidateTimeoutHandle()"), 
+         _T("Invalid timeout handle: ") + ToString(handle));
+#pragma warning(pop)
+   }
+   
+   return reinterpret_cast<TimerData *>(handle);
+}
+
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::EraseTimeoutHandle(
+   IManageTimerQueue::TimeoutHandle &handle)
+{
+   if (0 == m_timeoutHandles.erase(handle))
+   {
+// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+// it's due to some confusion, and even if it isn't then it's not that crucial...
+#pragma warning(push, 4)
+#pragma warning(disable: 4244)
+      throw CException(
+         _T("CCallbackTimerQueue::EraseTimeoutHandle()"), 
+         _T("Invalid timeout handle: ") + ToString(handle));
+#pragma warning(pop)
+   }
+
+   return reinterpret_cast<TimerData *>(handle);
+}
+
+IManageTimerQueue::TimeoutHandle CCallbackTimerQueue::BeginTimeoutHandling()
+{
+   if (m_handlingTimeouts)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::BeginTimeoutHandling()"), 
+         _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
+   }
+
+   TimeoutHandle timeoutHandle = InvalidTimeoutHandleValue;
+
+   if (0 == GetNextTimeout())
+   {
+      m_handlingTimeouts = true;
+
+      TimerQueue::iterator it = m_queue.begin();
+      
+      TimerData *pData = it->second;
+
+      m_queue.erase(it);
+
+      // Need to duplicate the timer data so that a call to SetTimer that occurs after 
+      // this call returns but before a call to HandleTimeout with this timer doesn't 
+      // cause the timer that is about to happen to be changed before it actually 
+      // "goes off"...
+
+      pData->PrepareForHandleTimeout();
+
+      timeoutHandle = GetTimeoutHandle(pData);
+
+      Handle handle = reinterpret_cast<Handle>(pData);
+
+      if (pData->DeleteAfterTimeout())
+      {
+         m_handleMap.erase(handle);
+         
+         // pData will be cleaned up after we've processed the timeout
+      }
+      else
+      {
+         MarkHandleUnset(handle);
+      }
+   }
+
+   return timeoutHandle;
+}
+
+void CCallbackTimerQueue::HandleTimeout(
+   IManageTimerQueue::TimeoutHandle &handle)
+{
+   TimerData *pData = ValidateTimeoutHandle(handle);
+
+   pData->HandleTimeout();
+}
+
+void CCallbackTimerQueue::EndTimeoutHandling(
+   IManageTimerQueue::TimeoutHandle &handle)
+{
+   TimerData *pData = EraseTimeoutHandle(handle);
+
+   if (pData->DeleteAfterTimeout())
+   {
+      delete pData;
+   }
+
+   m_handlingTimeouts = false;
 }
 
 void CCallbackTimerQueue::MarkHandleUnset(
@@ -415,18 +567,15 @@ void CCallbackTimerQueue::MaintenanceTimerHandler::OnTimer(
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueue::TimerData::TimerData()
-   :  m_pTimer(0), 
-      m_userData(0),
-      m_oneShotTimer(false)
+   :  m_deleteAfterTimeout(false)
 {
 }
 
 CCallbackTimerQueue::TimerData::TimerData(
    Timer &timer,
    UserData userData)
-   :  m_pTimer(&timer), 
-      m_userData(userData),
-      m_oneShotTimer(true)
+   :  m_active(timer, userData),
+      m_deleteAfterTimeout(true)
 {
 }
 
@@ -434,38 +583,94 @@ void CCallbackTimerQueue::TimerData::UpdateData(
    Timer &timer,
    UserData userData)
 {
-   if (m_oneShotTimer)
+   if (m_deleteAfterTimeout)
    {
       throw CException(
          _T("CCallbackTimerQueue::UpdateData()"), 
-         _T("Internal Error: Can't update one shot timers"));
+         _T("Internal Error: Can't update one shot timers or timers pending deletion"));
    }
 
-   m_pTimer = &timer; 
-   m_userData = userData;
+   m_active.pTimer = &timer; 
+   m_active.userData = userData;
 }
 
 void CCallbackTimerQueue::TimerData::OnTimer()
 {
-   if (!m_pTimer)
+   OnTimer(m_active);
+}
+
+void CCallbackTimerQueue::TimerData::OnTimer(
+   const Data &data)
+{
+   if (!data.pTimer)
    {
       throw CException(
-         _T("CCallbackTimerQueue::OnTimer()"), 
+         _T("CCallbackTimerQueue::TimerData::OnTimer()"), 
          _T("Internal Error: Timer not set"));
    }
 
-   m_pTimer->OnTimer(m_userData);
+   data.pTimer->OnTimer(data.userData);
 }
 
-bool CCallbackTimerQueue::TimerData::IsOneShotTimer() const
+void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
 {
-   return m_oneShotTimer;
+   m_timedout = m_active;
+
+   m_active.Clear();
+}
+
+void CCallbackTimerQueue::TimerData::HandleTimeout()
+{
+   OnTimer(m_timedout);
+
+   m_timedout.Clear();
+}
+
+bool CCallbackTimerQueue::TimerData::DeleteAfterTimeout() const
+{
+   return m_deleteAfterTimeout;
 }
 
 bool CCallbackTimerQueue::TimerData::IsMaintenanceTimer(
    const CCallbackTimerQueue *pQueue) const
 {
-   return m_userData == reinterpret_cast<UserData>(pQueue);
+   return m_active.userData == reinterpret_cast<UserData>(pQueue);
+}
+
+bool CCallbackTimerQueue::TimerData::HasTimedOut() const
+{ 
+   return m_timedout.pTimer != 0;
+}
+
+void CCallbackTimerQueue::TimerData::SetDeleteAfterTimeout()
+{
+   m_deleteAfterTimeout = true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueue::TimerData::Data
+///////////////////////////////////////////////////////////////////////////////
+
+CCallbackTimerQueue::TimerData::Data::Data()
+   :  pTimer(0), 
+      userData(0)
+{
+
+}
+
+CCallbackTimerQueue::TimerData::Data::Data(
+   Timer &timer, 
+   UserData userData_)
+   :  pTimer(&timer),
+      userData(userData_)
+{
+
+}
+
+void CCallbackTimerQueue::TimerData::Data::Clear()
+{
+   pTimer = 0;
+   userData = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

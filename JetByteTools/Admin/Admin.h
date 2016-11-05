@@ -31,7 +31,7 @@
 /// is built.
 /// \ingroup Admin
 
-#define JETBYTE_TOOLS_VERSION 5.3
+#define JETBYTE_TOOLS_VERSION 5.2.3
 
 /// This is the minimum Windows version that we support
 /// You might get away with earlier versions but we dont support it.
@@ -40,7 +40,7 @@
 /// * APIHookTools needs _WIN32_WINNT_WINXP
 /// * Everything else would be happy with NTDDI_WIN2K.
 
-#define JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION	0x0500      // _WIN32_WINNT_WIN2K
+#define JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION  0x0500      // _WIN32_WINNT_WIN2K
 #define JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION    0x05000000  // NTDDI_WIN2K
 
 /// If you want to set different values for _WIN32_WINNT and NTDDI_VERSION you should
@@ -132,6 +132,29 @@
 #endif
 #endif 
 
+/// Sometimes there are bugs in versions of the Platform SDK (or, perhaps, things
+/// we just don't quite understand how to correctly configure...). Rarely we work around
+/// these. To be able to work around them we need to know which version of the 
+/// Platform SDK is being used and the SDK itself cant tell us. So... You can define
+/// JETBYTE_PLATFORM_SDK_VERSION with the following values:
+/// 0x060A - v6.0a - Vista
+/// 0x0610 - v6.1 - Windows Server 2008 and .Net Framework 3.5
+/// At present we just fix the SOCKADDR_STORAGE bug for _WIN32_WINNT < 0x0501
+
+//#define JETBYTE_PLATFORM_SDK_VERSION 0x0610
+
+/// Note that we don't support building for Windows Vista or later (_WIN32_WINNT >= 0x0600)
+/// without a platform SDK of v6.0a or later, as if _WIN32_WINNT >= 0x0600 then we 
+/// assume that Vista specific functions are available in the Platform SDK headers.
+
+#if (_WIN32_WINNT >= 0x0600)
+#ifndef JETBYTE_PLATFORM_SDK_VERSION
+#error Unsupported configuration - _WIN32_WINNT >= 0x0600 and JETBYTE_PLATFORM_SDK_VERSION not defined.
+#elif JETBYTE_PLATFORM_SDK_VERSION < 0x0600
+#error Unsupported configuration - _WIN32_WINNT >= 0x0600 and JETBYTE_PLATFORM_SDK_VERSION < 0x600.
+#endif
+#endif
+
 /// Sometimes we make design mistakes. Some clients still depend on code that we'd
 /// like to get rid of. If you'd like to include deprecated code in a library then
 /// set JETBYTE_ENABLE_DEPRECATED to 1, else set it to 0.
@@ -186,7 +209,7 @@
 
 #define _STLP_NEW_DONT_THROW 1
 
-// if the following include fails then there's a configuration mismatch.
+// If the following include fails then there's a configuration mismatch.
 // #define JB_USE_STL_PORT is set but the STLPort headers dont appear to be being used
 // This will cause LOTS of warnings as the MS STL doesn't compile cleanly with warning
 // level 4. Either set STLPORT_ROOT to point to the root of your STLPort installation
@@ -205,6 +228,20 @@
 // "standard" Microsoft supplied STL
 
 #define _WCTYPE_INLINE_DEFINED
+
+#endif
+
+#if (_MSC_VER < 1300)   // VC6...
+
+// If the following include fails then you need to copy the sal.h file from
+// Admin\VC6Compatibility\sal.h to the Visual C++ 6 or VS.Net (2002) or
+// VS 2003 include directory.
+
+// Version 6.1 of the Platform SDK requires that <sal.h> exists. It is shipped as
+// part of all later versions of Visual Studio, but VC6, VS.Net (2002) and VS 2003 
+// are no longer officially supported, it seems...
+
+#include <sal.h>
 
 #endif
 

@@ -39,7 +39,7 @@ namespace Win32 {
 
 /// An interface that provides access to the operating system 
 /// <a href="http://msdn2.microsoft.com/en-us/library/ms724411(VS.85).aspx">GetTickCount64()</a> 
-/// call. Code can access this service via an instance to IProvideTickCount64 so 
+/// call. Code can access this service via an instance of IProvideTickCount64 so 
 /// that the provider can be replaced (usually for testing purposes). 
 /// See <a href= "http://www.lenholgate.com/archives/000311.html">here</a> 
 /// for more details.
@@ -57,8 +57,8 @@ class IProvideTickCount64
 
    protected :
 
-		/// We never delete instances of this interface; you must manage the 
-		/// lifetime of the class that implements it.
+      /// We never delete instances of this interface; you must manage the 
+      /// lifetime of the class that implements it.
       
       ~IProvideTickCount64() {}
 };

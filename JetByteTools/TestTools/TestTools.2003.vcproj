@@ -282,15 +282,24 @@
 			<File
 				RelativePath=".\TestLog.cpp">
 			</File>
+			<File
+				RelativePath=".\TestMonitor.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
+				RelativePath=".\RunTest.h">
+			</File>
+			<File
 				RelativePath=".\TestException.h">
 			</File>
 			<File
 				RelativePath=".\TestLog.h">
+			</File>
+			<File
+				RelativePath=".\TestMonitor.h">
 			</File>
 		</Filter>
 		<Filter

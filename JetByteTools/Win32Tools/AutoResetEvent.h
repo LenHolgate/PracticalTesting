@@ -92,9 +92,9 @@ class CAutoResetEvent : public IWaitable
 
       CEvent m_event;
 
-		/// No copies do not implement
+      /// No copies do not implement
       CAutoResetEvent(const CAutoResetEvent &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CAutoResetEvent &operator=(const CAutoResetEvent &rhs);
 };
 

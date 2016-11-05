@@ -132,9 +132,9 @@ class CEvent : public IWaitable
 
       CSmartHandle m_hEvent;
 
-		/// No copies do not implement
+      /// No copies do not implement
       CEvent(const CEvent &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CEvent &operator=(const CEvent &rhs);
 };
 

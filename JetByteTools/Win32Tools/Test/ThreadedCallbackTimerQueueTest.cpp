@@ -23,12 +23,12 @@
 #include "ThreadedCallbackTimerQueueTest.h"
 
 #include "..\Mock\MockTickCountProvider.h"
+#include "..\Mock\MockTickCount64Provider.h"
 #include "..\Mock\LoggingCallbackTimer.h"
-
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "..\Mock\MockTimerQueue.h"
 
 #include "JetByteTools\TestTools\TestException.h"
+#include "JetByteTools\TestTools\RunTest.h"
 
 #pragma hdrstop
 
@@ -39,11 +39,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Test::CTestException;
-
-using JetByteTools::Win32::_tstring;
+using JetByteTools::Test::TestRequiresVistaOrLater;
+using JetByteTools::Test::CTestMonitor;
+using JetByteTools::Test::CTestLog;
 
 using JetByteTools::Win32::Mock::CMockTickCountProvider;
+using JetByteTools::Win32::Mock::CMockTickCount64Provider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
+using JetByteTools::Win32::Mock::CMockTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -54,87 +57,315 @@ namespace Win32 {
 namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+static void TestTimerImpl(
+   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation);
+
+static void TestMultipleTimers(
+   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation);
+
+///////////////////////////////////////////////////////////////////////////////
 // CThreadedCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-void CThreadedCallbackTimerQueueTest::TestAll()
+void CThreadedCallbackTimerQueueTest::TestAll(
+   CTestMonitor &monitor)
 {
-   TestConstruct();
-   TestTimer();
-   TestMultipleTimers();
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructBestForPlatform);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestConstructCustomQueue);
+
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimer);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerWithLock);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerNoLock);
+
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerTickCount64NoLock);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerHybridTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerHybridTickCount64NoLock);
+
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTickCount64NoLock);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersHybridTickCount64);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersHybridTickCount64NoLock);
 }
 
-void CThreadedCallbackTimerQueueTest::TestConstruct()
+void CThreadedCallbackTimerQueueTest::TestConstructBestForPlatform()
 {
-   const _tstring functionName = _T("CThreadedCallbackTimerQueueTest::TestConstruct");
-   
-   Output(functionName + _T(" - start"));
+   {
+      CThreadedCallbackTimerQueue timerQueue;
+   }
 
-   CThreadedCallbackTimerQueue timerQueue;
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::BestForPlatform);
+   }
 
-   CMockTickCountProvider tickProvider;
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::BestForPlatformNoLock);
+   }
+}
 
-   CThreadedCallbackTimerQueue timerQueue2(tickProvider);
+void CThreadedCallbackTimerQueueTest::TestConstructTickCount64()
+{
+   TestRequiresVistaOrLater();
 
-   tickProvider.CheckResult(_T("|GetTickCount: 0|"));       // creating a queue sets an 
-                                                            // internal maintenance timer
-   Output(functionName + _T(" - stop"));
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::TickCount64);
+   }
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::TickCount64NoLock);
+   }
+
+   {
+      CMockTickCount64Provider tickProvider;
+
+      CThreadedCallbackTimerQueue timerQueue(tickProvider);
+
+      tickProvider.CheckNoResults();
+
+      CThreadedCallbackTimerQueue timerQueue2(tickProvider, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::BestForPlatform);
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::TickCount64);
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::HybridTickCount64);
+
+      tickProvider.CheckNoResults();
+   }
+}
+
+void CThreadedCallbackTimerQueueTest::TestConstructHybridTickCount64()
+{
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::HybridTickCount64);
+   }
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(CThreadedCallbackTimerQueue::HybridTickCount64NoLock);
+   }
+
+   {
+      CMockTickCountProvider tickProvider;
+
+      CThreadedCallbackTimerQueue timerQueue(tickProvider);
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));       // creating a queue sets an 
+                                                               // internal maintenance timer
+
+      CThreadedCallbackTimerQueue timerQueue2(tickProvider, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::BestForPlatform);
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::TickCount64);
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, tickProvider, CThreadedCallbackTimerQueue::HybridTickCount64);
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+   }
+}
+
+void CThreadedCallbackTimerQueueTest::TestConstructCustomQueue()
+{
+   CMockTimerQueue queue;
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(queue);
+
+      THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   }
+
+   queue.CheckResult(_T("|GetNextTimeout|"));
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock);
+
+      THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   }
+
+   queue.CheckResult(_T("|GetNextTimeout|"));
+
+   {
+      CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
+
+      THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   }
+
+   queue.CheckResult(_T("|GetNextTimeout|"));
+
+   THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, queue, CThreadedCallbackTimerQueue::BestForPlatform);
+   THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, queue, CThreadedCallbackTimerQueue::TickCount64);
+   THROW_ON_NO_EXCEPTION_EX_2(CThreadedCallbackTimerQueue, queue, CThreadedCallbackTimerQueue::HybridTickCount64);
+
+   queue.CheckNoResults();
 }
 
 void CThreadedCallbackTimerQueueTest::TestTimer()
 {
-   const _tstring functionName = _T("CThreadedCallbackTimerQueueTest::TestTimer");
-   
-   Output(functionName + _T(" - start"));
+   TestTimerWithLock();
+}
 
-   CThreadedCallbackTimerQueue timerQueue;
+void CThreadedCallbackTimerQueueTest::TestTimerWithLock()
+{
+   CMockTimerQueue queue;
+
+   CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
    CLoggingCallbackTimer timer;
 
    CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
 
-   THROW_ON_FAILURE(functionName, CCallbackTimerQueue::InvalidHandleValue != handle);
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 
-   THROW_ON_FAILURE(functionName, false == timerQueue.SetTimer(handle, timer, 500, 1));
+   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
 
-   Sleep(1000);
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|GetNextTimeout|"));
    timer.CheckResult(_T("|OnTimer: 1|"));
-
-   Output(functionName + _T(" - stop"));
 }
 
-void CThreadedCallbackTimerQueueTest::TestMultipleTimers()
+void CThreadedCallbackTimerQueueTest::TestTimerNoLock()
 {
-   const _tstring functionName = _T("CThreadedCallbackTimerQueueTest::TestMultipleTimers");
-   
-   Output(functionName + _T(" - start"));
+   CMockTimerQueue queue;
 
-   CThreadedCallbackTimerQueue timerQueue;
+   CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
    CLoggingCallbackTimer timer;
 
-   timerQueue.SetTimer(timer, 500, 1);
-   timerQueue.SetTimer(timer, 1500, 2);
-   timerQueue.SetTimer(timer, 300, 3);
+   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
 
-   Sleep(1000);
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 
-   timer.CheckResult(_T("|OnTimer: 3|OnTimer: 1|"));
+   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
 
-   timerQueue.SetTimer(timer, 800, 4);
-   timerQueue.SetTimer(timer, 200, 5);
-   timerQueue.SetTimer(timer, 2000, 6);
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
-   Sleep(1000);
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
-   timer.CheckResult(_T("|OnTimer: 5|OnTimer: 2|OnTimer: 4|"));
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|EndTimeoutHandling|GetNextTimeout|"));
+   timer.CheckResult(_T("|OnTimer: 1|"));
+}
 
-   Sleep(1500);
+void CThreadedCallbackTimerQueueTest::TestTimerTickCount64()
+{
+   TestRequiresVistaOrLater();
 
-   timer.CheckResult(_T("|OnTimer: 6|"));
+   TestTimerImpl(CThreadedCallbackTimerQueue::TickCount64);
+}
 
-   Output(functionName + _T(" - stop"));
+void CThreadedCallbackTimerQueueTest::TestTimerTickCount64NoLock()
+{
+   TestRequiresVistaOrLater();
+
+   TestTimerImpl(CThreadedCallbackTimerQueue::TickCount64NoLock);
+}
+
+void CThreadedCallbackTimerQueueTest::TestTimerHybridTickCount64()
+{
+   TestTimerImpl(CThreadedCallbackTimerQueue::HybridTickCount64);
+}
+
+void CThreadedCallbackTimerQueueTest::TestTimerHybridTickCount64NoLock()
+{
+   TestTimerImpl(CThreadedCallbackTimerQueue::HybridTickCount64NoLock);
+}
+
+void CThreadedCallbackTimerQueueTest::TestMultipleTimersTickCount64()
+{
+   TestRequiresVistaOrLater();
+
+   TestMultipleTimers(CThreadedCallbackTimerQueue::TickCount64);
+}
+
+void CThreadedCallbackTimerQueueTest::TestMultipleTimersTickCount64NoLock()
+{
+   TestRequiresVistaOrLater();
+
+   TestMultipleTimers(CThreadedCallbackTimerQueue::TickCount64NoLock);
+}
+
+void CThreadedCallbackTimerQueueTest::TestMultipleTimersHybridTickCount64()
+{
+   TestMultipleTimers(CThreadedCallbackTimerQueue::HybridTickCount64);
+}
+
+void CThreadedCallbackTimerQueueTest::TestMultipleTimersHybridTickCount64NoLock()
+{
+   TestMultipleTimers(CThreadedCallbackTimerQueue::HybridTickCount64NoLock);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+static void TestTimerImpl(
+   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation)
+{
+   CThreadedCallbackTimerQueue timerQueue(timerQueueImplementation);
+
+   CLoggingCallbackTimer timer;
+
+   CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
+
+   THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
+
+   THROW_ON_FAILURE_EX(true == timer.WaitForTimer(REASONABLE_TIME));
+
+   timer.CheckResult(_T("|OnTimer: 1|"));
+}
+
+static void TestMultipleTimers(
+   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation)
+{
+   CThreadedCallbackTimerQueue timerQueue(timerQueueImplementation);
+
+   CTestLog log;
+
+   CLoggingCallbackTimer timer1(log);
+   CLoggingCallbackTimer timer2(log);
+   CLoggingCallbackTimer timer3(log);
+   CLoggingCallbackTimer timer4(log);
+   CLoggingCallbackTimer timer5(log);
+   CLoggingCallbackTimer timer6(log);
+
+   timerQueue.SetTimer(timer1, 300, 1);
+   timerQueue.SetTimer(timer2, 500, 2);
+   timerQueue.SetTimer(timer3, 200, 3);
+   timerQueue.SetTimer(timer4, 600, 4);
+   timerQueue.SetTimer(timer5, 400, 5);
+   timerQueue.SetTimer(timer6, 700, 6);
+
+   THROW_ON_FAILURE_EX(true == timer1.WaitForTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == timer2.WaitForTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == timer3.WaitForTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == timer4.WaitForTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == timer5.WaitForTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == timer6.WaitForTimer(REASONABLE_TIME));
+
+   log.CheckResult(_T("|OnTimer: 3|OnTimer: 1|OnTimer: 5|OnTimer: 2|OnTimer: 4|OnTimer: 6|"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

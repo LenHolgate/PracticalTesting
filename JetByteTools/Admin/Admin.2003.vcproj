@@ -296,28 +296,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Documentation"
-			Filter="">
-			<File
-				RelativePath=".\Docs\Doxyfile.developer">
-			</File>
-			<File
-				RelativePath=".\Docs\Doxyfile.user">
-			</File>
-			<File
-				RelativePath=".\Docs\Groups.txt">
-			</File>
-			<File
-				RelativePath=".\Docs\Overview.txt">
-			</File>
-			<File
-				RelativePath=".\Docs\ProgrammingConcepts.txt">
-			</File>
-			<File
-				RelativePath=".\Docs\Testing.txt">
-			</File>
-		</Filter>
-		<Filter
 			Name="Source Files"
 			Filter="">
 			<File

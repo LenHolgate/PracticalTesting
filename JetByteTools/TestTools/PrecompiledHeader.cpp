@@ -26,8 +26,10 @@
 
 #include "JetByteTools\Admin\Admin.h"
 
+#include "RunTest.h"
 #include "TestException.h"
 #include "TestLog.h"
+#include "TestMonitor.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 #include "JetByteTools\Win32Tools\DebugTrace.h"

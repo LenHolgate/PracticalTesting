@@ -76,8 +76,8 @@ class IWaitable
 
    protected :
 
-		/// We never delete instances of this interface; you must manage the 
-		/// lifetime of the class that implements it.
+      /// We never delete instances of this interface; you must manage the 
+      /// lifetime of the class that implements it.
 
       ~IWaitable() {}
 };

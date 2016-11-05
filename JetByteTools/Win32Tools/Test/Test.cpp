@@ -22,6 +22,7 @@
 
 #include "JetByteTools\Win32Tools\DebugTrace.h"
 
+#include "JetByteTools\TestTools\TestMonitor.h"
 #include "JetByteTools\TestTools\TestException.h"
 
 #include "CallbackTimerQueueTest.h"
@@ -47,6 +48,7 @@ using JetByteTools::Win32::CSEHException;
 using JetByteTools::Win32::SetCurrentDirectory;
 
 using JetByteTools::Test::CTestException;
+using JetByteTools::Test::CTestMonitor;
 
 using namespace JetByteTools::Win32::Test;
 
@@ -79,15 +81,13 @@ int main(int /*argc*/, char * /*argv[ ]*/)
          SetCurrentDirectory(ppArgv[1]);
       }
 
-      CCallbackTimerQueueTest::TestAll();
+      CTestMonitor monitor(_T("Win32 Tools"));
 
-#if (_WIN32_WINNT >= 0x0600) 
-      CCallbackTimerQueueExTest::TestAll();
-#endif
+      CThreadedCallbackTimerQueueTest::TestAll(monitor);
+      CCallbackTimerQueueTest::TestAll(monitor);
+      CCallbackTimerQueueExTest::TestAll(monitor);
 
-      CThreadedCallbackTimerQueueTest::TestAll();
-
-      ok = true;
+      ok = monitor.Report();
    }
    catch(const CTestException &e)
    {

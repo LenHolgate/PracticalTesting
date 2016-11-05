@@ -2,13 +2,13 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: LoggingCallbackTimer.h 
+// File: MockTimerQueue.h 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2007 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All 
 // express or implied conditions, representations and warranties, including
@@ -26,7 +26,7 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\CallbackTimerQueue.h"
+#include "..\IManageTimerQueue.h"
 #include "..\AutoResetEvent.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,39 +38,93 @@ namespace Win32 {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CLoggingCallbackTimer
+// CMockTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A mock object that implements CCallbackTimerQueue::Timer so that it can be
-/// used as a timer in a CCallbackTimerQueue.
+/// A mock object that implements IManageTimerQueue.
 /// \ingroup Win32ToolsMocks
 
-class CLoggingCallbackTimer : 
-   public CCallbackTimerQueue::Timer,
+class CMockTimerQueue : 
+   public IManageTimerQueue,
    public JetByteTools::Test::CTestLog
 {
    public : 
 
-      CLoggingCallbackTimer();
+      CMockTimerQueue();
 
-      explicit CLoggingCallbackTimer(
-         JetByteTools::Test::CTestLog &linkedLog);
+      void OnTimer();
 
-      bool WaitForTimer(
+      bool IsTimerSet() const;
+
+      void SetNextTimeout(
+         const Milliseconds nextTimeout);
+
+      bool WaitForNextTimeout(
          const Milliseconds timeout);
 
-      // Implement CCallbackTimerQueue::Timer
+      bool WaitForOnTimer(
+         const Milliseconds timeout);
 
-      virtual void OnTimer(
-         UserData userData);
+      // Implement IManageTimerQueue
+
+      virtual Milliseconds GetNextTimeout();
+
+      virtual void HandleTimeouts();
+
+      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+
+      virtual void HandleTimeout(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      virtual void EndTimeoutHandling(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      // Implement IQueueTimers
+      
+      virtual Handle CreateTimer();
+      
+      virtual bool SetTimer(
+         const Handle &handle, 
+         Timer &timer,
+         const Milliseconds timeout,
+         const UserData userData);
+
+      virtual bool CancelTimer(
+         const Handle &handle);
+
+      virtual bool DestroyTimer(
+         Handle &handle);
+
+      virtual bool DestroyTimer(
+         const Handle &handle);
+
+      virtual void SetTimer(
+         Timer &timer,
+         const Milliseconds timeout,
+         const UserData userData);
+
+      virtual Milliseconds GetMaximumTimeout() const;
 
    private :
 
-      CAutoResetEvent m_timerEvent;
+      CAutoResetEvent m_nextTimeoutEvent;
 
-      // No copies do not implement
-      CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);
-      CLoggingCallbackTimer &operator=(const CLoggingCallbackTimer &rhs);
+      CAutoResetEvent m_onTimerEvent;
+
+      long m_nextTimer;
+
+      Timer *m_pTimer;
+
+      UserData m_userData;
+
+      const Milliseconds m_maxTimeout;
+
+      Milliseconds m_nextTimeout;
+
+      /// No copies do not implement
+      CMockTimerQueue(const CMockTimerQueue &rhs);
+      /// No copies do not implement
+      CMockTimerQueue &operator=(const CMockTimerQueue &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -81,8 +135,8 @@ class CLoggingCallbackTimer :
 } // End of namespace Win32
 } // End of namespace JetByteTools 
 
-#endif // JETBYTE_TOOLS_WIN32_LOGGING_CALLBACK_TIMER_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_MOCK_TIMER_QUEUE_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: LoggingCallbackTimer.h
+// End of file: MockTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////

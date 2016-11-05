@@ -265,7 +265,7 @@ bool IsAllDigits(
       ok = ToBool(_istdigit(*it));
    }
 
-   return true;
+   return ok;
 }
 
 _tstring GetLastErrorMessage(
@@ -465,10 +465,10 @@ void StringToHex(
    const string s = CStringConverter::TtoA(ts);
 
    for (size_t i = 0; i < nBytes; i++)
-	{
+   {
       const size_t stringOffset = i * 2;
 
-   	BYTE val = 0;
+      BYTE val = 0;
 
       const BYTE b = s[stringOffset];
 
@@ -485,7 +485,7 @@ void StringToHex(
 
       if (isdigit(b1)) 
       {
-			val = static_cast<BYTE>(val + b1 - '0'); 
+         val = static_cast<BYTE>(val + b1 - '0'); 
       }
       else 
       {
@@ -493,7 +493,7 @@ void StringToHex(
       }
 
       pBuffer[i] = val;
-	}
+   }
 }
 
 void CreateDirectory(
@@ -601,10 +601,10 @@ _tstring ToHex(
    const BYTE c)
 {
    TCHAR hex[3];
-	
+   
    const int val = c;
 
-	_stprintf_s(hex, _T("%02X"), val);
+   _stprintf_s(hex, _T("%02X"), val);
 
    return hex;
 }
@@ -612,13 +612,13 @@ _tstring ToHex(
 string ToHexA(
    const BYTE c)
 {
-	char hex[3];
+   char hex[3];
 
-	const int val = c;
+   const int val = c;
 
-	sprintf_s(hex, "%02X", val);
+   sprintf_s(hex, "%02X", val);
 
-	return hex;
+   return hex;
 }
 
 _tstring MakePrintable(
@@ -687,7 +687,7 @@ _tstring GetComputerName()
    if (!gotName)
    {
       TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] ;
-	   DWORD computerNameLen = MAX_COMPUTERNAME_LENGTH ;
+      DWORD computerNameLen = MAX_COMPUTERNAME_LENGTH ;
 
       if (::GetComputerName(computerName, &computerNameLen))
       {
@@ -722,7 +722,7 @@ bool GetModuleFileName(
    _tstring &name)
 {
    TCHAR moduleFileName[MAX_PATH + 1] ;
-	DWORD moduleFileNameLen = MAX_PATH ;
+   DWORD moduleFileNameLen = MAX_PATH ;
 
    const bool ok = ToBool(::GetModuleFileNameEx(hProcess, hModule, moduleFileName, moduleFileNameLen));
 
@@ -742,7 +742,7 @@ _tstring GetModuleFileName(
    _tstring name = _T("UNAVAILABLE");
 
    TCHAR moduleFileName[MAX_PATH + 1] ;
-	DWORD moduleFileNameLen = MAX_PATH ;
+   DWORD moduleFileNameLen = MAX_PATH ;
 
    if (::GetModuleFileName(hModule, moduleFileName, moduleFileNameLen))
    {
@@ -985,23 +985,23 @@ _tstring GetSystemWow64Directory()
 
    if (s_fnGetSystemWow64Directory)
    {
-	   const UINT result = (s_fnGetSystemWow64Directory)(buffer, bufferLen);
+      const UINT result = (s_fnGetSystemWow64Directory)(buffer, bufferLen);
 
-		if (result == 0)
-		{
-			const DWORD lastError = ::GetLastError();
+      if (result == 0)
+      {
+         const DWORD lastError = ::GetLastError();
 
-			throw CWin32Exception(_T("GetSystemWow64Directory()"), lastError);
-		}
-		else if (result > bufferLen)
-		{
-			throw CException(_T("GetSystemWow64Directory()"), _T("System directory is more than: ") + ToString(bufferLen) + _T(" bytes long..."));
-		}
-	}
-	else
-	{
-	   throw CException(_T("GetSystemWow64Directory()"), _T("Functionality not available on this platform"));
-	}
+         throw CWin32Exception(_T("GetSystemWow64Directory()"), lastError);
+      }
+      else if (result > bufferLen)
+      {
+         throw CException(_T("GetSystemWow64Directory()"), _T("System directory is more than: ") + ToString(bufferLen) + _T(" bytes long..."));
+      }
+   }
+   else
+   {
+      throw CException(_T("GetSystemWow64Directory()"), _T("Functionality not available on this platform"));
+   }
 
    return buffer;
 }
@@ -1011,6 +1011,10 @@ _tstring GetSystemWow64Directory()
 _tstring GetSystemWow64Directory()
 {
    throw CException(_T("GetSystemWow64Directory()"), _T("Functionality not available on this platform"));
+
+#if (_MSC_VER < 1300)   // VC6...
+   return _T("");
+#endif
 }
 
 #endif // _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
@@ -1020,7 +1024,7 @@ _tstring GetUserName()
    _tstring name = _T("UNAVAILABLE");
 
    TCHAR userName[UNLEN + 1] ;
-	DWORD userNameLen = UNLEN;
+   DWORD userNameLen = UNLEN;
 
    if (::GetUserName(userName, &userNameLen))
    {
@@ -1481,11 +1485,11 @@ bool FileExists(
 }
 
 _tstring FindAndReplace(
-	const _tstring &phrase,
-	const _tstring &findString,
-	const _tstring &replaceString)
+   const _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString)
 {
-	_tstring result = phrase;
+   _tstring result = phrase;
 
    InPlaceFindAndReplace(result, findString, replaceString);
 
@@ -1493,18 +1497,18 @@ _tstring FindAndReplace(
 }
 
 void InPlaceFindAndReplace(
-	_tstring &phrase,
-	const _tstring &findString,
-	const _tstring &replaceString)
+   _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString)
 {
-	_tstring::size_type pos = phrase.find(findString);
+   _tstring::size_type pos = phrase.find(findString);
 
-	while (pos != _tstring::npos)
-	{
-		phrase.replace(pos, findString.length(), replaceString);
-	
-		pos = phrase.find(findString, pos + 1);
-	}
+   while (pos != _tstring::npos)
+   {
+      phrase.replace(pos, findString.length(), replaceString);
+   
+      pos = phrase.find(findString, pos + 1);
+   }
 }
 
 bool IsGoodReadPtr(
@@ -1632,7 +1636,7 @@ void WriteResourceToFile(
    HRSRC hResource = ::FindResource(hModule, resourceName.c_str(), resourceType.c_str());
 
    if (!hResource)
-	{
+   {
       const DWORD lastError = ::GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - FindResource"), lastError);
@@ -1640,8 +1644,8 @@ void WriteResourceToFile(
 
    HGLOBAL hGlobal = ::LoadResource(hModule, hResource);
 
-	if (!hGlobal)
-	{
+   if (!hGlobal)
+   {
       const DWORD lastError = ::GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - LoadResource"), lastError);
@@ -1649,8 +1653,8 @@ void WriteResourceToFile(
 
    void *pData = ::LockResource(hGlobal);
 
-	if (!pData)
-	{
+   if (!pData)
+   {
       const DWORD lastError = ::GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - LockResource"), lastError);
@@ -1658,14 +1662,14 @@ void WriteResourceToFile(
 
    const DWORD bytes = ::SizeofResource(hModule, hResource);
 
-	DWORD bytesWritten = 0;
+   DWORD bytesWritten = 0;
 
    if (!::WriteFile(hFile, pData, bytes, &bytesWritten,0))
-	{
+   {
       const DWORD lastError = ::GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - WriteFile"), lastError);
-	}
+   }
 
    if (bytesWritten != bytes)
    {
@@ -1735,8 +1739,8 @@ static string DumpDataA(
 
    bool firstLine = true;
 
-	while (i < dataLength)
-	{
+   while (i < dataLength)
+   {
       const BYTE c = pData[i++];
 
       if (!makePrintable)
@@ -1749,9 +1753,9 @@ static string DumpDataA(
          display += (char)c;
       }
       else
-		{
-			display += '.';
-		}
+      {
+         display += '.';
+      }
 
       if ((bytesPerLine && (i % bytesPerLine == 0 && i != 0)) || i == dataLength)
       {
@@ -1775,7 +1779,7 @@ static string DumpDataA(
          hexDisplay = "";
          display = "";
       }
-	}
+   }
 
 
    if (!lineFeedOnLastLine)
@@ -1829,8 +1833,8 @@ static _tstring DumpData(
 
    bool firstLine = true;
 
-	while (i < dataLength)
-	{
+   while (i < dataLength)
+   {
       const BYTE c = pData[i++];
 
       if (!makePrintable)
@@ -1843,9 +1847,9 @@ static _tstring DumpData(
          display += (TCHAR)c;
       }
       else
-		{
-			display += _T('.');
-		}
+      {
+         display += _T('.');
+      }
 
       if ((bytesPerLine && (i % bytesPerLine == 0 && i != 0)) || i == dataLength)
       {
@@ -1869,7 +1873,7 @@ static _tstring DumpData(
          hexDisplay = _T("");
          display = _T("");
       }
-	}
+   }
 
    if (!lineFeedOnLastLine)
    {

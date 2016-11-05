@@ -1109,10 +1109,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Documentation"
-			>
-		</Filter>
-		<Filter
 			Name="Test Harness"
 			>
 			<File

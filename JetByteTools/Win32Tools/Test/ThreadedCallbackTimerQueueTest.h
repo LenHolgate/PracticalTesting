@@ -25,6 +25,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools 
+{
+   namespace Test
+   {
+      class CTestMonitor;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -43,10 +55,26 @@ class CThreadedCallbackTimerQueueTest
 {
    public :
 
-      static void TestAll();
-      static void TestConstruct();
+      static void TestAll(
+         JetByteTools::Test::CTestMonitor &monitor);
+
+      static void TestConstructBestForPlatform();
+      static void TestConstructTickCount64();
+      static void TestConstructHybridTickCount64();
+      static void TestConstructCustomQueue();
+
       static void TestTimer();
-      static void TestMultipleTimers();
+      static void TestTimerWithLock();
+      static void TestTimerNoLock();
+      static void TestTimerTickCount64();
+      static void TestTimerTickCount64NoLock();
+      static void TestTimerHybridTickCount64();
+      static void TestTimerHybridTickCount64NoLock();
+
+      static void TestMultipleTimersTickCount64();
+      static void TestMultipleTimersTickCount64NoLock();
+      static void TestMultipleTimersHybridTickCount64();
+      static void TestMultipleTimersHybridTickCount64NoLock();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

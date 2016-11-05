@@ -35,6 +35,8 @@
 #include "JetByteTools\Win32Tools\DebugTrace.h"
 
 #include "JetByteTools\TestTools\TestException.h"
+#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools\TestTools\TestMonitor.h"
 
 #pragma hdrstop
 

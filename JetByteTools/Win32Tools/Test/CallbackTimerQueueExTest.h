@@ -25,10 +25,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
+// Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (_WIN32_WINNT >= 0x0600) 
+namespace JetByteTools 
+{
+   namespace Test
+   {
+      class CTestMonitor;
+   }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -50,11 +56,23 @@ class CCallbackTimerQueueExTest
 {
    public :
 
-      static void TestAll();
+      static void TestAll(
+         JetByteTools::Test::CTestMonitor &monitor);
+
       static void TestConstruct();
       static void TestCreateTimer();
       static void TestDestroyTimer();
       static void TestTimer();
+      static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling();
+      static void TestBeginTimeoutHandlingEndTimeoutHandling();
+      static void TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail();
+      static void TestMultipleCallsToEndTimeoutHandlingFail();
+      static void TestEndTimeoutHandlingWithInvalidHandleFails();
+      static void TestHandleTimeoutWithInvalidHandleFails();
+      static void TestMultipleCallsToHandleTimeoutFail();
+      static void TestBeginTimeoutHandlingSetTimer();
+      static void TestBeginTimeoutHandlingCancelTimer();
+      static void TestBeginTimeoutHandlingDestroyTimer();
       static void TestMultipleTimers();
       static void TestCancelTimer();
       static void TestCancelExpiredTimer();
@@ -73,12 +91,6 @@ class CCallbackTimerQueueExTest
 } // End of namespace Test
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // (_WIN32_WINNT >= 0x0600)
 
 #endif // JETBYTE_TOOLS_WIN32_TEST_CALLBACK_TIMER_QUEUE_EX_TEST_INCLUDED__
 

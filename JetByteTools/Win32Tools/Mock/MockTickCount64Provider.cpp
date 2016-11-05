@@ -27,12 +27,6 @@
 #pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of InterlockedExchange64()
-///////////////////////////////////////////////////////////////////////////////
-
-#if (_WIN32_WINNT >= 0x0600) 
-
-///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +58,11 @@ CMockTickCount64Provider::CMockTickCount64Provider(
 void CMockTickCount64Provider::SetTickCount(
    const ULONGLONG tickCount)
 {
-   ::InterlockedExchange64(const_cast<LONGLONG *>(reinterpret_cast<volatile LONGLONG*>(&m_tickCount)), tickCount);
+   #if (_WIN32_WINNT >= 0x0600) 
+      ::InterlockedExchange64(const_cast<LONGLONG *>(reinterpret_cast<volatile LONGLONG*>(&m_tickCount)), tickCount);
+   #else
+      m_tickCount = tickCount;
+   #endif
 }
 
 ULONGLONG CMockTickCount64Provider::GetTickCount64() const
@@ -81,12 +79,6 @@ ULONGLONG CMockTickCount64Provider::GetTickCount64() const
 } // End of namespace Mock
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of InterlockedExchange64()
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // (_WIN32_WINNT >= 0x0600)
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: MockTickCount64Provider.cpp

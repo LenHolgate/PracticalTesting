@@ -48,7 +48,7 @@ typedef /*_W64*/ unsigned int   uintptr_t;
 /// \ingroup Admin
 
 #if (JETBYTE_NO_PLATFORM_SDK == 1)
-#if (_MSC_VER < 1300)			// Only need this rubbish for VC 6
+#if (_MSC_VER < 1300)         // Only need this rubbish for VC 6
 
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN

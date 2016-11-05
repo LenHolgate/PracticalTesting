@@ -82,9 +82,9 @@ class CCriticalSection : public ICriticalSection
 
       CRITICAL_SECTION m_crit;
 
-		/// No copies do not implement
+      /// No copies do not implement
       CCriticalSection(const CCriticalSection &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CCriticalSection &operator=(const CCriticalSection &rhs);
 };
 

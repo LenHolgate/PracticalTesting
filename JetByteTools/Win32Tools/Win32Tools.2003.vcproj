@@ -292,6 +292,9 @@
 				RelativePath=".\CallbackTimerQueue.cpp">
 			</File>
 			<File
+				RelativePath=".\CallbackTimerQueueEx.cpp">
+			</File>
+			<File
 				RelativePath=".\CriticalSection.cpp">
 			</File>
 			<File
@@ -347,6 +350,9 @@
 				RelativePath=".\CallbackTimerQueue.h">
 			</File>
 			<File
+				RelativePath=".\CallbackTimerQueueEx.h">
+			</File>
+			<File
 				RelativePath=".\CriticalSection.h">
 			</File>
 			<File
@@ -357,24 +363,6 @@
 			</File>
 			<File
 				RelativePath=".\Exception.h">
-			</File>
-			<File
-				RelativePath=".\ICriticalSection.h">
-			</File>
-			<File
-				RelativePath=".\IKernelObjectName.h">
-			</File>
-			<File
-				RelativePath=".\IProvideTickCount.h">
-			</File>
-			<File
-				RelativePath=".\IQueueTimers.h">
-			</File>
-			<File
-				RelativePath=".\IRunnable.h">
-			</File>
-			<File
-				RelativePath=".\IWaitable.h">
 			</File>
 			<File
 				RelativePath=".\SEHException.h">
@@ -413,6 +401,27 @@
 		<Filter
 			Name="Interfaces"
 			Filter="">
+			<File
+				RelativePath=".\ICriticalSection.h">
+			</File>
+			<File
+				RelativePath=".\IKernelObjectName.h">
+			</File>
+			<File
+				RelativePath=".\IManageTimerQueue.h">
+			</File>
+			<File
+				RelativePath=".\IProvideTickCount.h">
+			</File>
+			<File
+				RelativePath=".\IQueueTimers.h">
+			</File>
+			<File
+				RelativePath=".\IRunnable.h">
+			</File>
+			<File
+				RelativePath=".\IWaitable.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Precompiled Header"

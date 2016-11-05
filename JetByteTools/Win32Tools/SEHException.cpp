@@ -46,7 +46,7 @@ namespace Win32 {
 static _tstring Where(
    EXCEPTION_POINTERS *pPointers);
 
-static _tstring Message(
+static const _tstring &Message(
    unsigned int code);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,9 +56,7 @@ static _tstring Message(
 CSEHException::CSEHException(
    unsigned int code, 
    EXCEPTION_POINTERS *pPointers)
-   :  m_where(Where(pPointers)), 
-      m_message(Message(code)),
-      m_code(code),
+   :  m_code(code),
       m_pPointers(pPointers)
 {
 }
@@ -80,12 +78,12 @@ const CONTEXT &CSEHException::GetContext() const
 
 _tstring CSEHException::GetWhere() const
 {
-   return m_where;
+   return Where(m_pPointers);
 }
 
-_tstring CSEHException::GetMessage() const
+const _tstring &CSEHException::GetMessage() const
 {
-   return m_message;
+   return Message(m_code);
 }
 
 CSEHException::Translator::Translator()
@@ -111,9 +109,10 @@ void CSEHException::Translator::trans_func(
 ///////////////////////////////////////////////////////////////////////////////
 
 #define CASE_MSG(c) case EXCEPTION_##c: \
-{ static const _tstring msg = _T(#c); \
-return msg; } \
+   return s_##c##_msg; \
 break;
+
+#define DEFINE_MSG(c) static const _tstring s_##c##_msg = _T(#c); 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Static helper functions
@@ -129,36 +128,61 @@ static _tstring Where(
    return buffer;
 }
 
-static _tstring Message(
+DEFINE_MSG(ACCESS_VIOLATION);
+DEFINE_MSG(DATATYPE_MISALIGNMENT);
+DEFINE_MSG(BREAKPOINT);
+DEFINE_MSG(SINGLE_STEP);
+DEFINE_MSG(ARRAY_BOUNDS_EXCEEDED);
+DEFINE_MSG(FLT_DENORMAL_OPERAND);
+DEFINE_MSG(FLT_DIVIDE_BY_ZERO);
+DEFINE_MSG(FLT_INEXACT_RESULT);
+DEFINE_MSG(FLT_INVALID_OPERATION);
+DEFINE_MSG(FLT_OVERFLOW);
+DEFINE_MSG(FLT_STACK_CHECK);
+DEFINE_MSG(FLT_UNDERFLOW);
+DEFINE_MSG(INT_DIVIDE_BY_ZERO);
+DEFINE_MSG(INT_OVERFLOW);
+DEFINE_MSG(PRIV_INSTRUCTION);
+DEFINE_MSG(IN_PAGE_ERROR);
+DEFINE_MSG(ILLEGAL_INSTRUCTION);
+DEFINE_MSG(NONCONTINUABLE_EXCEPTION);
+DEFINE_MSG(STACK_OVERFLOW);
+DEFINE_MSG(INVALID_DISPOSITION);
+DEFINE_MSG(GUARD_PAGE);
+DEFINE_MSG(INVALID_HANDLE);
+
+static const _tstring s_unknown = _T("Unknown exception");
+
+static const _tstring &Message(
    unsigned int code)
 {
-	switch (code)    
+   switch (code)    
    {   
-		CASE_MSG(ACCESS_VIOLATION);
-		CASE_MSG(DATATYPE_MISALIGNMENT);
-		CASE_MSG(BREAKPOINT);
-		CASE_MSG(SINGLE_STEP);
-		CASE_MSG(ARRAY_BOUNDS_EXCEEDED);
-		CASE_MSG(FLT_DENORMAL_OPERAND);
-		CASE_MSG(FLT_DIVIDE_BY_ZERO);
-		CASE_MSG(FLT_INEXACT_RESULT);
-		CASE_MSG(FLT_INVALID_OPERATION);
-		CASE_MSG(FLT_OVERFLOW);
-		CASE_MSG(FLT_STACK_CHECK);
-		CASE_MSG(FLT_UNDERFLOW);
-		CASE_MSG(INT_DIVIDE_BY_ZERO);
-		CASE_MSG(INT_OVERFLOW);
-		CASE_MSG(PRIV_INSTRUCTION);
-		CASE_MSG(IN_PAGE_ERROR);
-		CASE_MSG(ILLEGAL_INSTRUCTION);
-		CASE_MSG(NONCONTINUABLE_EXCEPTION);
-		CASE_MSG(STACK_OVERFLOW);
-		CASE_MSG(INVALID_DISPOSITION);
-		CASE_MSG(GUARD_PAGE);
-		CASE_MSG(INVALID_HANDLE);
+      CASE_MSG(ACCESS_VIOLATION);
+      CASE_MSG(DATATYPE_MISALIGNMENT);
+      CASE_MSG(BREAKPOINT);
+      CASE_MSG(SINGLE_STEP);
+      CASE_MSG(ARRAY_BOUNDS_EXCEEDED);
+      CASE_MSG(FLT_DENORMAL_OPERAND);
+      CASE_MSG(FLT_DIVIDE_BY_ZERO);
+      CASE_MSG(FLT_INEXACT_RESULT);
+      CASE_MSG(FLT_INVALID_OPERATION);
+      CASE_MSG(FLT_OVERFLOW);
+      CASE_MSG(FLT_STACK_CHECK);
+      CASE_MSG(FLT_UNDERFLOW);
+      CASE_MSG(INT_DIVIDE_BY_ZERO);
+      CASE_MSG(INT_OVERFLOW);
+      CASE_MSG(PRIV_INSTRUCTION);
+      CASE_MSG(IN_PAGE_ERROR);
+      CASE_MSG(ILLEGAL_INSTRUCTION);
+      CASE_MSG(NONCONTINUABLE_EXCEPTION);
+      CASE_MSG(STACK_OVERFLOW);
+      CASE_MSG(INVALID_DISPOSITION);
+      CASE_MSG(GUARD_PAGE);
+      CASE_MSG(INVALID_HANDLE);
    }
 
-   return _T("Unknown exception");
+   return s_unknown;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

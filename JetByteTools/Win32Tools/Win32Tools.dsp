@@ -169,6 +169,10 @@ SOURCE=.\CallbackTimerQueue.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\CallbackTimerQueueEx.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\CriticalSection.cpp
 # End Source File
 # Begin Source File
@@ -230,6 +234,10 @@ SOURCE=.\AutoResetEvent.h
 # Begin Source File
 
 SOURCE=.\CallbackTimerQueue.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CallbackTimerQueueEx.h
 # End Source File
 # Begin Source File
 
@@ -309,6 +317,10 @@ SOURCE=.\IKernelObjectName.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\IManageTimerQueue.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\IProvideTickCount.h
 # End Source File
 # Begin Source File
@@ -326,26 +338,6 @@ SOURCE=.\IWaitable.cpp
 # Begin Source File
 
 SOURCE=.\IWaitable.h
-# End Source File
-# End Group
-# Begin Group "Documentation"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.developer
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Doxyfile.user
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Groups.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\Docs\Overview.txt
 # End Source File
 # End Group
 # Begin Group "Precompiled Header"

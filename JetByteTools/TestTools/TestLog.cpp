@@ -59,7 +59,7 @@ namespace Test {
 
 CTestLog::CTestLog(
    const _tstring &separator)
-	:	m_fileNumber(1),
+   :  m_fileNumber(1),
       m_separator(separator),
       m_pLog(0)
 {
@@ -67,7 +67,7 @@ CTestLog::CTestLog(
 }
 
 CTestLog::CTestLog()
-	:	m_fileNumber(1),
+   :  m_fileNumber(1),
       m_separator(_T("|")),
       m_pLog(0)
 {
@@ -75,32 +75,32 @@ CTestLog::CTestLog()
 }
 
 CTestLog::CTestLog(
-	CTestLog *pLinkedLog)
-	:	m_fileNumber(1),
+   CTestLog *pLinkedLog)
+   :  m_fileNumber(1),
       m_separator(_T("|")),
-		m_pLog(pLinkedLog)
+      m_pLog(pLinkedLog)
 {
 
 }
 
 CTestLog::CTestLog(
-	CTestLog *pLinkedLog,
+   CTestLog *pLinkedLog,
    const _tstring &separator)
-	:	m_fileNumber(1),
+   :  m_fileNumber(1),
       m_separator(separator),
-		m_pLog(pLinkedLog)
+      m_pLog(pLinkedLog)
 {
 
 }
 
 void CTestLog::ClearLog()
 {
-	if (m_pLog)
-	{
-		m_pLog->ClearLog();
-	}
-	else
-	{
+   if (m_pLog)
+   {
+      m_pLog->ClearLog();
+   }
+   else
+   {
       CCriticalSection::Owner lock(m_criticalSection);
 
       m_log.clear();
@@ -110,24 +110,24 @@ void CTestLog::ClearLog()
 void CTestLog::LogMessage(
    const _tstring &message) const
 {
-	if (m_pLog)
-	{
-		m_pLog->LogMessage(message);
-	}
-	else
-	{
-		CCriticalSection::Owner lock(m_criticalSection);
+   if (m_pLog)
+   {
+      m_pLog->LogMessage(message);
+   }
+   else
+   {
+      CCriticalSection::Owner lock(m_criticalSection);
 
       m_log.push_back(message);
-	}
+   }
 }
 
 _tstring CTestLog::GetMessages() const
 {
-	if (m_pLog)
-	{
-		return m_pLog->GetMessages();
-	}
+   if (m_pLog)
+   {
+      return m_pLog->GetMessages();
+   }
 
    CCriticalSection::Owner lock(m_criticalSection);
 
@@ -144,10 +144,10 @@ _tstring CTestLog::GetMessages() const
 
 _tstring CTestLog::RemoveMessages() 
 {
-	if (m_pLog)
-	{
-		return m_pLog->RemoveMessages();
-	}
+   if (m_pLog)
+   {
+      return m_pLog->RemoveMessages();
+   }
 
    CCriticalSection::Owner lock(m_criticalSection);
 
@@ -184,7 +184,10 @@ void CTestLog::CheckResult(
          OutputEx(_T("expected: ") + expectedResult);
       }
 
-      throw CTestException(_T("CTestLog::CheckResult()"), _T("Log does not contain expected result"));
+      throw CTestException(_T("CTestLog::CheckResult()"), 
+         _T("Log does not contain expected result\n")
+         _T("result:   ") + actualResult + _T("\n")
+         _T("expected: ") + expectedResult);
    }
 }
 
@@ -196,45 +199,45 @@ void CTestLog::CheckResultA(
 }
 
 _tstring CTestLog::GetFileName(
-	const _tstring &fileName)
+   const _tstring &fileName)
 {
    return fileName + _T(".") + ToString(m_fileNumber++);
 }
 
 void CTestLog::CheckResultFromFile(
-	const _tstring &fileName,
-	const bool fileContainsLineEndBars)
+   const _tstring &fileName,
+   const bool fileContainsLineEndBars)
 {
-	if (m_pLog)
-	{
+   if (m_pLog)
+   {
       m_pLog->CheckResultFromFile(fileName, fileContainsLineEndBars);
    }
    else
    {
-   	const _tstring lineEnd = (fileContainsLineEndBars ? m_separator + _T("\r\n") : _T("\r\n"));
+      const _tstring lineEnd = (fileContainsLineEndBars ? m_separator + _T("\r\n") : _T("\r\n"));
 
-   	CCriticalSection::Owner lock(m_criticalSection);
+      CCriticalSection::Owner lock(m_criticalSection);
 
-	   _tstring actualResults = GetMessages();
+      _tstring actualResults = GetMessages();
 
-   	actualResults = FindAndReplace(actualResults, m_separator, lineEnd);
+      actualResults = FindAndReplace(actualResults, m_separator, lineEnd);
 
-	   const _tstring fileNameBase = GetFileName(fileName);
+      const _tstring fileNameBase = GetFileName(fileName);
 
-	   try
-	   {
-		   _tstring expectedResults = LoadFileAsString(fileNameBase + _T(".log"));
+      try
+      {
+         _tstring expectedResults = LoadFileAsString(fileNameBase + _T(".log"));
 
-   		expectedResults = FindAndReplace(expectedResults, lineEnd, m_separator);
+         expectedResults = FindAndReplace(expectedResults, lineEnd, m_separator);
 
-   		CheckResult(m_separator + expectedResults, false);
-	   }
-	   catch(...)
-	   {
-		   SaveStringAsFile(fileNameBase + _T(".Actual.log"), actualResults);
-		   
-		   throw;
-	   }
+         CheckResult(m_separator + expectedResults, false);
+      }
+      catch(...)
+      {
+         SaveStringAsFile(fileNameBase + _T(".Actual.log"), actualResults);
+         
+         throw;
+      }
    }
 }
 

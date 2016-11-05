@@ -53,7 +53,7 @@ class ICriticalSection
       /// and can therefore be used to support \ref RAII "scope based" locking 
       /// and unlocking of instances of ICriticalSection.
       /// \ingroup Synchronization
-		/// \ingroup RAII
+      /// \ingroup RAII
 
       class Owner
       {
@@ -80,7 +80,7 @@ class ICriticalSection
       /// and can therefore be used to support \ref RAII "scope based" locking
       /// and unlocking of instances of ICriticalSection.
       /// \ingroup Synchronization
-		/// \ingroup RAII
+      /// \ingroup RAII
 
       class ConditionalOwner
       {

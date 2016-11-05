@@ -26,7 +26,9 @@
 
 #include "JetByteTools\Admin\Types.h"
 
-#include "CallbackTimerQueue.h"
+#include "IManageTimerQueue.h"
+#include "IProvideTickCount.h"
+#include "IProvideTickCount64.h"
 #include "Thread.h"
 #include "IRunnable.h"
 #include "AutoResetEvent.h"
@@ -45,9 +47,13 @@ namespace Win32 {
 
 /// A class that manages a group of timers that implement IQueueTimers::Timer 
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the 
-/// timer expires. The class uses a CCallbackTimerQueue object to manage the
-/// timers and then manages its own timeouts using a thread to call 
-/// CCallbackTimerQueue::HandleTimeouts() every GetNextTimeout() milliseconds. 
+/// timer expires. The class uses an implementation of IManageTimerQueue to manage 
+/// the timers and then manages its own timeouts using a thread to call 
+/// IManageTimerQueue::HandleTimeouts() or IManageTimerQueue::BeginTimeoutHandling()
+/// every GetNextTimeout() milliseconds. 
+/// You can configure it to use CCallbackTimerQueue, CCallbackTimerQueueEx or 
+/// supply your own implementation of IManageTimerQueue and you can configure 
+/// either lock held timer dispatch or no locks timer dispatch.
 /// See <a href="http://www.lenholgate.com/archives/000381.html">here</a> for
 /// more details.
 /// \ingroup Timers
@@ -59,18 +65,66 @@ class CThreadedCallbackTimerQueue :
 {
    public :
 
-      /// Create a timer queue.
+      enum TimerQueueImplementation
+      {
+         /// Select CCallbackTimerQueueEx  as the implementation if it's available
+         BestForPlatform         = 0x01,  
 
-      CThreadedCallbackTimerQueue();
+         /// Select CCallbackTimerQueueEx as the implementation
+         TickCount64             = 0x02,  
 
-      /// Create a timer queue that uses the provdided instance of 
-      /// IProvideTickCount to obtain its tick counts rather than getting
-      /// them directly from the system.
+         /// Select CCallbackTimerQueue as the implementation
+         HybridTickCount64       = 0x04,  
+         //TickCount32        
+
+         /// Holds our internal lock when dispatching timers (potentially slightly faster)
+         DispatchTimersWithLock  = 0x00,  
+
+         /// Does not hold our internal lock when dispatching timers
+         DispatchTimersNoLock    = 0x10,  
+
+         BestForPlatformNoLock   =  BestForPlatform | DispatchTimersNoLock,
+         TickCount64NoLock       =  TickCount64 | DispatchTimersNoLock,
+         HybridTickCount64NoLock =  HybridTickCount64 | DispatchTimersNoLock
+      };
+
+      /// Create a timer queue using the specified implementation.
 
       explicit CThreadedCallbackTimerQueue(
-         const IProvideTickCount &tickProvider);
+         const TimerQueueImplementation timerQueueImplementation = BestForPlatform);
+
+      /// Create a timer queue that uses CCallbackTimerQueue as its implementation and
+      /// that uses the provdided instance of IProvideTickCount to obtain its tick 
+      /// counts rather than getting them directly from the system.
+
+      explicit CThreadedCallbackTimerQueue(
+         const IProvideTickCount &tickProvider,
+         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+
+      /// Create a timer queue that uses CCallbackTimerQueueEx as its implementation and
+      /// that uses the provdided instance of IProvideTickCount64 to obtain its tick 
+      /// counts rather than getting them directly from the system.
+
+      explicit CThreadedCallbackTimerQueue(
+         const IProvideTickCount64 &tickProvider,
+         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+
+      /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its 
+      /// implementation. Note that we don't take ownership of the implementation, it's up
+      /// to you to manage its lifetime.
+
+      explicit CThreadedCallbackTimerQueue(
+         IManageTimerQueue &impl,
+         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
 
       ~CThreadedCallbackTimerQueue();
+
+      /// Sets the name of the timer queue thread as displayed in the Visual Studio debugger
+      /// to the supplied name. By default the constructors set the name of the thread
+      /// to "TimerQueue".
+
+      void SetThreadName(
+         const JetByteTools::Win32::_tstring &threadName) const;
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in 
@@ -125,7 +179,11 @@ class CThreadedCallbackTimerQueue :
 
       CThread m_thread;
 
-      CCallbackTimerQueue m_timerQueue;
+      IManageTimerQueue *m_pTimerQueue;
+
+      const bool m_weOwnImpl;
+
+      const bool m_dispatchWithLock;
 
       volatile bool m_shutdown;
 

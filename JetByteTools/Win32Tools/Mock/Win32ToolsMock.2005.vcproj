@@ -820,6 +820,10 @@
 				RelativePath=".\MockTickCountProvider.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\MockTimerQueue.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -835,6 +839,10 @@
 			</File>
 			<File
 				RelativePath=".\MockTickCountProvider.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MockTimerQueue.h"
 				>
 			</File>
 		</Filter>
@@ -937,14 +945,6 @@
 			</File>
 			<File
 				RelativePath=".\PrecompiledHeader.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Documentation"
-			>
-			<File
-				RelativePath=".\Docs\Groups.txt"
 				>
 			</File>
 		</Filter>

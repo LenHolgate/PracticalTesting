@@ -43,7 +43,7 @@ namespace Win32 {
 /// IQueueTimers::Timer interface and and which have their 
 /// IQueueTimers::Timer::OnTimer() method called when the the timer expires. 
 /// See <a href="http://www.lenholgate.com/archives/000389.html">here</a>
-/// for more details.
+/// for more details. 
 /// \ingroup Timers
 /// \ingroup Interfaces
 /// \ingroup ProtectedDestructors
@@ -125,8 +125,8 @@ class IQueueTimers
 
    protected :
 
-		/// We never delete instances of this interface; you must manage the 
-		/// lifetime of the class that implements it.
+      /// We never delete instances of this interface; you must manage the 
+      /// lifetime of the class that implements it.
 
       ~IQueueTimers() {}
 };
@@ -153,8 +153,8 @@ class IQueueTimers::Timer
 
    protected :
 
-		/// We never delete instances of this interface; you must manage the 
-		/// lifetime of the class that implements it.
+      /// We never delete instances of this interface; you must manage the 
+      /// lifetime of the class that implements it.
 
       ~Timer() {}
 };

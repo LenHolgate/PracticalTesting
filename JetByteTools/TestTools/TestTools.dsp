@@ -167,10 +167,18 @@ SOURCE=.\TestException.cpp
 
 SOURCE=.\TestLog.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\TestMonitor.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\RunTest.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\TestException.h
@@ -178,6 +186,10 @@ SOURCE=.\TestException.h
 # Begin Source File
 
 SOURCE=.\TestLog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TestMonitor.h
 # End Source File
 # End Group
 # Begin Group "Precompiled Header"

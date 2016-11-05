@@ -82,7 +82,7 @@ CSmartHandle CSmartHandle::DuplicateHandle(
    {
       const DWORD lastError = ::GetLastError();
 
-      throw CWin32Exception(_T("DebuggedProcess::DuplicateHandle()"), lastError);
+      throw CWin32Exception(_T("CSmartHandle::DuplicateHandle()"), lastError);
    }
    
    return CSmartHandle(hOutput);

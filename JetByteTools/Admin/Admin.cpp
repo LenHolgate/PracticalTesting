@@ -108,6 +108,21 @@
 #pragma MESSAGE("Build configuration: Platform SDK: NO - VC6 only")
 #else
 #pragma MESSAGE("Build configuration: Platform SDK: YES")
+
+#ifdef JETBYTE_PLATFORM_SDK_VERSION
+
+#if (JETBYTE_PLATFORM_SDK_VERSION == 0x0610)
+#pragma MESSAGE("Build configuration: Platform SDK: Version 6.1 - Windows Server 2008 and .Net Framework 3.5")
+#endif
+
+#else
+
+#pragma MESSAGE("Build configuration: You can specify the version of the Platform SDK in use by defining JETBYTE_PLATFORM_SDK_VERSION")
+#pragma MESSAGE("Build configuration: See JETBYTE_PLATFORM_SDK_VERSION in Admin.h for details, we use it to work around some")
+#pragma MESSAGE("Build configuration: 'issues' in some of the versions of the Platform SDK.")
+
+#endif
+
 #endif
 
 #if (JETBYTE_ENABLE_DEPRECATED == 1)

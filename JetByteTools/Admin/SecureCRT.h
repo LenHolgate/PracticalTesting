@@ -35,13 +35,33 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#if (_MSC_VER < 1400)			// Need this for less than VS2005
+#if (_MSC_VER < 1400)         // Need this for less than VS2005
+
+#include <string.h>
 
 #define _tcsncpy_s         _tcsncpy
 #define _stprintf_s        _stprintf
 #define sprintf_s          sprintf
-#define strcpy_s(s,l,d)    strcpy(s,d)
-#define wcscpy_s(s,l,d)    wcscpy(s,d)
+
+inline char *strcpy_s(char *s, const char *d)
+{
+   return strcpy(s,d);
+}
+
+inline char *strcpy_s(char *s, const size_t /*l*/, const char *d)
+{
+   return strcpy(s,d);
+}
+
+inline wchar_t *wcscpy_s(wchar_t *s, const wchar_t *d)
+{
+   return wcscpy(s,d);
+}
+
+inline wchar_t *wcscpy_s(wchar_t *s, const size_t /*l*/, const wchar_t *d)
+{
+   return wcscpy(s,d);
+}
 
 #if (_MSC_VER == 1300)        // Vs.Net screws with the above...
 #define _STRSAFE_H_INCLUDED_

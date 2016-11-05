@@ -33,7 +33,7 @@
 
 #if (JETBYTE_USE_STL_PORT == 1)
 
-#if (_MSC_VER < 1300)			// Need this for anything earlier than VS.Net 2003
+#if (_MSC_VER < 1300)            // Need this for anything earlier than VS.Net 2003
 #define _STLP_NEW_PLATFORM_SDK
 #endif
 
@@ -79,6 +79,18 @@
 #pragma warning(disable: 4702)   // unreachable code
 #pragma warning(disable: 4710)   // function 'x' not inlined
 #pragma warning(disable: 4786)   // identifier was truncated to '255' characters in the debug information
+
+#if (_MSC_VER < 1300)   // VC6...
+
+// In Winnt.h of v6.1 of the platform sdk...
+
+#pragma warning(disable: 4035)   // no return value
+
+// In wingdi of v6.1. of the platform sdk..
+
+#pragma warning(disable: 4068)   // unknown pragma
+
+#endif // _MSC_VER
 
 #endif // JETBYTE_TOOLS_ADMIN_WARNINGS_INCLUDED__
 

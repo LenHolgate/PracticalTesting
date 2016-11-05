@@ -279,7 +279,13 @@
 				RelativePath=".\LoggingCallbackTimer.cpp">
 			</File>
 			<File
+				RelativePath=".\MockTickCount64Provider.cpp">
+			</File>
+			<File
 				RelativePath=".\MockTickCountProvider.cpp">
+			</File>
+			<File
+				RelativePath=".\MockTimerQueue.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -289,7 +295,13 @@
 				RelativePath=".\LoggingCallbackTimer.h">
 			</File>
 			<File
+				RelativePath=".\MockTickCount64Provider.h">
+			</File>
+			<File
 				RelativePath=".\MockTickCountProvider.h">
+			</File>
+			<File
+				RelativePath=".\MockTimerQueue.h">
 			</File>
 		</Filter>
 		<Filter
@@ -335,13 +347,6 @@
 			</File>
 			<File
 				RelativePath=".\PrecompiledHeader.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="Documentation"
-			Filter="">
-			<File
-				RelativePath=".\Docs\Groups.txt">
 			</File>
 		</Filter>
 	</Files>

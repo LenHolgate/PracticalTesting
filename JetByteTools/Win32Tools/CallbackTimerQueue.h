@@ -24,10 +24,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IQueueTimers.h"
-#include "CriticalSection.h"
+#include "IManageTimerQueue.h"
 
 #include <map>
+#include <set>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -49,7 +49,9 @@ class IProvideTickCount;
 /// A class that manages a group of timers that implement IQueueTimers::Timer 
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the 
 /// timer expires. You must manually manage the handling and processing of 
-/// timeouts by calling HandleTimeouts() every GetNextTimeout() milliseconds.
+/// timeouts by calling either IManageTimerQueue::HandleTimeouts() or 
+/// IManageTimerQueue::BeginTimeoutHandling() every 
+/// IManageTimerQueue::GetNextTimeout() milliseconds.
 /// See <a href="http://www.lenholgate.com/archives/000342.html">here</a> for 
 /// more details.
 /// Note: the maximum timeout that you can set is 4294967294ms as 0xFFFFFFF is 
@@ -62,7 +64,7 @@ class IProvideTickCount;
  
 /// \ingroup Timers
 
-class CCallbackTimerQueue : public IQueueTimers
+class CCallbackTimerQueue : public IManageTimerQueue
 {
    public :
 
@@ -77,16 +79,21 @@ class CCallbackTimerQueue : public IQueueTimers
       explicit CCallbackTimerQueue(
          const IProvideTickCount &tickProvider);
 
-      ~CCallbackTimerQueue();
+      virtual ~CCallbackTimerQueue();
 
-      /// Get the number of milliseconds until the next timer is due to fire.
-      /// Or INFINITE if no timer is set.
-      
-      Milliseconds GetNextTimeout();
+      // Implement IManageTimerQueue
 
-      /// Process any timers that have timed out.
-      
-      void HandleTimeouts();
+      virtual Milliseconds GetNextTimeout();
+
+      virtual void HandleTimeouts();
+
+      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+
+      virtual void HandleTimeout(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      virtual void EndTimeoutHandling(
+         IManageTimerQueue::TimeoutHandle &handle);
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in 
@@ -124,6 +131,8 @@ class CCallbackTimerQueue : public IQueueTimers
 
       typedef std::map<Handle, TimerQueue::iterator> HandleMap;
 
+      typedef std::set<TimeoutHandle> TimeoutHandles;
+
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
 
@@ -143,17 +152,26 @@ class CCallbackTimerQueue : public IQueueTimers
 
       ULONGLONG GetTickCount64();
 
+      TimeoutHandle GetTimeoutHandle(
+         TimerData *pData);
+
+      TimerData *ValidateTimeoutHandle(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      TimerData *EraseTimeoutHandle(
+         IManageTimerQueue::TimeoutHandle &handle);
+
       TimerQueue m_queue;
 
       HandleMap m_handleMap;
+
+      TimeoutHandles m_timeoutHandles;
 
       const IProvideTickCount &m_tickProvider;
 
       const Milliseconds m_maxTimeout;
 
       LARGE_INTEGER m_lastCount;
-
-      CCriticalSection m_criticalSection;
 
       Handle m_maintenanceTimer;
 
@@ -165,7 +183,11 @@ class CCallbackTimerQueue : public IQueueTimers
             IQueueTimers::Timer::UserData userData);
       };
 
+      friend class MaintenanceTimerHandler;
+
       MaintenanceTimerHandler m_maintenanceTimerHandler;
+
+      bool m_handlingTimeouts;
 
 		/// No copies do not implement
       CCallbackTimerQueue(const CCallbackTimerQueue &rhs);

@@ -24,15 +24,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IQueueTimers.h"
+#include "IManageTimerQueue.h"
 
 #include <map>
-
-///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
-///////////////////////////////////////////////////////////////////////////////
-
-#if (_WIN32_WINNT >= 0x0600) 
+#include <set>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -54,7 +49,9 @@ class IProvideTickCount64;
 /// A class that manages a group of timers that implement IQueueTimers::Timer 
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the 
 /// timer expires. You must manually manage the handling and processing of 
-/// timeouts by calling HandleTimeouts() every GetNextTimeout() milliseconds.
+/// timeouts by calling either IManageTimerQueue::HandleTimeouts() or 
+/// IManageTimerQueue::BeginTimeoutHandling() every 
+/// IManageTimerQueue::GetNextTimeout() milliseconds.
 /// See <a href="http://www.lenholgate.com/archives/000342.html">here</a> for 
 /// more details.
 /// Note: the maximum timeout that you can set is 4294967294ms as 0xFFFFFFF is 
@@ -66,7 +63,7 @@ class IProvideTickCount64;
 /// will always return 4294967294ms.
 /// \ingroup Timers
 
-class CCallbackTimerQueueEx : public IQueueTimers
+class CCallbackTimerQueueEx : public IManageTimerQueue
 {
    public :
 
@@ -81,16 +78,21 @@ class CCallbackTimerQueueEx : public IQueueTimers
       explicit CCallbackTimerQueueEx(
          const IProvideTickCount64 &tickProvider);
 
-      ~CCallbackTimerQueueEx();
+      virtual ~CCallbackTimerQueueEx();
 
-      /// Get the number of milliseconds until the next timer is due to fire.
-      /// Or INFINITE if no timer is set.
-      
-      Milliseconds GetNextTimeout();
+      // Implement IManageTimerQueue
 
-      /// Process any timers that have timed out.
-      
-      void HandleTimeouts();
+      virtual Milliseconds GetNextTimeout();
+
+      virtual void HandleTimeouts();
+
+      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+
+      virtual void HandleTimeout(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      virtual void EndTimeoutHandling(
+         IManageTimerQueue::TimeoutHandle &handle);
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in 
@@ -128,6 +130,8 @@ class CCallbackTimerQueueEx : public IQueueTimers
 
       typedef std::map<Handle, TimerQueue::iterator> HandleMap;
 
+      typedef std::set<TimeoutHandle> TimeoutHandles;
+
       HandleMap::iterator ValidateHandle(
          const Handle &handle);
 
@@ -143,13 +147,26 @@ class CCallbackTimerQueueEx : public IQueueTimers
       void MarkHandleUnset(
          Handle handle);
 
+      TimeoutHandle GetTimeoutHandle(
+         TimerData *pData);
+
+      TimerData *ValidateTimeoutHandle(
+         IManageTimerQueue::TimeoutHandle &handle);
+
+      TimerData *EraseTimeoutHandle(
+         IManageTimerQueue::TimeoutHandle &handle);
+
       TimerQueue m_queue;
 
       HandleMap m_handleMap;
 
+      TimeoutHandles m_timeoutHandles;
+
       const IProvideTickCount64 &m_tickProvider;
 
       const Milliseconds m_maxTimeout;
+
+      bool m_handlingTimeouts;
 
 		/// No copies do not implement
       CCallbackTimerQueueEx(const CCallbackTimerQueueEx &rhs);
@@ -163,12 +180,6 @@ class CCallbackTimerQueueEx : public IQueueTimers
 
 } // End of namespace Win32
 } // End of namespace JetByteTools 
-
-///////////////////////////////////////////////////////////////////////////////
-// Requires Windows Vista or later due to use of GetTickCount64()
-///////////////////////////////////////////////////////////////////////////////
-
-#endif // (_WIN32_WINNT >= 0x0600)
 
 #endif // JETBYTE_TOOLS_CALLBACK_TIMER_QUEUE_EX_INCLUDED__
 

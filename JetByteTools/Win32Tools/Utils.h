@@ -197,7 +197,7 @@ std::string ToStringA(T num)
 {
    std::ostringstream buf;
 
-	buf << num;
+   buf << num;
 
    return buf.str();
 }
@@ -217,7 +217,7 @@ std::wstring ToStringW(T num)
 
    std::ostringstream buf;
 
-	buf << num;
+   buf << num;
 
    return CStringConverter::AtoW(buf.str());
 }
@@ -510,14 +510,14 @@ bool FileExists(
    const _tstring &filename);
 
 _tstring FindAndReplace(
-	const _tstring &phrase,
-	const _tstring &findString,
-	const _tstring &replaceString);
+   const _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString);
 
 void InPlaceFindAndReplace(
-	_tstring &phrase,
-	const _tstring &findString,
-	const _tstring &replaceString);
+   _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString);
 
 bool IsGoodReadPtr(
    void *pv, 

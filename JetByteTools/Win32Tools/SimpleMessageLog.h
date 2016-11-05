@@ -124,7 +124,7 @@ class CSimpleMessageLog : public ILogMessages
 
       /// No copies do not implement
       CSimpleMessageLog(const CSimpleMessageLog &rhs);
-		/// No copies do not implement
+      /// No copies do not implement
       CSimpleMessageLog &operator=(const CSimpleMessageLog &rhs);
 };
 

@@ -165,7 +165,15 @@ SOURCE=.\LoggingCallbackTimer.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MockTickCount64Provider.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MockTickCountProvider.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MockTimerQueue.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -177,7 +185,15 @@ SOURCE=.\LoggingCallbackTimer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MockTickCount64Provider.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MockTickCountProvider.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MockTimerQueue.h
 # End Source File
 # End Group
 # Begin Group "Precompiled Header"
@@ -215,14 +231,6 @@ SOURCE=.\PrecompiledHeader.cpp
 # Begin Source File
 
 SOURCE=.\PrecompiledHeader.h
-# End Source File
-# End Group
-# Begin Group "Documentation"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\Docs\Groups.txt
 # End Source File
 # End Group
 # End Target
