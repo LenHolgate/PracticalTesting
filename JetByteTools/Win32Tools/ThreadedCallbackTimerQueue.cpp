@@ -412,32 +412,9 @@ int CThreadedCallbackTimerQueue::Run()
 
                   if (timeout == 0)
                   {
-                     IManageTimerQueue::TimeoutHandle handle = IManageTimerQueue::InvalidTimeoutHandleValue;
-
+                     if (BeginTimeoutHandling())
                      {
-                        #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-                        CReentrantLockableObject::PotentialOwner lock(m_lock);
-
-                        if (!lock.TryLock())
-                        {
-                           m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
-
-                           lock.Lock();
-                        }
-                        #else
-                        CReentrantLockableObject::Owner lock(m_lock);
-                        #endif
-
-                        #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-                        m_monitor.OnTimerProcessingStarted();
-                        #endif
-
-                        handle = m_spTimerQueue->BeginTimeoutHandling();
-                     }
-
-                     if (handle != IManageTimerQueue::InvalidTimeoutHandleValue)
-                     {
-                        m_spTimerQueue->HandleTimeout(handle);
+                        m_spTimerQueue->HandleTimeout();
 
                         #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
                         CReentrantLockableObject::PotentialOwner lock(m_lock);
@@ -452,7 +429,7 @@ int CThreadedCallbackTimerQueue::Run()
                         CReentrantLockableObject::Owner lock(m_lock);
                         #endif
 
-                        m_spTimerQueue->EndTimeoutHandling(handle);
+                        m_spTimerQueue->EndTimeoutHandling();
                      }
 
                      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
@@ -490,6 +467,28 @@ int CThreadedCallbackTimerQueue::Run()
    JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
 
    return 0;
+}
+
+bool CThreadedCallbackTimerQueue::BeginTimeoutHandling()
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CReentrantLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
+
+      lock.Lock();
+   }
+   #else
+   CReentrantLockableObject::Owner lock(m_lock);
+   #endif
+
+   #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+   m_monitor.OnTimerProcessingStarted();
+   #endif
+
+   return m_spTimerQueue->BeginTimeoutHandling();
 }
 
 Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()

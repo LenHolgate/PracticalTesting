@@ -98,13 +98,11 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       virtual void HandleTimeouts();
 
-      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+      virtual bool BeginTimeoutHandling();
 
-      virtual void HandleTimeout(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void HandleTimeout();
 
-      virtual void EndTimeoutHandling(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void EndTimeoutHandling();
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
@@ -199,7 +197,9 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       ActiveHandles m_activeHandles;
 
-      TimeoutHandle m_handlingTimeouts;
+      bool m_handlingTimeouts;
+
+      TimerData *m_pTimeoutsToBeHandled;
 
       /// No copies do not implement
       CCallbackTimerWheel(const CCallbackTimerWheel &rhs);

@@ -112,13 +112,11 @@ class CMockTimerQueue :
 
       virtual void HandleTimeouts();
 
-      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+      virtual bool BeginTimeoutHandling();
 
-      virtual void HandleTimeout(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void HandleTimeout();
 
-      virtual void EndTimeoutHandling(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void EndTimeoutHandling();
 
       // Implement IQueueTimers
 

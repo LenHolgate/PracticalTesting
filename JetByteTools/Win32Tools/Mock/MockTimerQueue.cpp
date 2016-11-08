@@ -158,17 +158,16 @@ void CMockTimerQueue::HandleTimeouts()
    }
 }
 
-IManageTimerQueue::TimeoutHandle CMockTimerQueue::BeginTimeoutHandling()
+bool CMockTimerQueue::BeginTimeoutHandling()
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
    LogMessage(_T("BeginTimeoutHandling"));
 
-   return !m_setTimers.empty() ? static_cast<IManageTimerQueue::TimeoutHandle>(1) : IManageTimerQueue::InvalidTimeoutHandleValue;
+   return !m_setTimers.empty();
 }
 
-void CMockTimerQueue::HandleTimeout(
-   IManageTimerQueue::TimeoutHandle &/*handle*/)
+void CMockTimerQueue::HandleTimeout()
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
@@ -179,8 +178,7 @@ void CMockTimerQueue::HandleTimeout(
    OnTimer();
 }
 
-void CMockTimerQueue::EndTimeoutHandling(
-   IManageTimerQueue::TimeoutHandle &/*handle*/)
+void CMockTimerQueue::EndTimeoutHandling()
 {
    LogMessage(_T("EndTimeoutHandling"));
 }

@@ -173,7 +173,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -192,7 +193,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(0),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -211,7 +213,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -231,7 +234,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -250,7 +254,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -270,7 +275,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -290,7 +296,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -311,7 +318,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(0),
       m_numTimersSet(0),
-      m_handlingTimeouts(InvalidTimeoutHandleValue)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(0)
 {
 
 }
@@ -466,45 +474,32 @@ void CCallbackTimerWheel::HandleTimeouts()
    }
 }
 
-IManageTimerQueue::TimeoutHandle CCallbackTimerWheel::BeginTimeoutHandling()
+bool CCallbackTimerWheel::BeginTimeoutHandling()
 {
-   if (m_handlingTimeouts != InvalidTimeoutHandleValue)
+   if (m_handlingTimeouts)
    {
       throw CException(
          _T("CCallbackTimerWheel::BeginTimeoutHandling()"),
          _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
    }
 
-   TimeoutHandle timeoutHandle = InvalidTimeoutHandleValue;
+   m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
 
-   TimerData *pTimers = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
+   m_handlingTimeouts = (m_pTimeoutsToBeHandled != 0);
 
-   if (pTimers)
-   {
-      timeoutHandle = reinterpret_cast<TimeoutHandle>(pTimers);
-
-      m_handlingTimeouts = timeoutHandle;
-   }
-
-   return timeoutHandle;
+   return m_handlingTimeouts;
 }
 
-void CCallbackTimerWheel::HandleTimeout(
-   IManageTimerQueue::TimeoutHandle &handle)
+void CCallbackTimerWheel::HandleTimeout()
 {
-   if (m_handlingTimeouts != handle)
+   if (!m_handlingTimeouts)
    {
-      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-      // it's due to some confusion, and even if it isn't then it's not that crucial...
-      #pragma warning(push, 4)
-      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::HandleTimeout()"),
-         _T("Invalid timeout handle: ") + ToString(handle));
-      #pragma warning(pop)
+         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
-   TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
+   TimerData *pTimers = m_pTimeoutsToBeHandled;
 
    while (pTimers)
    {
@@ -516,24 +511,20 @@ void CCallbackTimerWheel::HandleTimeout(
    }
 }
 
-void CCallbackTimerWheel::EndTimeoutHandling(
-   IManageTimerQueue::TimeoutHandle &handle)
+void CCallbackTimerWheel::EndTimeoutHandling()
 {
-   if (m_handlingTimeouts != handle)
+   if (!m_handlingTimeouts)
    {
-      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-      // it's due to some confusion, and even if it isn't then it's not that crucial...
-      #pragma warning(push, 4)
-      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerWheel::EndTimeoutHandling()"),
-         _T("Invalid timeout handle: ") + ToString(handle));
-      #pragma warning(pop)
+         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
-   m_handlingTimeouts = InvalidTimeoutHandleValue;
+   m_handlingTimeouts = false;
 
-   TimerData *pTimers = reinterpret_cast<TimerData *>(handle);
+   TimerData *pTimers = m_pTimeoutsToBeHandled;
+
+   m_pTimeoutsToBeHandled = 0;
 
    TimerData *pDeadTimer = 0;
 

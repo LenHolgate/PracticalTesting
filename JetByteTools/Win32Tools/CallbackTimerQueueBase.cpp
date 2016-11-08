@@ -61,8 +61,6 @@ static const Milliseconds s_timeoutMax = s_tickCountMax - 1;
 
 IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
 
-IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 0;
-
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueueBase::TimerData
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,8 +167,7 @@ class CCallbackTimerQueueBase::TimerData : private CIntrusiveRedBlackTreeNode
 CCallbackTimerQueueBase::CCallbackTimerQueueBase()
    :  m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(InvalidTimeoutHandleValue),
-      m_nextTimeoutHandle(0xFFFFFFFF),
+      m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(0)
 {
 
@@ -180,8 +177,7 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    IMonitorCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(InvalidTimeoutHandleValue),
-      m_nextTimeoutHandle(0xFFFFFFFF),
+      m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(0)
 {
 
@@ -224,7 +220,7 @@ CCallbackTimerQueueBase::Handle CCallbackTimerQueueBase::CreateTimer()
    if (!m_activeHandles.Insert(pData).second)
    {
       throw CException(
-         _T("CCallbackTimerQueueBase::CreateTimerInternal()"),
+         _T("CCallbackTimerQueueBase::CreateTimer()"),
          _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map"));
    }
 
@@ -516,23 +512,9 @@ void CCallbackTimerQueueBase::HandleTimeouts()
    }
 }
 
-IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::GetNextTimeoutHandle()
+bool CCallbackTimerQueueBase::BeginTimeoutHandling()
 {
-   TimeoutHandle timeoutHandle = ::InterlockedIncrement(reinterpret_cast<LONG*>(&m_nextTimeoutHandle));
-
-   if (timeoutHandle == InvalidTimeoutHandleValue)
-   {
-      // wraps to zero? this is possible, avoid it...
-
-      timeoutHandle = ::InterlockedIncrement(reinterpret_cast<LONG*>(&m_nextTimeoutHandle));
-   }
-
-   return timeoutHandle;
-}
-
-IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
-{
-   if (m_handlingTimeouts != InvalidTimeoutHandleValue)
+   if (m_handlingTimeouts)
    {
       throw CException(
          _T("CCallbackTimerQueueBase::BeginTimeoutHandling()"),
@@ -544,8 +526,6 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
       TimerQueue::NodeCollection timers;
 
       m_queue.RemoveAll(m_queue.Begin(), timers);
-
-      m_handlingTimeouts = GetNextTimeoutHandle();
 
       // Need to duplicate the timer data so that a call to SetTimer that occurs after
       // this call returns but before a call to HandleTimeout with this timer doesn't
@@ -588,17 +568,18 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
       }
    }
 
+   m_handlingTimeouts = (m_pTimeoutsToBeHandled != 0);
+
    return m_handlingTimeouts;
 }
 
-void CCallbackTimerQueueBase::HandleTimeout(
-   IManageTimerQueue::TimeoutHandle &handle)
+void CCallbackTimerQueueBase::HandleTimeout()
 {
-   if (m_handlingTimeouts != handle)
+   if (!m_handlingTimeouts)
    {
       throw CException(
          _T("CCallbackTimerQueueBase::ValidateTimeoutHandle()"),
-         _T("Invalid timeout handle: ") + ToString(handle));
+         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
    TimerData *pTimer = m_pTimeoutsToBeHandled;
@@ -615,17 +596,16 @@ void CCallbackTimerQueueBase::HandleTimeout(
    }
 }
 
-void CCallbackTimerQueueBase::EndTimeoutHandling(
-   IManageTimerQueue::TimeoutHandle &handle)
+void CCallbackTimerQueueBase::EndTimeoutHandling()
 {
-   if (m_handlingTimeouts != handle)
+   if (!m_handlingTimeouts)
    {
       throw CException(
          _T("CCallbackTimerQueueBase::EndTimeoutHandling()"),
-         _T("Invalid timeout handle: ") + ToString(handle));
+         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
-   m_handlingTimeouts = InvalidTimeoutHandleValue;
+   m_handlingTimeouts = false;
 
    TimerData *pTimer = m_pTimeoutsToBeHandled;
 

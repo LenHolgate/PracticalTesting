@@ -67,32 +67,18 @@ class IManageTimerQueue : public IQueueTimers
 
       virtual void HandleTimeouts() = 0;
 
-      /// A handle to a timer that has been timed out. This can be passed to
-      /// HandleTimeout() and EndTimeoutHandling() and is obtained by calling
-      /// BeginTimeoutHandling().
+      /// Returns true if timers need to be handled. You should then call
+      /// HandleTimeout() to handle the timeouts and finally call
+      /// EndTimeoutHandling() to tell the queue that you are done.
 
-      typedef ULONG_PTR TimeoutHandle;
-
-      /// The value that represents an invalid handle that cannot be used.
-
-      static TimeoutHandle InvalidTimeoutHandleValue;
-
-      /// Returns the handle of a timer than needs to be handled, or
-      /// InvalidTimeoutHandleValue if no timers currenly need to be
-      /// handled. Note that in an implementation that is safe for use in a
-      /// multi-threaded situation it is acceptable to hold a lock whilst this
-      /// method is called to prevent concurrent calls to any of the methods on
-      /// IQueueTimers.
-
-      virtual TimeoutHandle BeginTimeoutHandling() = 0;
+      virtual bool BeginTimeoutHandling() = 0;
 
       /// Handle the timeout for the given timer handle. Note that in an
       /// implementation that is safe for use in a multi-threaded situation it
       /// is NOT acceptable to hold a lock that will prevent concurrent calls
       /// to any of the methods on IQueueTimers.
 
-      virtual void HandleTimeout(
-         TimeoutHandle &handle) = 0;
+      virtual void HandleTimeout() = 0;
 
       /// Complete the handling of a timeout that was started with
       /// BeginTimeoutHandling(). Note that in an implementation that is safe for
@@ -100,8 +86,7 @@ class IManageTimerQueue : public IQueueTimers
       /// this method is called to prevent concurrent calls to any of the methods
       /// on IQueueTimers.
 
-      virtual void EndTimeoutHandling(
-         TimeoutHandle &handle) = 0;
+      virtual void EndTimeoutHandling() = 0;
 
       virtual ~IManageTimerQueue() {}
 };

@@ -56,13 +56,11 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       virtual void HandleTimeouts();
 
-      virtual IManageTimerQueue::TimeoutHandle BeginTimeoutHandling();
+      virtual bool BeginTimeoutHandling();
 
-      virtual void HandleTimeout(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void HandleTimeout();
 
-      virtual void EndTimeoutHandling(
-         IManageTimerQueue::TimeoutHandle &handle);
+      virtual void EndTimeoutHandling();
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
@@ -150,10 +148,6 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
       TimerData *ValidateHandle(
          const Handle &handle);
 
-      TimerData *CreateTimerInternal();
-
-      TimeoutHandle GetNextTimeoutHandle();
-
       //lint -e{1411} (Member with different signature hides virtual member --- Eff. C++ 3rd Ed. item 33)
       bool CancelTimer(
          TimerData *pData);
@@ -176,9 +170,7 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       const Milliseconds m_maxTimeout;
 
-      TimeoutHandle m_handlingTimeouts;
-
-      TimeoutHandle m_nextTimeoutHandle;
+      bool m_handlingTimeouts;
 
       TimerData *m_pTimeoutsToBeHandled;
 

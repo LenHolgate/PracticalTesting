@@ -230,6 +230,8 @@ class CThreadedCallbackTimerQueue :
 
       Milliseconds GetNextTimeout();
 
+      bool BeginTimeoutHandling();
+
       void SignalStateChange();
 
       // Implement IRunnable
