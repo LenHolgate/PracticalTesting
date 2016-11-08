@@ -548,6 +548,8 @@ void CCallbackTimerWheel::EndTimeoutHandling(
 
       if (pDeadTimer)
       {
+         m_activeHandles.Erase(pDeadTimer);
+
          delete pDeadTimer;
 
          #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
