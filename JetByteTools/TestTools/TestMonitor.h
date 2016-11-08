@@ -92,7 +92,7 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 
       // Implement IRunnable
 
-      virtual int Run() throw();
+      virtual int Run();
 
       void OutputTestDetails();
 

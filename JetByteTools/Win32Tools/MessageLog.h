@@ -47,6 +47,8 @@ class CMessageLog : public ILogMessages
 
       CMessageLog();
 
+      virtual ~CMessageLog();
+
       explicit CMessageLog(
          ILogMessages &log);
 

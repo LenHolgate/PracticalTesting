@@ -29,11 +29,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\IntrusiveRedBlackTreeNode.h"
+#include "IntrusiveRedBlackTreeNode.h"
 
 #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1 || JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1 || JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-#include "JetByteTools\Win32Tools\DebugTrace.h"
-#include "JetByteTools\Win32Tools\tstring.h"
+#include "DebugTrace.h"
+#include "tstring.h"
 #endif
 
 #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1 && JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_WITH_TRACE_ENABLED == 1
@@ -42,9 +42,16 @@
 #define JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED 0
 #endif
 
-#include "JetByteTools\Win32Tools\Exception.h"
+#include "Exception.h"
 
 #include <functional>      // for std::less<>
+
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
+//lint -save
+//lint -e1060 (private member is not accessible to non-member non-friend functions)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -322,21 +329,28 @@ TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::TIntrusiveRedBlackTree()
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       m_isValid(true),
       #endif
-      m_pRoot(0)
+      m_pRoot(0),
+      m_comp()
 {
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::~TIntrusiveRedBlackTree()
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
-   if (m_isValid)
+   try
    {
+      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      if (m_isValid)
+      {
+         Clear();
+      }
+      #else
       Clear();
+      #endif
    }
-   #else
-   Clear();
-   #endif
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+   m_pRoot = 0;
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -766,7 +780,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
       // when tree dumping is enabled the tree walks and validations are
       // successful during rebalancing.
 
-      m_pRoot->m_red = false;
+      m_pRoot->m_red = false; //lint !e613 (Possible use of null pointer in left argument to operator '->'
       m_size++;
 
       if (m_size > 1)
@@ -935,7 +949,7 @@ T *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Remove(
       Erase(it);
    }
 
-   return pData;;
+   return pData;
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -1391,7 +1405,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
       try
       {
-         ValidateTree(m_pRoot, pValidateNodeFnc, userData);
+         (void)ValidateTree(m_pRoot, pValidateNodeFnc, userData);
       }
       catch(...)
       {
@@ -1574,7 +1588,7 @@ TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator()
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename K TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Key() const
+K TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Key() const
 {
    return key_accessor::GetKeyFromT(node_accessor::GetTFromNode(m_pNode));
 }
@@ -1787,6 +1801,8 @@ typename const TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveR
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
+
+//lint -restore
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

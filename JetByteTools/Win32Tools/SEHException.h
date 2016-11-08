@@ -10,16 +10,16 @@
 //
 // Copyright 2004 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,9 +50,9 @@ namespace Win32 {
 /// \ingroup Win32
 /// \ingroup Exceptions
 
-class CSEHException 
+class CSEHException
 {
-   public : 
+   public :
 
       class Translator;
 
@@ -66,10 +66,10 @@ class CSEHException
 
       _tstring GetWhere() const;
 
-      const _tstring &GetMessage() const; 
+      const _tstring &GetMessage() const;
 
    protected :
-      
+
       const unsigned int m_code;
 
       EXCEPTION_POINTERS *m_pPointers;
@@ -77,13 +77,13 @@ class CSEHException
    private :
 
       CSEHException(
-         unsigned int code, 
+         unsigned int code,
          EXCEPTION_POINTERS *pPointers);
 
 };
 
 /// A class that acts as a structured exception translator.
-/// Create one of these objects on each thread where you want Win32 structured 
+/// Create one of these objects on each thread where you want Win32 structured
 /// exceptions translated into CSEHException.
 /// \ingroup Win32
 /// \ingroup Exceptions
@@ -91,16 +91,16 @@ class CSEHException
 class CSEHException::Translator
 {
    public :
-   
+
       Translator();
-   
+
       ~Translator();
 
    private :
 
       static void trans_func(
-         unsigned int code, 
-         EXCEPTION_POINTERS *pPointers); 
+         unsigned int code,
+         EXCEPTION_POINTERS *pPointers);
 
       _se_translator_function m_prev;
 };
@@ -110,7 +110,7 @@ class CSEHException::Translator
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
 

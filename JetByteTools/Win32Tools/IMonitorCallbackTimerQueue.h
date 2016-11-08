@@ -67,7 +67,7 @@ class IMonitorCallbackTimerQueue
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~IMonitorCallbackTimerQueue() {}
+      virtual ~IMonitorCallbackTimerQueue() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

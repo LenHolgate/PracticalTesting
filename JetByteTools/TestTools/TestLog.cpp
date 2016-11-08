@@ -32,6 +32,10 @@
 
 #pragma hdrstop
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "JetByteTools\Win32Tools\DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
@@ -115,12 +119,18 @@ CTestLog::CTestLog(
 
 CTestLog::~CTestLog()
 {
-   const _tstring messages = GetMessages();
-
-   if (messages.length() != 0)
+   try
    {
-      CTestMonitor::Trace(messages);
+      const _tstring messages = GetMessages();
+
+      if (messages.length() != 0)
+      {
+         CTestMonitor::Trace(messages);
+      }
+
+      m_pLog = 0;
    }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void CTestLog::UnlinkLog()
@@ -215,7 +225,7 @@ _tstring CTestLog::InternalRemoveMessages()
 
 void CTestLog::ResetLog()
 {
-   RemoveMessages();
+   RemoveMessages(); //lint !e534 (Ignoring return value of function)
 }
 
 void CTestLog::CheckNoResults(
@@ -549,7 +559,19 @@ void CTestLog::CheckResultFromFile(
 
          expectedResults = FindAndReplace(expectedResults, lineEnd, m_separator);
 
-         CheckResult(m_separator + expectedResults, m_separator + InternalRemoveMessages(), DoNotDisplayOnFailure, DoNotCheckAlternatives);
+         const _tstring comparedTo = InternalRemoveMessages();
+
+         try
+         {
+            CheckResult(m_separator + expectedResults, m_separator + comparedTo, DoNotDisplayOnFailure, DoNotCheckAlternatives);
+         }
+         catch(const CException &/*e*/)
+         {
+            //SaveStringAsFile(fileNameBase + _T(".Expected.log"), expectedResults);
+            //SaveStringAsFile(fileNameBase + _T(".Compared.log"), comparedTo);
+
+            throw;
+         }
       }
       catch(const CException &/*e*/)
       {

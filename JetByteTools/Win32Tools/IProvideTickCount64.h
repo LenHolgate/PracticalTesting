@@ -60,7 +60,7 @@ class IProvideTickCount64
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~IProvideTickCount64() {}
+      virtual ~IProvideTickCount64() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

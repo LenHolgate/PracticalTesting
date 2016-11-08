@@ -114,43 +114,33 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -627,14 +617,17 @@
     <ClCompile Include="CallbackTimerWheel.cpp" />
     <ClCompile Include="CodePage.cpp" />
     <ClCompile Include="CriticalSection.cpp" />
+    <ClCompile Include="CrtReportHook.cpp" />
     <ClCompile Include="DebugTrace.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="GlobalErrorHandler.cpp" />
     <ClCompile Include="ICriticalSection.cpp" />
     <ClCompile Include="IWaitable.cpp" />
     <ClCompile Include="ManualResetEvent.cpp" />
     <ClCompile Include="MessageLog.cpp" />
     <ClCompile Include="PerformanceCounter.cpp" />
+    <ClCompile Include="PerThreadErrorHandler.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -671,12 +664,16 @@
     <ClInclude Include="CodePage.h" />
     <ClInclude Include="ConditionalSmartPointer.h" />
     <ClInclude Include="CriticalSection.h" />
+    <ClInclude Include="CrtReportHook.h" />
     <ClInclude Include="DebugTrace.h" />
+    <ClInclude Include="EmptyBase.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="ExpandableBuffer.h" />
+    <ClInclude Include="GlobalErrorHandler.h" />
     <ClInclude Include="ICriticalSection.h" />
     <ClInclude Include="IKernelObjectName.h" />
+    <ClInclude Include="ILockableObject.h" />
     <ClInclude Include="ILogMessages.h" />
     <ClInclude Include="IManageTimerQueue.h" />
     <ClInclude Include="IMonitorCallbackTimerQueue.h" />
@@ -691,8 +688,11 @@
     <ClInclude Include="IProvideTickCount.h" />
     <ClInclude Include="IProvideTickCount64.h" />
     <ClInclude Include="IQueueTimers.h" />
+    <ClInclude Include="IReentrantLockableObject.h" />
     <ClInclude Include="IRunnable.h" />
     <ClInclude Include="IWaitable.h" />
+    <ClInclude Include="LockableObject.h" />
+    <ClInclude Include="LockableObjectOwners.h" />
     <ClInclude Include="ManualResetEvent.h" />
     <ClInclude Include="MessageLog.h" />
     <ClInclude Include="NullCallbackTimerQueueMonitor.h" />
@@ -700,6 +700,9 @@
     <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
     <ClInclude Include="OSVersionInfo.h" />
     <ClInclude Include="PerformanceCounter.h" />
+    <ClInclude Include="PerThreadErrorHandler.h" />
+    <ClInclude Include="PureCallHandler.h" />
+    <ClInclude Include="ReentrantLockableObject.h" />
     <ClInclude Include="SEHException.h" />
     <ClInclude Include="SimpleMessageLog.h" />
     <ClInclude Include="SmartHandle.h" />

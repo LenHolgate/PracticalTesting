@@ -76,6 +76,8 @@ class CThreadedCallbackTimerQueueTest
       static void TestTimerHybridTickCount64NoLock();
       static void TestTimerTimerWheel();
       static void TestTimerTimerWheelNoLock();
+      static void TestTimerWithLockSetTimerInOnTimer();
+      static void TestTimerNoLockSetTimerInOnTimer();
 
       static void TestMultipleTimersTickCount64();
       static void TestMultipleTimersTickCount64NoLock();

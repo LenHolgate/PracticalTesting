@@ -32,6 +32,12 @@
 
 #pragma hdrstop
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1) || (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
+#include "JetByteTools\Win32Tools\DebugTrace.h"
+#endif
+
+#include "JetByteTools\Win32Tools\PerThreadErrorHandler.h"
+
 #include "JetByteTools\Admin\CompilerName.h"
 
 #include <iostream>
@@ -53,6 +59,7 @@ using JetByteTools::Win32::CWin32Exception;
 using JetByteTools::Win32::CSEHException;
 using JetByteTools::Win32::GetLastErrorMessage;
 using JetByteTools::Win32::GetComputerName;
+using JetByteTools::Win32::CPerThreadErrorHandler;
 
 using std::cout;
 using std::endl;
@@ -215,24 +222,28 @@ CTestMonitor::CTestMonitor()
 
 CTestMonitor::~CTestMonitor()
 {
-   m_shutdownEvent.Set();
-   m_testTimeoutThread.Wait();
-
-   if (!m_reported)
+   try
    {
-      Report(0);
+      m_shutdownEvent.Set();
+      m_testTimeoutThread.Wait();
+
+      if (!m_reported)
+      {
+         (void)Report(0);
+      }
+
+      for (Tests::const_iterator it = m_tests.begin(), end = m_tests.end();
+         it != end;
+         ++it)
+      {
+         TestDetails *pTest = *it;
+
+         delete pTest;
+      }
+
+      s_pMonitor = 0;
    }
-
-   for (Tests::const_iterator it = m_tests.begin(), end = m_tests.end();
-      it != end;
-      ++it)
-   {
-      TestDetails *pTest = *it;
-
-      delete pTest;
-   }
-
-   s_pMonitor = 0;
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void CTestMonitor::OutputTestDetails()
@@ -359,7 +370,7 @@ bool CTestMonitor::StartPerformanceTest(
    {
       m_pActiveTest->SkipTest(_T("Skipped - not running performance tests."));
 
-      m_pActiveTest = 0;
+      m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
    }
    else
    {
@@ -386,7 +397,7 @@ void CTestMonitor::TestComplete()
 
    m_pActiveTest->TestComplete(m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = 0;
+   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 }
@@ -401,7 +412,7 @@ void CTestMonitor::SkipTest(
 
    m_pActiveTest->SkipTest(reason);
 
-   m_pActiveTest = 0;
+   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 }
@@ -416,7 +427,7 @@ void CTestMonitor::FailTest(
 
    m_pActiveTest->FailTest(reason, m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = 0;
+   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 
@@ -442,7 +453,7 @@ void CTestMonitor::TestException()
 
    const TestDetails::State state = m_pActiveTest->GetState();
 
-   m_pActiveTest = 0;
+   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 
@@ -642,110 +653,116 @@ bool CTestMonitor::Report(
    return passed;
 }
 
-int CTestMonitor::Run() throw()
+int CTestMonitor::Run()
 {
-   CSEHException::Translator sehTranslator;
+   #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
+   CPerThreadErrorHandler errorHandler;
+   #endif
 
    try
    {
-      HANDLE handlesToWaitFor[2];
-
-      handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
-      handlesToWaitFor[1] = m_startTimingEvent.GetWaitHandle();
-
-      while (!m_shutdownEvent.Wait(0))
+      try
       {
-         DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, INFINITE);
+         HANDLE handlesToWaitFor[2];
 
-         if (waitResult == WAIT_OBJECT_0)
+         handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
+         handlesToWaitFor[1] = m_startTimingEvent.GetWaitHandle();
+
+         while (!m_shutdownEvent.Wait(0))
          {
-            // Time to shutdown
-            break;
-         }
-         else if (waitResult == WAIT_OBJECT_0 + 1)
-         {
-            if (m_pActiveTest)
+            DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, INFINITE);
+
+            if (waitResult == WAIT_OBJECT_0)
             {
-               // Time to time a test...
-
-               // Grab the data that we need about the test we're about to time...
-
-               const string testName = CStringConverter::TtoA(m_pActiveTest->GetName());
-
-               const Milliseconds timeout = m_testTimeout;
-
-               m_timingStartedEvent.Set();
-
-               HANDLE handlesToWaitFor[2];
-
-               handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
-               handlesToWaitFor[1] = m_stopTimingEvent.GetWaitHandle();
-
-               DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, timeout);
-
-               if (waitResult == WAIT_OBJECT_0)
+               // Time to shutdown
+               break;
+            }
+            else if (waitResult == WAIT_OBJECT_0 + 1)
+            {
+               if (m_pActiveTest)
                {
-                  // Time to shutdown
-                  break;
-               }
-               else if (waitResult == WAIT_OBJECT_0 + 1)
-               {
-                  // test completed within the time limit
-               }
-               else if (waitResult == WAIT_TIMEOUT)
-               {
-                  // the test timed out...
+                  // Time to time a test...
 
-                  cout << "Test: " << testName << " timed out. Timeout was: " << ToStringA(timeout) << "ms" << endl;
+                  // Grab the data that we need about the test we're about to time...
 
-                  if (m_traceMessages.size() != 0)
+                  const string testName = CStringConverter::TtoA(m_pActiveTest->GetName());
+
+                  const Milliseconds timeout = m_testTimeout;
+
+                  m_timingStartedEvent.Set();
+
+                  HANDLE handlesToWaitFor[2]; //lint !e578 (Declaration of symbol 'handlesToWaitFor' hides symbol 'handlesToWaitFor')
+
+                  handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
+                  handlesToWaitFor[1] = m_stopTimingEvent.GetWaitHandle();
+
+                  DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, timeout); //lint !e578 (Declaration of symbol 'waitResult' hides symbol 'waitResult')
+
+                  if (waitResult == WAIT_OBJECT_0)
                   {
-                     cout << "Trace messages:" << endl;
-
-                     for (TraceMessages::const_iterator it = m_traceMessages.begin(), end = m_traceMessages.end();
-                        it != end;
-                        ++it)
-                     {
-                        cout << CStringConverter::TtoA(*it) << "\"" << endl;
-                     }
+                     // Time to shutdown
+                     break;
                   }
+                  else if (waitResult == WAIT_OBJECT_0 + 1)
+                  {
+                     // test completed within the time limit
+                  }
+                  else if (waitResult == WAIT_TIMEOUT)
+                  {
+                     // the test timed out...
 
-                  exit(2);
+                     cout << "Test: " << testName << " timed out. Timeout was: " << ToStringA(timeout) << "ms" << endl;
+
+                     if (m_traceMessages.size() != 0)
+                     {
+                        cout << "Trace messages:" << endl;
+
+                        for (TraceMessages::const_iterator it = m_traceMessages.begin(), end = m_traceMessages.end();
+                           it != end;
+                           ++it)
+                        {
+                           cout << CStringConverter::TtoA(*it) << "\"" << endl;
+                        }
+                     }
+
+                     exit(2);
+                  }
+                  else if (waitResult == WAIT_FAILED)
+                  {
+                     const DWORD lastError = ::GetLastError();
+
+                     cout << "Unexpected result during test timeout wait for test to end" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
+
+                     exit(3);
+                  }
                }
-               else if (waitResult == WAIT_FAILED)
+               else
                {
-                  const DWORD lastError = ::GetLastError();
-
-                  cout << "Unexpected result during test timeout wait for test to end" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
-
-                  exit(3);
+                  cout << "Unexpected; no active test to time!" << endl;
                }
             }
             else
             {
-               cout << "Unexpected; no active test to time!" << endl;
+               const DWORD lastError = ::GetLastError();
+
+               cout << "Unexpected result during test timeout wait for test to start" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
             }
          }
-         else
-         {
-            const DWORD lastError = ::GetLastError();
-
-            cout << "Unexpected result during test timeout wait for test to start" << CStringConverter::TtoA(GetLastErrorMessage(lastError)) << endl;
-         }
+      }
+      catch(const CException &e)
+      {
+         cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      }
+      catch(const CSEHException &e)
+      {
+         cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
+      }
+      JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
+      {
+         cout << "Unecpected exception during test timeout processing" << endl;
       }
    }
-   catch(const CException &e)
-   {
-      cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-   }
-   catch(const CSEHException &e)
-   {
-      cout << "Exception during test timeout processing: " << CStringConverter::TtoA(e.GetWhere() + _T(" - ") + e.GetMessage()) << endl;
-   }
-   JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
-   {
-      cout << "Unecpected exception during test timeout processing" << endl;
-   }
+   JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
 
    return 0;
 }

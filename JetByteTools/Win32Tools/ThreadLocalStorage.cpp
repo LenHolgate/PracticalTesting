@@ -122,19 +122,19 @@ void *CThreadLocalStorage::GetValue() const
 
 DWORD CThreadLocalStorage::GetValueAsDWORD() const
 {
-	void *pV = ::TlsGetValue(m_index);
+   void *pV = ::TlsGetValue(m_index);
 
-	if (pV == 0)
-	{
-		DWORD lastError = ::GetLastError();
+   if (pV == 0)
+   {
+      DWORD lastError = ::GetLastError();
 
-		if (lastError != NO_ERROR)
-		{
-			throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), ::GetLastError());
-		}
-	}
+      if (lastError != NO_ERROR)
+      {
+         throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), ::GetLastError());
+      }
+   }
 
-	return static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(pV));
+   return static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(pV));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

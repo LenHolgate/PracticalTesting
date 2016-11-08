@@ -95,14 +95,20 @@ CDebugTrace::LogInstaller::LogInstaller(
 
 CDebugTrace::LogInstaller::~LogInstaller()
 {
-   Uninstall();
+   try
+   {
+      Uninstall();
+   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void CDebugTrace::LogInstaller::Uninstall()
 {
    if (m_pOldLog)
    {
-      CDebugTrace::Instance().SetLog(*m_pOldLog);
+      ILogMessages *pPreviousLog = CDebugTrace::Instance().SetLog(*m_pOldLog);
+
+      (void)pPreviousLog;
 
       m_pOldLog = 0;
    }

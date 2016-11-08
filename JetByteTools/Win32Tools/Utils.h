@@ -74,9 +74,9 @@ result GetStringLength(
    const s &theString,
    const bool includeNullTerminator = false)
 {
-   const size_t length = theString.length() + (includeNullTerminator ? 1 : 0);
+   const __int64 length = theString.length() + (includeNullTerminator ? 1 : 0);
 
-   if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
+   if (length > std::numeric_limits<result>::max())
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -89,9 +89,9 @@ result GetStringLength(
    const char *pString,
    const bool includeNullTerminator = false)
 {
-   const size_t length = strlen(pString) + (includeNullTerminator ? 1 : 0);
+   const __int64 length = strlen(pString) + (includeNullTerminator ? 1 : 0);
 
-   if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
+   if (length > std::numeric_limits<result>::max())
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -104,9 +104,9 @@ result GetStringLength(
    const wchar_t *pString,
    const bool includeNullTerminator = false)
 {
-   const size_t length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
+   const __int64 length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
 
-   if (length > static_cast<size_t>(std::numeric_limits<result>::max()))
+   if (length > std::numeric_limits<result>::max())
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -157,6 +157,9 @@ bool IsAllHexDigitsA(
 
 bool StringToBool(
    const _tstring &stringRepresentation);
+
+bool StringToBoolA(
+   const std::string &stringRepresentation);
 
 template <class T>
 bool ToBool(const T &value)
@@ -407,6 +410,7 @@ _tstring FindAndReplace(
    const _tstring &replaceString,
    const size_t numReplacements = INFINITE);
 
+//lint -esym(534, JetByteTools::Win32::InPlaceFindAndReplace) (Ignoring return value of function)
 bool InPlaceFindAndReplace(
    _tstring &phrase,
    const _tstring &findString,
@@ -419,6 +423,7 @@ std::string FindAndReplaceA(
    const std::string &replaceString,
    const size_t numReplacements = INFINITE);
 
+//lint -esym(534, JetByteTools::Win32::InPlaceFindAndReplaceA) (Ignoring return value of function)
 bool InPlaceFindAndReplaceA(
    std::string &phrase,
    const std::string &findString,
@@ -426,21 +431,21 @@ bool InPlaceFindAndReplaceA(
    const size_t numReplacements = INFINITE);
 
 bool IsGoodReadPtr(
-   void *pv,
+   const void *pv,
    ULONG cb);
 
 bool IsGoodReadPtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb);
 
 bool IsGoodWritePtr(
-   void *pv,
+   const void *pv,
    ULONG cb);
 
 bool IsGoodWritePtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb);
 
 _tstring GUIDAsString(

@@ -32,7 +32,7 @@
 #include "IntrusiveRedBlackTreeTest.h"
 #include "IntrusiveMultiMapTest.h"
 
-#include "..\Mock\PrecompiledHeader.h"
+#include "JetByteTools\Win32Tools\Mock\PrecompiledHeader.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 #include "JetByteTools\Win32Tools\DebugTrace.h"

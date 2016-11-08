@@ -44,6 +44,9 @@
     <ClCompile Include="TestIntrusiveRedBlackTreeNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestThreadedCallbackTimerQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PrecompiledHeader.h">
@@ -74,6 +77,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TestIntrusiveRedBlackTreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestThreadedCallbackTimerQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

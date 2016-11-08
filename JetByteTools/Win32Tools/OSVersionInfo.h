@@ -85,6 +85,61 @@ class COSVersionInfo : private OSVERSIONINFOEX
       {
          return (dwPlatformId == VER_PLATFORM_WIN32_NT) && ((dwMajorVersion > 6) || (dwMajorVersion == 6 && dwMinorVersion >= 2));
       }
+
+      // Deliberately broken for Windows 8.1. and 10, they just return Windows 8 values UNLESS
+      // the exe has been specifically manifested to be targetting 8.1. or 10.
+      // IDIOTS!
+
+      bool IsWindows81OrLater() const
+      {
+         // Should probably switch to using GetOsVersion for the main query that this class does...
+
+         RTL_OSVERSIONINFOEXW versionInfo;
+
+         if (GetOsVersion(&versionInfo))
+         {
+            return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT) && ((versionInfo.dwMajorVersion > 6) || (versionInfo.dwMajorVersion == 6 && versionInfo.dwMinorVersion >= 3));
+         }
+
+         return false;
+      }
+
+
+      bool IsWindows10OrLater() const
+      {
+         // Should probably switch to using GetOsVersion for the main query that this class does...
+
+         RTL_OSVERSIONINFOEXW versionInfo;
+
+         if (GetOsVersion(&versionInfo))
+         {
+            return (versionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT) && (versionInfo.dwMajorVersion >= 10);
+         }
+
+         return false;
+      }
+
+   private :
+
+   // From http://www.codeproject.com/Articles/678606/Part-Overcoming-Windows-s-deprecation-of-GetVe?msg=5080848#xx5080848xx
+
+   // RTL_OSVERSIONINFOEXW is defined in winnt.h
+   BOOL GetOsVersion(RTL_OSVERSIONINFOEXW* pk_OsVer) const
+   {
+      typedef LONG(WINAPI* tRtlGetVersion)(RTL_OSVERSIONINFOEXW*);
+
+      memset(pk_OsVer, 0, sizeof(RTL_OSVERSIONINFOEXW));
+      pk_OsVer->dwOSVersionInfoSize = sizeof(RTL_OSVERSIONINFOEXW);
+
+      HMODULE h_NtDll = GetModuleHandleW(L"ntdll.dll");
+      tRtlGetVersion f_RtlGetVersion = (tRtlGetVersion)GetProcAddress(h_NtDll, "RtlGetVersion");
+
+      if (!f_RtlGetVersion)
+         return FALSE; // This will never happen (all processes load ntdll.dll)
+
+      LONG Status = f_RtlGetVersion(pk_OsVer);
+      return Status == 0; // STATUS_SUCCESS;
+   }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

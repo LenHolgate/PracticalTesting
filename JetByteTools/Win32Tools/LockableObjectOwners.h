@@ -24,6 +24,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "Exception.h"
+
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,7 +62,11 @@ class TLockableObjectOwner
 
       inline ~TLockableObjectOwner()
       {
-         m_lock.Unlock();
+         try
+         {
+            m_lock.Unlock();
+         }
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
    private :
@@ -96,10 +106,14 @@ class TLockableObjectConditionalOwner
 
       inline ~TLockableObjectConditionalOwner()
       {
-         if (m_locked)
+         try
          {
-            m_lock.Unlock();
+            if (m_locked)
+            {
+               m_lock.Unlock();
+            }
          }
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
       inline void Unlock()
@@ -147,14 +161,25 @@ class TLockableObjectPotentialOwner
 
       inline ~TLockableObjectPotentialOwner()
       {
-         if (m_locked)
+         try
          {
-            m_lock.Unlock();
+            if (m_locked)
+            {
+               m_lock.Unlock();
+            }
          }
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
       inline void Lock()
       {
+         if (m_locked)
+         {
+            throw CException(
+               _T("TLockableObjectPotentialOwner<>::Lock()"),
+               _T("Already locked"));
+         }
+
          m_lock.Lock();
 
          m_locked = true;
@@ -162,6 +187,13 @@ class TLockableObjectPotentialOwner
 
       inline bool TryLock()
       {
+         if (m_locked)
+         {
+            throw CException(
+               _T("TLockableObjectPotentialOwner<>::Lock()"),
+               _T("Already locked"));
+         }
+
          m_locked = m_lock.TryLock();
 
          return m_locked;
@@ -169,9 +201,12 @@ class TLockableObjectPotentialOwner
 
       inline void Unlock()
       {
-         m_lock.Unlock();
+         if (m_locked)
+         {
+            m_lock.Unlock();
 
-         m_locked = false;
+            m_locked = false;
+         }
       }
 
    private :
@@ -194,32 +229,50 @@ class TReentrantLockableObjectPotentialOwner
       explicit TReentrantLockableObjectPotentialOwner(
          T &lock)
          :  m_lock(lock),
-            m_locked(0)
+            m_locked(false)
       {
       }
 
       inline ~TReentrantLockableObjectPotentialOwner()
       {
-         while (m_locked--)
+         try
          {
-            m_lock.Unlock();
+            if (m_locked)
+            {
+               m_lock.Unlock();
+            }
          }
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
       inline void Lock()
       {
+         if (m_locked)
+         {
+            throw CException(
+               _T("TReentrantLockableObjectPotentialOwner<>::Lock()"),
+               _T("Already locked"));
+         }
+
          m_lock.Lock();
 
-         m_locked++;
+         m_locked = true;
       }
 
       inline bool TryLock()
       {
+         if (m_locked)
+         {
+            throw CException(
+               _T("TReentrantLockableObjectPotentialOwner<>::Lock()"),
+               _T("Already locked"));
+         }
+
          const bool locked = m_lock.TryLock();
 
          if (locked)
          {
-            m_locked++;
+            m_locked = true;
          }
 
          return locked;
@@ -227,16 +280,19 @@ class TReentrantLockableObjectPotentialOwner
 
       inline void Unlock()
       {
-         m_lock.Unlock();
+         if (m_locked)
+         {
+            m_lock.Unlock();
 
-         m_locked--;
+            m_locked = false;
+         }
       }
 
    private :
 
       T &m_lock;
 
-      size_t m_locked;
+      bool m_locked;
 
       /// No copies do not implement
       TReentrantLockableObjectPotentialOwner(const TReentrantLockableObjectPotentialOwner &rhs);

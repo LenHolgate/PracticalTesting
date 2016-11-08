@@ -79,6 +79,15 @@
     <ClInclude Include="ExampleConfigHeaders\x64-STLPort-Config.h">
       <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN8.h">
+      <Filter>Header Files\Example Config Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN10.h">
+      <Filter>Header Files\Example Config Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN81.h">
+      <Filter>Header Files\Example Config Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\BuildConfiguration.txt">

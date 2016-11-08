@@ -56,6 +56,9 @@ typedef unsigned long DWORD;
 
 typedef unsigned char BYTE;
 
+typedef __int64 LONGLONG;
+typedef unsigned __int64 ULONGLONG;
+
 #if defined(_WIN64)
     typedef __int64 INT_PTR;
     typedef unsigned __int64 UINT_PTR;

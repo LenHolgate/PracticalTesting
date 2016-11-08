@@ -72,7 +72,14 @@ static wstring InternalDumpDataW(
 unsigned short CalculateRequiredPrecision(
    const double value)
 {
-   const string asString = ToStringA(value, 30);
+   // Prior to VS2015 sprintf() would only ever return
+   // 17 digits of precision, so 3.1415899999999999 sprintf'd
+   // with a precision of 30 would end up as 3.1415899999999999.
+   // VS2015 (and GNU) return more, 3.14158999999999988261834005243
+   // To retain backwards compatibility we truncate the precision to
+   // 17
+
+   const string asString = ToStringA(value, 17);
 
    unsigned short precision = 0;
 
@@ -423,6 +430,31 @@ wstring ToStringW(
    return ToStringW(static_cast<const double>(val));
 }
 
+inline unsigned short ValidatePrecision(
+   unsigned short precision)
+{
+   if (precision == 0)
+   {
+      // If no precision is supplied then you get 6, so we
+      // default to 6
+
+      precision = 6;
+   }
+   else if (precision > 17)
+   {
+      // Prior to VS2015 sprintf() would only ever return
+      // 17 digits of precision, so 3.1415899999999999 sprintf'd
+      // with a precision of 30 would end up as 3.1415899999999999.
+      // VS2015 (and GNU) return more, 3.14158999999999988261834005243
+      // To retain backwards compatibility we truncate the precision to
+      // 17
+
+      precision = 17;
+   }
+
+   return precision;
+}
+
 string ToStringA(
    const double val,
    unsigned short precision)
@@ -431,10 +463,7 @@ string ToStringA(
 
    char buffer[bufferSize];
 
-   if (precision == 0)
-   {
-      precision = 6;
-   }
+   precision = ValidatePrecision(precision);
 
    if (-1 == sprintf_s(buffer, bufferSize, "%.*g", precision, val))
    {
@@ -452,10 +481,7 @@ wstring ToStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (precision == 0)
-   {
-      precision = 6;
-   }
+   precision = ValidatePrecision(precision);
 
    if (-1 == swprintf_s(buffer, bufferSize, L"%.*g", precision, val))
    {
@@ -473,12 +499,9 @@ string ToStringA(
 
    char buffer[bufferSize];
 
-   if (precision == 0)
-   {
-      precision = 6;
-   }
+   precision = ValidatePrecision(precision);
 
-   if (-1 == sprintf_s(buffer, bufferSize, "%.*lg", precision, val))
+   if (-1 == sprintf_s(buffer, bufferSize, "%.*Lg", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -494,12 +517,9 @@ wstring ToStringW(
 
    wchar_t buffer[bufferSize];
 
-   if (precision == 0)
-   {
-      precision = 6;
-   }
+   precision = ValidatePrecision(precision);
 
-   if (-1 == swprintf_s(buffer, bufferSize, L"%.*lg", precision, val))
+   if (-1 == swprintf_s(buffer, bufferSize, L"%.*Lg", precision, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -585,10 +605,13 @@ string PointerToStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -605,10 +628,13 @@ wstring PointerToStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -623,10 +649,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "2.2", "X", "x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -641,10 +670,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"2.2", L"X", L"x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -673,10 +705,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "X", "x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -691,10 +726,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"X", L"x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -723,10 +761,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "4.4", "hX", "hx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -741,10 +782,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"4.4", L"hX", L"hx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -773,10 +817,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -791,10 +838,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -823,10 +873,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -841,10 +894,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 }
@@ -880,10 +936,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 
@@ -897,10 +956,13 @@ string ToHexStringA(
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 
@@ -921,10 +983,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 
@@ -938,10 +1003,13 @@ wstring ToHexStringW(
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
 
+#pragma warning(push)
+#pragma warning(disable: 4774)      // format string expected in argument 3 is not a string literal
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
+#pragma warning(pop)
 
    return buffer;
 

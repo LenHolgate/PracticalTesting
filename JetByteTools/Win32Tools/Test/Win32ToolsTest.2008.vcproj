@@ -63,6 +63,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -85,6 +86,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Output\VS2008\URelease/Win32ToolsTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -159,6 +161,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -181,6 +184,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Output\VS2008-x64\URelease/Win32ToolsTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -255,6 +259,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -277,6 +282,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Output\VS2008\Release/Win32ToolsTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -351,6 +357,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -372,6 +379,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(STLPORT_ROOT)\lib"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Output\VS2008\Release/Win32ToolsTest.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"

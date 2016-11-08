@@ -28,13 +28,17 @@
 
 #pragma hdrstop
 
+#pragma warning(disable:4355) // 'this' used in base member initializer list
+
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Win32::ToString;
+using JetByteTools::Win32::CReentrantLockableObject;
 
 using JetByteTools::Test::CTestException;
+using JetByteTools::Test::CTestLog;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -51,6 +55,20 @@ namespace Mock {
 CMockTimerQueue::CMockTimerQueue(
    const bool dispatchWithoutLock)
    :  m_dispatchWithoutLock(dispatchWithoutLock),
+      m_nextTimer(0),
+      m_maxTimeout(0xFFFFFFFE),
+      m_nextTimeout(INFINITE),
+      waitForOnTimerWaitComplete(false),
+      includeHandleValuesInLogs(true)
+{
+
+}
+
+CMockTimerQueue::CMockTimerQueue(
+   const bool dispatchWithoutLock,
+   CTestLog *pLinkedLog)
+   :  CTestLog(pLinkedLog),
+      m_dispatchWithoutLock(dispatchWithoutLock),
       m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE),
@@ -87,6 +105,8 @@ bool CMockTimerQueue::WaitForOnTimer(
 
 void CMockTimerQueue::OnTimer()
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    if (m_setTimers.empty())
    {
       throw CTestException(_T("CMockTimerQueue::OnTimer()"), _T("Timer not set"));
@@ -108,11 +128,15 @@ void CMockTimerQueue::OnTimer()
 
 bool CMockTimerQueue::IsTimerSet() const
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    return !m_setTimers.empty();
 }
 
 Milliseconds CMockTimerQueue::GetNextTimeout()
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    LogMessage(_T("GetNextTimeout"));
 
    m_nextTimeoutEvent.Set();
@@ -122,18 +146,22 @@ Milliseconds CMockTimerQueue::GetNextTimeout()
 
 void CMockTimerQueue::HandleTimeouts()
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    LogMessage(_T("HandleTimeouts"));
+
+   m_nextTimeout = INFINITE;
 
    if (!m_setTimers.empty())
    {
       OnTimer();
    }
-
-   m_nextTimeout = INFINITE;
 }
 
 IManageTimerQueue::TimeoutHandle CMockTimerQueue::BeginTimeoutHandling()
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    LogMessage(_T("BeginTimeoutHandling"));
 
    return !m_setTimers.empty() ? static_cast<IManageTimerQueue::TimeoutHandle>(1) : IManageTimerQueue::InvalidTimeoutHandleValue;
@@ -142,11 +170,13 @@ IManageTimerQueue::TimeoutHandle CMockTimerQueue::BeginTimeoutHandling()
 void CMockTimerQueue::HandleTimeout(
    IManageTimerQueue::TimeoutHandle &/*handle*/)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    LogMessage(_T("HandleTimeout"));
 
-   OnTimer();
-
    m_nextTimeout = INFINITE;
+
+   OnTimer();
 }
 
 void CMockTimerQueue::EndTimeoutHandling(
@@ -157,6 +187,8 @@ void CMockTimerQueue::EndTimeoutHandling(
 
 CMockTimerQueue::Handle CMockTimerQueue::CreateTimer()
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    Handle handle = ::InterlockedIncrement(&m_nextTimer);
 
    LogMessage(_T("CreateTimer: ") + ToString(handle));
@@ -172,6 +204,8 @@ bool CMockTimerQueue::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    if (includeHandleValuesInLogs)
    {
       LogMessage(_T("SetTimer: ") + ToString(handle) + _T(": ") + ToString(timeout));
@@ -183,13 +217,21 @@ bool CMockTimerQueue::SetTimer(
 
    bool wasPending = false;
 
+#if (_MSC_VER == 1400)
+   for (SetTimers::iterator it = m_setTimers.begin(), end = m_setTimers.end();
+#else
    for (SetTimers::const_iterator it = m_setTimers.begin(), end = m_setTimers.end();
-      !wasPending && it != end;
+#endif
+      it != end;
       ++it)
    {
       if (it->handle == handle)
       {
+         m_setTimers.erase(it);
+
          wasPending = true;
+
+         break;
       }
    }
 
@@ -203,6 +245,8 @@ bool CMockTimerQueue::SetTimer(
 bool CMockTimerQueue::CancelTimer(
    const Handle &handle)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    if (includeHandleValuesInLogs)
    {
       LogMessage(_T("CancelTimer: ") + ToString(handle));
@@ -234,6 +278,8 @@ bool CMockTimerQueue::CancelTimer(
 bool CMockTimerQueue::DestroyTimer(
    Handle &handle)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    if (includeHandleValuesInLogs)
    {
       LogMessage(_T("DestroyTimer: ") + ToString(handle));
@@ -267,6 +313,8 @@ bool CMockTimerQueue::DestroyTimer(
 bool CMockTimerQueue::DestroyTimer(
    const Handle &handle)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    if (includeHandleValuesInLogs)
    {
       LogMessage(_T("DestroyTimer: ") + ToString(handle));
@@ -300,6 +348,8 @@ void CMockTimerQueue::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
+   CReentrantLockableObject::Owner lock(m_lock);
+
    LogMessage(_T("SetTimer: ") + ToString(timeout));
 
    m_setTimers.push_back(TimerDetails(InvalidHandleValue, timer, userData));
@@ -317,6 +367,43 @@ bool CMockTimerQueue::DispatchesWithoutLock() const
    LogMessage(_T("DispatchesWithoutLock"));
 
    return m_dispatchWithoutLock;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CMockTimerQueue::TimerExpiryThread
+///////////////////////////////////////////////////////////////////////////////
+
+CMockTimerQueue::TimerExpiryThread::TimerExpiryThread(
+   CMockTimerQueue &timerQueue)
+   :  m_thread(*this),
+      m_timerQueue(timerQueue)
+{
+   m_thread.Start();
+}
+
+CMockTimerQueue::TimerExpiryThread::~TimerExpiryThread()
+{
+
+}
+
+int CMockTimerQueue::TimerExpiryThread::Run()
+{
+   try
+   {
+      m_timerQueue.OnTimer();
+
+      return 1;
+   }
+   catch(...)
+   {
+   }
+
+   return 0;
+}
+
+void CMockTimerQueue::TimerExpiryThread::WaitForCompletion()
+{
+   m_thread.Wait();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

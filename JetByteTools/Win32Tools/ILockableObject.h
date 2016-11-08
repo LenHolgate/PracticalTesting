@@ -45,10 +45,13 @@ class ILockableObject
 {
    public :
 
+      //lint -esym(1516, JetByteTools::Win32::*::Owner) (Member declaration hides inherited member --- Eff. C++ 3rd Ed. item 33)
       typedef TLockableObjectOwner<ILockableObject> Owner;
 
+      //lint -esym(1516, JetByteTools::Win32::*::ConditionalOwner) (Member declaration hides inherited member --- Eff. C++ 3rd Ed. item 33)
       typedef TLockableObjectConditionalOwner<ILockableObject> ConditionalOwner;
 
+      //lint -esym(1516, JetByteTools::Win32::*::PotentialOwner) (Member declaration hides inherited member --- Eff. C++ 3rd Ed. item 33)
       typedef TLockableObjectPotentialOwner<ILockableObject> PotentialOwner;
 
       /// Try to lock the lockable object, returns true if successful

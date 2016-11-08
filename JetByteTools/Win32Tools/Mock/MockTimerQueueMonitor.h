@@ -26,7 +26,7 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\IMonitorCallbackTimerQueue.h"
+#include "JetByteTools\Win32Tools\IMonitorCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock

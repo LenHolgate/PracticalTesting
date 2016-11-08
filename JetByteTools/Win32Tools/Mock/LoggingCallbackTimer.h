@@ -26,8 +26,8 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\IQueueTimers.h"
-#include "..\AutoResetEvent.h"
+#include "JetByteTools\Win32Tools\IQueueTimers.h"
+#include "JetByteTools\Win32Tools\AutoResetEvent.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -64,6 +64,12 @@ class CLoggingCallbackTimer :
          IQueueTimers &timerQueue,
          IQueueTimers::Handle &handle);
 
+      void SetTimerInOnTimer(
+         IQueueTimers &timerQueue,
+         IQueueTimers::Handle &handle,
+         const Milliseconds timeout,
+         const UserData userData /* = 0*/);
+
       bool WaitForTimer(
          const Milliseconds timeout);
 
@@ -83,6 +89,10 @@ class CLoggingCallbackTimer :
       IQueueTimers *m_pTimerQueue;
 
       IQueueTimers::Handle m_handle;
+
+      Milliseconds m_timeout;
+
+      UserData m_userData;
 
       // No copies do not implement
       CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);

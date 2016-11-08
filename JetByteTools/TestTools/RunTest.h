@@ -49,7 +49,7 @@ namespace Test {
 #define RUN_TEST(f)                                                           \
 do                                                                            \
 {                                                                             \
-   const JetByteTools::Win32::_tstring functionName(_T(#f) ## _T("()"));      \
+   const JetByteTools::Win32::_tstring functionName(_T(#f) _T("()"));         \
                                                                               \
    try                                                                        \
    {                                                                          \
@@ -121,7 +121,7 @@ do                                                                            \
 #define RUN_PERFORMANCE_TEST(f, r)                                            \
 do                                                                            \
 {                                                                             \
-   const JetByteTools::Win32::_tstring functionName(_T(#f) ## _T("()"));      \
+   const JetByteTools::Win32::_tstring functionName(_T(#f) _T("()"));         \
                                                                               \
    if (r)                                                                     \
    {                                                                          \

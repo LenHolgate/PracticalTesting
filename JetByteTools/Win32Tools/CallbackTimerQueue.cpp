@@ -27,6 +27,10 @@
 
 #pragma hdrstop
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,6 +52,12 @@ static const CTickCountProvider s_tickProvider;
 static const LARGE_INTEGER s_zeroLargeInteger;  // Rely on static init to provide
                                                 // us with a LARGE_INTEGER zero.
 #pragma warning(pop)
+
+///////////////////////////////////////////////////////////////////////////////
+// Lint options
+///////////////////////////////////////////////////////////////////////////////
+//lint -esym(1566, JetByteTools::Win32::CCallbackTimerQueue::m_maintenanceTimerHandler)
+//lint -esym(1506, JetByteTools::Win32::CCallbackTimerQueueBase::CreateTimer)
 
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueue
@@ -93,7 +103,13 @@ CCallbackTimerQueue::CCallbackTimerQueue(
 
 CCallbackTimerQueue::~CCallbackTimerQueue()
 {
-   DestroyTimer(m_maintenanceTimer);
+   try
+   {
+      const bool wasPending = DestroyTimer(m_maintenanceTimer); //lint !e1506 (Call to virtual function within a constructor or destructor --- Eff. C++ 3rd Ed. item 9)
+
+      (void)wasPending;
+   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 ULONGLONG CCallbackTimerQueue::GetTickCount64()
@@ -121,7 +137,9 @@ void CCallbackTimerQueue::SetMaintenanceTimer()
 
    const ULONGLONG absoluteTimeout = (now & 0xFFFFFFFF00000000) + 0x0000000100000000;
 
-   SetInternalTimer(m_maintenanceTimer, m_maintenanceTimerHandler, absoluteTimeout);
+   const bool wasPending = SetInternalTimer(m_maintenanceTimer, m_maintenanceTimerHandler, absoluteTimeout);
+
+   (void)wasPending;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

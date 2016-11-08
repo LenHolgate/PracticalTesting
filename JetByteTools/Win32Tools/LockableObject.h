@@ -59,16 +59,17 @@ class TLockableObject : public Base
          : m_owningThreadId(0)
          #endif
       {
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
          ::InitializeSRWLock(&m_lock);
          #else
          ::InitializeCriticalSection(&m_lock);
          #endif
       }
 
+      //lint -esym(1509, TLockableObject) Base class destructor not virtual
       ~TLockableObject()
       {
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
          #else
          ::DeleteCriticalSection(&m_lock);
          #endif
@@ -77,7 +78,7 @@ class TLockableObject : public Base
       bool TryLock()
       {
          #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
             const bool locked = (0 != ::TryAcquireSRWLockExclusive(&m_lock));
          #else
             const bool locked = (0 != ::TryEnterCriticalSection(&m_lock));
@@ -94,7 +95,7 @@ class TLockableObject : public Base
 
          return locked;
          #else
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
             return 0 != ::TryAcquireSRWLockExclusive(&m_lock);
          #else
             return 0 != ::TryEnterCriticalSection(&m_lock);
@@ -108,7 +109,7 @@ class TLockableObject : public Base
          CheckForReentrantUse();
          #endif
 
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
          ::AcquireSRWLockExclusive(&m_lock);
          #else
          ::EnterCriticalSection(&m_lock);
@@ -125,7 +126,7 @@ class TLockableObject : public Base
          m_owningThreadId = 0;
          #endif
 
-         #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
          ::ReleaseSRWLockExclusive(&m_lock);
          #else
          ::LeaveCriticalSection(&m_lock);
@@ -134,7 +135,7 @@ class TLockableObject : public Base
 
    private :
 
-      #if (JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 1)
+      #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
       SRWLOCK m_lock;
       #else
       CRITICAL_SECTION m_lock;
@@ -147,13 +148,15 @@ class TLockableObject : public Base
       {
          if (m_owningThreadId == ::GetCurrentThreadId())
          {
-            #ifdef JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK
+            #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK == 1)
             ::DebugBreak();
             #endif
 
+            #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION == 1)
             throw CException(
                _T("CLockableObject::CheckForRecursion()"),
                _T("Reentrant use detected."));
+            #endif
          }
       }
       #endif

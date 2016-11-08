@@ -71,7 +71,7 @@ namespace Win32 {
 
 static bool IsGoodPtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb,
    DWORD dwFlags);
 
@@ -103,6 +103,29 @@ bool StringToBool(
    }
 
    throw CException(_T("StringToBool()"), _T("Can't convert: \"") + stringRepresentation + _T("\" to a bool value"));
+}
+
+bool StringToBoolA(
+   const string &stringRepresentation)
+{
+   if (stringRepresentation == "1")
+   {
+      return true;
+   }
+   else if (stringRepresentation == "0")
+   {
+      return false;
+   }
+   else if (0 == _strnicmp(stringRepresentation.c_str(), "TRUE", stringRepresentation.length()))
+   {
+      return true;
+   }
+   else if (0 == _strnicmp(stringRepresentation.c_str(), "FALSE", stringRepresentation.length()))
+   {
+      return false;
+   }
+
+   throw CException(_T("StringToBool()"), _T("Can't convert: \"") + CStringConverter::AtoT(stringRepresentation) + _T("\" to a bool value"));
 }
 
 bool IsAllDigits(
@@ -641,10 +664,12 @@ _tstring GetDateStamp()
 
    TCHAR buffer[7];
 
-   _stprintf_s(buffer, _T("%02u%02u%02d"),
-                     systime.wDay,
-                     systime.wMonth,
-                     systime.wYear % 100);
+   (void)_stprintf_s(
+      buffer,
+      _T("%02u%02u%02u"),
+      static_cast<unsigned int>(systime.wDay),
+      static_cast<unsigned int>(systime.wMonth),
+      static_cast<unsigned int>(systime.wYear % 100));
 
    return buffer;
 }
@@ -656,11 +681,13 @@ _tstring GetTimeStamp()
 
    TCHAR buffer[14];
 
-   _stprintf_s(buffer, _T("%02u:%02u:%02u.%04u"),
-                     systime.wHour,
-                     systime.wMinute,
-                     systime.wSecond,
-                     systime.wMilliseconds);
+   (void)_stprintf_s(
+      buffer,
+      _T("%02u:%02u:%02u.%04u"),
+      static_cast<unsigned int>(systime.wHour),
+      static_cast<unsigned int>(systime.wMinute),
+      static_cast<unsigned int>(systime.wSecond),
+      static_cast<unsigned int>(systime.wMilliseconds));
 
    return buffer;
 }
@@ -676,10 +703,10 @@ string GetTimeStampA()
       buffer,
       sizeof(buffer),
       "%02u:%02u:%02u.%04u",
-      systime.wHour,
-      systime.wMinute,
-      systime.wSecond,
-      systime.wMilliseconds);
+      static_cast<unsigned int>(systime.wHour),
+      static_cast<unsigned int>(systime.wMinute),
+      static_cast<unsigned int>(systime.wSecond),
+      static_cast<unsigned int>(systime.wMilliseconds));
 
    return buffer;
 }
@@ -703,7 +730,9 @@ _tstring GetModuleFileName(
 {
    _tstring name = _T("UNAVAILABLE");
 
-   GetModuleFileName(hProcess, hModule, name);
+   const bool ok = GetModuleFileName(hProcess, hModule, name);
+
+   (void)ok;
 
    return name;
 }
@@ -747,7 +776,7 @@ _tstring GetModulePathName(
 {
    _tstring path = GetModuleFileName(hModule);
 
-   _tstring::size_type pos = path.find_last_of(_T("\\/:"));
+   _tstring::size_type pos = path.find_last_of(_T("\\/:")); //lint !e691 (Suspicious use of backslash)
 
    return path.substr(0, pos);
 }
@@ -1301,7 +1330,7 @@ wstring ToUpperW(
 
    for (size_t i = 0; i < length; ++i)
    {
-      dataOut[i] = static_cast<TCHAR>(toupper(dataOut[i]));
+      dataOut[i] = static_cast<wchar_t>(toupper(dataOut[i]));
    }
 
    return dataOut;
@@ -1914,7 +1943,7 @@ bool InPlaceFindAndReplaceA(
 }
 
 bool IsGoodReadPtr(
-   void *pv,
+   const void *pv,
    ULONG cb)
 {
    return IsGoodReadPtr(GetCurrentProcess(), pv, cb);
@@ -1922,7 +1951,7 @@ bool IsGoodReadPtr(
 
 bool IsGoodReadPtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb)
 {
    return IsGoodPtr(
@@ -1938,7 +1967,7 @@ bool IsGoodReadPtr(
 }
 
 bool IsGoodWritePtr(
-   void *pv,
+   const void *pv,
    ULONG cb)
 {
    return IsGoodWritePtr(GetCurrentProcess(), pv, cb);
@@ -1946,7 +1975,7 @@ bool IsGoodWritePtr(
 
 bool IsGoodWritePtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb)
 {
    return IsGoodPtr(
@@ -2304,7 +2333,7 @@ static bool StringIsAllANSI(
 
    const size_t dataLength = data.length() * sizeof(wchar_t);
 
-   bool allANSI = false;
+   bool allANSI = true;
 
    for (size_t i = 1; allANSI && i < dataLength; i += 2)
    {
@@ -2319,7 +2348,7 @@ static bool StringIsAllANSI(
 
 static bool IsGoodPtr(
    HANDLE hProcess,
-   void *pv,
+   const void *pv,
    ULONG cb,
    DWORD dwFlags)
 {
@@ -2357,7 +2386,7 @@ static bool IsGoodPtr(
       return false;
    }
 
-   if ((unsigned)((char *)pv - (char *)meminfo.BaseAddress) > (unsigned)(meminfo.RegionSize - cb))
+   if ((unsigned)((const char *)pv - (char *)meminfo.BaseAddress) > (unsigned)(meminfo.RegionSize - cb))
    {
       return false;
    }

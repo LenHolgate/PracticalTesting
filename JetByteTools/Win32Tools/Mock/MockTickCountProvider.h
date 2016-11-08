@@ -26,7 +26,7 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\IProvideTickCount.h"
+#include "JetByteTools\Win32Tools\IProvideTickCount.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock

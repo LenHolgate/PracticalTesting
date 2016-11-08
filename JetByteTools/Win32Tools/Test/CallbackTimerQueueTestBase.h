@@ -24,10 +24,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "..\Mock\LoggingCallbackTimer.h"
-#include "..\Mock\MockTimerQueueMonitor.h"
-#include "..\Mock\MockTickCountProvider.h"
-#include "..\Mock\MockTickCount64Provider.h"
+#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
+#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
 
 #include "JetByteTools\Win32Tools\DebugTrace.h"
 
@@ -108,6 +108,7 @@ class TCallbackTimerQueueTestBase
       static void TestBeginTimeoutHandlingCancelTimer();
       static void TestBeginTimeoutHandlingDestroyTimer();
       static void TestHandleTimeoutSetTimer();
+      static void TestHandleTimeoutSetTimerInOnTimer();
       static void TestHandleTimeoutCancelTimer();
       static void TestHandleTimeoutDestroyTimer();
       static void TestMultipleTimers();
@@ -214,6 +215,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingCancelTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingDestroyTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutSetTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutSetTimerInOnTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutCancelTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutDestroyTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelExpiredTimer);
@@ -446,7 +448,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 
       const Milliseconds timeout = 1000;
 
-      CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+      CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData); //lint !e534 (Ignoring return value of function)
 
       const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
 
@@ -1404,6 +1406,112 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
       timer.CheckNoResults();
       timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerInOnTimer()
+{
+   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      // Set up so that set timer is called from within OnTimer and it resets the current timer
+      // note that this should return false (not currently set) and the new timer and
+      // user data should not affect the timer that is in the process of going off.
+
+      timer.SetTimerInOnTimer(timerQueue, handle, 500, 2);
+
+      expectedTimeout = CalculateExpectedTimeout(500, now, now);
+
+      IManageTimerQueue::TimeoutHandle h = timerQueue.BeginTimeoutHandling();
+
+      THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      timerQueue.HandleTimeout(h);
+
+      timer.CheckResult(_T("|OnTimer: 1|TimerSet|"));
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timerQueue.EndTimeoutHandling(h);
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      h = timerQueue.BeginTimeoutHandling();
+
+      THROW_ON_FAILURE_EX(IManageTimerQueue::InvalidTimeoutHandleValue != h);
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      timerQueue.HandleTimeout(h);
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      timerQueue.EndTimeoutHandling(h);
+
+      timer.CheckNoResults();
 
       tickProvider.CheckNoResults();
 
@@ -2422,7 +2530,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 
       for (size_t i = 0; i < 100000; ++i)
       {
-         timerQueue.SetTimer(handle, timer, static_cast<Milliseconds>(i % 4000), 0);
+         timerQueue.SetTimer(handle, timer, static_cast<Milliseconds>(i % 4000), 0); //lint !e534 (Ignoring return value of function)
       }
 
       const DWORD timeTaken = counter.GetElapsedTimeAsDWORD();
@@ -2478,7 +2586,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 
          for (size_t i = 0; i < 100000; ++i)
          {
-            timerQueue.SetTimer(handles[i % s_numHandles], timer, static_cast<Milliseconds>(i % 4000), 0);
+            timerQueue.SetTimer(handles[i % s_numHandles], timer, static_cast<Milliseconds>(i % 4000), 0); //lint !e534 (Ignoring return value of function)
          }
 
          const DWORD timeTaken = counter.GetElapsedTimeAsDWORD();
@@ -2492,7 +2600,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 
       for (size_t i = 0; i < s_numHandles; ++i)
       {
-         timerQueue.DestroyTimer(handles[i]);
+         timerQueue.DestroyTimer(handles[i]); //lint !e534 (Ignoring return value of function)
       }
    }
 
@@ -2557,7 +2665,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
 
       for (size_t i = 0; i < s_numHandles; ++i)
       {
-         timerQueue.DestroyTimer(handles[i]);
+         timerQueue.DestroyTimer(handles[i]); //lint !e534 (Ignoring return value of function)
       }
    }
 
@@ -2603,7 +2711,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
       {
          handles[i] = timerQueue.CreateTimer();
 
-         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0);
+         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0); //lint !e534 (Ignoring return value of function)
       }
 
       {
@@ -2639,7 +2747,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
 
       for (size_t i = 0; i < s_numHandles; ++i)
       {
-         timerQueue.DestroyTimer(handles[i]);
+         timerQueue.DestroyTimer(handles[i]); //lint !e534 (Ignoring return value of function)
       }
    }
 
@@ -2685,7 +2793,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
       {
          handles[i] = timerQueue.CreateTimer();
 
-         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0);
+         timerQueue.SetTimer(handles[i], timer, static_cast<Milliseconds>(i % 4000), 0); //lint !e534 (Ignoring return value of function)
       }
 
       {
@@ -2725,7 +2833,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
 
       for (size_t i = 0; i < s_numHandles; ++i)
       {
-         timerQueue.DestroyTimer(handles[i]);
+         timerQueue.DestroyTimer(handles[i]); //lint !e534 (Ignoring return value of function)
       }
    }
 

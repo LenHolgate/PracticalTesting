@@ -2,8 +2,8 @@
 #pragma once
 #endif
 
-#ifndef JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
-#define JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: ThreadedCallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,6 +177,7 @@ class CThreadedCallbackTimerQueue :
       /// for it to complete. Does not return until the shutdown has completed or
       /// the timeout has expired. Returns true if the shutdown is complete.
 
+      //lint -esym(534, JetByteTools::Win32::CThreadedCallbackTimerQueue::WaitForShutdownToComplete) (Ignoring return value of function)
       bool WaitForShutdownToComplete(
          const Milliseconds timeout = INFINITE);
 
@@ -233,7 +234,7 @@ class CThreadedCallbackTimerQueue :
 
       // Implement IRunnable
 
-      virtual int Run() throw();
+      virtual int Run();
 
       IMonitorThreadedCallbackTimerQueue &m_monitor;
 
@@ -262,7 +263,7 @@ class CThreadedCallbackTimerQueue :
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
-#endif // JETBYTE_TOOLS_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
+#endif // JETBYTE_TOOLS_WIN32_THREADED_CALLBACK_TIMER_QUEUE_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadedCallbackTimerQueue.h

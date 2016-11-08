@@ -590,6 +590,9 @@
     <ClInclude Include="CompilerName.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="DetectPlatformSDKVersion.h" />
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN10.h" />
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN8.h" />
+    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN81.h" />
     <ClInclude Include="ExampleConfigHeaders\x64-STLPort-Config.h" />
     <ClInclude Include="ForwardDeclareWinsockTypes.h" />
     <ClInclude Include="SecureCRT.h" />

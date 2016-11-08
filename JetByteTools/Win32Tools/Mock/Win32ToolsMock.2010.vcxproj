@@ -580,6 +580,7 @@
     <ClCompile Include="TestCallbackTimerWheel.cpp" />
     <ClCompile Include="TestIntrusiveMultiMapNode.cpp" />
     <ClCompile Include="TestIntrusiveRedBlackTreeNode.cpp" />
+    <ClCompile Include="TestThreadedCallbackTimerQueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LoggingCallbackTimer.h" />
@@ -592,6 +593,7 @@
     <ClInclude Include="TestCallbackTimerWheel.h" />
     <ClInclude Include="TestIntrusiveMultiMapNode.h" />
     <ClInclude Include="TestIntrusiveRedBlackTreeNode.h" />
+    <ClInclude Include="TestThreadedCallbackTimerQueue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

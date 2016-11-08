@@ -34,9 +34,8 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// TIntrusiveSet
+// TIntrusiveSetNodeKeyAccessorKeyIsAddress
 ///////////////////////////////////////////////////////////////////////////////
-
 
 template <class T>
 class TIntrusiveSetNodeKeyAccessorKeyIsAddress
@@ -70,7 +69,7 @@ class TIntrusiveSet : public TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN>
 
       Iterator Find(
          const T *pData) const;
-};
+}; //lint !e1509 (base class destructor for class 'TIntrusiveRedBlackTree' is not virtual -- Effective C++ #14 & Eff. C++ 3rd Ed. item 7)
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 typename TIntrusiveSet<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveSet<T,K,TtoK,Pr,TtoN>::Find(

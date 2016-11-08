@@ -32,6 +32,10 @@
 
 #include <algorithm>          // for min
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,28 +318,32 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 
 CCallbackTimerWheel::~CCallbackTimerWheel()
 {
-   ActiveHandles::Iterator it = m_activeHandles.Begin();
-
-   const ActiveHandles::Iterator end = m_activeHandles.End();
-
-   while (it != end)
+   try
    {
-      ActiveHandles::Iterator next = it + 1;
+      ActiveHandles::Iterator it = m_activeHandles.Begin();
 
-      TimerData *pData = *it;
+      const ActiveHandles::Iterator end = m_activeHandles.End();
 
-      m_activeHandles.Erase(it);
+      while (it != end)
+      {
+         ActiveHandles::Iterator next = it + 1;
 
-      delete pData;
+         TimerData *pData = *it;
 
-      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-      m_monitor.OnTimerDeleted();
-      #endif
+         m_activeHandles.Erase(it);
 
-      it = next;
+         delete pData;
+
+         #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+         m_monitor.OnTimerDeleted();
+         #endif
+
+         it = next;
+      }
+
+      delete [] m_pTimersStart;
    }
-
-   delete [] m_pTimersStart;
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 Milliseconds CCallbackTimerWheel::GetNextTimeout()
@@ -505,7 +513,6 @@ void CCallbackTimerWheel::HandleTimeout(
       #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
       m_monitor.OnTimer();
       #endif
-
    }
 }
 

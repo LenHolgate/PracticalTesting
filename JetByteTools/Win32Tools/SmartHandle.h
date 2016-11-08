@@ -98,6 +98,7 @@ class CSmartHandle : public IWaitable
 
       /// Close any handle that is managed by this CSmartHandle.
 
+      //lint -sem(JetByteTools::Win32::CSmartHandle::Close,cleanup)
       void Close();
 
       /// Returns true if the CSmartHandle currently has ownership of a HANDLE.

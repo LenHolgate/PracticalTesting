@@ -29,8 +29,8 @@
 
 #pragma hdrstop
 
-#include "..\IntrusiveRedBlackTree.h"
-#include "..\Mock\TestIntrusiveRedBlackTreeNode.h"
+#include "JetByteTools\Win32Tools\IntrusiveRedBlackTree.h"
+#include "JetByteTools\Win32Tools\Mock\TestIntrusiveRedBlackTreeNode.h"
 
 #include <deque>
 
@@ -869,10 +869,6 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
    }
 
    {
-      Tree tree;
-
-      size_t size = 0;
-
       {
          Tree tree;
          size_t i = 0;
@@ -894,6 +890,10 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
 
          tree.ValidateTree();
       }
+
+      Tree tree;
+
+      size_t size = 0;
 
       for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
          it != end;
@@ -949,10 +949,6 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
    }
 
    {
-      Tree tree;
-
-      size_t size = 0;
-
       {
          Tree tree;
          size_t i = 0;
@@ -974,6 +970,10 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
 
          tree.ValidateTree();
       }
+
+      Tree tree;
+
+      size_t size = 0;
 
       for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
          it != end;
@@ -1141,7 +1141,7 @@ void CIntrusiveRedBlackTreeTest::TestForwardIterate()
 
    NodeList nodeList;
 
-   const size_t numNodes = 10;
+   const int numNodes = 10;
 
    for (int i = 0; i < numNodes; ++i)
    {

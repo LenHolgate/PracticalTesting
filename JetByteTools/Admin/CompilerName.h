@@ -63,8 +63,13 @@
 #define JETBYTE_COMPILER_NAME_W L"VS2013"
 #define JETBYTE_COMPILER_LONG_NAME_A "Visual Studio 2013"
 #define JETBYTE_COMPILER_LONG_NAME_W L"Visual Studio 2013"
+#elif (_MSC_VER == 1900)
+#define JETBYTE_COMPILER_NAME_A "VS2015"
+#define JETBYTE_COMPILER_NAME_W L"VS2015"
+#define JETBYTE_COMPILER_LONG_NAME_A "Visual Studio 2015"
+#define JETBYTE_COMPILER_LONG_NAME_W L"Visual Studio 2015"
 #elif (JETBYTE_ALLOW_UNTESTED_COMPILE_ENV == 0)
-#error _MSC_VER is not defined, unsupported compiler.
+#error Unsupported compiler.
 #else
 #define JETBYTE_COMPILER_NAME_A "Unknown compiler"
 #define JETBYTE_COMPILER_NAME_W L"Unknown compiler"

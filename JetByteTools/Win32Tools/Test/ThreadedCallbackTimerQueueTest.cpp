@@ -22,19 +22,20 @@
 
 #include "ThreadedCallbackTimerQueueTest.h"
 
-#include "..\Mock\MockTickCountProvider.h"
-#include "..\Mock\MockTickCount64Provider.h"
-#include "..\Mock\LoggingCallbackTimer.h"
-#include "..\Mock\MockTimerQueue.h"
-#include "..\Mock\MockThreadedCallbackTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
+#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
+#include "JetByteTools\Win32Tools\Mock\MockTimerQueue.h"
+#include "JetByteTools\Win32Tools\Mock\MockThreadedCallbackTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\TestThreadedCallbackTimerQueue.h"
 
 #include "JetByteTools\TestTools\TestException.h"
 #include "JetByteTools\TestTools\RunTest.h"
 
 #pragma hdrstop
 
-#include "..\ThreadedCallbackTimerQueue.h"
-#include "..\CallbackTimerWheel.h"
+#include "JetByteTools\Win32Tools\ThreadedCallbackTimerQueue.h"
+#include "JetByteTools\Win32Tools\CallbackTimerWheel.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -50,6 +51,7 @@ using JetByteTools::Win32::Mock::CMockTickCount64Provider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
 using JetByteTools::Win32::Mock::CMockTimerQueue;
 using JetByteTools::Win32::Mock::CMockThreadedCallbackTimerQueueMonitor;
+using JetByteTools::Win32::Mock::CTestThreadedCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -102,6 +104,9 @@ void CThreadedCallbackTimerQueueTest::TestAll(
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerHybridTickCount64NoLock);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerTimerWheel);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerTimerWheelNoLock);
+
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerWithLockSetTimerInOnTimer);
+   RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestTimerNoLockSetTimerInOnTimer);
 
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTickCount64);
    RUN_TEST_EX(monitor, CThreadedCallbackTimerQueueTest, TestMultipleTimersTickCount64NoLock);
@@ -350,6 +355,93 @@ void CThreadedCallbackTimerQueueTest::TestTimerWithLock()
    timer.CheckResult(_T("|OnTimer: 1|"));
 }
 
+void CThreadedCallbackTimerQueueTest::TestTimerWithLockSetTimerInOnTimer()
+{
+   CMockTimerQueue queue;
+
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
+
+   CTestThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersWithLock);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   CLoggingCallbackTimer timer;
+
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
+
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+   timer.SetTimerInOnTimer(timerQueue, handle, 500, 2);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   // If we have reentrant lock checks enabled then we'll get a thread termination exception.
+   // If not then we will deadlock in the call to SetTimer...
+   #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
+   THROW_ON_FAILURE_EX(true == timerQueue.WaitForThreadTerminationException(REASONABLE_TIME));
+   timerQueue.CheckResult(_T("|OnThreadTerminationException: CThreadedCallbackTimerQueue::Run() - Exception: CLockableObject::CheckForRecursion() - Reentrant use detected.|"));
+   #else
+   THROW_ON_FAILURE_EX(false == queue.WaitForOnTimer(SHORT_TIME_NON_ZERO));
+   #endif
+
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|"));
+   timer.CheckResult(_T("|OnTimer: 1|"));
+
+   // if the reentrancy checks aren't enabled the timer queue will now hang trying
+   // to shut down the timer thread which is deadlocked by the recursive lock attempt
+}
+
+void CThreadedCallbackTimerQueueTest::TestTimerNoLockSetTimerInOnTimer()
+{
+   CMockTimerQueue queue;
+
+   // We set waitForOnTimerWaitComplete as we need to prevent NextTimeout
+   // being called twice before we wait on it once as then we miss one of
+   // the events and hang on the second wait...
+
+   // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
+   // for the WaitForOnTimer call before continuing, this guarantees that both
+   // calls to NextTimeout do not occur before we wait on the first one.below.
+
+   queue.waitForOnTimerWaitComplete = true;
+
+   CThreadedCallbackTimerQueue timerQueue(queue, CThreadedCallbackTimerQueue::DispatchTimersNoLock);
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   CLoggingCallbackTimer timer;
+
+   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+   queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
+
+   THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+   timer.SetTimerInOnTimer(timerQueue, handle, 500, 2);
+
+   THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
+
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|SetTimer: 1: 500|EndTimeoutHandling|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|EndTimeoutHandling|GetNextTimeout|GetNextTimeout|"));
+   timer.CheckResult(_T("|OnTimer: 1|TimerSet|OnTimer: 2|"));
+}
 void CThreadedCallbackTimerQueueTest::TestTimerNoLock()
 {
    CMockTimerQueue queue;

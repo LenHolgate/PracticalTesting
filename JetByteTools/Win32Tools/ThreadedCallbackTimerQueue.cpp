@@ -29,6 +29,7 @@
 #include "SEHException.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
 #include "DebugTrace.h"
+#include "PerThreadErrorHandler.h"
 
 #pragma hdrstop
 
@@ -186,7 +187,11 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 
 CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
 {
-   WaitForShutdownToComplete();
+   try
+   {
+      WaitForShutdownToComplete();
+   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void CThreadedCallbackTimerQueue::BeginShutdown()
@@ -206,8 +211,7 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
 
 CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -216,12 +220,9 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    return m_spTimerQueue->CreateTimer();
 }
@@ -238,8 +239,7 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -248,12 +248,9 @@ bool CThreadedCallbackTimerQueue::SetTimer(
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData);
 
@@ -265,8 +262,7 @@ bool CThreadedCallbackTimerQueue::SetTimer(
 bool CThreadedCallbackTimerQueue::CancelTimer(
    const Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -275,12 +271,9 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    const bool wasPending = m_spTimerQueue->CancelTimer(handle);
 
@@ -292,8 +285,7 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
 bool CThreadedCallbackTimerQueue::DestroyTimer(
    Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -302,12 +294,9 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    return m_spTimerQueue->DestroyTimer(handle);
 }
@@ -315,8 +304,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
 bool CThreadedCallbackTimerQueue::DestroyTimer(
    const Handle &handle)
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -326,11 +314,9 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
       lock.Lock();
    }
 
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    return m_spTimerQueue->DestroyTimer(handle);
 }
@@ -340,8 +326,7 @@ void CThreadedCallbackTimerQueue::SetTimer(
    const Milliseconds timeout,
    const UserData userData)
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -350,12 +335,9 @@ void CThreadedCallbackTimerQueue::SetTimer(
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    m_spTimerQueue->SetTimer(timer, timeout, userData);
 
@@ -372,72 +354,28 @@ bool CThreadedCallbackTimerQueue::DispatchesWithoutLock() const
    return !m_dispatchWithLock;
 }
 
-int CThreadedCallbackTimerQueue::Run() throw()
+int CThreadedCallbackTimerQueue::Run()
 {
-   CSEHException::Translator sehTranslator;
+   #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
+   CPerThreadErrorHandler errorHandler;
+   #endif
 
    try
    {
-      if (OnThreadInitialised())
+      try
       {
-         if (m_dispatchWithLock)
+         if (OnThreadInitialised())
          {
-            while (!m_shutdown)
+            if (m_dispatchWithLock)
             {
-               const Milliseconds timeout = GetNextTimeout();
-
-               if (timeout == 0)
+               while (!m_shutdown)
                {
+                  const Milliseconds timeout = GetNextTimeout();
 
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
-                  CLockableObject::PotentialOwner lock(m_lock);
-
-                  if (!lock.TryLock())
+                  if (timeout == 0)
                   {
-                     m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
 
-                     lock.Lock();
-                  }
-#else
-
-                  CLockableObject::Owner lock(m_lock);
-
-#endif
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
-                  m_monitor.OnTimerProcessingStarted();
-
-#endif
-
-                  m_spTimerQueue->HandleTimeouts();
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
-                  m_monitor.OnTimerProcessingStopped();
-
-#endif
-               }
-               else
-               {
-                  m_stateChangeEvent.Wait(timeout);
-               }
-            }
-         }
-         else
-         {
-            while (!m_shutdown)
-            {
-               const Milliseconds timeout = GetNextTimeout();
-
-               if (timeout == 0)
-               {
-                  IManageTimerQueue::TimeoutHandle handle = IManageTimerQueue::InvalidTimeoutHandleValue;
-
-                  {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+                     #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
                      CLockableObject::PotentialOwner lock(m_lock);
 
                      if (!lock.TryLock())
@@ -446,87 +384,117 @@ int CThreadedCallbackTimerQueue::Run() throw()
 
                         lock.Lock();
                      }
-
-#else
-
+                     #else
                      CLockableObject::Owner lock(m_lock);
+                     #endif
 
-#endif
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
+                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
                      m_monitor.OnTimerProcessingStarted();
+                     #endif
 
-#endif
+                     m_spTimerQueue->HandleTimeouts();
 
-                     handle = m_spTimerQueue->BeginTimeoutHandling();
+                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+                     m_monitor.OnTimerProcessingStopped();
+                     #endif
                   }
-
-                  if (handle != IManageTimerQueue::InvalidTimeoutHandleValue)
+                  else
                   {
-                     m_spTimerQueue->HandleTimeout(handle);
-
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
-                     CLockableObject::PotentialOwner lock(m_lock);
-
-                     if (!lock.TryLock())
-                     {
-                        m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
-
-                        lock.Lock();
-                     }
-
-#else
-
-                     CLockableObject::Owner lock(m_lock);
-
-#endif
-
-                     m_spTimerQueue->EndTimeoutHandling(handle);
+                     m_stateChangeEvent.Wait(timeout);
                   }
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
-                  m_monitor.OnTimerProcessingStopped();
-
-#endif
-
-               }
-               else
-               {
-                  m_stateChangeEvent.Wait(timeout);
                }
             }
-         }
+            else
+            {
+               while (!m_shutdown)
+               {
+                  const Milliseconds timeout = GetNextTimeout();
 
-         OnThreadShutdown();
+                  if (timeout == 0)
+                  {
+                     IManageTimerQueue::TimeoutHandle handle = IManageTimerQueue::InvalidTimeoutHandleValue;
+
+                     {
+                        #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+                        CLockableObject::PotentialOwner lock(m_lock);
+
+                        if (!lock.TryLock())
+                        {
+                           m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
+
+                           lock.Lock();
+                        }
+                        #else
+                        CLockableObject::Owner lock(m_lock);
+                        #endif
+
+                        #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+                        m_monitor.OnTimerProcessingStarted();
+                        #endif
+
+                        handle = m_spTimerQueue->BeginTimeoutHandling();
+                     }
+
+                     if (handle != IManageTimerQueue::InvalidTimeoutHandleValue)
+                     {
+                        m_spTimerQueue->HandleTimeout(handle);
+
+                        #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+                        CLockableObject::PotentialOwner lock(m_lock);
+
+                        if (!lock.TryLock())
+                        {
+                           m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
+
+                           lock.Lock();
+                        }
+                        #else
+                        CLockableObject::Owner lock(m_lock);
+                        #endif
+
+                        m_spTimerQueue->EndTimeoutHandling(handle);
+                     }
+
+                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+                     m_monitor.OnTimerProcessingStopped();
+                     #endif
+
+                  }
+                  else
+                  {
+                     m_stateChangeEvent.Wait(timeout);
+                  }
+               }
+            }
+
+            OnThreadShutdown();
+         }
+      }
+      catch(const CException &e)
+      {
+         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
+      }
+      catch(const CSEHException &e)
+      {
+         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - SEH Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
+      }
+      catch(const std::exception &e)
+      {
+         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
+      }
+      JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
+      {
+         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Unexpected exception"));
       }
    }
-   catch(const CException &e)
-   {
-      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
-   }
-   catch(const CSEHException &e)
-   {
-      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - SEH Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
-   }
-   catch(const std::exception &e)
-   {
-      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
-   }
-   JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
-   {
-      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Unexpected exception"));
-   }
+   JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
 
    return 0;
 }
 
 Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 {
-#if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
@@ -535,12 +503,9 @@ Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 
       lock.Lock();
    }
-
-#else
-
+   #else
    CLockableObject::Owner lock(m_lock);
-
-#endif
+   #endif
 
    return m_spTimerQueue->GetNextTimeout();
 }
@@ -580,39 +545,25 @@ static IManageTimerQueue *CreateTimerQueue(
    {
       case CThreadedCallbackTimerQueue::BestForPlatform :
 
-#if (_WIN32_WINNT >= 0x0600)
-
+         #if (_WIN32_WINNT >= 0x0600)
          return new CCallbackTimerQueueEx(monitor);
-
-#else
-
+         #else
          return new CCallbackTimerQueue(monitor);
-
-#endif
-
-      break;
+         #endif
 
       case CThreadedCallbackTimerQueue::TickCount64 :
 
-#if (_WIN32_WINNT >= 0x0600)
-
-      return new CCallbackTimerQueueEx(monitor);
-
-#else
-
-   throw CException(
-      _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
-      _T("Currently unsupported on this platform."));
-
-#endif
-
-      break;
+         #if (_WIN32_WINNT >= 0x0600)
+         return new CCallbackTimerQueueEx(monitor);
+         #else
+         throw CException(
+            _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
+            _T("Currently unsupported on this platform."));
+         #endif
 
       case CThreadedCallbackTimerQueue::HybridTickCount64 :
 
          return new CCallbackTimerQueue(monitor);
-
-      break;
 
       //case CThreadedCallbackTimerQueue::TickCount32 :
 

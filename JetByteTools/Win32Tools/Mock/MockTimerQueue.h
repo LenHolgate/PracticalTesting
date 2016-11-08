@@ -26,8 +26,11 @@
 
 #include "JetByteTools\TestTools\TestLog.h"
 
-#include "..\IManageTimerQueue.h"
-#include "..\AutoResetEvent.h"
+#include "JetByteTools\Win32Tools\IManageTimerQueue.h"
+#include "JetByteTools\Win32Tools\AutoResetEvent.h"
+#include "JetByteTools\Win32Tools\IRunnable.h"
+#include "JetByteTools\Win32Tools\Thread.h"
+#include "JetByteTools\Win32Tools\ReentrantLockableObject.h"
 
 #include <list>
 
@@ -52,8 +55,39 @@ class CMockTimerQueue :
 {
    public :
 
+      class TimerExpiryThread : private JetByteTools::Win32::IRunnable
+      {
+         public :
+
+            explicit TimerExpiryThread(
+               CMockTimerQueue &timerQueue);
+
+            void WaitForCompletion();
+
+            ~TimerExpiryThread();
+
+         private :
+
+            // Implement IRunnable
+
+            virtual int Run();
+
+            JetByteTools::Win32::CThread m_thread;
+
+            CMockTimerQueue &m_timerQueue;
+
+            /// No copies do not implement
+            TimerExpiryThread(const TimerExpiryThread &rhs);
+            /// No copies do not implement
+            TimerExpiryThread &operator=(const TimerExpiryThread &rhs);
+      };
+
       explicit CMockTimerQueue(
          const bool dispatchWithoutLock = true);
+
+      CMockTimerQueue(
+         const bool dispatchWithoutLock,
+         JetByteTools::Test::CTestLog *pLinkedLog);
 
       bool waitForOnTimerWaitComplete;
 
@@ -115,6 +149,8 @@ class CMockTimerQueue :
       virtual bool DispatchesWithoutLock() const;
 
    private :
+
+      mutable JetByteTools::Win32::CReentrantLockableObject m_lock;
 
       const bool m_dispatchWithoutLock;
 

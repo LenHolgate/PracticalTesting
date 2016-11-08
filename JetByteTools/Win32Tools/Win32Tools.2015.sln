@@ -1,24 +1,17 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\Admin\Admin.2008.vcproj", "{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}"
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\Admin\Admin.2015.vcxproj", "{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\TestTools\TestTools.2008.vcproj", "{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\TestTools\TestTools.2015.vcxproj", "{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Tools", "Win32Tools.2008.vcproj", "{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Tools", "Win32Tools.2015.vcxproj", "{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsMock", "Mock\Win32ToolsMock.2008.vcproj", "{0B1D4018-64AA-44B7-ABD8-936603EC0DE7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsMock", "Mock\Win32ToolsMock.2015.vcxproj", "{0B1D4018-64AA-44B7-ABD8-936603EC0DE7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsTest", "Test\Win32ToolsTest.2008.vcproj", "{673D9A12-1869-4DDF-BC37-A463EAC46722}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0B1D4018-64AA-44B7-ABD8-936603EC0DE7} = {0B1D4018-64AA-44B7-ABD8-936603EC0DE7}
-		{8AD287CB-15B7-48DA-99C7-8FDC792B79F2} = {8AD287CB-15B7-48DA-99C7-8FDC792B79F2}
-		{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3} = {7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32ToolsTest", "Test\Win32ToolsTest.2015.vcxproj", "{673D9A12-1869-4DDF-BC37-A463EAC46722}"
 EndProject
 Global
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
@@ -135,5 +128,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
 EndGlobal

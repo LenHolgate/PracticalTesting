@@ -24,6 +24,7 @@
 #include "IRunnable.h"
 #include "StringConverter.h"
 #include "Win32Exception.h"
+#include "PerThreadErrorHandler.h"
 
 #pragma hdrstop
 
@@ -42,9 +43,9 @@ namespace Win32 {
 
 #if (JETBYTE_TRACK_THREAD_NAMES == 1)
 
-static CLockableObject s_criticalSection;
+static CLockableObject s_lock;
 
-CThread::ThreadNames CThread::m_threadNames;
+CThread::ThreadNames CThread::s_threadNames;
 
 #endif
 
@@ -166,7 +167,7 @@ void CThread::InternalResume()
 {
    if (IsRunning())
    {
-      if (-1 == ::ResumeThread(m_hThread))
+      if (static_cast<DWORD>(-1) == ::ResumeThread(m_hThread))
       {
          throw CWin32Exception(_T("CThread::Resume()"), ::GetLastError());
       }
@@ -252,6 +253,10 @@ unsigned int __stdcall CThread::ThreadFunction(
 
    if (pThis)
    {
+      #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 1)
+      CPerThreadErrorHandler errorHandler;
+      #endif
+
       try
       {
          result = pThis->m_runnable.Run();
@@ -261,6 +266,14 @@ unsigned int __stdcall CThread::ThreadFunction(
          result = 666;
       }
    }
+
+   #if (JETBYTE_DELAY_THREAD_TERMINATION_HACK == 1)
+   #ifdef JETBYTE_DELAY_THREAD_TERMINATION_DELAY
+   ::SleepEx(JETBYTE_DELAY_THREAD_TERMINATION_DELAY, TRUE);
+   #else
+   ::SleepEx(10, TRUE);
+   #endif
+   #endif
 
    return result;
 }
@@ -312,11 +325,11 @@ void CThread::SetThreadName(
 
    if (threadID != CThreadNameInfo::CurrentThreadID)
    {
-      m_threadNames[threadID] = threadName;
+      s_threadNames[threadID] = threadName;
    }
    else
    {
-      m_threadNames[::GetCurrentThreadId()] = threadName;
+      s_threadNames[::GetCurrentThreadId()] = threadName;
    }
 
 #endif
@@ -338,11 +351,9 @@ bool CThread::IsThisThread() const
 
 CThread::ThreadNames CThread::GetThreadNames()
 {
-   ICriticalSection::Owner lock(s_criticalSection);
+   CLockableObject::Owner lock(s_lock);
 
-   ThreadNames copy(m_threadNames);
-
-   return m_threadNames;
+   return s_threadNames;
 }
 
 #endif

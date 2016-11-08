@@ -27,6 +27,8 @@
 
 #pragma hdrstop
 
+#include "JetByteTools\Admin\FunctionName.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -61,6 +63,22 @@ static int GetDaysThisYearFrom(
 static int GetDaysThisYearTo(
    const SYSTEMTIME &date);
 
+static const TCHAR *GetDay(
+   const WORD day);
+
+static const TCHAR *GetMonth(
+   const WORD month);
+
+static const char *GetDayA(
+   const WORD day);
+
+static const char *GetMonthA(
+   const WORD month);
+
+static void ValidateInRangeForDisplay(
+   const SYSTEMTIME &date,
+   const _tstring &location);
+
 ///////////////////////////////////////////////////////////////////////////////
 // CSystemTime
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,6 +86,24 @@ static int GetDaysThisYearTo(
 CSystemTime::CSystemTime()
 {
    ::ZeroMemory(this, sizeof(SYSTEMTIME));
+}
+
+CSystemTime::CSystemTime(
+   const FILETIME &fileTime)
+{
+   ::ZeroMemory(this, sizeof(SYSTEMTIME));
+
+   SetLastError(ERROR_SUCCESS);
+
+   if (0 != ::FileTimeToSystemTime(&fileTime, this))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(_T("CSystemTime::CSystemTime()"), lastError);
+      }
+   }
 }
 
 CSystemTime::CSystemTime(
@@ -82,7 +118,7 @@ CSystemTime::CSystemTime(
 
    ULARGE_INTEGER largeInteger;
 
-   largeInteger.QuadPart = dateTime;
+   largeInteger.QuadPart = dateTime; //lint !e737 (loss of sign in promotion from 'const long long' to 'ULONGLONG')
 
    FILETIME fileTime;
 
@@ -356,74 +392,117 @@ void CSystemTime::ParseTime(
 
 _tstring CSystemTime::GetAsYYYYMMDD() const
 {
-   if (wYear > 9999 || wMonth > 99 || wDay > 99)
-   {
-      throw CException(_T("CSystemTime::GetAsYYYYMMDD()"), _T("Invalid date; year > 9999?"));
-   }
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
 
    TCHAR buffer[9];
 
-   _stprintf_s(buffer, _T("%04u%02u%02u"),
-      wYear,
-      wMonth,
-      wDay);
+   (void)_stprintf_s(buffer, _T("%04u%02u%02u"),
+      static_cast<unsigned int>(wYear),
+      static_cast<unsigned int>(wMonth),
+      static_cast<unsigned int>(wDay));
 
    return buffer;
 }
 
 _tstring CSystemTime::GetAsHHMMSS() const
 {
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
    TCHAR buffer[7];
 
-   _stprintf_s(buffer, _T("%02u%02u%02u"),
-      wHour,
-      wMinute,
-      wSecond);
+   (void)_stprintf_s(buffer, _T("%02u%02u%02u"),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond));
 
    return buffer;
 }
 
 _tstring CSystemTime::GetAsHHMMSSMMM() const
 {
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
    TCHAR buffer[10];
 
-   _stprintf_s(buffer, _T("%02u%02u%02u%03u"),
-      wHour,
-      wMinute,
-      wSecond,
-      wMilliseconds);
+   (void)_stprintf_s(buffer, _T("%02u%02u%02u%03u"),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond),
+      static_cast<unsigned int>(wMilliseconds));
 
    return buffer;
 }
 
 _tstring CSystemTime::GetAsDatabaseDateTimeStamp() const
 {
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
    TCHAR buffer[24];
 
-   _stprintf_s(buffer, _T("%04u-%02u-%02u %02u:%02u:%02u.%03u"),
-      wYear,
-      wMonth,
-      wDay,
-      wHour,
-      wMinute,
-      wSecond,
-      wMilliseconds);
+   (void)_stprintf_s(buffer, _T("%04u-%02u-%02u %02u:%02u:%02u.%03u"),
+      static_cast<unsigned int>(wYear),
+      static_cast<unsigned int>(wMonth),
+      static_cast<unsigned int>(wDay),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond),
+      static_cast<unsigned int>(wMilliseconds));
 
    return buffer;
 }
 
 string CSystemTime::GetAsDatabaseDateTimeStampA() const
 {
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
    char buffer[24];
 
-   sprintf_s(buffer, sizeof(buffer), "%04u-%02u-%02u %02u:%02u:%02u.%03u",
-      wYear,
-      wMonth,
-      wDay,
-      wHour,
-      wMinute,
-      wSecond,
-      wMilliseconds);
+   (void)sprintf_s(buffer, sizeof(buffer), "%04u-%02u-%02u %02u:%02u:%02u.%03u",
+      static_cast<unsigned int>(wYear),
+      static_cast<unsigned int>(wMonth),
+      static_cast<unsigned int>(wDay),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond),
+      static_cast<unsigned int>(wMilliseconds));
+
+   return buffer;
+}
+
+/// Returns the date/time in HTML format (Tue, 15 Nov 1994 08:12:31 GMT)
+
+_tstring CSystemTime::GetAsHTTPDate() const
+{
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
+   TCHAR buffer[30];
+
+   (void)_stprintf_s(buffer, _T("%3s, %02u %3s %04u %02u:%02u:%02u GMT"),
+      GetDay(wDayOfWeek),
+      static_cast<unsigned int>(wDay),
+      GetMonth(wMonth),
+      static_cast<unsigned int>(wYear),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond));
+
+   return buffer;
+}
+
+string CSystemTime::GetAsHTTPDateA() const
+{
+   ValidateInRangeForDisplay(*this, JETBYTE_FUNCTION_NAME);
+
+   char buffer[30];
+
+   (void)sprintf_s(buffer, "%3s, %02u %3s %04u %02u:%02u:%02u GMT",
+      GetDayA(wDayOfWeek),
+      static_cast<unsigned int>(wDay),
+      GetMonthA(wMonth),
+      static_cast<unsigned int>(wYear),
+      static_cast<unsigned int>(wHour),
+      static_cast<unsigned int>(wMinute),
+      static_cast<unsigned int>(wSecond));
 
    return buffer;
 }
@@ -510,7 +589,7 @@ void CSystemTime::AddMonths(
 {
    const int newMonths = wMonth + months - 1;
 
-   wMonth = static_cast<WORD>(((newMonths + 12) % 12) + 1);
+   wMonth = static_cast<WORD>(((newMonths + 12) % 12) + 1); //lint !e571 (Suspicious cast)
 
    // This is rather horrible, I'm sure there's an easier way...
 
@@ -573,7 +652,7 @@ __int64 CSystemTime::GetAsInt64(
    largeInteger.LowPart = fileTime.dwLowDateTime;
    largeInteger.HighPart = fileTime.dwHighDateTime;
 
-   return largeInteger.QuadPart;
+   return static_cast<__int64>(largeInteger.QuadPart);
 }
 
 __int64 CSystemTime::GetDateAsInt64(
@@ -908,6 +987,176 @@ static int GetDaysThisYearTo(
    days += date.wDay;
 
    return days;
+}
+
+static const TCHAR *GetDay(
+   const WORD day)
+{
+   switch (day)
+   {
+      case 0 :
+         return _T("Sun");
+      case 1 :
+         return _T("Mon");
+      case 2 :
+         return _T("Tue");
+      case 3 :
+         return _T("Wed");
+      case 4 :
+         return _T("Thu");
+      case 5 :
+         return _T("Fri");
+      case 6 :
+         return _T("Sat");
+      default : 
+         return _T(" ? ");
+   }
+}
+
+static const TCHAR *GetMonth(
+   const WORD month)
+{
+   switch (month)
+   {
+      case 1 :
+         return _T("Jan");
+      case 2 :
+         return _T("Feb");
+      case 3 :
+         return _T("Mar");
+      case 4 :
+         return _T("Apr");
+      case 5 :
+         return _T("May");
+      case 6 :
+         return _T("Jun");
+      case 7 :
+         return _T("Jul");
+      case 8 :
+         return _T("Aug");
+      case 9 :
+         return _T("Sep");
+      case 10 :
+         return _T("Oct");
+      case 11 :
+         return _T("Nov");
+      case 12 :
+         return _T("Dec");
+      default : 
+         return _T(" ? ");
+   }
+}
+
+static const char *GetDayA(
+   const WORD day)
+{
+   switch (day)
+   {
+      case 0 :
+         return "Sun";
+      case 1 :
+         return "Mon";
+      case 2 :
+         return "Tue";
+      case 3 :
+         return "Wed";
+      case 4 :
+         return "Thu";
+      case 5 :
+         return "Fri";
+      case 6 :
+         return "Sat";
+      default : 
+         return " ? ";
+   }
+}
+
+static const char *GetMonthA(
+   const WORD month)
+{
+   switch (month)
+   {
+      case 1 :
+         return "Jan";
+      case 2 :
+         return "Feb";
+      case 3 :
+         return "Mar";
+      case 4 :
+         return "Apr";
+      case 5 :
+         return "May";
+      case 6 :
+         return "Jun";
+      case 7 :
+         return "Jul";
+      case 8 :
+         return "Aug";
+      case 9 :
+         return "Sep";
+      case 10 :
+         return "Oct";
+      case 11 :
+         return "Nov";
+      case 12 :
+         return "Dec";
+      default : 
+         return " ? ";
+   }
+}
+
+static void ValidateInRangeForDisplay(
+   const SYSTEMTIME &date,
+   const _tstring &location)
+{
+   if (date.wYear > 9999)
+   {
+      throw CException(
+         location,
+         _T("Year is out of range: ") + ToString(date.wYear) + _T(", max is 9999"));
+   }
+
+   if (date.wMonth > 99)
+   {
+      throw CException(
+         location,
+         _T("Month is out of range: ") + ToString(date.wMonth) + _T(", max is 99 (!)"));
+   }
+   
+   if (date.wDay > 99)
+   {
+      throw CException(
+         location,
+         _T("Day is out of range: ") + ToString(date.wDay) + _T(", max is 99 (!)"));
+   }
+
+   if (date.wHour > 99)
+   {
+      throw CException(
+         location,
+         _T("Hour is out of range: ") + ToString(date.wHour) + _T(", max is 99 (!)"));
+   }
+
+   if (date.wMinute > 99)
+   {
+      throw CException(
+         location,
+         _T("Minute is out of range: ") + ToString(date.wMinute) + _T(", max is 99 (!)"));
+   }
+
+   if (date.wSecond > 99)
+   {
+      throw CException(
+         location,
+         _T("Minute is out of range: ") + ToString(date.wSecond) + _T(", max is 99 (!)"));
+   }
+
+   if (date.wMilliseconds > 999)
+   {
+      throw CException(
+         location,
+         _T("Milliseconds is out of range: ") + ToString(date.wSecond) + _T(", max is 999"));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -65,6 +65,7 @@ class IWaitable
 
       /// Wait, with a time limit, for the object to become signalled.
 
+      //lint -esym(534, JetByteTools::Win32::*::Wait) (Ignoring return value of function)
       virtual bool Wait(
          const Milliseconds timeout) const = 0;
 
@@ -111,7 +112,7 @@ class IWaitable
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~IWaitable() {}
+      virtual ~IWaitable() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

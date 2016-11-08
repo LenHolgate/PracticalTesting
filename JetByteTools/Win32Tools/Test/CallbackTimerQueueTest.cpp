@@ -22,9 +22,9 @@
 
 #include "CallbackTimerQueueTest.h"
 
-#include "..\Mock\MockTickCountProvider.h"
-#include "..\Mock\LoggingCallbackTimer.h"
-#include "..\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
+#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
+#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 
@@ -33,7 +33,7 @@
 
 #pragma hdrstop
 
-#include "..\CallbackTimerQueue.h"
+#include "JetByteTools\Win32Tools\CallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives

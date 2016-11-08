@@ -39,6 +39,7 @@
 
 #pragma hdrstop
 
+#include "JetByteTools\Win32Tools\GlobalErrorHandler.h"
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,6 +51,7 @@ using JetByteTools::Win32::CStringConverter;
 using JetByteTools::Win32::CSEHException;
 using JetByteTools::Win32::SetCurrentDirectory;
 using JetByteTools::Win32::ToBool;
+using JetByteTools::Win32::CGlobalErrorHandler;
 
 using JetByteTools::Test::CTestException;
 using JetByteTools::Test::CTestMonitor;
@@ -69,9 +71,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
    PCSTR *ppArgv = (PCSTR*) __argv;
 #endif
 
-   ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
-
-   CSEHException::Translator sehTranslator;
+   //CGlobalErrorHandler handler;
 
    CDebugTrace::Instance().SetLogName("Win32ToolsTest.log");
 
@@ -101,7 +101,7 @@ int main(int /*argc*/, char * /*argv[ ]*/)
       CCallbackTimerQueueExTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
-      const size_t expectedTests = 182;
+      const size_t expectedTests = 187;
 
       ok = monitor.Report(expectedTests);
    }

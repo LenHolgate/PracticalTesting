@@ -47,16 +47,15 @@ class IRunnable
 
       /// The return value is the exit code of the thread that is run to
       /// execute the code.
-      /// \ingroup NoThrowSpec
 
-      virtual int Run() throw() = 0;
+      virtual int Run() = 0;
 
    protected :
 
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~IRunnable() {}
+      virtual ~IRunnable() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

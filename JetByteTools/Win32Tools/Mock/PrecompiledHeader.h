@@ -31,6 +31,7 @@
 #include "MockTimerQueue.h"
 #include "MockTimerQueueMonitor.h"
 #include "TestCallbackTimerWheel.h"
+#include "TestThreadedCallbackTimerQueue.h"
 #include "TestIntrusiveRedBlackTreeNode.h"
 #include "TestIntrusiveMultiMapNode.h"
 

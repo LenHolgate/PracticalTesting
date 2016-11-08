@@ -26,12 +26,19 @@
 
 #pragma hdrstop
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Win32 {
+
+static const HANDLE s_currentThreadPseudoHandle = ::GetCurrentThread();
+static const HANDLE s_currentProcessPseudoHandle = ::GetCurrentProcess();
 
 ///////////////////////////////////////////////////////////////////////////////
 // CSmartHandle
@@ -61,9 +68,7 @@ CSmartHandle::~CSmartHandle()
    {
       Close();
    }
-   catch(CWin32Exception & /*e*/)
-   {
-   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 CSmartHandle CSmartHandle::DuplicateHandle(
@@ -112,18 +117,22 @@ CSmartHandle CSmartHandle::DuplicateHandle() const
 
 void CSmartHandle::Close()
 {
-   if (IsValid())       // check for pseudo handles from current thread and process?
+   if (IsValid())
    {
-      if (!::CloseHandle(m_handle))
+      if (m_handle != s_currentProcessPseudoHandle &&
+          m_handle != s_currentThreadPseudoHandle)
       {
-         const DWORD lastError = ::GetLastError();
+         if (!::CloseHandle(m_handle))
+         {
+            const DWORD lastError = ::GetLastError();
 
-         throw CWin32Exception(_T("CSmartHandle::Close()"), lastError);
+            throw CWin32Exception(_T("CSmartHandle::Close()"), lastError);
+         }
       }
 
       m_handle = INVALID_HANDLE_VALUE;
    }
-}
+} //lint !e1578 (Pointer member (m_handle) neither freed nor zeroed by cleanup function)
 
 CSmartHandle &CSmartHandle::operator=(const HANDLE handle)
 {
@@ -147,7 +156,7 @@ CSmartHandle &CSmartHandle::operator=(
    *this = copy.Detach();
 
    return *this;
-}
+} //lint !e1529 (Symbol not first checking for assignment to this -- Effective C++ #17 & Eff. C++ 3rd Ed. item 11)
 
 CSmartHandle::operator HANDLE() const
 {
@@ -156,7 +165,7 @@ CSmartHandle::operator HANDLE() const
 
 HANDLE &CSmartHandle::GetHandle()
 {
-   return m_handle;
+   return m_handle; //lint !e1536 (Exposing low access member -- Effective C++ #30)
 }
 
 HANDLE CSmartHandle::GetHandle() const

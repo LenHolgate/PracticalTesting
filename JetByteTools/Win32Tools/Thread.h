@@ -169,7 +169,7 @@ class CThread : public IWaitable
 
 #if (JETBYTE_TRACK_THREAD_NAMES == 1)
 
-      static ThreadNames m_threadNames;
+      static ThreadNames s_threadNames;
 
 #endif
 

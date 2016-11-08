@@ -128,6 +128,21 @@
 #pragma warning(disable: 28252)  // Inconsistent annotation for function
 #pragma warning(disable: 28253)  // Inconsistent annotation for function
 
+#if _MSC_VER == 1400
+#pragma warning(disable: 4311)   // 'type cast' : pointer truncation from 'x' to 'y'
+#pragma warning(disable: 4312)   // 'type cast' : conversion from 'x' to 'y' of greater size
+#endif
+
+#if _MSC_VER == 1900
+#pragma warning(disable: 4457)   // declaration of 'x' hides function parameter
+#pragma warning(disable: 4458)   // declaration of 'x' hides class member
+#pragma warning(disable: 4091)   // 'typedef ': ignored on left of 'x' when no variable is declared
+#pragma warning(disable: 4456)   // declaration of 'x' hides previous local declaration
+#pragma warning(disable: 5025)   // 'x': move assignment operator was implicitly defined as deleted
+#pragma warning(disable: 5026)   // 'x': move constructor was implicitly defined as deleted because a base class move constructor is inaccessible or deleted
+#pragma warning(disable: 5027)   // 'x': move assignment operator was implicitly defined as deleted because a base class move assignment operator is inaccessible or deleted
+#endif
+
 #endif // JETBYTE_TOOLS_ADMIN_WARNINGS_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -37,6 +37,7 @@ namespace Win32 {
 
 class CEmptyBase
 {
+   //lint -esym(1510, CEmptyBase) (base class has no destructor -- Effective C++ #14)
 };
 
 ///////////////////////////////////////////////////////////////////////////////

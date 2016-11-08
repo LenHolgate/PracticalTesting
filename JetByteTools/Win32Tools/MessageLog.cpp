@@ -60,6 +60,11 @@ CMessageLog::CMessageLog(
 {
 }
 
+CMessageLog::~CMessageLog()
+{
+   m_pLog = 0;
+}
+
 ILogMessages *CMessageLog::SetLog(
    ILogMessages &log)
 {

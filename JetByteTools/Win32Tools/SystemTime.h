@@ -60,7 +60,12 @@ class CSystemTime : public SYSTEMTIME
       explicit CSystemTime(
          const __int64 dateTime);
 
-      /// Constructs a SYSTEMTIME with the specified SYSTEMTIMEs...
+      /// Constructs a SYSTEMTIME from a FILETIME...
+
+      explicit CSystemTime(
+         const FILETIME &fileTime);
+
+      /// Constructs a SYSTEMTIME with the specified SYSTEMTIME...
 
       explicit CSystemTime(
          const SYSTEMTIME &systemTime);
@@ -118,6 +123,11 @@ class CSystemTime : public SYSTEMTIME
       void ParseTime(
          const _tstring &hhmmssmmm);
 
+      void ParseFromNTP(
+         const __int64 ntp);
+
+      __int64 GetAsNTP() const;
+
       /// Returns the date in YYYYMMDD format.
 
       _tstring GetAsYYYYMMDD() const;
@@ -135,6 +145,12 @@ class CSystemTime : public SYSTEMTIME
       _tstring GetAsDatabaseDateTimeStamp() const;
 
       std::string GetAsDatabaseDateTimeStampA() const;
+
+      /// Returns the date/time in HTML format (Tue, 15 Nov 1994 08:12:31 GMT)
+
+      _tstring GetAsHTTPDate() const;
+
+      std::string GetAsHTTPDateA() const;
 
       bool ContainsDate() const;
 

@@ -159,7 +159,7 @@ bool IWaitable::WaitWithMessageLoop(
       }
 #pragma warning(push)
 #pragma warning(disable: 4296)   // '>=' : expression is always true
-      else if (dwRet >= WAIT_OBJECT_0 && dwRet < (WAIT_OBJECT_0 + numHandles))
+      else if (dwRet >= WAIT_OBJECT_0 && dwRet < (WAIT_OBJECT_0 + numHandles)) //lint !e685 (Relational operator '>=' always evaluates to 'true')
 #pragma warning(pop)
       {
          // An event was signaled, return

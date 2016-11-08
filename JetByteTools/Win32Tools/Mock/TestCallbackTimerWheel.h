@@ -24,7 +24,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "..\CallbackTimerWheel.h"
+#include "JetByteTools\Win32Tools\CallbackTimerWheel.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Classes defined in other files...
@@ -51,7 +51,6 @@ namespace Mock {
 // CTestCallbackTimerWheel
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A mock object that implements IMonitorCallbackTimerQueue.
 /// \ingroup Win32ToolsMocks
 
 class CTestCallbackTimerWheel : public CCallbackTimerWheel

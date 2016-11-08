@@ -51,7 +51,9 @@ CLoggingCallbackTimer::CLoggingCallbackTimer()
       logUserData(true),
       m_numTimerEvents(0),
       m_pTimerQueue(0),
-      m_handle(IQueueTimers::InvalidHandleValue)
+      m_handle(IQueueTimers::InvalidHandleValue),
+      m_timeout(INFINITE),
+      m_userData(0)
 {
 }
 
@@ -62,7 +64,9 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
       logUserData(true),
       m_numTimerEvents(0),
       m_pTimerQueue(0),
-      m_handle(IQueueTimers::InvalidHandleValue)
+      m_handle(IQueueTimers::InvalidHandleValue),
+      m_timeout(INFINITE),
+      m_userData(0)
 {
 }
 
@@ -73,6 +77,25 @@ void CLoggingCallbackTimer::DestroyTimerInOnTimer(
    m_pTimerQueue = &timerQueue;
 
    m_handle = handle;
+
+   m_timeout = INFINITE;
+
+   m_userData = 0;
+}
+
+void CLoggingCallbackTimer::SetTimerInOnTimer(
+   IQueueTimers &timerQueue,
+   IQueueTimers::Handle &handle,
+   const Milliseconds timeout,
+   UserData userData)
+{
+   m_pTimerQueue = &timerQueue;
+
+   m_handle = handle;
+
+   m_timeout = timeout;
+
+   m_userData = userData;
 }
 
 bool CLoggingCallbackTimer::WaitForTimer(
@@ -103,9 +126,26 @@ void CLoggingCallbackTimer::OnTimer(
 
    if (m_pTimerQueue)
    {
-      m_pTimerQueue->DestroyTimer(m_handle);
+      if (m_timeout != INFINITE)
+      {
+         m_pTimerQueue->SetTimer(m_handle, *this, m_timeout, m_userData);
 
-      LogMessage(_T("TimerDestroyed"));
+         m_timeout = INFINITE;
+         m_pTimerQueue = 0;
+         m_handle = IQueueTimers::InvalidHandleValue;
+         m_userData = 0;
+
+         LogMessage(_T("TimerSet"));
+      }
+      else
+      {
+         m_pTimerQueue->DestroyTimer(m_handle); //lint !e534 (Ignoring return value of function)
+
+         m_pTimerQueue = 0;
+         m_handle = IQueueTimers::InvalidHandleValue;
+
+         LogMessage(_T("TimerDestroyed"));
+      }
    }
 
    ::InterlockedIncrement(&m_numTimerEvents);

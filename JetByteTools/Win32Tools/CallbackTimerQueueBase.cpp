@@ -30,6 +30,10 @@
 
 #pragma warning(disable: 4355) // this used in base member initialiser list
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,7 +64,7 @@ IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
 IManageTimerQueue::TimeoutHandle IManageTimerQueue::InvalidTimeoutHandleValue = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueBase::::TimerData
+// CCallbackTimerQueueBase::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
 class CCallbackTimerQueueBase::TimerData : private CIntrusiveRedBlackTreeNode
@@ -185,28 +189,32 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase(
 
 CCallbackTimerQueueBase::~CCallbackTimerQueueBase()
 {
-   m_queue.Clear();
-
-   ActiveHandles::Iterator it = m_activeHandles.Begin();
-
-   const ActiveHandles::Iterator end = m_activeHandles.End();
-
-   while (it != end)
+   try
    {
-      ActiveHandles::Iterator next = it + 1;
+      m_queue.Clear();
 
-      TimerData *pData = *it;
+      ActiveHandles::Iterator it = m_activeHandles.Begin();
 
-      m_activeHandles.Erase(it);
+      const ActiveHandles::Iterator end = m_activeHandles.End();
 
-      delete pData;
+      while (it != end)
+      {
+         ActiveHandles::Iterator next = it + 1;
 
-      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-      m_monitor.OnTimerDeleted();
-      #endif
+         TimerData *pData = *it;
 
-      it = next;
+         m_activeHandles.Erase(it);
+
+         delete pData;
+
+         #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+         m_monitor.OnTimerDeleted();
+         #endif
+
+         it = next;
+      }
    }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 CCallbackTimerQueueBase::Handle CCallbackTimerQueueBase::CreateTimer()
@@ -377,8 +385,8 @@ void CCallbackTimerQueueBase::InsertTimer(
 {
    pData->SetTimer(absoluteTimeout);
 
-   m_queue.Insert(pData);
-}
+   m_queue.Insert(pData); //lint !e534 (Ignoring return value of function)
+} //lint !e429 (Custodial pointer 'pData' has not been freed or returned)
 
 bool CCallbackTimerQueueBase::SetInternalTimer(
    const Handle &handle,
@@ -409,14 +417,14 @@ CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::ValidateHandle(
 
    if (it == m_activeHandles.End())
    {
-// The following warning is generated when /Wp64 is set in a 32bit build. At present I think
-// it's due to some confusion, and even if it isn't then it's not that crucial...
-#pragma warning(push, 4)
-#pragma warning(disable: 4244)
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
       throw CException(
          _T("CCallbackTimerQueueBase::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
-#pragma warning(pop)
+      #pragma warning(pop)
    }
 
    return pData;
@@ -447,17 +455,13 @@ Milliseconds CCallbackTimerQueueBase::GetNextTimeout()
 
    if (it != m_queue.End())
    {
-      TimerData *pData = *it;
-
-      if (pData->IsInternalTimer(this))
+      if (it->IsInternalTimer(this))
       {
          it++;
       }
 
       if (it != m_queue.End())
       {
-         pData = *it;
-
          const ULONGLONG now = GetTickCount64();
 
          const ULONGLONG timeout = it->GetTimeout();
@@ -561,7 +565,7 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
          }
          else
          {
-            pLastTimer->PushNext(pTimer);
+            pLastTimer->PushNext(pTimer); //lint !e613 (Possible use of null pointer 'pLastTimer')
          }
 
          pLastTimer = pTimer;
@@ -800,7 +804,8 @@ CCallbackTimerQueueBase::TimerData::Data::Data(
    Timer &timer,
    UserData userData_)
    :  pTimer(&timer),
-      userData(userData_)
+      userData(userData_),
+      absoluteTimeout(0)
 {
 
 }
@@ -846,7 +851,7 @@ CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::TimerDataIntrusiveM
 
    if (pNode)
    {
-      pData = CONTAINING_RECORD(pNode, TimerData, m_timerQueueNode);
+      pData = CONTAINING_RECORD(const_cast<CIntrusiveMultiMapNode *>(pNode), TimerData, m_timerQueueNode); //lint !e413 (Likely use of null pointer)
    }
 
    return pData;
@@ -859,7 +864,7 @@ CCallbackTimerQueueBase::TimerData *CCallbackTimerQueueBase::TimerDataIntrusiveM
 
    if (pNode)
    {
-      pData = CONTAINING_RECORD(static_cast<const CIntrusiveMultiMapNode *>(pNode), TimerData, m_timerQueueNode);
+      pData = CONTAINING_RECORD(const_cast<CIntrusiveMultiMapNode *>(static_cast<const CIntrusiveMultiMapNode *>(pNode)), TimerData, m_timerQueueNode); //lint !e413 (Likely use of null pointer)
    }
 
    return pData;

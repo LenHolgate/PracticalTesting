@@ -61,6 +61,10 @@ class IQueueTimers
 
       class Timer;
 
+      /// A reference counted version of the timer interface.
+
+      class RefCountedTimer;
+
       /// A handle to a timer that has been created. This can be passed to
       /// SetTimer(), CancelTimer() and DestroyTimer() and is created with
       /// CreateTimer().
@@ -87,6 +91,8 @@ class IQueueTimers
          const Milliseconds timeout,
          const UserData userData) = 0;
 
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedUserData) Ignoring return value of function
+
       template <typename T>
       bool SetTimerWithRefCountedUserData(
          const IQueueTimers::Handle &handle,
@@ -94,11 +100,22 @@ class IQueueTimers
          const Milliseconds timeout,
          T *pUserData);
 
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedTimer) Ignoring return value of function
+
+      template <typename T>
+      bool SetTimerWithRefCountedTimer(
+         const IQueueTimers::Handle &handle,
+         T &timer,
+         const Milliseconds timeout,
+         const UserData userData);
+
       /// Cancel a timer that was previously set with SetTimer().
       /// Returns true if the timer was pending and false if the timer was not pending.
 
       virtual bool CancelTimer(
          const Handle &handle) = 0;
+
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::CancelTimerWithRefCountedUserData) Ignoring return value of function
 
       template <typename T>
       bool CancelTimerWithRefCountedUserData(
@@ -109,6 +126,13 @@ class IQueueTimers
       bool CancelTimerWithRefCountedUserData(
          const IQueueTimers::Handle &handle,
          T *pUserData);
+
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::CancelTimerWithRefCountedTimer) Ignoring return value of function
+
+      template <typename T>
+      bool CancelTimerWithRefCountedTimer(
+         const IQueueTimers::Handle &handle,
+         T &timer);
 
       /// Destroy a timer that was previously created with CreateTimer()
       /// and update the variable passed in to contain InvalidHandleValue.
@@ -120,6 +144,8 @@ class IQueueTimers
       virtual bool DestroyTimer(
          Handle &handle) = 0;
 
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::DestroyTimerWithRefCountedUserData) Ignoring return value of function
+
       template <typename T>
       bool DestroyTimerWithRefCountedUserData(
          IQueueTimers::Handle &handle,
@@ -129,6 +155,13 @@ class IQueueTimers
       bool DestroyTimerWithRefCountedUserData(
          IQueueTimers::Handle &handle,
          T *pUserData);
+
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::DestroyTimerWithRefCountedTimer) Ignoring return value of function
+
+      template <typename T>
+      bool DestroyTimerWithRefCountedTimer(
+         IQueueTimers::Handle &handle,
+         T &userData);
 
       /// Destroy a timer that was previously created with CreateTimer().
       /// Returns true if the timer was pending and false if the timer was not pending.
@@ -145,6 +178,11 @@ class IQueueTimers
       bool DestroyTimerWithRefCountedUserData(
          const IQueueTimers::Handle &handle,
          T *pUserData);
+
+      template <typename T>
+      bool DestroyTimerWithRefCountedTimer(
+         const IQueueTimers::Handle &handle,
+         T &userData);
 
       /// Create and set a single use timer.
       /// Note that calling SetTimer() will cause any timers that have expired to be
@@ -170,7 +208,7 @@ class IQueueTimers
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~IQueueTimers() {}
+      virtual ~IQueueTimers() {}
 };
 
 template <typename T>
@@ -208,6 +246,40 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
 }
 
 template <typename T>
+bool IQueueTimers::SetTimerWithRefCountedTimer(
+   const IQueueTimers::Handle &handle,
+   T &timer,
+   const Milliseconds timeout,
+   const UserData userData)
+{
+   timer.AddRef();
+
+   bool wasPending = false;
+
+   try
+   {
+      wasPending = SetTimer(
+         handle,
+         timer,
+         timeout,
+         userData);
+   }
+   catch(...)
+   {
+      timer.Release();
+
+      throw;
+   }
+
+   if (wasPending)
+   {
+      timer.Release();
+   }
+
+   return wasPending;
+}
+
+template <typename T>
 bool IQueueTimers::CancelTimerWithRefCountedUserData(
    const IQueueTimers::Handle &handle,
    T *pUserData)
@@ -231,6 +303,14 @@ bool IQueueTimers::CancelTimerWithRefCountedUserData(
 }
 
 template <typename T>
+bool IQueueTimers::CancelTimerWithRefCountedTimer(
+   const IQueueTimers::Handle &handle,
+   T &timer)
+{
+   return CancelTimerWithRefCountedUserData(handle, &timer);
+}
+
+template <typename T>
 bool IQueueTimers::DestroyTimerWithRefCountedUserData(
    IQueueTimers::Handle &handle,
    T *pUserData)
@@ -251,6 +331,14 @@ bool IQueueTimers::DestroyTimerWithRefCountedUserData(
    T &userData)
 {
    return DestroyTimerWithRefCountedUserData(handle, &userData);
+}
+
+template <typename T>
+bool IQueueTimers::DestroyTimerWithRefCountedTimer(
+   IQueueTimers::Handle &handle,
+   T &timer)
+{
+   return DestroyTimerWithRefCountedUserData(handle, &timer);
 }
 
 template <typename T>
@@ -276,6 +364,13 @@ bool IQueueTimers::DestroyTimerWithRefCountedUserData(
    return DestroyTimerWithRefCountedUserData(handle, &userData);
 }
 
+template <typename T>
+bool IQueueTimers::DestroyTimerWithRefCountedTimer(
+   const IQueueTimers::Handle &handle,
+   T &timer)
+{
+   return DestroyTimerWithRefCountedUserData(handle, &timer);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // IQueueTimers::Timer
@@ -302,7 +397,23 @@ class IQueueTimers::Timer
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      ~Timer() {}
+      virtual ~Timer() {}
+};
+
+class IQueueTimers::RefCountedTimer : public IQueueTimers::Timer
+{
+   public :
+
+      virtual void AddRef() = 0;
+
+      virtual void Release() = 0;
+
+   protected :
+
+      /// We never delete instances of this interface; you must manage the
+      /// lifetime of the class that implements it.
+
+      virtual ~RefCountedTimer() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

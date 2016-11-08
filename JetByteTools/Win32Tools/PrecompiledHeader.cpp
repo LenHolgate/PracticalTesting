@@ -36,6 +36,7 @@
 #include "DebugTrace.h"
 #include "Event.h"
 #include "Exception.h"
+#include "GlobalErrorHandler.h"
 #include "ICriticalSection.h"
 #include "IKernelObjectName.h"
 #include "IProvideTickCount.h"
@@ -62,6 +63,7 @@
 #include "IntrusiveRedBlackTree.h"
 #include "IntrusiveRedBlackTreeNode.h"
 #include "IntrusiveSetNode.h"
+#include "PerThreadErrorHandler.h"
 
 #include "JetByteTools\Win32Tools\ExpandableBuffer.h"
 

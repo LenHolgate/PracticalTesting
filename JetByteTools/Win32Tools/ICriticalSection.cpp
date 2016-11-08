@@ -23,6 +23,7 @@
 #include "ICriticalSection.h"
 
 #include "Exception.h"
+#include "DebugTrace.h"
 
 #pragma hdrstop
 
@@ -48,7 +49,11 @@ ICriticalSection::Owner::Owner(
 
 ICriticalSection::Owner::~Owner()
 {
-   m_crit.Leave();
+   try
+   {
+      m_crit.Leave();
+   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,10 +74,14 @@ ICriticalSection::ConditionalOwner::ConditionalOwner(
 
 ICriticalSection::ConditionalOwner::~ConditionalOwner()
 {
-   if (m_locked)
+   try
    {
-      m_crit.Leave();
+      if (m_locked)
+      {
+         m_crit.Leave();
+      }
    }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void ICriticalSection::ConditionalOwner::Leave()
@@ -98,10 +107,14 @@ ICriticalSection::PotentialOwner::PotentialOwner(
 
 ICriticalSection::PotentialOwner::~PotentialOwner()
 {
-   if (m_locked)
+   try
    {
-      m_crit.Leave();
+      if (m_locked)
+      {
+         m_crit.Leave();
+      }
    }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 void ICriticalSection::PotentialOwner::Enter()

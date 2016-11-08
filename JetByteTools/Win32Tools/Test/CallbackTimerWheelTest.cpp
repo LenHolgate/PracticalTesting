@@ -22,9 +22,9 @@
 
 #include "CallbackTimerWheelTest.h"
 
-#include "..\Mock\MockTickCountProvider.h"
-#include "..\Mock\LoggingCallbackTimer.h"
-#include "..\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
+#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
+#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 #include "JetByteTools\Win32Tools\DebugTrace.h"
@@ -34,7 +34,7 @@
 
 #pragma hdrstop
 
-#include "..\CallbackTimerWheel.h"
+#include "JetByteTools\Win32Tools\CallbackTimerWheel.h"
 
 #ifndef JETBYTE_TEST_SHOW_INDIVIDUAL_TIMES
 #define JETBYTE_TEST_SHOW_INDIVIDUAL_TIMES 0

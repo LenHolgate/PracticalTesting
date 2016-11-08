@@ -101,6 +101,15 @@
     <ClCompile Include="SystemTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PerThreadErrorHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalErrorHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CrtReportHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h">
@@ -257,6 +266,36 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IntrusiveSetNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ReentrantLockableObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IReentrantLockableObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerThreadErrorHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalErrorHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EmptyBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ILockableObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LockableObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LockableObjectOwners.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PureCallHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CrtReportHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

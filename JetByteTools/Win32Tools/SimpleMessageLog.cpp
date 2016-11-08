@@ -100,7 +100,9 @@ void CSimpleMessageLog::SetThreadIdentifier(
 {
    CLockableObject::Owner lock(m_lock);
 
-   InternalSetThreadIdentifier(identifier + ": ");
+   const string *pThreadID = InternalSetThreadIdentifier(identifier + ": ");
+
+   (void)pThreadID;
 }
 
 void CSimpleMessageLog::SetThreadIdentifier(
@@ -108,7 +110,9 @@ void CSimpleMessageLog::SetThreadIdentifier(
 {
    CLockableObject::Owner lock(m_lock);
 
-   InternalSetThreadIdentifier(CStringConverter::WtoA(identifier) + ": ");
+   const string *pThreadID = InternalSetThreadIdentifier(CStringConverter::WtoA(identifier) + ": ");
+
+   (void)pThreadID;
 }
 
 _tstring CSimpleMessageLog::GetLogMessages() const

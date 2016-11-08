@@ -29,8 +29,8 @@
 
 #pragma hdrstop
 
-#include "..\IntrusiveMultiMap.h"
-#include "..\Mock\TestIntrusiveMultiMapNode.h"
+#include "JetByteTools\Win32Tools\IntrusiveMultiMap.h"
+#include "JetByteTools\Win32Tools\Mock\TestIntrusiveMultiMapNode.h"
 
 #include <deque>
 

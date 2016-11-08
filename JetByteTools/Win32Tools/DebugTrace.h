@@ -79,6 +79,7 @@ class CDebugTrace : public CMessageLog
 
             ~LogInstaller();
 
+            //lint -sem(JetByteTools::Win32::CDebugTrace::LogInstaller::Uninstall,cleanup)
             void Uninstall();
 
          private :

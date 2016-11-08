@@ -835,7 +835,7 @@ void CStringConverter::BSTRtoA(
 
    if (inputLength != 0)
    {
-      if (inputLength + 1 > static_cast<size_t>(numeric_limits<int>::max()))
+      if (inputLength == static_cast<size_t>(numeric_limits<int>::max())) //lint !e571 (Suspicious cast)
       {
          throw CException(_T("CStringConverter::BSTRtoA("), _T("String is too long to fit: ") + ToString(inputLength));
       }
@@ -989,6 +989,7 @@ wstring CStringConverter::UTF8toW(
 
       int numChars = 0;
 
+      //lint -e{613} (Possible use of null pointer 'pPartialCharacter' in argument to operator 'unary *'
       const int splitCharacterLength = containsPartialLength ? GetBytesInUTF8Character(*pPartialCharacter) : 0;
 
       if (partialLength > splitCharacterLength)
@@ -1051,7 +1052,7 @@ wstring CStringConverter::UTF8toW(
    return result;
 }
 
-const int CStringConverter::GetBytesInUTF8Character(
+int CStringConverter::GetBytesInUTF8Character(
    const BYTE input)
 {
    if ((input & 0xF0) == 0xF0)
@@ -1074,7 +1075,7 @@ const int CStringConverter::GetBytesInUTF8Character(
    throw CException(_T("CStringConverter::GetBytesInUTF8Character()"), _T("Not a start character: ") + ToHexString(input, HexDigitsWithPaddingWithPrefixUpperCase));
 }
 
-const int CStringConverter::GetBytesAfterLastCompleteUTF8Character(
+int CStringConverter::GetBytesAfterLastCompleteUTF8Character(
    const BYTE *pInput,
    const int inputLength)
 {

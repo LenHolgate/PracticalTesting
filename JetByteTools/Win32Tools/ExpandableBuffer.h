@@ -72,12 +72,14 @@ template <class T> class TExpandableBuffer
       /// Make the buffer bigger, but do not copy the previous contents to
       /// the new buffer. Return the new size.
 
+      //lint -esym(534, JetByteTools::Win32::TExpandableBuffer<*>::Resize) (Ignoring return value of function)
       size_t Resize(
          const size_t newSize);
 
       /// Make the buffer bigger and copy the previous contents to the new
       /// buffer. Return the new size.
 
+      //lint -esym(534, JetByteTools::Win32::TExpandableBuffer<*>::Expand) (Ignoring return value of function)
       size_t Expand(
          const size_t newSize);
 
@@ -126,7 +128,7 @@ TExpandableBuffer<T>::TExpandableBuffer(
 {
    Resize(rhs.m_logicalSize);
 
-   for (DWORD i = 0; i < m_logicalSize; i++)
+   for (size_t i = 0; i < m_logicalSize; i++)
    {
       m_pBuffer[i] = rhs.m_pBuffer[i];
    }

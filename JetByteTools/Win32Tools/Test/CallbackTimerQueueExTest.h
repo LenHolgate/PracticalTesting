@@ -26,9 +26,9 @@
 
 #include "CallbackTimerQueueTestBase.h"
 
-#include "..\CallbackTimerQueueEx.h"
+#include "JetByteTools\Win32Tools\CallbackTimerQueueEx.h"
 
-#include "..\Mock\MockTickCount64Provider.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test

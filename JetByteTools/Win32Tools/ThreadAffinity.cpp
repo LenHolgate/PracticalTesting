@@ -27,6 +27,10 @@
 
 #include <winbase.h>
 
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,12 +78,12 @@ CThreadAffinity::~CThreadAffinity()
    {
       if (m_previousThreadAffinity != 0)
       {
-         SetThreadAffinity(m_hThread, UseAffinityMask, m_previousThreadAffinity);
+         const DWORD_PTR previousMask = SetThreadAffinity(m_hThread, UseAffinityMask, m_previousThreadAffinity);
+
+         (void)previousMask;
       }
    }
-   catch(CException &)
-   {
-   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
 ///////////////////////////////////////////////////////////////////////////////

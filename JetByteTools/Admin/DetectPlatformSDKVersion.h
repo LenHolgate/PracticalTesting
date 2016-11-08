@@ -38,7 +38,9 @@
 // a LOT of headers to get mscoree.h to compile and every file we build will
 // need to compile those headers...
 
-#if defined(_WIN32_WINNT_WINBLUE)
+#if defined(_WIN32_WINNT_WIN10)
+#define JETBYTE_PLATFORM_SDK_VERSION 0x0A0A
+#elif defined(_WIN32_WINNT_WINBLUE)
 #define JETBYTE_PLATFORM_SDK_VERSION 0x0810
 #elif defined(_WIN32_WINNT_WIN8)
 #define JETBYTE_PLATFORM_SDK_VERSION 0x0800

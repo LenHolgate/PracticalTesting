@@ -22,9 +22,9 @@
 
 #include "CallbackTimerQueueExTest.h"
 
-#include "..\Mock\MockTickCount64Provider.h"
-#include "..\Mock\LoggingCallbackTimer.h"
-#include "..\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
+#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
+#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
 
 #include "JetByteTools\Win32Tools\Utils.h"
 
@@ -33,7 +33,7 @@
 
 #pragma hdrstop
 
-#include "..\CallbackTimerQueueEx.h"
+#include "JetByteTools\Win32Tools\CallbackTimerQueueEx.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -54,7 +54,7 @@ namespace JetByteTools {
 namespace Win32 {
 namespace Test {
 
-const _tstring CCallbackTimerQueueExTestTraits::shortName = _T("QEx - ");
+const _tstring CCallbackTimerQueueExTestTraits::shortName = _T("QEx - "); //lint !e1937 (Static variable has a destructor)
 
 ///////////////////////////////////////////////////////////////////////////////
 // CCallbackTimerQueueExTest
@@ -82,7 +82,7 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
 
       CLoggingCallbackTimer timer;
 
-      THROW_ON_FAILURE_EX(4294967294 == timerQueue.GetMaximumTimeout());
+      THROW_ON_FAILURE_EX(4294967294U == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
 
@@ -93,11 +93,11 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
       // repeatable bug reports.
 
       const ULONGLONG rollOver = 0;
-      const ULONGLONG beforeRollOver = rollOver - 1000;
+      const ULONGLONG beforeRollOver = rollOver - 1000; //lint !e648 (Overflow in computing constant for operation: 'unsigned sub.')
 
       tickProvider.SetTickCount(beforeRollOver);
 
-      THROW_ON_FAILURE_EX(4294967294 == timerQueue.GetMaximumTimeout());
+      THROW_ON_FAILURE_EX(4294967294U == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
    }
@@ -110,7 +110,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
    CMockTimerQueueMonitor monitor;
 
    const ULONGLONG rollOver = 0;
-   const ULONGLONG beforeRollOver = rollOver - 1000;
+   const ULONGLONG beforeRollOver = rollOver - 1000; //lint !e648 (Overflow in computing constant for operation: 'unsigned sub.')
 
    CMockTickCount64Provider tickProvider(beforeRollOver);
 

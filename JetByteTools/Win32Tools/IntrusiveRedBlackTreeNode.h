@@ -40,12 +40,15 @@ namespace Win32 {
 // Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
-template <class T, class K, class Pr, class TtoN, class KtoT>
+template <class T, class K, class TtoN, class Pr, class TtoK>
 class TIntrusiveRedBlackTree;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CIntrusiveRedBlackTreeNode
 ///////////////////////////////////////////////////////////////////////////////
+
+//lint -save
+//lint -e1060 (private member is not accessible to non-member non-friend functions)
 
 class CIntrusiveRedBlackTreeNode
 {
@@ -65,9 +68,11 @@ class CIntrusiveRedBlackTreeNode
          m_pLinks[1] = 0;
       }
 
+      //lint -esym(1510, CIntrusiveRedBlackTreeNode) Base class has no destructor
+
    private :
 
-      template <class T, class K, class Pr, class TtoN, class KtoT> friend class TIntrusiveRedBlackTree;
+      template <class T, class K, class TtoK, class Pr, class TtoN> friend class TIntrusiveRedBlackTree;
 
       // We could optimise away m_red and store it in the parent pointer but then we'd
       // need to manipulate the parent pointer before each use. Need to profile and see
@@ -83,6 +88,8 @@ class CIntrusiveRedBlackTreeNode
       /// No copies do not implement
       CIntrusiveRedBlackTreeNode &operator=(const CIntrusiveRedBlackTreeNode &rhs);
 };
+
+//lint -restore
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

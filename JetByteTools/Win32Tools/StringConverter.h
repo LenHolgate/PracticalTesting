@@ -335,10 +335,10 @@ class CStringConverter
          const BYTE *pInput,
          const int inputLength);
 
-      static const int GetBytesInUTF8Character(
+      static int GetBytesInUTF8Character(
          const BYTE input);
 
-      static const int GetBytesAfterLastCompleteUTF8Character(
+      static int GetBytesAfterLastCompleteUTF8Character(
          const BYTE *pInput,
          const int inputLength);
 };

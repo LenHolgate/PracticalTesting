@@ -126,6 +126,8 @@
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows 8)")
 #elif (NTDDI_VERSION == 0x06030000)
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows 8.1)")
+#elif (NTDDI_VERSION == 0x0A000000)
+#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows 10)")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Unknown)")
 #endif
@@ -163,6 +165,8 @@
 #pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version 8.0 - Windows 8")
 #elif (JETBYTE_PLATFORM_SDK_VERSION == 0x0810)
 #pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version 8.1 - Windows 8.1 and .Net Framework 4.5")
+#elif (JETBYTE_PLATFORM_SDK_VERSION == 0xA0A)
+#pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version 10.0a - Windows 10 and .Net Framework 4.6")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version " JETBYTE_MACROASSTRING(JETBYTE_PLATFORM_SDK_VERSION) " (Unknown)")
 #endif
@@ -264,6 +268,7 @@
 #elif JETBYTE_PLATFORM_SDK_VERSION == 0x070A
 #elif JETBYTE_PLATFORM_SDK_VERSION == 0x0800
 #elif JETBYTE_PLATFORM_SDK_VERSION == 0x0810
+#elif JETBYTE_PLATFORM_SDK_VERSION == 0x0A0A
 #else
 #if JETBYTE_ALLOW_UNTESTED_COMPILE_ENV == 0
 #error Untested Platform SDK Version
@@ -322,6 +327,12 @@
 #endif
 #endif
 
+#if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: Install a per thread error handler in CThread::Run()")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: do NOT install a per thread error handler in CThread::Run()")
+#endif
+
 #if (JETBYTE_TRANSLATE_SEH_EXCEPTIONS == 1)
 #if (JETBYTE_TRANSLATE_SEH_EXCEPTIONS_IN_DEBUGGER == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: Translate SEH exceptions and catch them at thread boundaries")
@@ -342,12 +353,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions at thread boundaries with catch(...)")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions at thread boundaries with catch(...), allow them to propogate and remain uncaught")
-#endif
-
-#if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_NOTHROW_FUNCTIONS == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions in 'nothrow' functions with catch(...)")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions in 'nothrow' functions with catch(...), allow them to propogate and remain uncaught")
 #endif
 
 #if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
@@ -387,6 +392,14 @@
 #pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_SOCKET_TRACKING_INSTANCES = " JETBYTE_MACROASSTRING(JETBYTE_SOCKET_TRACKING_INSTANCES))
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_SOCKET_REFERENCES enabled: NO")
+#endif
+
+#if (JETBYTE_TRACK_ADDRESS_REFERENCES == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_ADDRESS_REFERENCES enabled: YES")
+#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDITIONAL_ADDRESS_TRACKING_CONTEXT = " JETBYTE_MACROASSTRING(JETBYTE_ADDITIONAL_ADDRESS_TRACKING_CONTEXT))
+#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDRESS_TRACKING_INSTANCES = " JETBYTE_MACROASSTRING(JETBYTE_ADDRESS_TRACKING_INSTANCES))
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_ADDRESS_REFERENCES enabled: NO")
 #endif
 
 #if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
@@ -450,8 +463,8 @@
 #endif
 
 #if (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE == 1)
-#if (_WIN32_WINNT < 0x0600) && (JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 0)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS is not enabled")
+#if (_WIN32_WINNT < 0x0600) && (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 0)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS is not enabled")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: YES")
 #endif
@@ -727,12 +740,36 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_DEFLATING_STREAM_SOCKET_FILTER enabled: NO")
 #endif
 
+#if JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS enabled: YES")
+#if JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 0
+#pragma JETBYTE_MESSAGE("Build configuration: WARNING - JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS forced due to JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 0")
+#endif
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS enabled: NO")
+#endif
+
 #if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE enabled: YES")
 #if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK enabled: NO")
+#endif
+#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP enabled: NO")
+#endif
+#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION enabled: NO")
+#endif
+#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_OVERRIDE_EXCEPTION == 1
+#pragma JETBYTE_MESSAGE("Build configuration: WARNING - JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION forcibly enabled due SRWL use")
+#pragma JETBYTE_MESSAGE("Build configuration: WARNING - Set JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS to 1 if you want to test for recursive")
+#pragma JETBYTE_MESSAGE("Build configuration: WARNING - behaviour without causing fatal runtime errors.")
 #endif
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE enabled: NO")
@@ -796,6 +833,17 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: NO")
+#endif
+
+#if JETBYTE_DELAY_THREAD_TERMINATION_HACK == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_HACK enabled: YES")
+#ifdef JETBYTE_DELAY_THREAD_TERMINATION_DELAY
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_DELAY set to " JETBYTE_MACROASSTRING(JETBYTE_DELAY_THREAD_TERMINATION_DELAY))
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_DELAY defaulting to 10ms")
+#endif
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_HACK enabled: NO")
 #endif
 
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")

@@ -542,6 +542,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -623,6 +624,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -703,6 +705,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -784,6 +787,7 @@
 				WarnAsError="true"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4627"
 			/>
@@ -863,6 +867,10 @@
 				RelativePath=".\TestIntrusiveRedBlackTreeNode.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TestThreadedCallbackTimerQueue.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -902,6 +910,10 @@
 			</File>
 			<File
 				RelativePath=".\TestIntrusiveRedBlackTreeNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TestThreadedCallbackTimerQueue.h"
 				>
 			</File>
 		</Filter>
