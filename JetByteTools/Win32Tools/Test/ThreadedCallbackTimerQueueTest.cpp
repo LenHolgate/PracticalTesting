@@ -386,21 +386,13 @@ void CThreadedCallbackTimerQueueTest::TestTimerWithLockSetTimerInOnTimer()
    THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 500, 1));
 
    THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
+   THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
-   // If we have reentrant lock checks enabled then we'll get a thread termination exception.
-   // If not then we will deadlock in the call to SetTimer...
-   #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
-   THROW_ON_FAILURE_EX(true == timerQueue.WaitForThreadTerminationException(REASONABLE_TIME));
-   timerQueue.CheckResult(_T("|OnThreadTerminationException: CThreadedCallbackTimerQueue::Run() - Exception: CLockableObject::CheckForRecursion() - Reentrant use detected.|"));
-   #else
-   THROW_ON_FAILURE_EX(false == queue.WaitForOnTimer(SHORT_TIME_NON_ZERO));
-   #endif
-
-   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|"));
-   timer.CheckResult(_T("|OnTimer: 1|"));
-
-   // if the reentrancy checks aren't enabled the timer queue will now hang trying
-   // to shut down the timer thread which is deadlocked by the recursive lock attempt
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|SetTimer: 1: 500|GetNextTimeout|HandleTimeouts|GetNextTimeout|GetNextTimeout|"));
+   timer.CheckResult(_T("|OnTimer: 1|TimerSet|OnTimer: 2|"));
 }
 
 void CThreadedCallbackTimerQueueTest::TestTimerNoLockSetTimerInOnTimer()
