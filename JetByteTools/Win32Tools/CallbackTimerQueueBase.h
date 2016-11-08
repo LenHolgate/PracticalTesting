@@ -152,6 +152,8 @@ class CCallbackTimerQueueBase : public IManageTimerQueue
 
       TimerData *CreateTimerInternal();
 
+      TimeoutHandle GetNextTimeoutHandle();
+
       //lint -e{1411} (Member with different signature hides virtual member --- Eff. C++ 3rd Ed. item 33)
       bool CancelTimer(
          TimerData *pData);

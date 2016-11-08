@@ -170,7 +170,7 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase()
    :  m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue),
-      m_nextTimeoutHandle(reinterpret_cast<ULONG_PTR>(this)),
+      m_nextTimeoutHandle(0xFFFFFFFF),
       m_pTimeoutsToBeHandled(0)
 {
 
@@ -181,7 +181,7 @@ CCallbackTimerQueueBase::CCallbackTimerQueueBase(
    :  m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(InvalidTimeoutHandleValue),
-      m_nextTimeoutHandle(reinterpret_cast<ULONG_PTR>(this)),
+      m_nextTimeoutHandle(0xFFFFFFFF),
       m_pTimeoutsToBeHandled(0)
 {
 
@@ -516,6 +516,20 @@ void CCallbackTimerQueueBase::HandleTimeouts()
    }
 }
 
+IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::GetNextTimeoutHandle()
+{
+   TimeoutHandle timeoutHandle = ::InterlockedIncrement(reinterpret_cast<LONG*>(&m_nextTimeoutHandle));
+
+   if (timeoutHandle == InvalidTimeoutHandleValue)
+   {
+      // wraps to zero? this is possible, avoid it...
+
+      timeoutHandle = ::InterlockedIncrement(reinterpret_cast<LONG*>(&m_nextTimeoutHandle));
+   }
+
+   return timeoutHandle;
+}
+
 IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 {
    if (m_handlingTimeouts != InvalidTimeoutHandleValue)
@@ -531,7 +545,7 @@ IManageTimerQueue::TimeoutHandle CCallbackTimerQueueBase::BeginTimeoutHandling()
 
       m_queue.RemoveAll(m_queue.Begin(), timers);
 
-      m_handlingTimeouts = ::InterlockedIncrement(reinterpret_cast<unsigned long*>(&m_nextTimeoutHandle));
+      m_handlingTimeouts = GetNextTimeoutHandle();
 
       // Need to duplicate the timer data so that a call to SetTimer that occurs after
       // this call returns but before a call to HandleTimeout with this timer doesn't
