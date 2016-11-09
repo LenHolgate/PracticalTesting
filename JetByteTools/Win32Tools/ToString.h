@@ -104,26 +104,6 @@ inline _tstring ToString(
 #endif
 }
 
-#if _MSC_VER == 1400 && !defined(_WIN64)
-
-std::string ToStringA(
-   const size_t val);
-
-std::wstring ToStringW(
-   const size_t val);
-
-inline _tstring ToString(
-   const size_t val)
-{
-#ifdef _UNICODE
-   return ToStringW(val);
-#else
-   return ToStringA(val);
-#endif
-}
-
-#else
-
 std::string ToStringA(
    const unsigned int val);
 
@@ -139,8 +119,6 @@ inline _tstring ToString(
    return ToStringA(val);
 #endif
 }
-
-#endif
 
 std::string ToStringA(
    const signed int val);

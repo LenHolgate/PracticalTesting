@@ -47,24 +47,23 @@ struct CCallbackTimerQueueExTestTraits
    enum traits
    {
       timerGranularity = 1,
-      maxTimeout = 4294967294,
+      maxTimeout = 4294967294, //lint !e575 !e694 (enumeration constant exceeds range for integers)(The type of constant '4294967294' is dialect dependent)
       creationQueriesTicks = false,
       creationCreatesTimer = false,
       setQueriesTicks = true,
       failedSetQueriesTicks = false,
       handleTimeoutQueriesTicksPerTimer = true,
       timersAtSameTimeAreExpiredInOrderSet = true,
-
-#if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
+      handleValidationEnabled = true,
+      #else
+      handleValidationEnabled = false,
+      #endif
+      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
       monitoringEnabled = true
-
-#else
-
+      #else
       monitoringEnabled = false
-
-#endif
-
+      #endif
    };
 
    static const _tstring shortName;

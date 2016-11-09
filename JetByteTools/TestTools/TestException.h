@@ -87,8 +87,6 @@ class CTestSkippedException : public JetByteTools::Win32::CException
          const JetByteTools::Win32::_tstring &message);
 };
 
-void TestRequiresVistaOrLater();
-
 #define SKIP_TEST_EX(m) do{throw JetByteTools::Test::CTestSkippedException(m);}while(0)
 
 #define SKIP_TEST(w, m) do{throw JetByteTools::Test::CTestSkippedException(w, m);}while(0)
@@ -152,6 +150,8 @@ void TestRequiresVistaOrLater();
 #define THROW_IF_STRINGS_DONT_MATCH_EX(s1, s2) do{if(!(s1 == s2)){throw JetByteTools::Test::CTestException(_T("Test Failed:\n \"") + JetByteTools::Win32::_tstring(s1) + _T("\" !=\n \"") + JetByteTools::Win32::_tstring(s2) + _T("\")"));}}while(0)
 
 #define THROW_IF_STRINGS_DONT_MATCH_A_EX(s1, s2) do{if(!(s1 == s2)){throw JetByteTools::Test::CTestException(_T("Test Failed:\n \"") + JetByteTools::Win32::_tstring(JetByteTools::Win32::CStringConverter::AtoT(s1)) + _T("\" !=\n \"") + JetByteTools::Win32::_tstring(JetByteTools::Win32::CStringConverter::AtoT(s2)) + _T("\")"));}}while(0)
+
+#define THROW_IF_EQUAL_EX(v1, v2) do{if(v1 == v2){throw JetByteTools::Test::CTestException(_T("Test Failed: ") _T(#v1)  _T(" (") + JetByteTools::Win32::ToString(v1) + _T(") == ") _T(#v2)  _T(" (") + JetByteTools::Win32::ToString(v2) + _T(")"));}}while(0)
 
 #define THROW_IF_NOT_EQUAL_EX(v1, v2) do{if(v1 != v2){throw JetByteTools::Test::CTestException(_T("Test Failed: ") _T(#v1)  _T(" (") + JetByteTools::Win32::ToString(v1) + _T(") != ") _T(#v2)  _T(" (") + JetByteTools::Win32::ToString(v2) + _T(")"));}}while(0)
 

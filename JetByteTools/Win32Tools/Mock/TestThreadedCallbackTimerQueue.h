@@ -50,8 +50,7 @@ class CTestThreadedCallbackTimerQueue :
    public :
 
       explicit CTestThreadedCallbackTimerQueue(
-         IManageTimerQueue &impl,
-         const TimerQueueImplementation timerQueueImplementation);
+         IManageTimerQueue &impl);
 
       virtual void OnThreadTerminationException(
          const _tstring &message);

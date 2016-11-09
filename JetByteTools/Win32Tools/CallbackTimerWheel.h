@@ -96,8 +96,6 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       virtual Milliseconds GetNextTimeout();
 
-      virtual void HandleTimeouts();
-
       virtual bool BeginTimeoutHandling();
 
       virtual void HandleTimeout();
@@ -131,8 +129,6 @@ class CCallbackTimerWheel : public IManageTimerQueue
          const IQueueTimers::UserData userData);
 
       virtual Milliseconds GetMaximumTimeout() const;
-
-      virtual bool DispatchesWithoutLock() const;
 
    private :
 

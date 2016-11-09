@@ -123,10 +123,32 @@ class CSystemTime : public SYSTEMTIME
       void ParseTime(
          const _tstring &hhmmssmmm);
 
-      void ParseFromNTP(
-         const __int64 ntp);
+      void SetAsSystemTimeFromLocalTime(
+         const SYSTEMTIME &localtime);
 
-      __int64 GetAsNTP() const;
+      void SetAsLocalTimeFromSystemTime(
+         const SYSTEMTIME &systemtime);
+
+      void SetFromTimeT32(
+         const __time32_t timet);
+
+      void SetFromTimeT64(
+         const __time64_t timet);
+
+      __time32_t GetAsTimeT32() const;
+
+      __time64_t GetAsTimeT64() const;
+
+      #ifdef _USE_32BIT_TIME_T
+      inline time_t GetAsTimeT() const { return GetAsTimeT32(); }
+      #else
+      inline time_t GetAsTimeT() const { return GetAsTimeT64(); }
+      #endif
+
+      //void ParseFromNTP(
+      //   const __int64 ntp);
+
+      //__int64 GetAsNTP() const;
 
       /// Returns the date in YYYYMMDD format.
 

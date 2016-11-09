@@ -571,11 +571,7 @@ int CStringConverter::WtoUTF8(
    {
       bufferUsed = ::WideCharToMultiByte(
          CP_UTF8,
-#if (WINVER >= 0x0600)
          WC_ERR_INVALID_CHARS,
-#else
-         0,
-#endif
          pInput,
          inputLength,
          reinterpret_cast<LPSTR>(pBuffer),
@@ -610,11 +606,7 @@ int CStringConverter::GetSpaceRequiredForWtoUTF8(
    {
       spaceRequired = ::WideCharToMultiByte(
          CP_UTF8,
-#if (WINVER >= 0x0600)
          WC_ERR_INVALID_CHARS,
-#else
-         0,
-#endif
          pInput,
          inputLength,
          0,

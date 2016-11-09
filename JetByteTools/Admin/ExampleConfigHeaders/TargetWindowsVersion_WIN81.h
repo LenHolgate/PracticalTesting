@@ -40,11 +40,6 @@
 #define NTDDI_VERSION   0x06030000     // NTDDI_WINBLUE
 #define _WIN32_WINNT    0x0603         // _WIN32_WINNT_WINBLUE
 
-// If you're building for Windows 7 or later then InterlockedExchangeAdd64()
-// is available...
-
-#define JETBYTE_HAS_INTERLOCKED_64 1
-
 #endif // JETBYTE_TOOLS_ADMIN_TARGET_WINDOWS_VERSION_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////

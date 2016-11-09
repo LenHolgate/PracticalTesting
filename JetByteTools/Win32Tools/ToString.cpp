@@ -19,7 +19,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools\Admin\Admin.h"
-#include "JetByteTools\Admin\SecureCRT.h"
 
 #include "Utils.h"            // For ToBool()
 #include "ToString.h"

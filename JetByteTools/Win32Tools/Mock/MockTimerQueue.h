@@ -82,11 +82,9 @@ class CMockTimerQueue :
             TimerExpiryThread &operator=(const TimerExpiryThread &rhs);
       };
 
-      explicit CMockTimerQueue(
-         const bool dispatchWithoutLock = true);
+      CMockTimerQueue();
 
-      CMockTimerQueue(
-         const bool dispatchWithoutLock,
+      explicit CMockTimerQueue(
          JetByteTools::Test::CTestLog *pLinkedLog);
 
       bool waitForOnTimerWaitComplete;
@@ -109,8 +107,6 @@ class CMockTimerQueue :
       // Implement IManageTimerQueue
 
       virtual Milliseconds GetNextTimeout();
-
-      virtual void HandleTimeouts();
 
       virtual bool BeginTimeoutHandling();
 
@@ -144,13 +140,9 @@ class CMockTimerQueue :
 
       virtual Milliseconds GetMaximumTimeout() const;
 
-      virtual bool DispatchesWithoutLock() const;
-
    private :
 
       mutable JetByteTools::Win32::CReentrantLockableObject m_lock;
-
-      const bool m_dispatchWithoutLock;
 
       CAutoResetEvent m_nextTimeoutEvent;
 

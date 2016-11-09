@@ -30,6 +30,7 @@
 #include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
 
 #include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools\Win32Tools\IManageTimerQueue.h"
 
 #include "JetByteTools\TestTools\RunTest.h"
 
@@ -70,6 +71,32 @@ namespace Win32 {
 namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
+// CCallbackTimerQueueTestBase
+///////////////////////////////////////////////////////////////////////////////
+
+class CCallbackTimerQueueTestBase
+{
+   public :
+
+      static void HandleTimeouts(
+         IManageTimerQueue &timerQueue,
+         const bool handleAll = false)
+      {
+         while (timerQueue.BeginTimeoutHandling())
+         {
+            timerQueue.HandleTimeout();
+
+            timerQueue.EndTimeoutHandling();
+
+            if (!handleAll)
+            {
+               break;
+            }
+         }
+      }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // TCallbackTimerQueueTestBase
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +105,7 @@ namespace Test {
 /// \ingroup Win32ToolsTests
 
 template <class TimerQueue, class QueueTraits, class TickProvider>
-class TCallbackTimerQueueTestBase
+class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
 {
    public :
 
@@ -314,7 +341,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
-      IQueueTimers::Handle handleCopy = handle;
+      IQueueTimers::Handle handleCopy = T::handleValidationEnabled ? handle : 0;
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
@@ -322,13 +349,16 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handleCopy);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handleCopy); //lint !e534 (Ignoring return value of function)
 
-      tickProvider.CheckNoResults();
+         tickProvider.CheckNoResults();
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, IQueueTimers::InvalidHandleValue);
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, IQueueTimers::InvalidHandleValue); //lint !e534 (Ignoring return value of function)
 
-      tickProvider.CheckNoResults();
+         tickProvider.CheckNoResults();
+      }
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -366,7 +396,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSetNoTimePa
 
       CheckConstructionResults(tickProvider);
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       CheckTickProviderHandleTimeoutsResults(0, tickProvider);
    }
@@ -390,7 +420,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSet()
 
       tickProvider.SetTickCount(now);
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       CheckTickProviderHandleTimeoutsResults(0, tickProvider, now);
    }
@@ -533,29 +563,36 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerNotSet()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerInvalidHandle()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
-
-   P tickProvider;
-
+   if (T::handleValidationEnabled)
    {
-      Q timerQueue(monitor, tickProvider);
+      JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
 
-      CheckConstructionResults(tickProvider);
+      P tickProvider;
 
-      IQueueTimers::Handle handle = IQueueTimers::InvalidHandleValue;
+      {
+         Q timerQueue(monitor, tickProvider);
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.CancelTimer, handle);
+         CheckConstructionResults(tickProvider);
 
-      tickProvider.CheckNoResults();
+         IQueueTimers::Handle handle = IQueueTimers::InvalidHandleValue;
 
-      handle = 1;    // any old value
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.CancelTimer, handle);
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.CancelTimer, handle);
+         tickProvider.CheckNoResults();
 
-      tickProvider.CheckNoResults();
+         handle = 1;    // any old value
+
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.CancelTimer, handle);
+
+         tickProvider.CheckNoResults();
+      }
+
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
    }
-
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   else
+   {
+      SKIP_TEST_EX(_T("TestCancelTimerInvalidHandle - only availble when handle validation is enabled"));
+   }
 }
 
 template <class Q, class T, class P>
@@ -618,7 +655,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -634,7 +671,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1145,7 +1182,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      }
 
       tickProvider.CheckNoResults();
 
@@ -1161,7 +1201,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      }
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -1492,7 +1535,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      }
 
       tickProvider.CheckNoResults();
 
@@ -1502,7 +1548,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      }
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -1545,7 +1594,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1682,7 +1731,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1701,7 +1750,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now);
 
@@ -1726,7 +1775,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now);
 
@@ -1753,7 +1802,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
 
       CheckTickProviderHandleTimeoutsResults(2, tickProvider, now);
 
@@ -1778,7 +1827,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now, false);
 
@@ -1852,7 +1901,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1882,7 +1931,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1930,7 +1979,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1946,7 +1995,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -2067,7 +2116,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
 
       timerQueue.SetTimer(timer, 2500, 1);
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       timer.CheckNoResults();
    }
@@ -2132,7 +2181,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       timer.CheckResult(_T("|OnTimer: 1|"));
 
@@ -2170,7 +2219,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       timer.CheckResult(_T("|OnTimer: 2|"));
 
@@ -2242,7 +2291,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -2378,7 +2427,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandle
 
       tickProvider.SetTickCount(expectedTimeout);
 
-      timerQueue.HandleTimeouts();
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -2386,7 +2435,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandle
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      if (T::handleValidationEnabled)
+      {
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+      }
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -2658,7 +2710,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
 
             tickProvider.SetTickCount(now);
 
-            timerQueue.HandleTimeouts();
+            HandleTimeouts(timerQueue);
 
             #if JETBYTE_TEST_SHOW_NUM_TIMER_EVENTS
             OutputEx(ToString(timer.GetNumTimerEvents()));

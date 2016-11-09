@@ -42,10 +42,7 @@ namespace Win32 {
 /// A class that implements IProvideTickCount64 and returns the tick count
 /// directly from a call to the operating system
 /// <a href="http://msdn2.microsoft.com/en-us/library/ms724411(VS.85).aspx">GetTickCount64()</a>
-/// function. Note that this is only operational on platforms that support it,
-/// on platforms prior to _WIN32_WINNT >= 0x0600 it throws an exception.
-/// See <a href="http://www.lenholgate.com/archives/000311.html">here</a> for
-/// more details.
+/// function.
 /// \ingroup Timers
 
 class CTickCount64Provider: public IProvideTickCount64
@@ -54,11 +51,7 @@ class CTickCount64Provider: public IProvideTickCount64
 
       virtual ULONGLONG GetTickCount64() const
       {
-         #if (_WIN32_WINNT >= 0x0600)
-            return ::GetTickCount64();
-         #else
-            throw CException(_T("CTickCount64Provider::GetTickCount64()"), _T("Unsupported on this platform"));
-         #endif
+         return ::GetTickCount64();
       }
 };
 

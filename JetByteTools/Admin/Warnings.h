@@ -31,22 +31,6 @@
 /// \ingroup Admin
 /// \ingroup Warnings
 
-#if (JETBYTE_USE_STL_PORT == 1)
-
-#ifdef _DEBUG
-   #define _STLP_DEBUG
-   #define _STLP_USE_DEBUG_LIB
-#endif
-
-#pragma warning(push, 4)
-
-#pragma warning(disable: 4097)   // typedef-name 'x' used as synonym for class-name 'y'
-#pragma warning(disable: 4302)   // 'reinterpret_cast' : truncation from 'const void *' to 'unsigned long'
-#pragma warning(disable: 4800)   // 'int' : forcing value to bool 'true' or 'false' (performance warning)
-#pragma warning(disable: 4686)   // 'stlp_std::_Is_POD' : possible change in behavior, change in UDT return calling convention
-
-#endif // JETBYTE_USE_STL_PORT
-
 #pragma warning(disable: 4201)   // nonstandard extension used : nameless struct/union
 
 #pragma warning(disable: 4503)   // decorated name length exceeded, name was truncated
@@ -127,11 +111,6 @@
 #pragma warning(disable: 28251)  // Inconsistent annotation for function
 #pragma warning(disable: 28252)  // Inconsistent annotation for function
 #pragma warning(disable: 28253)  // Inconsistent annotation for function
-
-#if _MSC_VER == 1400
-#pragma warning(disable: 4311)   // 'type cast' : pointer truncation from 'x' to 'y'
-#pragma warning(disable: 4312)   // 'type cast' : conversion from 'x' to 'y' of greater size
-#endif
 
 #if _MSC_VER == 1900
 #pragma warning(disable: 4457)   // declaration of 'x' hides function parameter

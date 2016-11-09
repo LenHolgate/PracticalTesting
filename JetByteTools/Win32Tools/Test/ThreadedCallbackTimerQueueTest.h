@@ -58,9 +58,7 @@ class CThreadedCallbackTimerQueueTest
       static void TestAll(
          JetByteTools::Test::CTestMonitor &monitor);
 
-      static void TestConstructBestForPlatform();
-      static void TestConstructTickCount64();
-      static void TestConstructHybridTickCount64();
+      static void TestConstruct();
       static void TestConstructCustomQueue();
       static void TestConstructWithTimerWheel();
 
@@ -68,26 +66,13 @@ class CThreadedCallbackTimerQueueTest
       static void TestWaitForShutdownToComplete();
 
       static void TestTimer();
-      static void TestTimerWithLock();
-      static void TestTimerNoLock();
-      static void TestTimerTickCount64();
-      static void TestTimerTickCount64NoLock();
-      static void TestTimerHybridTickCount64();
-      static void TestTimerHybridTickCount64NoLock();
       static void TestTimerTimerWheel();
-      static void TestTimerTimerWheelNoLock();
-      static void TestTimerWithLockSetTimerInOnTimer();
-      static void TestTimerNoLockSetTimerInOnTimer();
+      static void TestTimerSetTimerInOnTimer();
 
-      static void TestMultipleTimersTickCount64();
-      static void TestMultipleTimersTickCount64NoLock();
-      static void TestMultipleTimersHybridTickCount64();
-      static void TestMultipleTimersHybridTickCount64NoLock();
+      static void TestMultipleTimers();
       static void TestMultipleTimersTimerWheel();
-      static void TestMultipleTimersTimerWheelNoLock();
 
-      static void TestMonitorTimerWithLock();
-      static void TestMonitorTimerNoLock();
+      static void TestMonitorTimer();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

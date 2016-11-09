@@ -79,21 +79,20 @@ class CCallbackTimerWheelTest :
          failedSetQueriesTicks = true,
          handleTimeoutQueriesTicksPerTimer = false,
          timersAtSameTimeAreExpiredInOrderSet = false,
-
-   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-
+         #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
+         handleValidationEnabled = true,
+         #else
+         handleValidationEnabled = false,
+         #endif
+         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
          monitoringEnabled = true
-
-   #else
-
+         #else
          monitoringEnabled = false
-
-   #endif
-
+         #endif
       };
 
       static const _tstring shortName;
-};
+}; //lint !e1510 (base class 'TCallbackTimerQueueTestBase' has no destructor -- Effective C++ #14)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test

@@ -379,7 +379,7 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCur
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle2);
 
-      THROW_ON_NO_EXCEPTION_EX_4(timerWheel.SetTimer, handle2, timer, timeout2, 2);
+      THROW_ON_NO_EXCEPTION_EX_4(timerWheel.SetTimer, handle2, timer, timeout2, 2); //lint !e534 (Ignoring return value of function)
 
       CheckTickProviderFailedSetTimerResults(tickProvider, now);
 
@@ -649,7 +649,7 @@ void CCallbackTimerWheelTest::TestGetNextTimeoutWhenWheelWraps()
 
          tickProvider.SetTickCount(3015);
 
-         timerWheel.HandleTimeouts();
+         CCallbackTimerQueueTestBase::HandleTimeouts(timerWheel);
 
          tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -675,7 +675,7 @@ void CCallbackTimerWheelTest::TestGetNextTimeoutWhenWheelWraps()
 
          tickProvider.SetTickCount(1005);
 
-         timerWheel.HandleTimeouts();
+         CCallbackTimerQueueTestBase::HandleTimeouts(timerWheel);
 
          tickProvider.CheckResult(_T("|GetTickCount|"));
 

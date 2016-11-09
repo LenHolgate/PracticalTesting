@@ -24,12 +24,10 @@
 /// \ingroup Precomp
 
 #include "JetByteTools\Admin\Admin.h"
-#include "JetByteTools\Admin\SecureCRT.h"
 
 #include <wtypes.h>
 
 #include "AutoResetEvent.h"
-#include "CallbackTimerQueue.h"
 #include "CallbackTimerQueueEx.h"
 #include "CallbackTimerWheel.h"
 #include "CriticalSection.h"

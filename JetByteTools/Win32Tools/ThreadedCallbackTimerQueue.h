@@ -27,7 +27,6 @@
 #include "JetByteTools\Admin\Types.h"
 
 #include "IManageTimerQueue.h"
-#include "IProvideTickCount.h"
 #include "IProvideTickCount64.h"
 #include "Thread.h"
 #include "IRunnable.h"
@@ -56,11 +55,9 @@ class IMonitorThreadedCallbackTimerQueue;
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the
 /// timer expires. The class uses an implementation of IManageTimerQueue to manage
 /// the timers and then manages its own timeouts using a thread to call
-/// IManageTimerQueue::HandleTimeouts() or IManageTimerQueue::BeginTimeoutHandling()
-/// every GetNextTimeout() milliseconds.
-/// You can configure it to use CCallbackTimerQueue, CCallbackTimerQueueEx or
-/// supply your own implementation of IManageTimerQueue and you can configure
-/// either lock held timer dispatch or no locks timer dispatch.
+/// IManageTimerQueue::BeginTimeoutHandling() every GetNextTimeout() milliseconds.
+/// You can configure it to use CCallbackTimerQueueEx or
+/// supply your own implementation of IManageTimerQueue.
 /// See <a href="http://www.lenholgate.com/archives/000381.html">here</a> for
 /// more details.
 /// \ingroup Timers
@@ -72,84 +69,35 @@ class CThreadedCallbackTimerQueue :
 {
    public :
 
-      enum TimerQueueImplementation
-      {
-         /// Select CCallbackTimerQueueEx  as the implementation if it's available
-         BestForPlatform         = 0x01,
+      /// Create a timer queue.
 
-         /// Select CCallbackTimerQueueEx as the implementation
-         TickCount64             = 0x02,
+      CThreadedCallbackTimerQueue();
 
-         /// Select CCallbackTimerQueue as the implementation
-         HybridTickCount64       = 0x04,
-         //TickCount32
-
-         /// Holds our internal lock when dispatching timers (potentially slightly faster)
-         DispatchTimersWithLock  = 0x00,
-
-         /// Does not hold our internal lock when dispatching timers
-         DispatchTimersNoLock    = 0x10,
-
-         BestForPlatformNoLock   =  BestForPlatform | DispatchTimersNoLock,
-         TickCount64NoLock       =  TickCount64 | DispatchTimersNoLock,
-         HybridTickCount64NoLock =  HybridTickCount64 | DispatchTimersNoLock
-      };
-
-      /// Create a timer queue using the specified implementation.
+      /// Create a timer queue and monitor it with the supplied monitor.
 
       explicit CThreadedCallbackTimerQueue(
-         const TimerQueueImplementation timerQueueImplementation = BestForPlatform);
-
-      /// Create a timer queue using the specified implementation and monitor it
-      /// with the supplied monitor.
-
-      CThreadedCallbackTimerQueue(
-         const TimerQueueImplementation timerQueueImplementation,
          IMonitorThreadedCallbackTimerQueue &monitor);
 
-      /// Create a timer queue that uses CCallbackTimerQueue as its implementation and
-      /// that uses the provdided instance of IProvideTickCount to obtain its tick
-      /// counts rather than getting them directly from the system.
+      /// Create a timer queue that uses the provdided instance of IProvideTickCount64 to
+      /// obtain its tick counts rather than getting them directly from the system.
 
       explicit CThreadedCallbackTimerQueue(
-         const IProvideTickCount &tickProvider,
-         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+         const IProvideTickCount64 &tickProvider);
 
-      /// Create a timer queue that uses CCallbackTimerQueue as its implementation and
-      /// that uses the provdided instance of IProvideTickCount to obtain its tick
-      /// counts rather than getting them directly from the system. Monitor it
-      /// with the supplied monitor.
+      /// Create a timer queue that uses the provdided instance of IProvideTickCount64 to
+      /// obtain its tick counts rather than getting them directly from the system.
+      /// Monitor it with the supplied monitor.
 
       CThreadedCallbackTimerQueue(
-         const IProvideTickCount &tickProvider,
-         const TimerQueueImplementation timerQueueImplementation,
-         IMonitorThreadedCallbackTimerQueue &monitor);
-
-      /// Create a timer queue that uses CCallbackTimerQueueEx as its implementation and
-      /// that uses the provdided instance of IProvideTickCount64 to obtain its tick
-      /// counts rather than getting them directly from the system.
-
-      explicit CThreadedCallbackTimerQueue(
-         const IProvideTickCount64 &tickProvider,
-         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
-
-      /// Create a timer queue that uses CCallbackTimerQueueEx as its implementation and
-      /// that uses the provdided instance of IProvideTickCount64 to obtain its tick
-      /// counts rather than getting them directly from the system. Monitor it
-      /// with the supplied monitor.
-
-      CThreadedCallbackTimerQueue(
-         const IProvideTickCount64 &tickProvider,
-         const TimerQueueImplementation timerQueueImplementation,
-         IMonitorThreadedCallbackTimerQueue &monitor);
+         IMonitorThreadedCallbackTimerQueue &monitor,
+         const IProvideTickCount64 &tickProvider);
 
       /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its
       /// implementation. Note that we don't take ownership of the implementation, it's up
       /// to you to manage its lifetime.
 
       explicit CThreadedCallbackTimerQueue(
-         IManageTimerQueue &impl,
-         const TimerQueueImplementation timerQueueImplementation = DispatchTimersWithLock);
+         IManageTimerQueue &impl);
 
       /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its
       /// implementation. Note that we don't take ownership of the implementation, it's up
@@ -157,7 +105,6 @@ class CThreadedCallbackTimerQueue :
 
       CThreadedCallbackTimerQueue(
          IManageTimerQueue &impl,
-         const TimerQueueImplementation timerQueueImplementation,
          IMonitorThreadedCallbackTimerQueue &monitor);
 
       ~CThreadedCallbackTimerQueue();
@@ -209,8 +156,6 @@ class CThreadedCallbackTimerQueue :
 
       virtual Milliseconds GetMaximumTimeout() const;
 
-      virtual bool DispatchesWithoutLock() const;
-
       /// Called when the timer queue thread is terminated due to an exception
       /// this is a BAD situation! Override this to deal with it, log the error,
       /// etc...
@@ -247,8 +192,6 @@ class CThreadedCallbackTimerQueue :
       CThread m_thread;
 
       TConditionalSmartPointer<IManageTimerQueue> m_spTimerQueue;
-
-      const bool m_dispatchWithLock;
 
       volatile bool m_shutdown;
 

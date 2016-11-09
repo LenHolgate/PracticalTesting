@@ -25,7 +25,6 @@
 #include "JetByteTools\TestTools\TestMonitor.h"
 #include "JetByteTools\TestTools\TestException.h"
 
-#include "CallbackTimerQueueTest.h"
 #include "CallbackTimerQueueExTest.h"
 #include "CallbackTimerWheelTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
@@ -97,11 +96,10 @@ int main(int /*argc*/, char * /*argv[ ]*/)
       CIntrusiveRedBlackTreeTest::TestAll(monitor);
       CIntrusiveMultiMapTest::TestAll(monitor);
       CCallbackTimerWheelTest::TestAll(monitor);
-      CCallbackTimerQueueTest::TestAll(monitor);
       CCallbackTimerQueueExTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
-      const size_t expectedTests = 184;
+      const size_t expectedTests = 124;
 
       ok = monitor.Report(expectedTests);
    }

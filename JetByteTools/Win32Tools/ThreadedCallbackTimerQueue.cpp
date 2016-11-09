@@ -21,11 +21,9 @@
 #include "JetByteTools\Admin\Admin.h"
 
 #include "ThreadedCallbackTimerQueue.h"
-#include "CallbackTimerQueue.h"
 #include "CallbackTimerQueueEx.h"
 #include "Utils.h"
 #include "Exception.h"
-#include "TickCountProvider.h"
 #include "SEHException.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
 #include "DebugTrace.h"
@@ -43,40 +41,19 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static IManageTimerQueue *CreateTimerQueue(
-   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation,
-   IMonitorCallbackTimerQueue &monitor);
-
-static bool DispatchWithLock(
-   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation,
-   const bool onlyAllowDispatchBits);
-
-///////////////////////////////////////////////////////////////////////////////
 // File level statics
 ///////////////////////////////////////////////////////////////////////////////
 
 static CNullThreadedCallbackTimerQueueMonitor s_monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Constants
-///////////////////////////////////////////////////////////////////////////////
-
-static const short CLASS_MASK    = 0x0F;  // select the class from a TimerQueueImplementation
-static const short DISPATCH_MASK = 0xF0;  // select the dispatch type from a TimerQueueImplementation
-
-///////////////////////////////////////////////////////////////////////////////
 // CThreadedCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const TimerQueueImplementation timerQueueImplementation)
+CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(CreateTimerQueue(timerQueueImplementation, m_monitor), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, false)),
+      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -85,12 +62,10 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const TimerQueueImplementation timerQueueImplementation,
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(CreateTimerQueue(timerQueueImplementation, m_monitor), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, false)),
+      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -99,12 +74,10 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const IProvideTickCount &tickProvider,
-   const TimerQueueImplementation timerQueueImplementation)
+   const IProvideTickCount64 &tickProvider)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
+      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor,tickProvider)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -113,13 +86,11 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const IProvideTickCount &tickProvider,
-   const TimerQueueImplementation timerQueueImplementation,
-   IMonitorThreadedCallbackTimerQueue &monitor)
+   IMonitorThreadedCallbackTimerQueue &monitor,
+   const IProvideTickCount64 &tickProvider)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
+      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -128,27 +99,10 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const IProvideTickCount64 &tickProvider,
-   const TimerQueueImplementation timerQueueImplementation)
+   IManageTimerQueue &impl)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
-      m_shutdown(false)
-{
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
-}
-
-CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   const IProvideTickCount64 &tickProvider,
-   const TimerQueueImplementation timerQueueImplementation,
-   IMonitorThreadedCallbackTimerQueue &monitor)
-   :  m_monitor(monitor),
-      m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider), true),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
+      m_spTimerQueue(&impl, false),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -158,26 +112,10 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    IManageTimerQueue &impl,
-   const TimerQueueImplementation timerQueueImplementation)
-   :  m_monitor(s_monitor),
-      m_thread(*this),
-      m_spTimerQueue(&impl, false),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
-      m_shutdown(false)
-{
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
-}
-
-CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   IManageTimerQueue &impl,
-   const TimerQueueImplementation timerQueueImplementation,
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
       m_spTimerQueue(&impl, false),
-      m_dispatchWithLock(DispatchWithLock(timerQueueImplementation, true)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -349,11 +287,6 @@ Milliseconds CThreadedCallbackTimerQueue::GetMaximumTimeout() const
    return m_spTimerQueue->GetMaximumTimeout();
 }
 
-bool CThreadedCallbackTimerQueue::DispatchesWithoutLock() const
-{
-   return !m_dispatchWithLock;
-}
-
 int CThreadedCallbackTimerQueue::Run()
 {
    #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
@@ -366,14 +299,15 @@ int CThreadedCallbackTimerQueue::Run()
       {
          if (OnThreadInitialised())
          {
-            if (m_dispatchWithLock)
+            while (!m_shutdown)
             {
-               while (!m_shutdown)
-               {
-                  const Milliseconds timeout = GetNextTimeout();
+               const Milliseconds timeout = GetNextTimeout();
 
-                  if (timeout == 0)
+               if (timeout == 0)
+               {
+                     if (BeginTimeoutHandling())
                   {
+                        m_spTimerQueue->HandleTimeout();
 
                      #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
                      CReentrantLockableObject::PotentialOwner lock(m_lock);
@@ -388,59 +322,17 @@ int CThreadedCallbackTimerQueue::Run()
                      CReentrantLockableObject::Owner lock(m_lock);
                      #endif
 
-                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-                     m_monitor.OnTimerProcessingStarted();
-                     #endif
-
-                     m_spTimerQueue->HandleTimeouts();
-
-                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-                     m_monitor.OnTimerProcessingStopped();
-                     #endif
+                     m_spTimerQueue->EndTimeoutHandling();
                   }
-                  else
-                  {
-                     m_stateChangeEvent.Wait(timeout);
-                  }
+
+                  #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+                  m_monitor.OnTimerProcessingStopped();
+                  #endif
+
                }
-            }
-            else
-            {
-               while (!m_shutdown)
+               else
                {
-                  const Milliseconds timeout = GetNextTimeout();
-
-                  if (timeout == 0)
-                  {
-                     if (BeginTimeoutHandling())
-                     {
-                        m_spTimerQueue->HandleTimeout();
-
-                        #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-                        CReentrantLockableObject::PotentialOwner lock(m_lock);
-
-                        if (!lock.TryLock())
-                        {
-                           m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
-
-                           lock.Lock();
-                        }
-                        #else
-                        CReentrantLockableObject::Owner lock(m_lock);
-                        #endif
-
-                        m_spTimerQueue->EndTimeoutHandling();
-                     }
-
-                     #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-                     m_monitor.OnTimerProcessingStopped();
-                     #endif
-
-                  }
-                  else
-                  {
-                     m_stateChangeEvent.Wait(timeout);
-                  }
+                  m_stateChangeEvent.Wait(timeout);
                }
             }
 
@@ -530,64 +422,6 @@ bool CThreadedCallbackTimerQueue::OnThreadInitialised()
 void CThreadedCallbackTimerQueue::OnThreadShutdown()
 {
 
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static IManageTimerQueue *CreateTimerQueue(
-   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation,
-   IMonitorCallbackTimerQueue &monitor)
-{
-   switch (timerQueueImplementation & CLASS_MASK)
-   {
-      case CThreadedCallbackTimerQueue::BestForPlatform :
-
-         #if (_WIN32_WINNT >= 0x0600)
-         return new CCallbackTimerQueueEx(monitor);
-         #else
-         return new CCallbackTimerQueue(monitor);
-         #endif
-
-      case CThreadedCallbackTimerQueue::TickCount64 :
-
-         #if (_WIN32_WINNT >= 0x0600)
-         return new CCallbackTimerQueueEx(monitor);
-         #else
-         throw CException(
-            _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
-            _T("Currently unsupported on this platform."));
-         #endif
-
-      case CThreadedCallbackTimerQueue::HybridTickCount64 :
-
-         return new CCallbackTimerQueue(monitor);
-
-      //case CThreadedCallbackTimerQueue::TickCount32 :
-
-      //   // In case we need to support the old implementation
-
-      //break;
-   }
-
-   throw CException(
-      _T("CThreadedCallbackTimerQueue::CreateTimerQueue()"),
-      _T("Unexpected value for timerQueueImplementation: ") + ToString(timerQueueImplementation));
-}
-
-static bool DispatchWithLock(
-   const CThreadedCallbackTimerQueue::TimerQueueImplementation timerQueueImplementation,
-   const bool onlyAllowDispatchBits)
-{
-   if (onlyAllowDispatchBits && (timerQueueImplementation & CLASS_MASK) != 0)
-   {
-      throw CException(
-         _T("CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()"),
-         _T("TimerQueueImplementation should only specify dispatch option. TickProvider implies implementation"));
-   }
-
-   return (static_cast<DWORD>(timerQueueImplementation) & DISPATCH_MASK) == CThreadedCallbackTimerQueue::DispatchTimersWithLock;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

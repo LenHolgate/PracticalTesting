@@ -45,7 +45,7 @@ namespace Win32 {
 /// See <a href="http://www.lenholgate.com/archives/000389.html">here</a>
 /// for more details. Note that this interface extends IQueueTimers to
 /// provide the ability to deal with the timer's timeouts via
-/// IManageTimerQueue::HandleTimeouts(). This interface is designed for
+/// IManageTimerQueue::BeginTimeoutHandling(), etc. This interface is designed for
 /// composing timer queues, such as is done in CThreadedCallbackTimerQueue and
 /// not for passing to users of timer queues.
 /// \ingroup Timers
@@ -59,13 +59,6 @@ class IManageTimerQueue : public IQueueTimers
       /// Or INFINITE if no timer is set.
 
       virtual Milliseconds GetNextTimeout() = 0;
-
-      /// Process any timers that have timed out. Note that in an implementation
-      /// that is safe for use in a multi-threaded situation it is acceptable to
-      /// hold a lock whilst this method is called to prevent concurrent calls to
-      /// any of the methods on IQueueTimers.
-
-      virtual void HandleTimeouts() = 0;
 
       /// Returns true if timers need to be handled. You should then call
       /// HandleTimeout() to handle the timeouts and finally call

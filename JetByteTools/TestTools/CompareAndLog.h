@@ -41,6 +41,9 @@ bool FileContentsMatch(
    const JetByteTools::Win32::_tstring &fileName1,
    const JetByteTools::Win32::_tstring &fileName2);
 
+bool FileExists(
+   const JetByteTools::Win32::_tstring &fileName);
+
 bool FileDoesNotExist(
    const JetByteTools::Win32::_tstring &fileName);
 

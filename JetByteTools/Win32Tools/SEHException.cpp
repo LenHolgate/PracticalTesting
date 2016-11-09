@@ -24,13 +24,7 @@
 
 #include "Utils.h"
 
-// There's an issue with VS2002 where the ordering of includes is important
-// with regards to the secure CRT stuff, until I spend the time to get it
-// right, keep this at the end of the precompiled header..
-#include "JetByteTools\Admin\SecureCRT.h"
-
 #pragma hdrstop
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

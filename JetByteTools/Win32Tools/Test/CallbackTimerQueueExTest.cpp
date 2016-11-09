@@ -80,8 +80,6 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
-
       THROW_ON_FAILURE_EX(4294967294U == timerQueue.GetMaximumTimeout());
 
       tickProvider.CheckNoResults();
@@ -115,6 +113,8 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
    CMockTickCount64Provider tickProvider(beforeRollOver);
 
    {
+      CLoggingCallbackTimer timer;
+
       CCallbackTimerQueueEx timerQueue(monitor, tickProvider);
 
       const _tstring resultBeforeRollOver = _T("|GetTickCount: ") + ToString(beforeRollOver) + _T("|");
@@ -125,8 +125,6 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
-
       CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
 
       tickProvider.CheckNoResults();
@@ -135,7 +133,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       // Set a single timer for 100ms after the tick count rolls to 0.
 
-      THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, 1100, 1);
+      THROW_ON_NO_EXCEPTION_EX_4(timerQueue.SetTimer, handle, timer, 1100, 1); //lint !e534 (Ignoring return value of function)
 
       tickProvider.CheckResult(resultBeforeRollOver);
 
@@ -167,7 +165,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       // Check that the time goes off.
 
-      timerQueue.HandleTimeouts();
+      CCallbackTimerQueueTestBase::HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
@@ -195,7 +193,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       // Check that the timer goes off.
 
-      timerQueue.HandleTimeouts();
+      CCallbackTimerQueueTestBase::HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount: 1000|"));
 

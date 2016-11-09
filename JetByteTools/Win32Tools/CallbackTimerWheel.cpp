@@ -440,40 +440,6 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetFirstTimerSet() const
    return pFirstTimer;
 }
 
-void CCallbackTimerWheel::HandleTimeouts()
-{
-   const Milliseconds now = m_tickCountProvider.GetTickCount();
-
-   TimerData *pTimers = 0;
-
-   while (m_numTimersSet && (0 != (pTimers = GetTimersToProcess(now))))
-   {
-      while (pTimers)
-      {
-         TimerData *pTimer = pTimers;
-
-         pTimers = pTimer->OnTimer();
-
-         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-         m_monitor.OnTimer();
-         #endif
-
-         if (pTimer->DeleteAfterTimeout())
-         {
-            m_activeHandles.Erase(pTimer);
-
-            delete pTimer;
-
-            #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-            m_monitor.OnTimerDeleted();
-            #endif
-         }
-
-         --m_numTimersSet;
-      }
-   }
-}
-
 bool CCallbackTimerWheel::BeginTimeoutHandling()
 {
    if (m_handlingTimeouts)
@@ -742,16 +708,12 @@ Milliseconds CCallbackTimerWheel::GetMaximumTimeout() const
    return m_maximumTimeout;
 }
 
-bool CCallbackTimerWheel::DispatchesWithoutLock() const
-{
-   return true;
-}
-
 CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
    const Handle &handle) const
 {
    TimerData *pData = reinterpret_cast<TimerData *>(handle);
 
+   #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
    const ActiveHandles::Iterator it = m_activeHandles.Find(pData);
 
    if (it == m_activeHandles.End())
@@ -765,6 +727,7 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
          _T("Invalid timer handle: ") + ToString(handle));
       #pragma warning(pop)
    }
+   #endif
 
    if (pData->DeleteAfterTimeout())
    {

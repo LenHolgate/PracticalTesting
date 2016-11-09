@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 // File: Utils.cpp
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,11 +30,10 @@
 
 #pragma hdrstop
 
-#include "JetByteTools\Admin\SecureCRT.h"
-
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <list>
 
 #include <Psapi.h>
 
@@ -844,11 +844,40 @@ _tstring GetSystemDirectory()
 _tstring GetFileNameFromPathName(
    const _tstring &pathName)
 {
+   return GetFileNameFromPathName(pathName, _T("\\"));
+}
+
+_tstring GetFileNameFromPathName(
+   const _tstring &pathName,
+   const _tstring &separators)
+{
    _tstring fileName;
 
-   const _tstring::size_type pos = pathName.find_last_of(_T("\\"));
+   const _tstring::size_type pos = pathName.find_last_of(separators);
 
    if (pos != _tstring::npos)
+   {
+      fileName = pathName.substr(pos + 1);
+   }
+
+   return fileName;
+}
+
+string GetFileNameFromPathNameA(
+   const string &pathName)
+{
+   return GetFileNameFromPathNameA(pathName, "\\");
+}
+
+string GetFileNameFromPathNameA(
+   const string &pathName,
+   const string &separators)
+{
+   string fileName;
+
+   const string::size_type pos = pathName.find_last_of(separators);
+
+   if (pos != string::npos)
    {
       fileName = pathName.substr(pos + 1);
    }
@@ -859,11 +888,39 @@ _tstring GetFileNameFromPathName(
 _tstring StripFileNameFromPathName(
    const _tstring &pathName)
 {
+   return StripFileNameFromPathName(pathName, _T("\\"));
+}
+
+_tstring StripFileNameFromPathName(
+   const _tstring &pathName,
+   const _tstring &separators)
+{
    _tstring strippedPathName;
 
-   const _tstring::size_type pos = pathName.find_last_of(_T("\\"));
+   const _tstring::size_type pos = pathName.find_last_of(separators);
 
    if (pos != _tstring::npos)
+   {
+      strippedPathName = pathName.substr(0, pos);
+   }
+
+   return strippedPathName;
+}
+
+string StripFileNameFromPathNameA(
+   const string &pathName)
+{
+   return StripFileNameFromPathNameA(pathName, "\\");
+}
+string StripFileNameFromPathNameA(
+   const string &pathName,
+   const string &separators)
+{
+   string strippedPathName;
+
+   const string::size_type pos = pathName.find_last_of(separators);
+
+   if (pos != string::npos)
    {
       strippedPathName = pathName.substr(0, pos);
    }
@@ -998,9 +1055,6 @@ bool Is32bitProcess()
 #endif
 }
 
-
-#if _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
-
 _tstring GetSystemWow64Directory()
 {
    TCHAR buffer[MAX_PATH + 1];
@@ -1044,15 +1098,6 @@ _tstring GetSystemWow64Directory()
 
    return buffer;
 }
-
-#else
-
-_tstring GetSystemWow64Directory()
-{
-   throw CException(_T("GetSystemWow64Directory()"), _T("Functionality not available on this platform"));
-}
-
-#endif // _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
 
 _tstring GetUserName()
 {
@@ -1247,17 +1292,107 @@ string StripTrailingA(
    return source.substr(0, i);
 }
 
-
-
 #pragma comment(lib, "Version.lib")
+
+static const _tstring s_fileVersionString(_T("ProductVersion"));
 
 _tstring GetFileVersion()
 {
-   return GetFileVersion(0);
+   return GetFileVersionString(s_fileVersionString);
+}
+
+_tstring GetFileVersion(
+   const _tstring &languageID)
+{
+   return GetFileVersionString(languageID, s_fileVersionString);
+}
+
+_tstring GetFileVersion(
+   const _tstring &languageID,
+   const _tstring &charsetID)
+{
+   return GetFileVersionString(languageID, charsetID, s_fileVersionString);
 }
 
 _tstring GetFileVersion(
    const HMODULE hModule)
+{
+   return GetFileVersionString(hModule, s_fileVersionString);
+}
+
+_tstring GetFileVersion(
+   const HMODULE hModule,
+   const _tstring &languageID)
+{
+   return GetFileVersionString(hModule, languageID, s_fileVersionString);
+}
+
+_tstring GetFileVersion(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &charsetID)
+{
+   return GetFileVersionString(hModule, languageID, charsetID, s_fileVersionString);
+}
+
+_tstring GetFileVersionString(
+   const _tstring &requiredString)
+{
+   return GetFileVersionString(
+      0,
+      requiredString);
+}
+
+_tstring GetFileVersionString(
+   const _tstring &languageID,
+   const _tstring &requiredString)
+{
+   return GetFileVersionString(
+      0,
+      languageID,
+      requiredString);
+}
+
+_tstring GetFileVersionString(
+   const _tstring &languageID,
+   const _tstring &charsetID,
+   const _tstring &requiredString)
+{
+   return GetFileVersionString(
+      0,
+      languageID,
+      charsetID,
+      requiredString);
+}
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &requiredString)
+{
+   return GetFileVersionString(
+      hModule,
+      _T("0809"),          // UK english
+      _T("04b0"),          // Unicode
+      requiredString);
+}
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &requiredString)
+{
+   return GetFileVersionString(
+      hModule,
+      languageID,
+      _T("04b0"),          // Unicode
+      requiredString);
+}
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &charsetID,
+   const _tstring &requiredString)
 {
    _tstring version;
 
@@ -1278,8 +1413,10 @@ _tstring GetFileVersion(
          LPTSTR pVersion = 0;
          UINT verLen = 0;
 
+         const _tstring query = _T("\\StringFileInfo\\") + languageID + charsetID + _T("\\") + requiredString;
+
          if (::VerQueryValue(buffer,
-              const_cast<LPTSTR>(_T("\\StringFileInfo\\080904b0\\ProductVersion")),
+              const_cast<LPTSTR>(query.c_str()),
               (void**)&pVersion,
               &verLen))
          {
@@ -1478,6 +1615,42 @@ void SaveStringToFileA(
 
       throw CWin32Exception(_T("SaveStringToFile()"), _T("\"") + filename + _T("\" - Failed to write all data"), lastError);
    }
+}
+
+__int64 GetFileSize(
+   const _tstring &filename)
+{
+   CSmartHandle hFile(::CreateFile(
+      filename.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      0,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0));
+
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("GetFileSize() \"") + filename + _T("\""), lastError);
+   }
+
+   BY_HANDLE_FILE_INFORMATION info;
+
+   if (!::GetFileInformationByHandle(hFile, &info))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      throw CWin32Exception(_T("GetFileSize() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
+   }
+
+   ULARGE_INTEGER large;
+
+   large.HighPart = info.nFileSizeHigh;
+   large.LowPart = info.nFileSizeLow;
+
+   return large.QuadPart;
 }
 
 wstring LoadFileAsUnicodeString(
@@ -1683,7 +1856,7 @@ void LoadFileAsBinaryData(
    CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
-      FILE_SHARE_READ,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
       0,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
@@ -2232,7 +2405,7 @@ _tstring GetFileNameFromHandleIfPossible(
    _tstring fileName;
 
    DWORD fileSizeHi = 0;
-   const DWORD fileSizeLo = GetFileSize(hFile, &fileSizeHi);
+   const DWORD fileSizeLo = ::GetFileSize(hFile, &fileSizeHi);
 
    if (fileSizeLo != 0 || fileSizeHi != 0)
    {
@@ -2275,7 +2448,7 @@ _tstring GetFileNameFromHandle(
    _tstring fileName;
 
    DWORD fileSizeHi = 0;
-   const DWORD fileSizeLo = GetFileSize(hFile, &fileSizeHi);
+   const DWORD fileSizeLo = ::GetFileSize(hFile, &fileSizeHi);
 
    if (fileSizeLo == 0 && fileSizeHi == 0)
    {

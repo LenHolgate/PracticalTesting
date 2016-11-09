@@ -39,7 +39,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Test::CTestException;
-using JetByteTools::Test::TestRequiresVistaOrLater;
 using JetByteTools::Test::CTestMonitor;
 
 using JetByteTools::Win32::OutputEx;

@@ -52,10 +52,8 @@ namespace Mock {
 // CMockTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-CMockTimerQueue::CMockTimerQueue(
-   const bool dispatchWithoutLock)
-   :  m_dispatchWithoutLock(dispatchWithoutLock),
-      m_nextTimer(0),
+CMockTimerQueue::CMockTimerQueue()
+   :  m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE),
       waitForOnTimerWaitComplete(false),
@@ -65,10 +63,8 @@ CMockTimerQueue::CMockTimerQueue(
 }
 
 CMockTimerQueue::CMockTimerQueue(
-   const bool dispatchWithoutLock,
    CTestLog *pLinkedLog)
    :  CTestLog(pLinkedLog),
-      m_dispatchWithoutLock(dispatchWithoutLock),
       m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE),
@@ -142,20 +138,7 @@ Milliseconds CMockTimerQueue::GetNextTimeout()
    m_nextTimeoutEvent.Set();
 
    return m_nextTimeout;
-}
 
-void CMockTimerQueue::HandleTimeouts()
-{
-   CReentrantLockableObject::Owner lock(m_lock);
-
-   LogMessage(_T("HandleTimeouts"));
-
-   m_nextTimeout = INFINITE;
-
-   if (!m_setTimers.empty())
-   {
-      OnTimer();
-   }
 }
 
 bool CMockTimerQueue::BeginTimeoutHandling()
@@ -358,13 +341,6 @@ Milliseconds CMockTimerQueue::GetMaximumTimeout() const
    LogMessage(_T("GetMaximumTimeout"));
 
    return m_maxTimeout;
-}
-
-bool CMockTimerQueue::DispatchesWithoutLock() const
-{
-   LogMessage(_T("DispatchesWithoutLock"));
-
-   return m_dispatchWithoutLock;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -103,10 +103,38 @@ bool FileContentsMatch(
    return ok;
 }
 
+bool FileExists(
+   const _tstring &fileName)
+{
+   CSmartHandle hFile(::CreateFile(
+      fileName.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      0,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0));
+
+   const DWORD lastError = ::GetLastError();
+
+   return !hFile.IsValid() && lastError == ERROR_SUCCESS;
+}
+
 bool FileDoesNotExist(
    const _tstring &fileName)
 {
-   return !FileExists(fileName);
+   CSmartHandle hFile(::CreateFile(
+      fileName.c_str(),
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      0,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL,
+      0));
+
+   const DWORD lastError = ::GetLastError();
+
+   return !hFile.IsValid() && (lastError == ERROR_FILE_NOT_FOUND || lastError == ERROR_PATH_NOT_FOUND);
 }
 
 bool FileExistsAndIsEmpty(

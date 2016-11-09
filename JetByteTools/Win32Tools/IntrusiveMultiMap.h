@@ -445,7 +445,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveMultiMap<T,K,T
       // There was already an item in the tree with this key.
       // No problem, add it to the linked list of nodes with this key
 
-      const T *pData = *(result.first);
+      const T *pData = *(result.first); //lint !e48 (indirection requires pointer operand ('const JetByteTools::Win32::TIntrusiveRedBlackTree<JetByteTools::Win32::CCallbackTimerQueueEx::TimerData, unsigned long long, JetByteTools::Win32::CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor, std::less<unsigned long long>, JetByteTools::Win32::CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor>::Iterator' invalid))
 
       CIntrusiveMultiMapNode *pFoundNode = node_accessor::GetNodeFromT(pData);
 
@@ -488,7 +488,7 @@ void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveAll(
 
    if (it != m_tree.End())
    {
-      pData = const_cast<T *>(*it);
+      pData = const_cast<T *>(*it); //lint !e48 (indirection requires pointer operand ('const typename Tree::Iterator' invalid))
 
       m_tree.Erase(it);
    }
@@ -735,7 +735,7 @@ template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator::Iterator(
    const typename Tree::Iterator &it)
    :  m_it(it),
-      m_pNode(node_accessor::GetNodeFromT(const_cast<T*>(*it)))
+      m_pNode(node_accessor::GetNodeFromT(const_cast<T*>(*it))) //lint !e48 (indirection requires pointer operand ('const typename Tree::Iterator' invalid))
 {
 }
 
@@ -752,7 +752,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveMultiMap<T,K,
    const Iterator &rhs)
 {
    m_it = rhs.m_it;
-   m_pNode = rhs.m_pNode;
+   m_pNode = rhs.m_pNode; //lint !e1555 (shallow pointer copy of in copy assignment operator
 
    return *this;
 }

@@ -29,6 +29,8 @@
 
 #include "JetByteTools\Admin\FunctionName.h"
 
+#include <ctime>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -388,6 +390,168 @@ void CSystemTime::ParseTime(
    {
       throw CException(_T("CSystemTime::ParseTime()"), _T("Invalid time format or invalid time: \"") + hhmmssmmm + _T("\" expected HHMMSS[mmm]"));
    }
+}
+
+void CSystemTime::SetAsSystemTimeFromLocalTime(
+   const SYSTEMTIME &localtime)
+{
+   FILETIME localFileTime;
+
+   SetLastError(ERROR_SUCCESS);
+
+   if (0 != ::SystemTimeToFileTime(&localtime, &localFileTime))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
+            _T("SystemTimeToFileTime failed"),
+            lastError);
+      }
+   }
+
+   FILETIME fileTime;
+
+   if (!::LocalFileTimeToFileTime(&localFileTime, &fileTime))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
+            _T("LocalFileTimeToFileTime failed"),
+            lastError);
+      }
+   }
+
+   ::ZeroMemory(this, sizeof(SYSTEMTIME));
+
+   if (!::FileTimeToSystemTime(&fileTime, this))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
+            _T("FileTimeToSystemTime failed"),
+            lastError);
+      }
+   }
+}
+
+void CSystemTime::SetAsLocalTimeFromSystemTime(
+   const SYSTEMTIME &systemtime)
+{
+   FILETIME systemFileTime;
+
+   SetLastError(ERROR_SUCCESS);
+
+   if (0 != ::SystemTimeToFileTime(&systemtime, &systemFileTime))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsLocalTimeFromSystemTime()"),
+            _T("SystemTimeToFileTime failed"),
+            lastError);
+      }
+   }
+
+   FILETIME fileTime;
+
+   if (!::FileTimeToLocalFileTime(&systemFileTime, &fileTime))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
+            _T("FileTimeToLocalFileTime failed"),
+            lastError);
+      }
+   }
+
+   ::ZeroMemory(this, sizeof(SYSTEMTIME));
+
+   if (!::FileTimeToSystemTime(&fileTime, this))
+   {
+      const DWORD lastError = ::GetLastError();
+
+      if (lastError != ERROR_SUCCESS)
+      {
+         throw CWin32Exception(
+            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
+            _T("FileTimeToSystemTime failed"),
+            lastError);
+      }
+   }
+}
+
+void CSystemTime::SetFromTimeT32(
+   const __time32_t timet)
+{
+   // from https://blogs.msdn.microsoft.com/joshpoley/2007/12/19/datetime-formats-and-conversions/
+
+   LARGE_INTEGER jan1970FT = {0};
+   jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
+
+   LARGE_INTEGER utcFT = {0};
+   utcFT.QuadPart = ((unsigned __int64)timet)*10000000 + jan1970FT.QuadPart;
+
+   FileTimeToSystemTime((FILETIME*)&utcFT, this);
+}
+
+void CSystemTime::SetFromTimeT64(
+   const __time64_t timet)
+{
+   // from https://blogs.msdn.microsoft.com/joshpoley/2007/12/19/datetime-formats-and-conversions/
+
+   LARGE_INTEGER jan1970FT = {0};
+   jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
+
+   LARGE_INTEGER utcFT = {0};
+   utcFT.QuadPart = ((unsigned __int64)timet)*10000000 + jan1970FT.QuadPart;
+
+   FileTimeToSystemTime((FILETIME*)&utcFT, this);
+}
+
+__time32_t CSystemTime::GetAsTimeT32() const
+{
+   struct tm tm;
+   memset(&tm, 0, sizeof(tm));
+
+   tm.tm_year = wYear - 1900;
+   tm.tm_mon = wMonth - 1;
+   tm.tm_mday = wDay;
+
+   tm.tm_hour = wHour;
+   tm.tm_min = wMinute;
+   tm.tm_sec = wSecond;
+
+   return _mktime32(&tm);
+}
+
+__time64_t CSystemTime::GetAsTimeT64() const
+{
+   struct tm tm;
+   memset(&tm, 0, sizeof(tm));
+
+   tm.tm_year = wYear - 1900;
+   tm.tm_mon = wMonth - 1;
+   tm.tm_mday = wDay;
+
+   tm.tm_hour = wHour;
+   tm.tm_min = wMinute;
+   tm.tm_sec = wSecond;
+
+   return _mktime64(&tm);
 }
 
 _tstring CSystemTime::GetAsYYYYMMDD() const

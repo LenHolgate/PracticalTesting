@@ -34,6 +34,18 @@
 
 #include <limits>
 
+#ifdef min
+#pragma push_macro("min")
+#define JETBYTE_UTILS_PUSHED_MIN
+#undef min
+#endif
+
+#ifdef max
+#pragma push_macro("max")
+#define JETBYTE_UTILS_PUSHED_MAX
+#undef max
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,18 +314,95 @@ _tstring GetSystemWow64Directory();
 _tstring GetFileNameFromPathName(
    const _tstring &pathName);
 
+_tstring GetFileNameFromPathName(
+   const _tstring &pathName,
+   const _tstring &separators);
+
+std::string GetFileNameFromPathNameA(
+   const std::string &pathName);
+
+std::string GetFileNameFromPathNameA(
+   const std::string &pathName,
+   const std::string &separators);
+
 _tstring StripFileNameFromPathName(
    const _tstring &pathName);
 
+_tstring StripFileNameFromPathName(
+   const _tstring &pathName,
+   const _tstring &separators);
+
+std::string StripFileNameFromPathNameA(
+   const std::string &pathName);
+
+std::string StripFileNameFromPathNameA(
+   const std::string &pathName,
+   const std::string &separators);
+
+inline _tstring StripLastDirectoryFromPathName(
+   const _tstring &pathName)
+{
+   return StripFileNameFromPathName(pathName);
+}
+
 void DeleteFile(
    const _tstring &fileName);
+
+void RemoveDirectoryAndContents(
+   const _tstring &directory);
+
+void RemoveDirectoryContents(
+   const _tstring &directory);
 
 _tstring GetUserName();
 
 _tstring GetFileVersion();
 
 _tstring GetFileVersion(
+   const _tstring &languageID);
+
+_tstring GetFileVersion(
+   const _tstring &languageID,
+   const _tstring &charsetID);
+
+_tstring GetFileVersion(
    const HMODULE hModule);
+
+_tstring GetFileVersion(
+   const HMODULE hModule,
+   const _tstring &languageID);
+
+_tstring GetFileVersion(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &charsetID);
+
+_tstring GetFileVersionString(
+   const _tstring &requiredString);
+
+_tstring GetFileVersionString(
+   const _tstring &languageID,
+   const _tstring &requiredString);
+
+_tstring GetFileVersionString(
+   const _tstring &languageID,
+   const _tstring &charsetID,
+   const _tstring &requiredString);
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &requiredString);
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &requiredString);
+
+_tstring GetFileVersionString(
+   const HMODULE hModule,
+   const _tstring &languageID,
+   const _tstring &charsetID,
+   const _tstring &requiredString);
 
 _tstring StripWhiteSpace(
    const _tstring &source);
@@ -351,6 +440,9 @@ void CopyFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo,
    const bool failIfExists);
+
+__int64 GetFileSize(
+   const _tstring &filename);
 
 void LoadFileAsBinaryData(
    const _tstring &filename,
@@ -463,6 +555,14 @@ _tstring GetFileNameFromHandleIfPossible(
 
 _tstring TranslateDeviceNamePathToDriveLetterPath(
    const _tstring deviceNamePath);
+
+#ifdef JETBYTE_UTILS_PUSHED_MIN
+#pragma pop_macro("min")
+#endif
+
+#ifdef JETBYTE_UTILS_PUSHED_MAX
+#pragma pop_macro("max")
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

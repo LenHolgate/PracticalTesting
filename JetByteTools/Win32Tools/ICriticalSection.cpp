@@ -27,6 +27,8 @@
 
 #pragma hdrstop
 
+SuppressLNK4221Warning()
+
 #if (JETBYTE_DEPRECATE_CRITICAL_SECTION == 0)
 
 ///////////////////////////////////////////////////////////////////////////////

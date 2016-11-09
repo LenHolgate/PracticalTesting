@@ -50,7 +50,7 @@ static bool s_processIsExiting = false;
 // initialised when all other 'file scope' statics are initialised - i.e. at
 // program start up and in a thread-safe manner...
 
-static CDebugTrace &s_notUsed = CDebugTrace::Instance();
+static CDebugTrace &s_notUsed = CDebugTrace::Instance(); //lint !e528 (static symbol not referenced)
 
 ///////////////////////////////////////////////////////////////////////////////
 // CDebugTrace

@@ -499,11 +499,11 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Rotate(
    OutputEx(_T("Rotate: ") + KeyAsString(pNode) + direction);
    #endif
 
-   CIntrusiveRedBlackTreeNode *pTemp = pNode->m_pLinks[!dir];
+   CIntrusiveRedBlackTreeNode *pTemp = pNode->m_pLinks[!dir]; //lint !e514 (Unusual use of a Boolean expression)
 
    ReplaceNode(pNode, pTemp);
 
-   pNode->m_pLinks[!dir] = pTemp->m_pLinks[dir];
+   pNode->m_pLinks[!dir] = pTemp->m_pLinks[dir]; //lint !e514 (Unusual use of a Boolean expression)
 
    if (pTemp->m_pLinks[dir])
    {
@@ -559,7 +559,7 @@ CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Sibling(
 
    const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
 
-   return pNode->m_pParent->m_pLinks[!dir];
+   return pNode->m_pParent->m_pLinks[!dir]; //lint !e514 (Unusual use of a Boolean expression)
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -901,7 +901,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
                {
                   Rotate(pNode->m_pParent, !dir);
 
-                  pNode = pNode->m_pLinks[!dir];
+                  pNode = pNode->m_pLinks[!dir]; //lint !e514 (Unusual use of a Boolean expression)
                }
 
                // fall through to case 5
@@ -917,9 +917,9 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
 
                   // These two may have changed if we moved pNode in case 4...
 
-                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]); //lint !e578 (Declaration of symbol 'dir' hides symbol 'dir')
 
-                  const int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]);
+                  const int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]); //lint !e578 (Declaration of symbol 'parentDir' hides symbol 'parentDir')
 
                   if (dir == parentDir)
                   {
@@ -1236,7 +1236,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
 
                if (IsBlack(pSibling) &&
                    IsRed(pSibling->m_pLinks[dir]) &&
-                   IsBlack(pSibling->m_pLinks[!dir]))
+                   IsBlack(pSibling->m_pLinks[!dir])) //lint !e514 (Unusual use of a Boolean expression)
                {
                   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                   OutputEx(_T("Case 5: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
@@ -1260,10 +1260,10 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
                   pSibling->m_red = pNode->m_pParent->m_red;
                   pNode->m_pParent->m_red = false;
 
-                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]); //lint !e578 (Declaration of symbol 'dir' hides symbol 'dir')
 
                   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-                  if (!IsRed(pSibling->m_pLinks[!dir]))
+                  if (!IsRed(pSibling->m_pLinks[!dir])) //lint !e514 (Unusual use of a Boolean expression)
                   {
                      throw CException(
                         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance()"),
@@ -1271,7 +1271,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
                   }
                   #endif
 
-                  pSibling->m_pLinks[!dir]->m_red = false;
+                  pSibling->m_pLinks[!dir]->m_red = false; //lint !e514 (Unusual use of a Boolean expression)
 
                   Rotate(pNode->m_pParent, dir);
                }

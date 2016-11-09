@@ -23,12 +23,6 @@
     <ClCompile Include="AutoResetEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CallbackTimerQueue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CallbackTimerQueueBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CallbackTimerQueueEx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -115,12 +109,6 @@
     <ClInclude Include="AutoResetEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CallbackTimerQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CallbackTimerQueueBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CallbackTimerQueueEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -155,9 +143,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OSVersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PerformanceCounter.h">

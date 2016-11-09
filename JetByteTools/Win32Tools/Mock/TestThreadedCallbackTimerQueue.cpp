@@ -41,9 +41,8 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CTestThreadedCallbackTimerQueue::CTestThreadedCallbackTimerQueue(
-   IManageTimerQueue &impl,
-   const TimerQueueImplementation timerQueueImplementation)
-   :  JetByteTools::Win32::CThreadedCallbackTimerQueue(impl, timerQueueImplementation)
+   IManageTimerQueue &impl)
+   :  JetByteTools::Win32::CThreadedCallbackTimerQueue(impl)
 {
 
 }

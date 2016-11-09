@@ -24,7 +24,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "CallbackTimerQueueBase.h"
+#include "IManageTimerQueue.h"
+
+#include "IntrusiveMultiMap.h"
+#include "IntrusiveSet.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -47,8 +50,7 @@ class IMonitorCallbackTimerQueue;
 /// A class that manages a group of timers that implement IQueueTimers::Timer
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the
 /// timer expires. You must manually manage the handling and processing of
-/// timeouts by calling either IManageTimerQueue::HandleTimeouts() or
-/// IManageTimerQueue::BeginTimeoutHandling() every
+/// timeouts by calling IManageTimerQueue::BeginTimeoutHandling() every
 /// IManageTimerQueue::GetNextTimeout() milliseconds.
 /// See <a href="http://www.lenholgate.com/archives/000342.html">here</a> for
 /// more details.
@@ -61,7 +63,7 @@ class IMonitorCallbackTimerQueue;
 /// will always return 4294967294ms.
 /// \ingroup Timers
 
-class CCallbackTimerQueueEx : public CCallbackTimerQueueBase
+class CCallbackTimerQueueEx : public IManageTimerQueue
 {
    public :
 
@@ -91,11 +93,109 @@ class CCallbackTimerQueueEx : public CCallbackTimerQueueBase
 
       virtual ~CCallbackTimerQueueEx();
 
+      // Implement IManageTimerQueue
+
+      virtual Milliseconds GetNextTimeout();
+
+      virtual bool BeginTimeoutHandling();
+
+      virtual void HandleTimeout();
+
+      virtual void EndTimeoutHandling();
+
+      // Implement IQueueTimers
+      // We need to fully specify the IQueueTimers types to get around a bug in
+      // doxygen 1.5.2
+
+      virtual IQueueTimers::Handle CreateTimer();
+
+      virtual bool SetTimer(
+         const IQueueTimers::Handle &handle,
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         const IQueueTimers::UserData userData);
+
+      virtual bool CancelTimer(
+         const IQueueTimers::Handle &handle);
+
+      virtual bool DestroyTimer(
+         IQueueTimers::Handle &handle);
+
+      virtual bool DestroyTimer(
+         const IQueueTimers::Handle &handle);
+
+      virtual void SetTimer(
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         const IQueueTimers::UserData userData);
+
+      virtual Milliseconds GetMaximumTimeout() const;
+
    private :
 
-      virtual ULONGLONG GetTickCount64();
+      class TimerDataSetNodeAccessor;
+
+      class TimerData;
+
+      class TimerDataIntrusiveMultiMapNodeKeyAccessor
+      {
+         public :
+
+            static ULONGLONG GetKeyFromT(
+               const TimerData *pNode);
+      };
+
+      class TimerDataIntrusiveMultiMapNodeAccessor
+      {
+         public :
+
+            static CIntrusiveMultiMapNode * GetNodeFromT(
+               const TimerData *pData);
+
+            static TimerData *GetTFromNode(
+               const CIntrusiveMultiMapNode *pNode);
+
+            static TimerData *GetTFromNode(
+               const CIntrusiveRedBlackTreeNode *pNode);
+      };
+
+      typedef TIntrusiveMultiMap<
+         TimerData,
+         ULONGLONG,
+         TimerDataIntrusiveMultiMapNodeKeyAccessor,
+         std::less<ULONGLONG>,
+         TimerDataIntrusiveMultiMapNodeAccessor> TimerQueue;
+
+      typedef TIntrusiveSet<TimerData> ActiveHandles;
+
+      TimerData *ValidateHandle(
+         const Handle &handle);
+
+      //lint -e{1411} (Member with different signature hides virtual member --- Eff. C++ 3rd Ed. item 33)
+      bool CancelTimer(
+         TimerData *pData);
+
+      void InsertTimer(
+         TimerData * const pData,
+         const Milliseconds timeout);
+
+      void InsertTimer(
+         TimerData * const pData,
+         const ULONGLONG absoluteTimeout);
+
+      TimerQueue m_queue;
+
+      ActiveHandles m_activeHandles;
 
       const IProvideTickCount64 &m_tickProvider;
+
+      IMonitorCallbackTimerQueue &m_monitor;
+
+      const Milliseconds m_maxTimeout;
+
+      bool m_handlingTimeouts;
+
+      TimerData *m_pTimeoutsToBeHandled;
 
       /// No copies do not implement
       CCallbackTimerQueueEx(const CCallbackTimerQueueEx &rhs);

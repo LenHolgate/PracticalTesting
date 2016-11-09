@@ -590,8 +590,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AutoResetEvent.cpp" />
-    <ClCompile Include="CallbackTimerQueue.cpp" />
-    <ClCompile Include="CallbackTimerQueueBase.cpp" />
     <ClCompile Include="CallbackTimerQueueEx.cpp" />
     <ClCompile Include="CallbackTimerWheel.cpp" />
     <ClCompile Include="CodePage.cpp" />
@@ -644,8 +642,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h" />
-    <ClInclude Include="CallbackTimerQueue.h" />
-    <ClInclude Include="CallbackTimerQueueBase.h" />
     <ClInclude Include="CallbackTimerQueueEx.h" />
     <ClInclude Include="CallbackTimerWheel.h" />
     <ClInclude Include="CodePage.h" />
@@ -685,7 +681,6 @@
     <ClInclude Include="NullCallbackTimerQueueMonitor.h" />
     <ClInclude Include="NullMessageLog.h" />
     <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
-    <ClInclude Include="OSVersionInfo.h" />
     <ClInclude Include="PerformanceCounter.h" />
     <ClInclude Include="PerThreadErrorHandler.h" />
     <ClInclude Include="PureCallHandler.h" />

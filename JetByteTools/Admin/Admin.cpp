@@ -66,12 +66,6 @@
 #ifdef _WIN32_WINNT
 #if (_WIN32_WINNT < JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION)
 #pragma JETBYTE_MESSAGE(" **** Build configuration UNSUPPORTED ****")
-#elif (_WIN32_WINNT == 0x0500)
-#pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows 2000 - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
-#elif (_WIN32_WINNT == 0x0501)
-#pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows XP - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
-#elif (_WIN32_WINNT == 0x0502)
-#pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows Server 2003 - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #elif (_WIN32_WINNT == 0x0600)
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows Vista - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #elif (_WIN32_WINNT == 0x0601)
@@ -80,6 +74,8 @@
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows 8 - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #elif (_WIN32_WINNT == 0x0603)
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows 8.1 - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
+#elif (_WIN32_WINNT == 0x0A00)
+#pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Windows 10 - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #else
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Unknown - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #endif
@@ -90,26 +86,8 @@
 #endif
 
 #ifdef NTDDI_VERSION
-#if (NTDDI_VERSION == 0x05000000)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " UNSUPPORTED (Windows 2000)")
-#elif (NTDDI_VERSION == 0x05000100)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " UNSUPPORTED (Windows 2000 SP1)")
-#elif (NTDDI_VERSION == 0x05000200)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " UNSUPPORTED (Windows 2000 SP2)")
-#elif (NTDDI_VERSION == 0x05000300)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " UNSUPPORTED (Windows 2000 SP3)")
-#elif (NTDDI_VERSION == 0x05000400)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " UNSUPPORTED (Windows 2000 SP4)")
-#elif (NTDDI_VERSION == 0x05010000)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows XP)")
-#elif (NTDDI_VERSION == 0x05010100)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows XP SP1)")
-#elif (NTDDI_VERSION == 0x05010200)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows XP SP2)")
-#elif (NTDDI_VERSION == 0x05020000)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Server 2003)")
-#elif (NTDDI_VERSION == 0x05020100)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Server 2003 SP1)")
+#if (NTDDI_VERSION < JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION)
+#pragma JETBYTE_MESSAGE(" **** Build configuration UNSUPPORTED ****")
 #elif (NTDDI_VERSION == 0x06000000)
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista)")
 #elif (NTDDI_VERSION == 0x06000100)
@@ -136,23 +114,12 @@
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = UNSET")
 #endif
 
-#if (JETBYTE_USE_STL_PORT == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: STLPort: YES")
-
-#ifdef _STLPORT_VERSION
-#pragma JETBYTE_MESSAGE("Build configuration: STLPort version: " JETBYTE_MACROASSTRING(_STLPORT_VERSION) )
-#endif
-
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: STLPort: NO")
-#endif
-
 #ifdef JETBYTE_PLATFORM_SDK_VERSION
 
 #if (JETBYTE_PLATFORM_SDK_VERSION == 0x0001)
 #pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Using the Platform SDK that ships with the compiler")
 #elif (JETBYTE_PLATFORM_SDK_VERSION == 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version 6.0 - Windows Server 2003 R2")
+#pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: UNSUPPORTED Version 6.0 - Windows Server 2003 R2")
 #elif (JETBYTE_PLATFORM_SDK_VERSION == 0x060A)
 #pragma JETBYTE_MESSAGE("Build configuration: Platform SDK: Version 6.0a - Windows SDK Update for Windows Vista and .NET Framework 3.0")
 #elif (JETBYTE_PLATFORM_SDK_VERSION == 0x0610)
@@ -178,12 +145,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: See JETBYTE_PLATFORM_SDK_VERSION in Admin.h for details, we use it to work around some")
 #pragma JETBYTE_MESSAGE("Build configuration: 'issues' in some of the versions of the Platform SDK.")
 
-#endif
-
-#if (JETBYTE_HAS_INTERLOCKED_64 == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: Interlocked64 enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: Interlocked64 enabled: NO")
 #endif
 
 #if (JETBYTE_SHOW_TODO == 1)
@@ -240,23 +201,17 @@
 #endif
 #endif
 
+#ifndef JETBYTE_PLATFORM_SDK_VERSION
+#error Unsupported configuration - _WIN32_WINNT >= 0x0600 and JETBYTE_PLATFORM_SDK_VERSION not defined.
+#endif
+
 // Note that we don't support building for Windows 7 or later (_WIN32_WINNT >= 0x0601)
 // without a platform SDK of v7.0 or later, as if _WIN32_WINNT >= 0x0601 then we
 // assume that Windows 7 specific functions are available in the Platform SDK headers.
-// Also we don't support building for Windows Vista or later (_WIN32_WINNT >= 0x0600)
-// without a platform SDK of v6.0a or later for the same reason.
 
 #if (_WIN32_WINNT >= 0x0601)
-#ifndef JETBYTE_PLATFORM_SDK_VERSION
-#error Unsupported configuration - _WIN32_WINNT >= 0x0601 and JETBYTE_PLATFORM_SDK_VERSION not defined.
-#elif JETBYTE_PLATFORM_SDK_VERSION < 0x0700
+#if JETBYTE_PLATFORM_SDK_VERSION < 0x0700
 #error Unsupported configuration - _WIN32_WINNT >= 0x0601 and JETBYTE_PLATFORM_SDK_VERSION < 0x0700.
-#endif
-#elif (_WIN32_WINNT >= 0x0600)
-#ifndef JETBYTE_PLATFORM_SDK_VERSION
-#error Unsupported configuration - _WIN32_WINNT >= 0x0600 and JETBYTE_PLATFORM_SDK_VERSION not defined.
-#elif JETBYTE_PLATFORM_SDK_VERSION < 0x0600
-#error Unsupported configuration - _WIN32_WINNT >= 0x0600 and JETBYTE_PLATFORM_SDK_VERSION < 0x0600.
 #endif
 #endif
 
@@ -275,55 +230,6 @@
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: Untested Platform SDK Version")
 #endif
-#endif
-#endif
-
-// Check that we can support x64 for this combination of compiler and windows
-// version.
-
-#ifdef _WIN64
-#if _MSC_VER < 1400
-#error x64 builds not supported on compilers prior to VS2005
-#endif
-#if _WIN32_WINNT < 0x0501
-#error x64 builds not supported on platforms prior to Windows XP (_WIN32_WINNT)
-#endif
-#if NTDDI_VERSION < 0x05010000
-#error x64 builds not supported on platforms prior to Windows XP (NTDDI_VERSION)
-#endif
-#endif
-
-// Code built with VS2010 and later will NOT run on Win2k...
-// See https://connect.microsoft.com/VisualStudio/feedback/details/526821/executables-built-with-visual-c-2010-do-not-run-on-windows-xp-prior-to-sp2
-
-#if _MSC_VER >= 1600
-#if NTDDI_VERSION < 0x05010200
-#if JETBYTE_ALLOW_FATAL_COMPILE_ENV == 0
-#error Code built with VS2010 and later will NOT RUN on systems prior to Windows XP SP2
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: WARNING: Code built with VS2010 and later will NOT RUN on systems prior to Windows XP SP2")
-#endif
-#endif
-#endif
-
-// Check that we're using the version of STL that we expect to be
-
-// If the following test fails then there's a configuration mismatch.
-// JB_USE_STL_PORT is set to 1 but the STLPort headers dont appear to be being used
-// This will cause LOTS of warnings as the MS STL doesn't compile cleanly with warning
-// level 4. Either set STLPORT_ROOT to point to the root of your STLPort installation
-// (e.g. C:\\STLport-4.6.1) or set JB_USE_STL_PORT to 0 in Config.h and use the standard
-// Microsoft STL
-
-#include <string>
-
-#if (JETBYTE_USE_STL_PORT == 1)
-#ifndef _STLP_STRING
-#error Configuration mismatch? JETBYTE_USE_STL_PORT == 1 and we dont seem to be including STLPort headers. Is $STLPORT_ROOT set correctly?
-#endif
-#else
-#ifdef _STLP_STRING
-#error Configuration mismatch? JETBYTE_USE_STL_PORT == 0 and we seem to be including STLPort headers. Is $STLPORT_ROOT set ?
 #endif
 #endif
 
@@ -430,22 +336,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ZLIB_1_2_3 enabled: YES (using ZLib 1.2.3) in ZLibTools")
 #endif
 
-#if (JETBYTE_USE_CAPTURE_STACK_BACK_TRACE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_USE_CAPTURE_STACK_BACK_TRACE enabled: YES (using CaptureStackBackTrace) in Win32Tools")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_USE_CAPTURE_STACK_BACK_TRACE enabled: NO (using StackWalk64) in Win32Tools")
-#endif
-
-#if (JETBYTE_PERF_STREAM_SOCKETS_SKIP_EVENT_ON_HANDLE == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO")
-#endif
-
 #if (JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
 #if (_WIN32_WINNT < 0x0600)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
@@ -462,16 +352,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO enabled: NO")
 #endif
 
-#if (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE == 1)
-#if (_WIN32_WINNT < 0x0600) && (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 0)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS is not enabled")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_EVENT_ON_HANDLE enabled: NO")
-#endif
-
 #if (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
 #if (_WIN32_WINNT < 0x0600)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
@@ -482,16 +362,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO")
 #endif
 
-#if (JETBYTE_PERF_FILE_WRITER_SKIP_EVENT_ON_HANDLE == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_WRITER_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_WRITER_SKIP_EVENT_ON_HANDLE enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_WRITER_SKIP_EVENT_ON_HANDLE enabled: NO")
-#endif
-
 #if (JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
 #if (_WIN32_WINNT < 0x0600)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
@@ -500,16 +370,6 @@
 #endif
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO")
-#endif
-
-#if (JETBYTE_PERF_FILE_READER_SKIP_EVENT_ON_HANDLE == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_READER_SKIP_EVENT_ON_HANDLE enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_READER_SKIP_EVENT_ON_HANDLE enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_FILE_READER_SKIP_EVENT_ON_HANDLE enabled: NO")
 #endif
 
 #if (JETBYTE_PERF_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
@@ -538,26 +398,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEBUG_BREAK_ON_CONNECTIONS_ACTIVE_DURING_DESTRUCTION enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEBUG_BREAK_ON_CONNECTIONS_ACTIVE_DURING_DESTRUCTION enabled: NO")
-#endif
-
-#if (JETBYTE_PERF_STREAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: NO")
-#endif
-
-#if (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_MARSHAL_TO_IO_POOL enabled: NO")
 #endif
 
 #if (JETBYTE_DUMP_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG == 1)
@@ -704,40 +544,10 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST enabled: NO")
 #endif
 
-#if JETBYTE_DEPRECATE_SHARED_LOCK_SOCKETS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_SHARED_LOCK_SOCKETS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_SHARED_LOCK_SOCKETS enabled: NO")
-#endif
-
 #if JETBYTE_DEPRECATE_CRITICAL_SECTION == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_CRITICAL_SECTION_2 == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION_2 enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION_2 enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_LOW_CONTENTION_BUFFER_ALLOCATOR == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_LOW_CONTENTION_BUFFER_ALLOCATOR enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_LOW_CONTENTION_BUFFER_ALLOCATOR enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_TLS_BUFFER_ALLOCATOR == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TLS_BUFFER_ALLOCATOR enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TLS_BUFFER_ALLOCATOR enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_DEFLATING_STREAM_SOCKET_FILTER == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_DEFLATING_STREAM_SOCKET_FILTER enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_DEFLATING_STREAM_SOCKET_FILTER enabled: NO")
 #endif
 
 #if JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1
@@ -835,15 +645,16 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: NO")
 #endif
 
-#if JETBYTE_DELAY_THREAD_TERMINATION_HACK == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_HACK enabled: YES")
-#ifdef JETBYTE_DELAY_THREAD_TERMINATION_DELAY
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_DELAY set to " JETBYTE_MACROASSTRING(JETBYTE_DELAY_THREAD_TERMINATION_DELAY))
+#if JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_DELAY defaulting to 10ms")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES enabled: NO")
 #endif
+
+#if JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DELAY_THREAD_TERMINATION_HACK enabled: NO")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: NO")
 #endif
 
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")

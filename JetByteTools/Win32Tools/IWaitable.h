@@ -63,7 +63,9 @@ class IWaitable
 
       virtual void Wait() const = 0;
 
-      /// Wait, with a time limit, for the object to become signalled.
+      /// Wait, with a time limit, for the object to become signalled. If you want to
+      /// wait for 0 milliseconds and you get an "ambiguous call" with the Handle version
+      /// then use IsSignalled() which is the same as Wait(0)
 
       //lint -esym(534, JetByteTools::Win32::*::Wait) (Ignoring return value of function)
       virtual bool Wait(
