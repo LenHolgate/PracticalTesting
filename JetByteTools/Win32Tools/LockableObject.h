@@ -1,7 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
 #ifndef JETBYTE_TOOLS_WIN32_LOCKABLE_OBJECT_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_LOCKABLE_OBJECT_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////

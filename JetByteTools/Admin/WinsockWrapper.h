@@ -1,7 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
 #ifndef JETBYTE_TOOLS_ADMIN_WINSOCK_WRAPPER_INCLUDED__
 #define JETBYTE_TOOLS_ADMIN_WINSOCK_WRAPPER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////

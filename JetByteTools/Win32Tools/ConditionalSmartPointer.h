@@ -1,7 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
 #ifndef JETBYTE_TOOLS_WIN32_CONDITIONAL_SMART_POINTER_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_CONDITIONAL_SMART_POINTER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////

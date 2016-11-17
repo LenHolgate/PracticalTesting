@@ -1,7 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
 #ifndef JETBYTE_TOOLS_ADMIN_DETECT_PLATFORM_SDK_VERSION_INCLUDED__
 #define JETBYTE_TOOLS_ADMIN_DETECT_PLATFORM_SDK_VERSION_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////

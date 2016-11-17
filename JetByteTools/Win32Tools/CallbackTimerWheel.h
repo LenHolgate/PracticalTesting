@@ -1,7 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
 #ifndef JETBYTE_TOOLS_CALLBACK_TIMER_WHEEL_INCLUDED__
 #define JETBYTE_TOOLS_CALLBACK_TIMER_WHEEL_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
