@@ -58,7 +58,8 @@ CSmartHandle::CSmartHandle(
 
 CSmartHandle::CSmartHandle(
    const CSmartHandle &rhs)
-   :  m_handle(rhs.DuplicateHandle().Detach())
+   :  IWaitable(rhs),
+      m_handle(rhs.DuplicateHandle().Detach())
 {
 }
 
@@ -191,7 +192,7 @@ bool CSmartHandle::Wait(
 
 bool CSmartHandle::IsValid() const
 {
-   return m_handle != INVALID_HANDLE_VALUE && m_handle != 0;
+   return m_handle != INVALID_HANDLE_VALUE && m_handle != nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

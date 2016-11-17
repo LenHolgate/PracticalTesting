@@ -25,8 +25,6 @@
 
 #include <wtypes.h>
 
-#include "StringConverter.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,7 +65,6 @@ enum ToHexStringHexDigitRepresentation
 
    HexDigitsWithPaddingWithPrefixUpperCase   = HexDigitsUpperCase | HexDigitsWithPadding | HexDigitsWithPrefix,
    HexDigitsWithPaddingWithPrefixLowerCase   = HexDigitsLowerCase | HexDigitsWithPadding | HexDigitsWithPrefix,
-
 
    HexDigitsDefault                          = HexDigitsWithPrefixLowerCase
 };

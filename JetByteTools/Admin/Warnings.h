@@ -109,7 +109,7 @@
 #pragma warning(disable: 28252)  // Inconsistent annotation for function
 #pragma warning(disable: 28253)  // Inconsistent annotation for function
 
-#if _MSC_VER == 1900
+#if _MSC_VER >= 1900
 #pragma warning(disable: 4457)   // declaration of 'x' hides function parameter
 #pragma warning(disable: 4458)   // declaration of 'x' hides class member
 #pragma warning(disable: 4091)   // 'typedef ': ignored on left of 'x' when no variable is declared

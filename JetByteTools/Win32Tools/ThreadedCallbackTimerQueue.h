@@ -129,29 +129,29 @@ class CThreadedCallbackTimerQueue :
       // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
-      virtual IQueueTimers::Handle CreateTimer();
+      IQueueTimers::Handle CreateTimer() override;
 
-      virtual bool SetTimer(
+      bool SetTimer(
          const IQueueTimers::Handle &handle,
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
+         const IQueueTimers::UserData userData) override;
 
-      virtual bool CancelTimer(
-         const IQueueTimers::Handle &handle);
+      bool CancelTimer(
+         const IQueueTimers::Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         IQueueTimers::Handle &handle);
+      bool DestroyTimer(
+         IQueueTimers::Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         const IQueueTimers::Handle &handle);
+      bool DestroyTimer(
+         const IQueueTimers::Handle &handle) override;
 
-      virtual void SetTimer(
+      void SetTimer(
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
+         const IQueueTimers::UserData userData) override;
 
-      virtual Milliseconds GetMaximumTimeout() const;
+      Milliseconds GetMaximumTimeout() const override;
 
       /// Called when the timer queue thread is terminated due to an exception
       /// this is a BAD situation! Override this to deal with it, log the error,
@@ -178,7 +178,7 @@ class CThreadedCallbackTimerQueue :
 
       // Implement IRunnable
 
-      virtual int Run();
+      unsigned int Run() override;
 
       IMonitorThreadedCallbackTimerQueue &m_monitor;
 

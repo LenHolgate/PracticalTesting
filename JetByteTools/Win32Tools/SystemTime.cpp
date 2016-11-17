@@ -137,18 +137,16 @@ CSystemTime::CSystemTime(
       {
          throw CWin32Exception(_T("CSystemTime::CSystemTime()"), lastError);
       }
-      else
-      {
-         // Seeing failures for 129460032000000000
-         // which gives 2011-03-31 00:00:00.000
 
-         // Something strange about this date that means it doesn't have a 0:0:0 time?
+      // Seeing failures for 129460032000000000
+      // which gives 2011-03-31 00:00:00.000
 
-         //throw CException(
-         //   _T("CSystemTime::CSystemTime("),
-         //   _T("Unexpected failure in FileTimeToSystemTime() for ") + ToString(dateTime) +
-         //   _T(" resulting in: ") + GetAsDatabaseDateTimeStamp());
-      }
+      // Something strange about this date that means it doesn't have a 0:0:0 time?
+
+      //throw CException(
+      //   _T("CSystemTime::CSystemTime("),
+      //   _T("Unexpected failure in FileTimeToSystemTime() for ") + ToString(dateTime) +
+      //   _T(" resulting in: ") + GetAsDatabaseDateTimeStamp());
    }
 }
 
@@ -503,9 +501,9 @@ void CSystemTime::SetFromTimeT32(
    jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
 
    LARGE_INTEGER utcFT = {0};
-   utcFT.QuadPart = ((unsigned __int64)timet)*10000000 + jan1970FT.QuadPart;
+   utcFT.QuadPart = static_cast<unsigned __int64>(timet)*10000000 + jan1970FT.QuadPart;
 
-   FileTimeToSystemTime((FILETIME*)&utcFT, this);
+   FileTimeToSystemTime(reinterpret_cast<FILETIME*>(&utcFT), this);
 }
 
 void CSystemTime::SetFromTimeT64(
@@ -517,9 +515,9 @@ void CSystemTime::SetFromTimeT64(
    jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
 
    LARGE_INTEGER utcFT = {0};
-   utcFT.QuadPart = ((unsigned __int64)timet)*10000000 + jan1970FT.QuadPart;
+   utcFT.QuadPart = static_cast<unsigned __int64>(timet)*10000000 + jan1970FT.QuadPart;
 
-   FileTimeToSystemTime((FILETIME*)&utcFT, this);
+   FileTimeToSystemTime(reinterpret_cast<FILETIME*>(&utcFT), this);
 }
 
 __time32_t CSystemTime::GetAsTimeT32() const
@@ -970,11 +968,11 @@ int CSystemTime::GetDaysDifferent(
 
    if (!sameYear)
    {
-      for (WORD year = date1.wYear + 1; year < date2.wYear; ++year)
+      for (int year = date1.wYear + 1; year < date2.wYear; ++year)
       {
          difference += 365;
 
-         if (IsLeapYear(year))
+         if (IsLeapYear(static_cast<WORD>(year)))
          {
             difference++;
          }
@@ -1000,7 +998,7 @@ WORD CSystemTime::GetDaysInMonth(
 
    const bool isLeap = (month == 2 && CSystemTime::IsLeapYear(year));
 
-   return daysInTheMonth[month - 1] + (isLeap ? 1 : 0);
+   return static_cast<WORD>(daysInTheMonth[month - 1] + (isLeap ? 1 : 0));
 }
 
 bool CSystemTime::IsLeapYear(
@@ -1051,7 +1049,7 @@ CSystemTime::TimeDifference::TimeDifference(
 void CSystemTime::TimeDifference::Apply(
    SYSTEMTIME &time) const
 {
-   time = CSystemTime(CSystemTime::GetAsInt64(time) + m_difference);
+   time = static_cast<const SYSTEMTIME &>(CSystemTime(CSystemTime::GetAsInt64(time) + m_difference));
 }
 
 __int64 CSystemTime::TimeDifference::GetDifference() const
@@ -1114,7 +1112,7 @@ static int GetDaysThisYearFrom(
 
    WORD month = date1.wMonth;
 
-   const WORD endMonth = sameYear ? date2.wMonth - 1 : 12;
+   const WORD endMonth = static_cast<WORD>(sameYear ? date2.wMonth - 1 : 12);
 
    int days = 0;
 

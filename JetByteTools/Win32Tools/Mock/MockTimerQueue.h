@@ -59,7 +59,7 @@ class CMockTimerQueue :
             explicit TimerExpiryThread(
                CMockTimerQueue &timerQueue);
 
-            void WaitForCompletion();
+            void WaitForCompletion() const;
 
             ~TimerExpiryThread();
 
@@ -67,7 +67,7 @@ class CMockTimerQueue :
 
             // Implement IRunnable
 
-            virtual int Run();
+            unsigned int Run() override;
 
             JetByteTools::Win32::CThread m_thread;
 
@@ -96,46 +96,46 @@ class CMockTimerQueue :
          const Milliseconds nextTimeout);
 
       bool WaitForNextTimeout(
-         const Milliseconds timeout);
+         const Milliseconds timeout) const;
 
       bool WaitForOnTimer(
          const Milliseconds timeout);
 
       // Implement IManageTimerQueue
 
-      virtual Milliseconds GetNextTimeout();
+      Milliseconds GetNextTimeout() override;
 
-      virtual bool BeginTimeoutHandling();
+      bool BeginTimeoutHandling() override;
 
-      virtual void HandleTimeout();
+      void HandleTimeout() override;
 
-      virtual void EndTimeoutHandling();
+      void EndTimeoutHandling() override;
 
       // Implement IQueueTimers
 
-      virtual Handle CreateTimer();
+      Handle CreateTimer() override;
 
-      virtual bool SetTimer(
+      bool SetTimer(
          const Handle &handle,
          Timer &timer,
          const Milliseconds timeout,
-         const UserData userData);
+         const UserData userData) override;
 
-      virtual bool CancelTimer(
-         const Handle &handle);
+      bool CancelTimer(
+         const Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         Handle &handle);
+      bool DestroyTimer(
+         Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         const Handle &handle);
+      bool DestroyTimer(
+         const Handle &handle) override;
 
-      virtual void SetTimer(
+      void SetTimer(
          Timer &timer,
          const Milliseconds timeout,
-         const UserData userData);
+         const UserData userData) override;
 
-      virtual Milliseconds GetMaximumTimeout() const;
+      Milliseconds GetMaximumTimeout() const override;
 
    private :
 

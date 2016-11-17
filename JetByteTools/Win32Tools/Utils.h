@@ -83,9 +83,9 @@ result GetStringLength(
    const s &theString,
    const bool includeNullTerminator = false)
 {
-   const __int64 length = theString.length() + (includeNullTerminator ? 1 : 0);
+   const unsigned __int64 length = theString.length() + (includeNullTerminator ? 1 : 0);
 
-   if (length > std::numeric_limits<result>::max())
+   if (length > static_cast<unsigned __int64>(std::numeric_limits<result>::max()))
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -98,9 +98,9 @@ result GetStringLength(
    const char *pString,
    const bool includeNullTerminator = false)
 {
-   const __int64 length = strlen(pString) + (includeNullTerminator ? 1 : 0);
+   const unsigned __int64 length = strlen(pString) + (includeNullTerminator ? 1 : 0);
 
-   if (length > std::numeric_limits<result>::max())
+   if (length > static_cast<unsigned __int64>(std::numeric_limits<result>::max()))
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -113,9 +113,9 @@ result GetStringLength(
    const wchar_t *pString,
    const bool includeNullTerminator = false)
 {
-   const __int64 length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
+   const unsigned __int64 length = wcslen(pString) + (includeNullTerminator ? 1 : 0);
 
-   if (length > std::numeric_limits<result>::max())
+   if (length > static_cast<unsigned __int64>(std::numeric_limits<result>::max()))
    {
       throw CException(_T("GetStringLength()"), _T("String is too long to fit: ") + ToString(length));
    }
@@ -551,7 +551,7 @@ _tstring GetFileNameFromHandleIfPossible(
    const HANDLE hFile);
 
 _tstring TranslateDeviceNamePathToDriveLetterPath(
-   const _tstring deviceNamePath);
+   const _tstring &deviceNamePath);
 
 #ifdef JETBYTE_UTILS_PUSHED_MIN
 #pragma pop_macro("min")

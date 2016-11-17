@@ -150,10 +150,15 @@ class TLockableObjectPotentialOwner
    public:
 
       inline explicit TLockableObjectPotentialOwner(
-         T &lock)
+         T &lock,
+         const bool locked = false)
          :  m_lock(lock),
-            m_locked(false)
+            m_locked(locked)
       {
+         if (m_locked)
+         {
+            m_lock.Lock();
+         }
       }
 
       inline ~TLockableObjectPotentialOwner()

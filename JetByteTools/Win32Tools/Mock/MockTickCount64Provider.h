@@ -71,7 +71,7 @@ class CMockTickCount64Provider :
 
       // Implement IProvideTickCount64
 
-      virtual ULONGLONG GetTickCount64() const;
+      ULONGLONG GetTickCount64() const override;
 
    private :
 

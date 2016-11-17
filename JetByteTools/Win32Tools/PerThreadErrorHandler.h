@@ -44,7 +44,7 @@ class CPerThreadErrorHandler
 
       CPerThreadErrorHandler();
 
-      ~CPerThreadErrorHandler();
+      virtual ~CPerThreadErrorHandler();
 
       static bool ProcessIsExiting();
 

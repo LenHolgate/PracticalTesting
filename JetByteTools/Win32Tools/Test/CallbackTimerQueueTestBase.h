@@ -23,7 +23,6 @@
 
 #include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
 #include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
-#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
 #include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
 
 #include "JetByteTools\Win32Tools\DebugTrace.h"
@@ -441,7 +440,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimer()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
@@ -467,7 +466,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
@@ -517,7 +516,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
@@ -604,7 +603,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
@@ -638,7 +637,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -698,7 +697,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 1000;
 
@@ -781,7 +780,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -825,7 +824,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -875,7 +874,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -921,7 +920,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -977,7 +976,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1005,7 +1004,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
       // note that this should return false (not currently set) and the new timer and
       // user data should not affect the timer that is in the process of going off.
 
-      CLoggingCallbackTimer timer2;
+      Mock::CLoggingCallbackTimer timer2;
 
       THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2));
 
@@ -1088,7 +1087,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1150,7 +1149,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1221,7 +1220,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1255,7 +1254,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
       // note that this should return false (not currently set) and the new timer and
       // user data should not affect the timer that is in the process of going off.
 
-      CLoggingCallbackTimer timer2;
+      Mock::CLoggingCallbackTimer timer2;
 
       THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2));
 
@@ -1333,7 +1332,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerInOnTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1435,7 +1434,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1497,7 +1496,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1571,7 +1570,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
       THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -1627,7 +1626,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetMaxTimeout()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       THROW_ON_FAILURE_EX(T::maxTimeout == timerQueue.GetMaximumTimeout());
 
@@ -1655,7 +1654,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
 
       const Milliseconds maxTimeout = timerQueue.GetMaximumTimeout();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const IQueueTimers::UserData userData = 1;
 
@@ -1702,12 +1701,12 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer1;
-      CLoggingCallbackTimer timer2;
-      CLoggingCallbackTimer timer3;
-      CLoggingCallbackTimer timer4;
-      CLoggingCallbackTimer timer5;
-      CLoggingCallbackTimer timer6;
+      Mock::CLoggingCallbackTimer timer1;
+      Mock::CLoggingCallbackTimer timer2;
+      Mock::CLoggingCallbackTimer timer3;
+      Mock::CLoggingCallbackTimer timer4;
+      Mock::CLoggingCallbackTimer timer5;
+      Mock::CLoggingCallbackTimer timer6;
 
       const Milliseconds timeout1 = 100;
       const Milliseconds timeout2 = 150;
@@ -1864,7 +1863,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout1 = 100;
 
@@ -1962,7 +1961,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2024,7 +2023,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
       tickProvider.CheckNoResults();
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2097,7 +2096,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2140,7 +2139,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 
       CheckConstructionResults(monitor, tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
@@ -2250,7 +2249,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2325,7 +2324,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2406,7 +2405,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandle
 
       CheckConstructionResults(tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       const Milliseconds timeout = 100;
 
@@ -2492,7 +2491,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 
    monitor.logMessages = false;
 
-   CLoggingCallbackTimer timer;
+   Mock::CLoggingCallbackTimer timer;
 
    P tickProvider;
 
@@ -2536,7 +2535,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 
    monitor.logMessages = false;
 
-   CLoggingCallbackTimer timer;
+   Mock::CLoggingCallbackTimer timer;
 
    P tickProvider;
 
@@ -2598,7 +2597,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
 
    monitor.logMessages = false;
 
-   CLoggingCallbackTimer timer;
+   Mock::CLoggingCallbackTimer timer;
 
    P tickProvider;
 
@@ -2677,7 +2676,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
    {
       Q timerQueue(monitor, tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       timer.logMessage = false;
 
@@ -2759,7 +2758,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
    {
       Q timerQueue(monitor, tickProvider);
 
-      CLoggingCallbackTimer timer;
+      Mock::CLoggingCallbackTimer timer;
 
       timer.logMessage = false;
 

@@ -40,6 +40,7 @@
 #endif
 
 #include "Exception.h"
+#include "ToString.h"
 
 #include <functional>      // for std::less<>
 
@@ -186,7 +187,7 @@ class TIntrusiveRedBlackTree
                const size_t rhs);
 
             Iterator operator+(
-               const size_t rhs);
+               const size_t rhs) const;
 
             bool operator==(const Iterator &rhs) const;
 
@@ -194,11 +195,11 @@ class TIntrusiveRedBlackTree
 
             typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator*();
 
-            typename const TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+            const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
 
             typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator->();
 
-            typename const TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+            const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
 
          private :
 
@@ -322,12 +323,12 @@ class TIntrusiveRedBlackTree
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::TIntrusiveRedBlackTree()
-   :  m_size(0),
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
-      m_isValid(true),
-      #endif
-      m_pRoot(0),
+   :  m_pRoot(0),
+      m_size(0),
       m_comp()
+      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      , m_isValid(true)
+      #endif
 {
 }
 
@@ -890,9 +891,9 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
 
                // insert case 4
 
-               const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+               int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
 
-               const int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]);
+               int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]);
 
                if (dir != parentDir)
                {
@@ -902,29 +903,27 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
                }
 
                // fall through to case 5
+               // insert case 5
+
+               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               OutputEx(_T("Case 5: ") + KeyAsString(pNode));
+               #endif
+
+               pNode->m_pParent->m_red = false;
+               GrandParent(pNode)->m_red = true;
+
+               // These two may have changed if we moved pNode in case 4...
+
+               dir = (pNode == pNode->m_pParent->m_pLinks[1]); //lint !e578 (Declaration of symbol 'dir' hides symbol 'dir')
+
+               parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]); //lint !e578 (Declaration of symbol 'parentDir' hides symbol 'parentDir')
+
+               if (dir == parentDir)
                {
-                  // insert case 5
-
-                  #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-                  OutputEx(_T("Case 5: ") + KeyAsString(pNode));
-                  #endif
-
-                  pNode->m_pParent->m_red = false;
-                  GrandParent(pNode)->m_red = true;
-
-                  // These two may have changed if we moved pNode in case 4...
-
-                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]); //lint !e578 (Declaration of symbol 'dir' hides symbol 'dir')
-
-                  const int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]); //lint !e578 (Declaration of symbol 'parentDir' hides symbol 'parentDir')
-
-                  if (dir == parentDir)
-                  {
-                     Rotate(GrandParent(pNode), !dir);
-                  }
-
-                  done = true;
+                  Rotate(GrandParent(pNode), !dir);
                }
+
+               done = true;
             }
          }
       }
@@ -1139,33 +1138,32 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
 {
    try
    {
-   bool done = false;
+      bool done = false;
 
-   while (!done)
-   {
-      done = true;
-
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-      OutputEx(_T("Rebalancing: ") + KeyAsString(pNode));
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
-      OutputEx(DumpTree());
-      #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_previousDump = DumpTree();
-      #endif
-      #endif
-
-      if (!pNode->m_pParent)
+      while (!done)
       {
-         // delete case 1
+         done = true;
 
          #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-         OutputEx(_T("Parent is null: ") + KeyAsString(pNode));
+         OutputEx(_T("Rebalancing: ") + KeyAsString(pNode));
+         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+         OutputEx(DumpTree());
+         #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
+         m_previousDump = DumpTree();
+         #endif
          #endif
 
-         break;
-      }
-      else
-      {
+         if (!pNode->m_pParent)
+         {
+            // delete case 1
+
+            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            OutputEx(_T("Parent is null: ") + KeyAsString(pNode));
+            #endif
+
+            break;
+         }
+
          CIntrusiveRedBlackTreeNode *pSibling = Sibling(pNode);
 
          if (IsRed(pSibling))
@@ -1229,7 +1227,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
             {
                // delete case 5
 
-               const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+               int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
 
                if (IsBlack(pSibling) &&
                    IsRed(pSibling->m_pLinks[dir]) &&
@@ -1247,35 +1245,33 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
                }
 
                // fall through to case 6
+
+               // delete case 6
+
+               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               OutputEx(_T("Case 6: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
+               #endif
+
+               pSibling->m_red = pNode->m_pParent->m_red;
+               pNode->m_pParent->m_red = false;
+
+               dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+
+               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+               if (!IsRed(pSibling->m_pLinks[!dir])) //lint !e514 (Unusual use of a Boolean expression)
                {
-                  // delete case 6
-
-                  #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-                  OutputEx(_T("Case 6: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
-                  #endif
-
-                  pSibling->m_red = pNode->m_pParent->m_red;
-                  pNode->m_pParent->m_red = false;
-
-                  const int dir = (pNode == pNode->m_pParent->m_pLinks[1]); //lint !e578 (Declaration of symbol 'dir' hides symbol 'dir')
-
-                  #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-                  if (!IsRed(pSibling->m_pLinks[!dir])) //lint !e514 (Unusual use of a Boolean expression)
-                  {
-                     throw CException(
-                        _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance()"),
-                        _T("Unexpected tree state"));
-                  }
-                  #endif
-
-                  pSibling->m_pLinks[!dir]->m_red = false; //lint !e514 (Unusual use of a Boolean expression)
-
-                  Rotate(pNode->m_pParent, dir);
+                  throw CException(
+                     _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance()"),
+                     _T("Unexpected tree state"));
                }
+               #endif
+
+               pSibling->m_pLinks[!dir]->m_red = false; //lint !e514 (Unusual use of a Boolean expression)
+
+               Rotate(pNode->m_pParent, dir);
             }
          }
       }
-   }
    }
    catch(...)
    {
@@ -1628,7 +1624,7 @@ template <class T, class K, class TtoK, class Pr, class TtoN>
 typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator=(
    const Iterator &rhs)
 {
-   m_pNode = rhs.m_pNode;
+   m_pNode = rhs.m_pNode; //lint !e1555 (shallow pointer copy of in copy assignment operator
    #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
    m_depth = rhs.m_depth;
    #endif
@@ -1673,10 +1669,8 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
 
          return *this;
       }
-      else
-      {
-         m_nextMove = GoUp;
-      }
+
+      m_nextMove = GoUp;
    }
 
    if (m_nextMove == GoUp)
@@ -1752,7 +1746,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator+(
-   const size_t value)
+   const size_t value) const
 {
    Iterator result = *this;
 
@@ -1782,7 +1776,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlac
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator *() const
+const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator *() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
@@ -1794,7 +1788,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlac
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator ->() const
+const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator ->() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }

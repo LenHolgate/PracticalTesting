@@ -59,9 +59,10 @@
 #pragma JETBYTE_MESSAGE("Build configuration: Compiler Library Version = UNSET")
 #endif
 
+#pragma JETBYTE_MESSAGE(" Build configuration:")
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform can be adjusted by editing the values in Admin\\TargetWindowsVersion.h")
 #pragma JETBYTE_MESSAGE(" Build configuration: Other options can be adjusted editing the values in Admin\\Config.h")
-
+#pragma JETBYTE_MESSAGE(" Build configuration:")
 
 #ifdef _WIN32_WINNT
 #if (_WIN32_WINNT < JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION)
@@ -147,12 +148,6 @@
 
 #endif
 
-#if (JETBYTE_SHOW_TODO == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TODO enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TODO enabled: NO")
-#endif
-
 // Check that we support the compile environment.
 
 // Check that we support the compiler.
@@ -231,6 +226,25 @@
 #pragma JETBYTE_MESSAGE("Build configuration: Untested Platform SDK Version")
 #endif
 #endif
+#endif
+
+#if JETBYTE_SHOW_ADMIN_CONFIG_DETAILS == 0
+
+#pragma JETBYTE_MESSAGE("Build configuration:")
+#pragma JETBYTE_MESSAGE("Build configuration: Define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS to 1 in Admin\\Config.h")
+#pragma JETBYTE_MESSAGE("Build configuration: to display all configuration defines")
+
+#else
+
+#pragma JETBYTE_MESSAGE("Build configuration:")
+#pragma JETBYTE_MESSAGE("Build configuration: Define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS to 0 in Admin\\Config.h")
+#pragma JETBYTE_MESSAGE("Build configuration: to turn off the display of the following configuration defines")
+#pragma JETBYTE_MESSAGE("Build configuration:")
+
+#if (JETBYTE_SHOW_TODO == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TODO enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TODO enabled: NO")
 #endif
 
 #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 1)
@@ -655,6 +669,8 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: NO")
+#endif
+
 #endif
 
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")

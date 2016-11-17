@@ -21,8 +21,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
-
 #include "SmartHandle.h"
 #include "LockableObject.h"
 #include "IWaitable.h"
@@ -140,12 +138,12 @@ class CThread : public IWaitable
 
       // Implement IWaitable
 
-      HANDLE GetWaitHandle() const;
+      HANDLE GetWaitHandle() const override;
 
-      void Wait() const;
+      void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeout) const;
+         const Milliseconds timeout) const override;
 
    private :
 

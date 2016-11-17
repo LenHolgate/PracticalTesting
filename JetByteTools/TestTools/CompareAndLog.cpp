@@ -67,8 +67,6 @@ bool FileContentsMatch(
 {
    typedef TExpandableBuffer<BYTE> ByteBuffer;
 
-   bool ok = false;
-
    ByteBuffer fileContents1;
 
    LoadFileAsBinaryData(fileName1, fileContents1);
@@ -79,7 +77,7 @@ bool FileContentsMatch(
 
       LoadFileAsBinaryData(fileName2, fileContents2);
 
-      ok = fileContents1.GetSize() == fileContents2.GetSize();
+      bool ok = fileContents1.GetSize() == fileContents2.GetSize();
 
       if (ok)
       {
@@ -92,6 +90,7 @@ bool FileContentsMatch(
          SaveBinaryDataAsFile(fileName2 + _T(".Actual"), fileContents1);
       }
 
+      return ok;
    }
    catch(const CException &/*e*/)
    {
@@ -99,8 +98,6 @@ bool FileContentsMatch(
 
       throw;
    }
-
-   return ok;
 }
 
 bool FileExists(
@@ -222,21 +219,20 @@ bool DataAndFileContentsMatch(
    const DWORD dataLength,
    const JetByteTools::Win32::_tstring &fileName)
 {
-   bool ok = false;
-
    const _tstring data = DumpData(pData, dataLength, 60, true);
 
    try
    {
       const _tstring fileContents = LoadFileAsString(fileName);
 
-      ok = fileContents == data;
+      const bool ok = (fileContents == data);
 
       if (!ok)
       {
          SaveStringAsFile(fileName + _T(".Actual.log"), data);
       }
 
+      return ok;
    }
    catch(CException &/*e*/)
    {
@@ -244,8 +240,6 @@ bool DataAndFileContentsMatch(
 
       throw;
    }
-
-   return ok;
 }
 
 void EnsureDataMatches(

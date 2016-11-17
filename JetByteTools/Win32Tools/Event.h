@@ -23,7 +23,6 @@
 
 #include <wtypes.h>
 
-#include "tstring.h"
 #include "SmartHandle.h"
 #include "IWaitable.h"
 
@@ -118,12 +117,12 @@ class CEvent : public IWaitable
 
       // Implement IWaitable
 
-      HANDLE GetWaitHandle() const;
+      HANDLE GetWaitHandle() const override;
 
-      void Wait() const;
+      void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeout) const;
+         const Milliseconds timeout) const override;
 
    private :
 

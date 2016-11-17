@@ -39,7 +39,7 @@ class CTestIntrusiveMultiMapNode : public CIntrusiveMultiMapNode
 {
    public : 
 
-      CTestIntrusiveMultiMapNode(
+      explicit CTestIntrusiveMultiMapNode(
          const int value);
 
       int Value() const;
@@ -60,7 +60,7 @@ class CTestIntrusiveMultiMapNodeKeyAccessor
 {
    public :
 
-      static const unsigned long GetKeyFromT(
+      static unsigned long GetKeyFromT(
          const CTestIntrusiveMultiMapNode *pNode)
       {
          return pNode->Key();

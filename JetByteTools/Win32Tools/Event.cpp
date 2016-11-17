@@ -56,7 +56,7 @@ CEvent::CEvent(
    SECURITY_ATTRIBUTES *pEventAttributes,
    ResetType resetType,
    InitialState initialState)
-   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), 0, CEvent::CreateOrConnect))
+   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), nullptr, CEvent::CreateOrConnect))
 {
 
 }
@@ -155,7 +155,7 @@ static HANDLE Create(
       hEvent.Attach(::OpenEvent(EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, lpName));
 
       if (creationFlags == CEvent::ConnectToExisting &&
-          hEvent == NULL)
+          hEvent == nullptr)
       {
          const DWORD lastError = ::GetLastError();
    
@@ -171,7 +171,7 @@ static HANDLE Create(
 
       const DWORD lastError = ::GetLastError();
 
-      if (hEvent == NULL)
+      if (hEvent == nullptr)
       {
          throw CWin32Exception(_T("CEvent::Create()"), lastError);
       }

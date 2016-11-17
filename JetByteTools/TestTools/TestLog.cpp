@@ -85,7 +85,7 @@ CTestLog::CTestLog(
    const _tstring &separator)
    :  m_fileNumber(1),
       m_separator(separator),
-      m_pLog(0)
+      m_pLog(nullptr)
 {
 
 }
@@ -93,7 +93,7 @@ CTestLog::CTestLog(
 CTestLog::CTestLog()
    :  m_fileNumber(1),
       m_separator(_T("|")),
-      m_pLog(0)
+      m_pLog(nullptr)
 {
 
 }
@@ -128,7 +128,7 @@ CTestLog::~CTestLog()
          CTestMonitor::Trace(messages);
       }
 
-      m_pLog = 0;
+      m_pLog = nullptr;
    }
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
@@ -139,7 +139,7 @@ void CTestLog::UnlinkLog()
    {
       m_pLog->LogMessage(_T("Unlinked"));
 
-      m_pLog = 0;
+      m_pLog = nullptr;
    }
 }
 
@@ -439,7 +439,6 @@ static bool CheckResultInternal(
    return ok;
 }
 
-
 void CTestLog::CheckResult(
    const _tstring &expectedResult,
    const _tstring &actualResult,
@@ -601,7 +600,7 @@ static _tstring RemoveOptionalTags(
    {
       _tstring::size_type end = output.find(endTag, pos);
 
-      output.erase(pos, end - pos + 1);
+      output.erase(pos, (end - pos) + 1);
 
       pos = output.find(startTag, end + 1);
    }
@@ -640,7 +639,7 @@ static _tstring RemoveFirstAlternative(
             {
                _tstring output = input;
 
-               output.replace(startPos, stopPos - startPos + 3, _T(""));
+               output.replace(startPos, (stopPos - startPos) + 3, _T(""));
 
                InPlaceFindAndReplace(output, _T("<<<"), _T(""));
                InPlaceFindAndReplace(output, _T(">>>"), _T(""));
@@ -675,7 +674,7 @@ static _tstring RemoveSecondAlternative(
             {
                _tstring output = input;
 
-               output.replace(secondStartPos, secondStopPos - secondStartPos + 3, _T(""));
+               output.replace(secondStartPos, (secondStopPos - secondStartPos) + 3, _T(""));
 
                InPlaceFindAndReplace(output, _T("<<<"), _T(""));
                InPlaceFindAndReplace(output, _T(">>>"), _T(""));

@@ -110,7 +110,7 @@ void CDebugTrace::LogInstaller::Uninstall()
 
       (void)pPreviousLog;
 
-      m_pOldLog = 0;
+      m_pOldLog = nullptr;
    }
 }
 

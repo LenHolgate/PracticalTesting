@@ -140,6 +140,8 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::operator=(
    m_pMemoryThatWasAllocatedWithNew = pMemoryThatWasAllocatedWithNew;
 
    m_weOwnMemory = true;
+
+   return *this;
 }
 
 template <class T>
@@ -155,6 +157,8 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::Assign(
    m_pMemoryThatWasAllocatedWithNew = pMemoryThatWasAllocatedWithNew;
 
    m_weOwnMemory = weOwnMemory;
+
+   return *this;
 }
 
 template <class T>

@@ -21,9 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IProvideTickCount64.h"
+#include <WinBase.h>             // For GetTickCount()
 
-#include "Exception.h"
+#include "IProvideTickCount64.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -46,7 +46,9 @@ class CTickCount64Provider: public IProvideTickCount64
 {
    public :
 
-      virtual ULONGLONG GetTickCount64() const
+      CTickCount64Provider() {}
+
+      ULONGLONG GetTickCount64() const override
       {
          return ::GetTickCount64();
       }

@@ -169,7 +169,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx()
       m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -180,7 +180,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
       m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -191,7 +191,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
       m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -203,7 +203,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
       m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -405,7 +405,7 @@ void CCallbackTimerQueueEx::InsertTimer(
 } //lint !e429 (Custodial pointer 'pData' has not been freed or returned)
 
 CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::ValidateHandle(
-   const Handle &handle)
+   const Handle &handle) const
 {
    TimerData *pData = reinterpret_cast<TimerData *>(handle);
 
@@ -495,7 +495,7 @@ bool CCallbackTimerQueueEx::BeginTimeoutHandling()
       // Need to remove all of these timers from the NodeCollection before traversing them and firing them
       // as they cannot be set again if they are still in the collection...
 
-      TimerData *pLastTimer = 0;
+      TimerData *pLastTimer = nullptr;
 
       TimerData *pTimer = timers.Pop();
 
@@ -528,7 +528,7 @@ bool CCallbackTimerQueueEx::BeginTimeoutHandling()
       }
    }
 
-   m_handlingTimeouts = (m_pTimeoutsToBeHandled != 0);
+   m_handlingTimeouts = (m_pTimeoutsToBeHandled != nullptr);
 
    return m_handlingTimeouts;
 }
@@ -569,7 +569,7 @@ void CCallbackTimerQueueEx::EndTimeoutHandling()
 
    TimerData *pTimer = m_pTimeoutsToBeHandled;
 
-   m_pTimeoutsToBeHandled = 0;
+   m_pTimeoutsToBeHandled = nullptr;
 
    while (pTimer)
    {
@@ -599,7 +599,7 @@ void CCallbackTimerQueueEx::EndTimeoutHandling()
 CCallbackTimerQueueEx::TimerData::TimerData()
    :  m_deleteAfterTimeout(false),
       m_processingTimeout(false),
-      m_pNext(0)
+      m_pNext(nullptr)
 {
 }
 
@@ -609,7 +609,7 @@ CCallbackTimerQueueEx::TimerData::TimerData(
    :  m_active(timer, userData),
       m_deleteAfterTimeout(true),
       m_processingTimeout(false),
-      m_pNext(0)
+      m_pNext(nullptr)
 {
 }
 
@@ -635,7 +635,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerData::PopNext()
 {
    TimerData *pNext = m_pNext;
 
-   m_pNext = 0;
+   m_pNext = nullptr;
 
    return pNext;
 }
@@ -668,7 +668,7 @@ ULONGLONG CCallbackTimerQueueEx::TimerData::GetTimeout() const
 
 bool CCallbackTimerQueueEx::TimerData::IsSet() const
 {
-   return (m_active.pTimer != 0);
+   return (m_active.pTimer != nullptr);
 }
 
 void CCallbackTimerQueueEx::TimerData::ClearTimer()
@@ -741,7 +741,7 @@ void CCallbackTimerQueueEx::TimerData::SetDeleteAfterTimeout()
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueueEx::TimerData::Data::Data()
-   :  pTimer(0),
+   :  pTimer(nullptr),
       userData(0),
       absoluteTimeout(0)
 {
@@ -760,7 +760,7 @@ CCallbackTimerQueueEx::TimerData::Data::Data(
 
 void CCallbackTimerQueueEx::TimerData::Data::Clear()
 {
-   pTimer = 0;
+   pTimer = nullptr;
    userData = 0;
    absoluteTimeout = 0;
 }
@@ -782,7 +782,7 @@ ULONGLONG CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor::GetK
 CIntrusiveMultiMapNode *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetNodeFromT(
    const TimerData *pData)
 {
-   CIntrusiveMultiMapNode *pNode = 0;
+   CIntrusiveMultiMapNode *pNode = nullptr;
 
    if (pData)
    {
@@ -795,7 +795,7 @@ CIntrusiveMultiMapNode *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAcc
 CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
    const CIntrusiveMultiMapNode *pNode)
 {
-   TimerData *pData = 0;
+   TimerData *pData = nullptr;
 
    if (pNode)
    {
@@ -808,7 +808,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMulti
 CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   TimerData *pData = 0;
+   TimerData *pData = nullptr;
 
    if (pNode)
    {

@@ -55,7 +55,7 @@ class CSimpleMessageLog : public ILogMessages
          LogToFile               = 0x0100,
          LogToAll                = 0x0111,
          LogToMemoryBuffer       = 0x1000,
-         LogToAllAndMemory       = 0x1111,
+         LogToAllAndMemory       = 0x1111
       };
 
       enum LogEntryFormat
@@ -76,37 +76,37 @@ class CSimpleMessageLog : public ILogMessages
 
       // Implement ILogMessages
 
-      virtual void SetThreadIdentifier(
-         const std::string &identifier);
+      void SetThreadIdentifier(
+         const std::string &identifier) override;
 
-      virtual void SetThreadIdentifier(
-         const std::wstring &identifier);
+      void SetThreadIdentifier(
+         const std::wstring &identifier) override;
 
-      virtual void SetLogName(
-         const std::string &name);
+      void SetLogName(
+         const std::string &name) override;
 
-      virtual void SetLogName(
-         const std::wstring &name);
+      void SetLogName(
+         const std::wstring &name) override;
 
-      virtual void LogMessage(
-         const std::string &message);
+      void LogMessage(
+         const std::string &message) override;
 
-      virtual void LogMessage(
-         const std::wstring &message);
+      void LogMessage(
+         const std::wstring &message) override;
 
-      virtual void LogMessage(
-         const char * const pString);
+      void LogMessage(
+         const char * const pString) override;
 
-      virtual void LogMessage(
-         const wchar_t * const pString);
+      void LogMessage(
+         const wchar_t * const pString) override;
 
-      virtual void LogMessage(
+      void LogMessage(
          const char * const pString,
-         const DataLength stringLength);
+         const DataLength stringLength) override;
 
-      virtual void LogMessage(
+      void LogMessage(
          const wchar_t * const pString,
-         const DataLength stringLength);
+         const DataLength stringLength) override;
 
    private :
 

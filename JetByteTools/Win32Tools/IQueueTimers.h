@@ -212,15 +212,20 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
 {
    pUserData->AddRef();
 
-   bool wasPending = false;
-
    try
    {
-      wasPending = SetTimer(
+      const bool wasPending = SetTimer(
          handle,
          timer,
          timeout,
          reinterpret_cast<UserData>(pUserData));
+
+      if (wasPending)
+      {
+         pUserData->Release();
+      }
+
+      return wasPending;
    }
    catch(...)
    {
@@ -228,13 +233,6 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
 
       throw;
    }
-
-   if (wasPending)
-   {
-      pUserData->Release();
-   }
-
-   return wasPending;
 }
 
 template <typename T>
@@ -246,15 +244,20 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
 {
    timer.AddRef();
 
-   bool wasPending = false;
-
    try
    {
-      wasPending = SetTimer(
+      const bool wasPending = SetTimer(
          handle,
          timer,
          timeout,
          userData);
+
+      if (wasPending)
+      {
+         timer.Release();
+      }
+
+      return wasPending;
    }
    catch(...)
    {
@@ -262,13 +265,6 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
 
       throw;
    }
-
-   if (wasPending)
-   {
-      timer.Release();
-   }
-
-   return wasPending;
 }
 
 template <typename T>

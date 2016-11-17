@@ -68,13 +68,13 @@ class CCriticalSection : public ICriticalSection
 
       // Implement ICriticalSection
 
-      virtual bool TryEnter();
+      bool TryEnter() override;
 
-      virtual void Enter();
+      void Enter() override;
 
-      virtual void Leave();
+      void Leave() override;
 
-      virtual bool IsLockedByThisThread() const;
+      bool IsLockedByThisThread() const override;
 
    private :
 

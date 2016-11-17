@@ -45,17 +45,17 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CMockTickCountProvider::CMockTickCountProvider()
-   :  m_tickCount(0),
-      logMessages(true),
-      logTickCount(true)
+   :  logMessages(true),
+      logTickCount(true),
+      m_tickCount(0)
 {
 }
 
 CMockTickCountProvider::CMockTickCountProvider(
    const Milliseconds tickCount)
-   :  m_tickCount(tickCount),
-      logMessages(true),
-      logTickCount(true)
+   :  logMessages(true),
+      logTickCount(true),
+      m_tickCount(tickCount)
 {
 }
 

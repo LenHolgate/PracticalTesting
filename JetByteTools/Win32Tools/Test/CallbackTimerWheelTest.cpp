@@ -464,8 +464,6 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowNotEqualToCurrent()
 
       const Milliseconds timeout1 = 1000;
 
-      Milliseconds now = 0;
-
       timerWheel.SetTimer(timer, timeout1, 1);
 
       CheckTickProviderSetTimerResults(tickProvider);
@@ -476,7 +474,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowNotEqualToCurrent()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      now = 200;
+      Milliseconds now = 200;
 
       tickProvider.SetTickCount(now);        // time moves on
 
@@ -530,8 +528,6 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLa
 
       const Milliseconds timeout1 = 1000;
 
-      Milliseconds now = 0;
-
       timerWheel.SetTimer(timer, timeout1, 1);
 
       CheckTickProviderSetTimerResults(tickProvider);
@@ -542,7 +538,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLa
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      now = 2 * maximumTimeout;
+      Milliseconds now = 2 * maximumTimeout;
 
       tickProvider.SetTickCount(now);        // time moves on
 

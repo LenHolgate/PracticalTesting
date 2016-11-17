@@ -132,15 +132,15 @@ class CTestMonitor::TestDetails
 // Purecall handler
 ///////////////////////////////////////////////////////////////////////////////
 
-static CTestMonitor *s_pMonitor = 0;
+static CTestMonitor *s_pMonitor = nullptr;
 
-static void PureCallHandler()
-{
-   if (s_pMonitor)
-   {
-      s_pMonitor->HandlePureCall();
-   }
-}
+//static void PureCallHandler()
+//{
+//   if (s_pMonitor)
+//   {
+//      s_pMonitor->HandlePureCall();
+//   }
+//}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTestMonitor
@@ -152,13 +152,13 @@ CTestMonitor::CTestMonitor(
    const bool stopOnFailure,
    const bool debugOnFailure)
    :  m_testTimeoutThread(*this),
-      m_pPreviousHandler(0),
+      m_pPreviousHandler(nullptr),
       m_name(name),
       m_includePerformanceTests(includePerformanceTests),
-      m_pActiveTest(0),
-      m_reported(false),
       m_stopOnFailure(stopOnFailure),
       m_debugOnFailure(debugOnFailure && ::IsDebuggerPresent()),
+      m_pActiveTest(nullptr),
+      m_reported(false),
       m_testTimeout(INFINITE)
 {
    s_pMonitor = this;
@@ -171,12 +171,12 @@ CTestMonitor::CTestMonitor(
 
 CTestMonitor::CTestMonitor()
    :  m_testTimeoutThread(*this),
-      m_pPreviousHandler(0),
-      m_pActiveTest(0),
+      m_pPreviousHandler(nullptr),
       m_includePerformanceTests(false),
-      m_reported(false),
       m_stopOnFailure(false),
       m_debugOnFailure(false),
+      m_pActiveTest(nullptr),
+      m_reported(false),
       m_testTimeout(INFINITE)
 {
    s_pMonitor = this;
@@ -208,12 +208,12 @@ CTestMonitor::~CTestMonitor()
          delete pTest;
       }
 
-      s_pMonitor = 0;
+      s_pMonitor = nullptr;
    }
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
-void CTestMonitor::OutputTestDetails()
+void CTestMonitor::OutputTestDetails() const
 {
 #ifdef UNICODE
 #ifdef _DEBUG
@@ -242,7 +242,7 @@ void CTestMonitor::HandlePureCall()
 
       m_pActiveTest->FailTest(_T("Pure call"), 0);
 
-      m_pActiveTest = 0;
+      m_pActiveTest = nullptr;
    }
 
    if (m_pPreviousHandler)
@@ -269,20 +269,23 @@ void CTestMonitor::Trace(
 
 Milliseconds CTestMonitor::GetTimeoutForMachine()
 {
-   const _tstring machine = GetComputerName();
+   // All of these machines have been decomissioned...
 
-   if (machine == _T("SATURN"))
-   {
-      return 20000;
-   }
-   else if (machine == _T("GALLIFREY"))
-   {
-      return 20000;
-   }
-   else if (machine == _T("MERCURY"))
-   {
-      return 20000;
-   }
+   //const _tstring machine = GetComputerName();
+
+   //if (machine == _T("SATURN"))
+   //{
+   //   return 20000;
+   //}
+
+   //if (machine == _T("GALLIFREY"))
+   //{
+   //   return 20000;
+   //}
+   //if (machine == _T("MERCURY"))
+   //{
+   //   return 20000;
+   //}
 
    return 10000;     // 10 seconds is a LONG time for a test to run!
 }
@@ -337,7 +340,7 @@ bool CTestMonitor::StartPerformanceTest(
    {
       m_pActiveTest->SkipTest(_T("Skipped - not running performance tests."));
 
-      m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
+      m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
    }
    else
    {
@@ -364,7 +367,7 @@ void CTestMonitor::TestComplete()
 
    m_pActiveTest->TestComplete(m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 }
@@ -379,7 +382,7 @@ void CTestMonitor::SkipTest(
 
    m_pActiveTest->SkipTest(reason);
 
-   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 }
@@ -394,7 +397,7 @@ void CTestMonitor::FailTest(
 
    m_pActiveTest->FailTest(reason, m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 
@@ -420,7 +423,7 @@ void CTestMonitor::TestException()
 
    const TestDetails::State state = m_pActiveTest->GetState();
 
-   m_pActiveTest = 0; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
 
    m_stopTimingEvent.Set();
 
@@ -620,7 +623,7 @@ bool CTestMonitor::Report(
    return passed;
 }
 
-int CTestMonitor::Run()
+unsigned int CTestMonitor::Run()
 {
    #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
    CPerThreadErrorHandler errorHandler;
@@ -630,21 +633,22 @@ int CTestMonitor::Run()
    {
       try
       {
-         HANDLE handlesToWaitFor[2];
+         HANDLE shutdownAndStartHandles[2];
 
-         handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
-         handlesToWaitFor[1] = m_startTimingEvent.GetWaitHandle();
+         shutdownAndStartHandles[0] = m_shutdownEvent.GetWaitHandle();
+         shutdownAndStartHandles[1] = m_startTimingEvent.GetWaitHandle();
 
          while (!m_shutdownEvent.Wait(0))
          {
-            DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, INFINITE);
+            const DWORD shutdownAndStartWaitResult = ::WaitForMultipleObjects(2, shutdownAndStartHandles, false, INFINITE);
 
-            if (waitResult == WAIT_OBJECT_0)
+            if (shutdownAndStartWaitResult == WAIT_OBJECT_0)
             {
                // Time to shutdown
                break;
             }
-            else if (waitResult == WAIT_OBJECT_0 + 1)
+
+            if (shutdownAndStartWaitResult == WAIT_OBJECT_0 + 1)
             {
                if (m_pActiveTest)
                {
@@ -658,35 +662,35 @@ int CTestMonitor::Run()
 
                   m_timingStartedEvent.Set();
 
-                  HANDLE handlesToWaitFor[2]; //lint !e578 (Declaration of symbol 'handlesToWaitFor' hides symbol 'handlesToWaitFor')
+                  HANDLE shutdownAndStopHandles[2];
 
-                  handlesToWaitFor[0] = m_shutdownEvent.GetWaitHandle();
-                  handlesToWaitFor[1] = m_stopTimingEvent.GetWaitHandle();
+                  shutdownAndStopHandles[0] = m_shutdownEvent.GetWaitHandle();
+                  shutdownAndStopHandles[1] = m_stopTimingEvent.GetWaitHandle();
 
-                  DWORD waitResult = ::WaitForMultipleObjects(2, handlesToWaitFor, false, timeout); //lint !e578 (Declaration of symbol 'waitResult' hides symbol 'waitResult')
+                  const DWORD shutdownAndStopWaitResult = ::WaitForMultipleObjects(2, shutdownAndStopHandles, false, timeout);
 
-                  if (waitResult == WAIT_OBJECT_0)
+                  if (shutdownAndStopWaitResult == WAIT_OBJECT_0)
                   {
                      // Time to shutdown
                      break;
                   }
-                  else if (waitResult == WAIT_OBJECT_0 + 1)
+                  else if (shutdownAndStopWaitResult == WAIT_OBJECT_0 + 1)
                   {
                      // test completed within the time limit
                   }
-                  else if (waitResult == WAIT_TIMEOUT)
+                  else if (shutdownAndStopWaitResult == WAIT_TIMEOUT)
                   {
                      // the test timed out...
 
                      cout << "Test: " << testName << " timed out. Timeout was: " << ToStringA(timeout) << "ms" << endl;
 
-                     if (m_traceMessages.size() != 0)
+                     if (!m_traceMessages.empty())
                      {
                         cout << "Trace messages:" << endl;
 
                         for (TraceMessages::const_iterator it = m_traceMessages.begin(), end = m_traceMessages.end();
-                           it != end;
-                           ++it)
+                             it != end;
+                             ++it)
                         {
                            cout << CStringConverter::TtoA(*it) << "\"" << endl;
                         }
@@ -694,7 +698,7 @@ int CTestMonitor::Run()
 
                      exit(2);
                   }
-                  else if (waitResult == WAIT_FAILED)
+                  else if (shutdownAndStopWaitResult == WAIT_FAILED)
                   {
                      const DWORD lastError = ::GetLastError();
 
@@ -849,11 +853,11 @@ void CTestMonitor::TestDetails::TestException(
    {
       m_message = _T("std::exception - ") + CStringConverter::AtoT(e.what());
    }
-   catch(const char *pE)
+   catch(const char *pE) //lint !e1752 (catch parameter is not a reference)
    {
       m_message = _T("Exception - ") + CStringConverter::AtoT(pE);
    }
-   catch(const wchar_t *pE)
+   catch(const wchar_t *pE) //lint !e1752 (catch parameter is not a reference)
    {
       m_message = _T("Exception - ") + CStringConverter::WtoT(pE);
    }

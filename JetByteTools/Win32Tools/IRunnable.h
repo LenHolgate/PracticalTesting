@@ -45,7 +45,7 @@ class IRunnable
       /// The return value is the exit code of the thread that is run to
       /// execute the code.
 
-      virtual int Run() = 0;
+      virtual unsigned int Run() = 0;
 
    protected :
 

@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 // File: Utils.cpp
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,7 +30,6 @@
 #pragma hdrstop
 
 #include <iostream>
-#include <fstream>
 #include <algorithm>
 #include <list>
 
@@ -89,15 +87,18 @@ bool StringToBool(
    {
       return true;
    }
-   else if (stringRepresentation == _T("0"))
+
+   if (stringRepresentation == _T("0"))
    {
       return false;
    }
-   else if (0 == _tcsncicmp(stringRepresentation.c_str(), _T("TRUE"), stringRepresentation.length()))
+
+   if (0 == _tcsncicmp(stringRepresentation.c_str(), _T("TRUE"), stringRepresentation.length()))
    {
       return true;
    }
-   else if (0 == _tcsncicmp(stringRepresentation.c_str(), _T("FALSE"), stringRepresentation.length()))
+
+   if (0 == _tcsncicmp(stringRepresentation.c_str(), _T("FALSE"), stringRepresentation.length()))
    {
       return false;
    }
@@ -112,15 +113,18 @@ bool StringToBoolA(
    {
       return true;
    }
-   else if (stringRepresentation == "0")
+
+   if (stringRepresentation == "0")
    {
       return false;
    }
-   else if (0 == _strnicmp(stringRepresentation.c_str(), "TRUE", stringRepresentation.length()))
+
+   if (0 == _strnicmp(stringRepresentation.c_str(), "TRUE", stringRepresentation.length()))
    {
       return true;
    }
-   else if (0 == _strnicmp(stringRepresentation.c_str(), "FALSE", stringRepresentation.length()))
+
+   if (0 == _strnicmp(stringRepresentation.c_str(), "FALSE", stringRepresentation.length()))
    {
       return false;
    }
@@ -174,12 +178,12 @@ _tstring GetLastErrorMessageIfPossible(
    TCHAR errmsg[512];
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      0,
+      nullptr,
       last_error,
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       return _T("");
    }
@@ -215,7 +219,7 @@ _tstring GetLastErrorMessageIfPossible(
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       return _T("");
    }
@@ -245,12 +249,12 @@ _tstring GetLastErrorMessage(
    TCHAR errmsg[512];
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      0,
+      nullptr,
       last_error,
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       // if we fail, call ourself to find out why and return that error
 
@@ -260,12 +264,10 @@ _tstring GetLastErrorMessage(
       {
          return GetLastErrorMessage(thisError, stripTrailingLineFeed);
       }
-      else
-      {
-         // But don't get into an infinite loop...
 
-         return _T("Failed to obtain error string: ") + ToString(last_error);
-      }
+      // But don't get into an infinite loop...
+
+      return _T("Failed to obtain error string: ") + ToString(last_error);
    }
 
    if (stripTrailingLineFeed)
@@ -299,7 +301,7 @@ _tstring GetLastErrorMessage(
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       // if we fail, call ourself to find out why and return that error
 
@@ -309,12 +311,10 @@ _tstring GetLastErrorMessage(
       {
          return GetLastErrorMessage(thisError, stripTrailingLineFeed);
       }
-      else
-      {
-         // But don't get into an infinite loop...
 
-         return _T("Failed to obtain error string: ") + ToString(last_error);
-      }
+      // But don't get into an infinite loop...
+
+      return _T("Failed to obtain error string: ") + ToString(last_error);
    }
 
    if (stripTrailingLineFeed)
@@ -342,12 +342,12 @@ string GetLastErrorMessageA(
    CHAR errmsg[512];
 
    if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      0,
+      nullptr,
       last_error,
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       // if we fail, call ourself to find out why and return that error
 
@@ -357,12 +357,10 @@ string GetLastErrorMessageA(
       {
          return GetLastErrorMessageA(thisError, stripTrailingLineFeed);
       }
-      else
-      {
-         // But don't get into an infinite loop...
 
-         return "Failed to obtain error string: " + ToStringA(last_error);
-      }
+      // But don't get into an infinite loop...
+
+      return "Failed to obtain error string: " + ToStringA(last_error);
    }
 
    if (stripTrailingLineFeed)
@@ -390,12 +388,12 @@ wstring GetLastErrorMessageW(
    wchar_t errmsg[512];
 
    if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      0,
+      nullptr,
       last_error,
       0,
       errmsg,
       511,
-      NULL))
+      nullptr))
    {
       // if we fail, call ourself to find out why and return that error
 
@@ -405,12 +403,10 @@ wstring GetLastErrorMessageW(
       {
          return GetLastErrorMessageW(thisError, stripTrailingLineFeed);
       }
-      else
-      {
-         // But don't get into an infinite loop...
 
-         return L"Failed to obtain error string: " + ToStringW(last_error);
-      }
+      // But don't get into an infinite loop...
+
+      return L"Failed to obtain error string: " + ToStringW(last_error);
    }
 
    if (stripTrailingLineFeed)
@@ -442,29 +438,13 @@ void StringToHex(
    {
       const size_t stringOffset = i * 2;
 
-      BYTE val = 0;
+      const BYTE b = static_cast<const BYTE>(s[stringOffset]);
 
-      const BYTE b = s[stringOffset];
+      BYTE val = isdigit(b) ? static_cast<BYTE>((b - '0') * 16) : static_cast<BYTE>(((toupper(b) - 'A') + 10) * 16);
 
-      if (isdigit(b))
-      {
-         val = static_cast<BYTE>((b - '0') * 16);
-      }
-      else
-      {
-         val = static_cast<BYTE>(((toupper(b) - 'A') + 10) * 16);
-      }
+      const BYTE b1 = static_cast<const BYTE >(s[stringOffset + 1]);
 
-      const BYTE b1 = s[stringOffset + 1];
-
-      if (isdigit(b1))
-      {
-         val = static_cast<BYTE>(val + b1 - '0');
-      }
-      else
-      {
-         val = static_cast<BYTE>(val + (toupper(b1) - 'A') + 10);
-      }
+      val = isdigit(b1) ? static_cast<BYTE>(val + b1 - '0') : static_cast<BYTE>(val + (toupper(b1) - 'A') + 10);
 
       pBuffer[i] = val;
    }
@@ -545,7 +525,7 @@ size_t CreateDirectoriesIfRequired(
 
 _tstring GetCurrentDirectory()
 {
-   DWORD size = ::GetCurrentDirectory(0, 0);
+   DWORD size = ::GetCurrentDirectory(0, nullptr);
 
    _tstring result;
 
@@ -811,7 +791,8 @@ _tstring GetSystemWindowsDirectory()
 
       throw CWin32Exception(_T("GetSystemWindowsDirectory()"), lastError);
    }
-   else if (result > bufferLen)
+
+   if (result > bufferLen)
    {
       throw CException(_T("GetSystemWindowsDirectory()"), _T("System directory is more than: ") + ToString(bufferLen) + _T(" bytes long..."));
    }
@@ -833,7 +814,8 @@ _tstring GetSystemDirectory()
 
       throw CWin32Exception(_T("GetSystemDirectory()"), lastError);
    }
-   else if (result > bufferLen)
+
+   if (result > bufferLen)
    {
       throw CException(_T("GetSystemDirectory()"), _T("System directory is more than: ") + ToString(bufferLen) + _T(" bytes long..."));
    }
@@ -951,12 +933,7 @@ bool Is64bitSystem()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
-#pragma warning(push)
-#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
-
-   LPFN_ISWOW64PROCESS pfnIsWow64Process = (LPFN_ISWOW64PROCESS)::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
-
-#pragma warning(pop)
+   LPFN_ISWOW64PROCESS pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -997,12 +974,7 @@ bool IsWow64Process()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
-#pragma warning(push)
-#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
-
-   LPFN_ISWOW64PROCESS pfnIsWow64Process = (LPFN_ISWOW64PROCESS)::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
-
-#pragma warning(pop)
+   LPFN_ISWOW64PROCESS pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -1069,12 +1041,7 @@ _tstring GetSystemWow64Directory()
    const LPCSTR pFunctionName = "GetSystemWow64DirectoryA";
 #endif
 
-#pragma warning(push)
-#pragma warning(disable: 4191)   // type cast' : unsafe conversion from 'x' to 'y' Calling this function through the result pointer may cause your program to fail
-
-   LPFN_GETSYSTEMWOW64DIRECTORY pfnGetSystemWow64Directory = (LPFN_GETSYSTEMWOW64DIRECTORY)::GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName);
-
-#pragma warning(pop)
+   LPFN_GETSYSTEMWOW64DIRECTORY pfnGetSystemWow64Directory = reinterpret_cast<LPFN_GETSYSTEMWOW64DIRECTORY>(::GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName));
 
    if (pfnGetSystemWow64Directory)
    {
@@ -1086,7 +1053,8 @@ _tstring GetSystemWow64Directory()
 
          throw CWin32Exception(_T("GetSystemWow64Directory()"), lastError);
       }
-      else if (result > bufferLen)
+
+      if (result > bufferLen)
       {
          throw CException(_T("GetSystemWow64Directory()"), _T("System directory is more than: ") + ToString(bufferLen) + _T(" bytes long..."));
       }
@@ -1417,7 +1385,7 @@ _tstring GetFileVersionString(
 
          if (::VerQueryValue(buffer,
               const_cast<LPTSTR>(query.c_str()),
-              (void**)&pVersion,
+              reinterpret_cast<void**>(&pVersion),
               &verLen))
          {
             version = pVersion;
@@ -1692,7 +1660,7 @@ wstring LoadFileAsUnicodeString(
 
    BYTE buffer[2];
 
-   while (::ReadFile(hFile, buffer + totalBytesRead, sizeof(buffer) - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
+   while (::ReadFile(hFile, buffer + totalBytesRead, sizeof(buffer) - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -1729,14 +1697,12 @@ wstring LoadFileAsUnicodeString(
       fileIsUnicode = true;
       fileIsUTF8 = true;
 
-      if (0 == ::ReadFile(hFile, buffer, 1, &bytesRead, 0))
+      if (0 == ::ReadFile(hFile, buffer, 1, &bytesRead, nullptr))
       {
          const DWORD lastError = ::GetLastError();
 
          throw CWin32Exception(_T("LoadFileAsUnicodeString() - Failed to read 3rd byte in UTF-8 BOM. \"") + filename + _T("\""), lastError);
       }
-
-      totalBytesRead += bytesRead;
 
       if (buffer[0] != 0xBF)
       {
@@ -1747,7 +1713,7 @@ wstring LoadFileAsUnicodeString(
    {
       // bare ascii file, we need those 2 bytes...
 
-      if (INVALID_SET_FILE_POINTER == ::SetFilePointer(hFile, 0, 0, FILE_BEGIN))
+      if (INVALID_SET_FILE_POINTER == ::SetFilePointer(hFile, 0, nullptr, FILE_BEGIN))
       {
          const DWORD lastError = ::GetLastError();
 
@@ -1770,7 +1736,7 @@ wstring LoadFileAsUnicodeString(
 
    fileAsString.resize(bufferSize);
 
-   while (::ReadFile(hFile, (void*)(fileAsString.c_str() + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
+   while (::ReadFile(hFile, reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -1786,10 +1752,8 @@ wstring LoadFileAsUnicodeString(
       {
          return CStringConverter::UTF8toW(fileAsString);
       }
-      else
-      {
-         return wstring(reinterpret_cast<const wchar_t*>(fileAsString.c_str()), bufferSize / sizeof(wchar_t));
-      }
+
+      return wstring(reinterpret_cast<const wchar_t*>(fileAsString.c_str()), bufferSize / sizeof(wchar_t));
    }
 
    return CStringConverter::AtoW(fileAsString);
@@ -1825,7 +1789,7 @@ void SaveUnicodeStringAsFile(
 
    const BYTE header[] = { 0xFF, 0xFE };
 
-   if (!::WriteFile(hFile, header, sizeof(header), &bytesWritten, 0))
+   if (!::WriteFile(hFile, header, sizeof(header), &bytesWritten, nullptr))
    {
       const DWORD lastError = ::GetLastError();
 
@@ -1893,8 +1857,8 @@ void LoadFileAsBinaryData(
 
    while (::ReadFile(
       hFile,
-      (void*)(buffer.GetBuffer() + totalBytesRead),
-     static_cast<DWORD>(std::min<size_t>(bufferSize - totalBytesRead, std::numeric_limits<DWORD>::max())),
+      static_cast<void*>(buffer.GetBuffer() + totalBytesRead),
+      static_cast<DWORD>(std::min<size_t>(bufferSize - totalBytesRead, std::numeric_limits<DWORD>::max())),
       &bytesRead, 0) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
@@ -1995,7 +1959,7 @@ string LoadFileAsStringA(
       throw CException(_T("LoadFileAsString()"), _T("File \"") + filename + _T("\" too big"));
    }
 
-   const DWORD currentPosition = ::SetFilePointer(hFile, 0, 0, FILE_CURRENT);
+   const DWORD currentPosition = ::SetFilePointer(hFile, 0, nullptr, FILE_CURRENT);
 
    if (currentPosition == INVALID_SET_FILE_POINTER)
    {
@@ -2012,7 +1976,12 @@ string LoadFileAsStringA(
 
    DWORD totalBytesRead = 0;
 
-   while (::ReadFile(hFile, (void*)(fileAsString.c_str() + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
+   while (::ReadFile(
+      hFile,
+      reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead),
+      bufferSize - totalBytesRead,
+      &bytesRead, 0) &&
+      bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -2187,7 +2156,7 @@ _tstring GetTempFileName(
 
 _tstring GetTempPath()
 {
-   const DWORD spaceRequired = ::GetTempPath(0, 0);
+   const DWORD spaceRequired = ::GetTempPath(0, nullptr);
 
    if (spaceRequired == 0)
    {
@@ -2303,7 +2272,7 @@ void WriteResourceToFile(
 
    DWORD bytesWritten = 0;
 
-   if (!::WriteFile(hFile, pData, bytes, &bytesWritten,0))
+   if (!::WriteFile(hFile, pData, bytes, &bytesWritten, nullptr))
    {
       const DWORD lastError = ::GetLastError();
 
@@ -2320,7 +2289,7 @@ _tstring GUIDAsString(
    const GUID &guid,
    const bool stripBrackets)
 {
-   wchar_t *pString = 0;
+   wchar_t *pString = nullptr;
 
    HRESULT hr = ::StringFromIID(guid, &pString);
 
@@ -2359,7 +2328,7 @@ _tstring CreateGUIDAsString(
 }
 
 _tstring TranslateDeviceNamePathToDriveLetterPath(
-   const _tstring deviceNamePath)
+   const _tstring &deviceNamePath)
 {
    _tstring driveStrings;
 
@@ -2390,7 +2359,9 @@ _tstring TranslateDeviceNamePathToDriveLetterPath(
             }
          }
 
-         while (*pDriveLetter++);   // Go to the next NULL character.
+         while (*pDriveLetter++)   // Go to the next nullptr character.
+         {
+         }
 
       }
       while (*pDriveLetter); // end of string
@@ -2411,11 +2382,11 @@ _tstring GetFileNameFromHandleIfPossible(
    {
       CSmartHandle hFileMapping(::CreateFileMapping(
          hFile,
-         NULL,
+         nullptr,
          PAGE_READONLY,
          0,
          1,
-         NULL));
+         nullptr));
 
       if (hFileMapping.IsValid())
       {
@@ -2459,11 +2430,11 @@ _tstring GetFileNameFromHandle(
 
    CSmartHandle hFileMapping(::CreateFileMapping(
       hFile,
-      NULL,
+      nullptr,
       PAGE_READONLY,
       0,
       1,
-      NULL));
+      nullptr));
 
    if (hFileMapping.IsValid())
    {
@@ -2527,7 +2498,7 @@ static bool IsGoodPtr(
 {
    MEMORY_BASIC_INFORMATION meminfo;
 
-   if (NULL == pv)
+   if (nullptr == pv)
    {
      return false;
    }
@@ -2559,7 +2530,7 @@ static bool IsGoodPtr(
       return false;
    }
 
-   if ((unsigned)((const char *)pv - (char *)meminfo.BaseAddress) > (unsigned)(meminfo.RegionSize - cb))
+   if (static_cast<unsigned>(static_cast<const char *>(pv) - static_cast<char *>(meminfo.BaseAddress)) > static_cast<unsigned>(meminfo.RegionSize - cb))
    {
       return false;
    }

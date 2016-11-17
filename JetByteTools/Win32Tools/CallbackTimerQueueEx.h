@@ -92,41 +92,41 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
 
       // Implement IManageTimerQueue
 
-      virtual Milliseconds GetNextTimeout();
+      Milliseconds GetNextTimeout() override;
 
-      virtual bool BeginTimeoutHandling();
+      bool BeginTimeoutHandling() override;
 
-      virtual void HandleTimeout();
+      void HandleTimeout() override;
 
-      virtual void EndTimeoutHandling();
+      void EndTimeoutHandling() override;
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
-      virtual IQueueTimers::Handle CreateTimer();
+      IQueueTimers::Handle CreateTimer() override;
 
-      virtual bool SetTimer(
+      bool SetTimer(
          const IQueueTimers::Handle &handle,
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
+         const IQueueTimers::UserData userData) override;
 
-      virtual bool CancelTimer(
-         const IQueueTimers::Handle &handle);
+      bool CancelTimer(
+         const IQueueTimers::Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         IQueueTimers::Handle &handle);
+      bool DestroyTimer(
+         IQueueTimers::Handle &handle) override;
 
-      virtual bool DestroyTimer(
-         const IQueueTimers::Handle &handle);
+      bool DestroyTimer(
+         const IQueueTimers::Handle &handle) override;
 
-      virtual void SetTimer(
+      void SetTimer(
          IQueueTimers::Timer &timer,
          const Milliseconds timeout,
-         const IQueueTimers::UserData userData);
+         const IQueueTimers::UserData userData) override;
 
-      virtual Milliseconds GetMaximumTimeout() const;
+      Milliseconds GetMaximumTimeout() const override;
 
    private :
 
@@ -166,7 +166,7 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
       typedef TIntrusiveSet<TimerData> ActiveHandles;
 
       TimerData *ValidateHandle(
-         const Handle &handle);
+         const Handle &handle) const;
 
       //lint -e{1411} (Member with different signature hides virtual member --- Eff. C++ 3rd Ed. item 33)
       bool CancelTimer(

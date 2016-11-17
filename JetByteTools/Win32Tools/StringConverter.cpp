@@ -141,10 +141,8 @@ int CStringConverter::GetSpaceRequiredForAtoW(
    {
       return length * sizeof(wchar_t);
    }
-   else
-   {
-      return GetSpaceRequiredForAtoW(input.c_str(), length, codePage);
-   }
+
+   return GetSpaceRequiredForAtoW(input.c_str(), length, codePage);
 }
 
 int CStringConverter::GetSpaceRequiredForAtoW(
@@ -157,10 +155,8 @@ int CStringConverter::GetSpaceRequiredForAtoW(
    {
       return length * sizeof(wchar_t);
    }
-   else
-   {
-      return GetSpaceRequiredForAtoW(pInput, length, codePage);
-   }
+
+   return GetSpaceRequiredForAtoW(pInput, length, codePage);
 }
 
 int CStringConverter::GetSpaceRequiredForAtoW(
@@ -172,25 +168,23 @@ int CStringConverter::GetSpaceRequiredForAtoW(
    {
       return inputLength * sizeof(wchar_t);
    }
-   else
+
+   const int bytesRequired = ::MultiByteToWideChar(
+      codePage.GetCodePage(),
+      0,
+      pInput,
+      inputLength,
+      nullptr,
+      0);
+
+   if (bytesRequired == 0)
    {
-      const int bytesRequired = ::MultiByteToWideChar(
-         codePage.GetCodePage(),
-         0,
-         pInput,
-         inputLength,
-         0,
-         0);
+      const DWORD lastError = ::GetLastError();
 
-      if (bytesRequired == 0)
-      {
-         const DWORD lastError = ::GetLastError();
-
-         throw CWin32Exception(_T("CStringConverter::GetSpaceRequiredForAtoW()"), lastError);
-      }
-
-      return bytesRequired;
+      throw CWin32Exception(_T("CStringConverter::GetSpaceRequiredForAtoW()"), lastError);
    }
+
+   return bytesRequired;
 }
 
 wstring CStringConverter::AtoW(
@@ -223,7 +217,7 @@ wstring CStringConverter::AtoW(
    {
       if (codePage.isSingleByteCharacterSet())
       {
-         result.resize(inputLength);
+         result.resize(static_cast<size_t>(inputLength));
       }
       else
       {
@@ -232,7 +226,7 @@ wstring CStringConverter::AtoW(
             0,
             pInput,
             inputLength,
-            0,
+            nullptr,
             0);
 
          if (bytesRequired == 0)
@@ -420,10 +414,8 @@ int CStringConverter::GetSpaceRequiredForWtoA(
    {
       return length * sizeof(wchar_t);
    }
-   else
-   {
-      return GetSpaceRequiredForWtoA(input.c_str(), length, codePage);
-   }
+
+   return GetSpaceRequiredForWtoA(input.c_str(), length, codePage);
 }
 
 int CStringConverter::GetSpaceRequiredForWtoA(
@@ -436,10 +428,8 @@ int CStringConverter::GetSpaceRequiredForWtoA(
    {
       return length * sizeof(wchar_t);
    }
-   else
-   {
-      return GetSpaceRequiredForWtoA(pInput, length, codePage);
-   }
+
+   return GetSpaceRequiredForWtoA(pInput, length, codePage);
 }
 
 int CStringConverter::GetSpaceRequiredForWtoA(
@@ -451,27 +441,25 @@ int CStringConverter::GetSpaceRequiredForWtoA(
    {
       return inputLength * sizeof(wchar_t);
    }
-   else
+
+   const int bytesRequired = ::WideCharToMultiByte(
+      codePage.GetCodePage(),
+      0,
+      pInput,
+      inputLength,
+      nullptr,
+      0,
+      nullptr,
+      nullptr);
+
+   if (bytesRequired == 0)
    {
-      const int bytesRequired = ::WideCharToMultiByte(
-         codePage.GetCodePage(),
-         0,
-         pInput,
-         inputLength,
-         0,
-         0,
-         0,
-         0);
+      const DWORD lastError = ::GetLastError();
 
-      if (bytesRequired == 0)
-      {
-         const DWORD lastError = ::GetLastError();
-
-         throw CWin32Exception(_T("CStringConverter::GetSpaceRequiredForWtoA()"), lastError);
-      }
-
-      return bytesRequired;
+      throw CWin32Exception(_T("CStringConverter::GetSpaceRequiredForWtoA()"), lastError);
    }
+
+   return bytesRequired;
 }
 
 string CStringConverter::WtoA(
@@ -513,10 +501,10 @@ string CStringConverter::WtoA(
             0,
             pInput,
             inputLength,
+            nullptr,
             0,
-            0,
-            0,
-            0);
+            nullptr,
+            nullptr);
 
          if (bytesRequired == 0)
          {
@@ -576,8 +564,8 @@ int CStringConverter::WtoUTF8(
          inputLength,
          reinterpret_cast<LPSTR>(pBuffer),
          bufferSize,
-         0,
-         0);
+         nullptr,
+         nullptr);
 
       if (0 == bufferUsed)
       {
@@ -609,10 +597,10 @@ int CStringConverter::GetSpaceRequiredForWtoUTF8(
          WC_ERR_INVALID_CHARS,
          pInput,
          inputLength,
+         nullptr,
          0,
-         0,
-         0,
-         0);
+         nullptr,
+         nullptr);
 
       if (0 == spaceRequired)
       {
@@ -843,8 +831,8 @@ void CStringConverter::BSTRtoA(
          static_cast<int>(inputLength),
          pResult,
          outputLength,
-         0,
-         0))
+         nullptr,
+         nullptr))
       {
          delete [] pResult;
 
@@ -857,7 +845,7 @@ void CStringConverter::BSTRtoA(
    }
    else
    {
-      *ppResult = 0;
+      *ppResult = nullptr;
    }
 }
 
@@ -1051,15 +1039,18 @@ int CStringConverter::GetBytesInUTF8Character(
    {
       return 4;
    }
-   else if ((input & 0xE0) == 0xE0)
+
+   if ((input & 0xE0) == 0xE0)
    {
       return 3;
    }
-   else if ((input & 0xC0) == 0xC0)
+
+   if ((input & 0xC0) == 0xC0)
    {
       return 2;
    }
-   else if ((input & 0x80) == 0x00)
+
+   if ((input & 0x80) == 0x00)
    {
       return 1;
    }
@@ -1089,15 +1080,18 @@ int CStringConverter::GetBytesAfterLastCompleteUTF8Character(
       {
          return 4 - i;
       }
-      else if ((c & 0xE0) == 0xE0)
+
+      if ((c & 0xE0) == 0xE0)
       {
          return 3 - i;
       }
-      else if ((c & 0xC0) == 0xC0)
+
+      if ((c & 0xC0) == 0xC0)
       {
          return 2 - i;
       }
-      else if ((c & 0x80) == 0x00)
+
+      if ((c & 0x80) == 0x00)
       {
          return 1 - i;
       }
@@ -1120,4 +1114,3 @@ int CStringConverter::GetBytesAfterLastCompleteUTF8Character(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: StringConverter.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

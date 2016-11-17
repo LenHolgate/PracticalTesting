@@ -42,6 +42,8 @@
 
 #define JETBYTE_DEPRECATE_MULTI_BUFFER_HANDLE 0
 
+#define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS 1
+
 #endif // JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////

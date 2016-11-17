@@ -68,14 +68,14 @@ class CLoggingCallbackTimer :
          const UserData userData /* = 0*/);
 
       bool WaitForTimer(
-         const Milliseconds timeout);
+         const Milliseconds timeout) const;
 
       unsigned long GetNumTimerEvents() const;
 
       // Implement IQueueTimers::Timer
 
-      virtual void OnTimer(
-         UserData userData);
+      void OnTimer(
+         UserData userData) override;
 
    private :
 

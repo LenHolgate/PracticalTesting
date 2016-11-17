@@ -49,8 +49,8 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CMockTimerQueueMonitor::CMockTimerQueueMonitor()
-   :  m_numTimersActive(0),
-      logMessages(true)
+   :  logMessages(true),
+      m_numTimersActive(0)
 {
 
 }

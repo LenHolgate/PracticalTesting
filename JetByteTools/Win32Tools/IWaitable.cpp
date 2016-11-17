@@ -80,7 +80,7 @@ bool IWaitable::Wait(
 }
 
 bool IWaitable::WaitWithMessageLoop(
-   HANDLE handle,
+   const HANDLE handle,
    const Milliseconds timeout)
 {
    DWORD notUsed;
@@ -89,7 +89,7 @@ bool IWaitable::WaitWithMessageLoop(
 }
 
 bool IWaitable::WaitWithMessageLoop(
-   HANDLE handle,
+   const HANDLE handle,
    const Milliseconds timeout,
    const DWORD removeFlags)
 {
@@ -100,7 +100,7 @@ bool IWaitable::WaitWithMessageLoop(
 
 bool IWaitable::WaitWithMessageLoop(
    const DWORD numHandles,
-   HANDLE *pHandles,
+   const HANDLE *pHandles,
    const Milliseconds timeout)
 {
    DWORD notUsed;
@@ -110,7 +110,7 @@ bool IWaitable::WaitWithMessageLoop(
 
 bool IWaitable::WaitWithMessageLoop(
    const DWORD numHandles,
-   HANDLE *pHandles,
+   const HANDLE *pHandles,
    DWORD &signalledHandle,
    const Milliseconds timeout)
 {
@@ -119,7 +119,7 @@ bool IWaitable::WaitWithMessageLoop(
 
 bool IWaitable::WaitWithMessageLoop(
    const DWORD numHandles,
-   HANDLE *pHandles,
+   const HANDLE *pHandles,
    DWORD &signalledHandle,
    Milliseconds timeout,
    const DWORD removeFlags)
@@ -157,25 +157,22 @@ bool IWaitable::WaitWithMessageLoop(
          result = false;
          done = true;
       }
-#pragma warning(push)
-#pragma warning(disable: 4296)   // '>=' : expression is always true
-      else if (dwRet >= WAIT_OBJECT_0 && dwRet < (WAIT_OBJECT_0 + numHandles)) //lint !e685 (Relational operator '>=' always evaluates to 'true')
-#pragma warning(pop)
+      else if (dwRet < (WAIT_OBJECT_0 + numHandles)) //lint !e835 (zero given as right argument to + in a constant expression)
       {
          // An event was signaled, return
 
-         signalledHandle = dwRet - WAIT_OBJECT_0;
+         signalledHandle = dwRet - WAIT_OBJECT_0; //lint !e835 (zero given as right argument to + in a constant expression)
 
          result = true;
          done = true;
       }
-      else if (dwRet == WAIT_OBJECT_0 + numHandles)
+      else if (dwRet == WAIT_OBJECT_0 + numHandles) //lint !e835 (zero given as right argument to + in a constant expression)
       {
          // There is a window message available. Dispatch it.
 
          MSG msg;
 
-         while (::PeekMessage(&msg,NULL,NULL,NULL, removeFlags | PM_REMOVE))
+         while (::PeekMessage(&msg, nullptr, 0, 0, removeFlags | PM_REMOVE))
          {
             if (msg.message == WM_QUIT)
             {

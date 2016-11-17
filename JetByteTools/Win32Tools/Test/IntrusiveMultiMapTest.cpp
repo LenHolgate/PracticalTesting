@@ -676,9 +676,9 @@ void CIntrusiveMultiMapTest::TestFind()
       Map::Iterator it = map.Find(2);
 
       THROW_ON_FAILURE_EX(&node2 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node5 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node3 == *it);
 
       THROW_ON_FAILURE_EX(&node3 == *map.Find(3));
@@ -692,11 +692,11 @@ void CIntrusiveMultiMapTest::TestFind()
       it = map.Find(2);
 
       THROW_ON_FAILURE_EX(&node2 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node6 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node5 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node3 == *it);
 
       THROW_ON_FAILURE_EX(&node3 == *map.Find(3));
@@ -710,19 +710,19 @@ void CIntrusiveMultiMapTest::TestFind()
       it = map.Find(2);
 
       THROW_ON_FAILURE_EX(&node2 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node6 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node5 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node3 == *it);
 
       it = map.Find(3);
 
       THROW_ON_FAILURE_EX(&node3 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node7 == *it);
-      it++;
+      ++it;
       THROW_ON_FAILURE_EX(&node4 == *it);
 
       THROW_ON_FAILURE_EX(&node4 == *map.Find(4));

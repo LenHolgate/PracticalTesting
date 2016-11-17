@@ -50,7 +50,7 @@ CLoggingCallbackTimer::CLoggingCallbackTimer()
    :  logMessage(true),
       logUserData(true),
       m_numTimerEvents(0),
-      m_pTimerQueue(0),
+      m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
       m_timeout(INFINITE),
       m_userData(0)
@@ -63,7 +63,7 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
       logMessage(true),
       logUserData(true),
       m_numTimerEvents(0),
-      m_pTimerQueue(0),
+      m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
       m_timeout(INFINITE),
       m_userData(0)
@@ -99,7 +99,7 @@ void CLoggingCallbackTimer::SetTimerInOnTimer(
 }
 
 bool CLoggingCallbackTimer::WaitForTimer(
-   const Milliseconds timeout)
+   const Milliseconds timeout) const
 {
    return m_timerEvent.Wait(timeout);
 }
@@ -131,7 +131,7 @@ void CLoggingCallbackTimer::OnTimer(
          m_pTimerQueue->SetTimer(m_handle, *this, m_timeout, m_userData);
 
          m_timeout = INFINITE;
-         m_pTimerQueue = 0;
+         m_pTimerQueue = nullptr;
          m_handle = IQueueTimers::InvalidHandleValue;
          m_userData = 0;
 
@@ -141,7 +141,7 @@ void CLoggingCallbackTimer::OnTimer(
       {
          m_pTimerQueue->DestroyTimer(m_handle); //lint !e534 (Ignoring return value of function)
 
-         m_pTimerQueue = 0;
+         m_pTimerQueue = nullptr;
          m_handle = IQueueTimers::InvalidHandleValue;
 
          LogMessage(_T("TimerDestroyed"));

@@ -54,8 +54,7 @@ class CTestLog
          CTestLog *pLinkedLog,
          const JetByteTools::Win32::_tstring &separator);
 
-      //lint -esym(1509, CTestLog) Base class destructor not virtual
-      ~CTestLog();
+      virtual ~CTestLog();
 
       void UnlinkLog();
 

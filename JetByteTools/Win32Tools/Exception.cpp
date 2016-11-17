@@ -53,7 +53,7 @@ _tstring CException::GetMessage() const
    return m_message; 
 }
 
-void CException::MessageBox(HWND hWnd /* = NULL */) const 
+void CException::MessageBox(HWND hWnd /* = nullptr */) const
 { 
    ::MessageBox(hWnd, GetMessage().c_str(), GetWhere().c_str(), MB_ICONSTOP); 
 }

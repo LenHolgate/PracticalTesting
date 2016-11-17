@@ -1,3 +1,6 @@
+#pragma once
+#ifndef JETBYTE_TOOLS_TEST_PURE_CALL_HANDLER_INCLUDED__
+#define JETBYTE_TOOLS_TEST_PURE_CALL_HANDLER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: PureCallHandler.h
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,6 +57,7 @@ static void InstallPureCallHandler()
    _set_purecall_handler(PureCallHandler);
 }
 
+#endif    // JETBYTE_TOOLS_TEST_PURE_CALL_HANDLER_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: PureCallHandler.h

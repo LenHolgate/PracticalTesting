@@ -27,7 +27,10 @@
 #include "SEHException.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
 #include "DebugTrace.h"
+
+#if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
 #include "PerThreadErrorHandler.h"
+#endif
 
 #pragma hdrstop
 
@@ -287,7 +290,7 @@ Milliseconds CThreadedCallbackTimerQueue::GetMaximumTimeout() const
    return m_spTimerQueue->GetMaximumTimeout();
 }
 
-int CThreadedCallbackTimerQueue::Run()
+unsigned int CThreadedCallbackTimerQueue::Run()
 {
    #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
    CPerThreadErrorHandler errorHandler;

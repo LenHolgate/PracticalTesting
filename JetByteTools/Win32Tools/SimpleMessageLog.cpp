@@ -174,8 +174,8 @@ void CSimpleMessageLog::LogMessage(
       {
          // cout displays \n as a line break, we don't log it as such...
 
-         cout << (m_logEntryFormat & IncludeThreadId ? threadId : s_emptyString) << 
-                 (m_logEntryFormat & IncludeTimestamp ? GetTimestamp() : s_emptyString) <<
+         cout << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) << 
+                 ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
                   message << endl;
       }
 
@@ -195,15 +195,15 @@ void CSimpleMessageLog::LogMessage(
             m_output << "****************New Log*****************\r\n";
          }
 
-         m_output << (m_logEntryFormat & IncludeThreadId ? threadId : s_emptyString) << 
-                     (m_logEntryFormat & IncludeTimestamp ? GetTimestamp() : s_emptyString) <<
+         m_output << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) << 
+                     ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
                       message << "\r\n";
       }
 
       if (m_logToMemory)
       {
-         m_messages.push_back((m_logEntryFormat & IncludeThreadId ? threadId : s_emptyString) +
-                              (m_logEntryFormat & IncludeTimestamp ? GetTimestamp() : s_emptyString) + 
+         m_messages.push_back(((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) +
+                              ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) + 
                                message);
       }
    }

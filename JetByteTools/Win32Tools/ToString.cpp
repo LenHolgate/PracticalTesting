@@ -112,7 +112,7 @@ unsigned short CalculateRequiredPrecision(
                {
                   nines = 0;
 
-                  precision = numDigits - 1;
+                  precision = static_cast<unsigned short>(numDigits - 1);
                }
 
                zeroes++;
@@ -123,7 +123,7 @@ unsigned short CalculateRequiredPrecision(
                {
                   zeroes = 0;
 
-                  precision = numDigits - 1;
+                  precision = static_cast<unsigned short>(numDigits - 1);
                }
 
                nines++;
@@ -575,22 +575,22 @@ inline bool IncludePadding(
 }
 
 #define DETERMINE_FORMAT_STRING_A(rep, w, fU, fL)           \
-   IncludePrefix(rep) ?                                     \
+   (IncludePrefix(rep) ?                                    \
       (IsUpperCaseRepresentation(rep) ?                     \
       (IncludePadding(rep) ? "0x%" w fU : "0x%" fU) :       \
          (IncludePadding(rep) ? "0x%" w fL : "0x%" fL)) :   \
       (IsUpperCaseRepresentation(rep) ?                     \
          (IncludePadding(rep) ? "%" w fU : "%" fU) :        \
-         (IncludePadding(rep) ? "%" w fL : "%" fL))
+         (IncludePadding(rep) ? "%" w fL : "%" fL)))
 
 #define DETERMINE_FORMAT_STRING_W(rep, w, fU, fL)           \
-   IncludePrefix(rep) ?                                     \
+   (IncludePrefix(rep) ?                                    \
       (IsUpperCaseRepresentation(rep) ?                     \
-      (IncludePadding(rep) ? L"0x%" w fU : L"0x%" fU) :       \
-         (IncludePadding(rep) ? L"0x%" w fL : L"0x%" fL)) :   \
+      (IncludePadding(rep) ? L"0x%" w fU : L"0x%" fU) :     \
+         (IncludePadding(rep) ? L"0x%" w fL : L"0x%" fL)) : \
       (IsUpperCaseRepresentation(rep) ?                     \
-         (IncludePadding(rep) ? L"%" w fU : L"%" fU) :        \
-         (IncludePadding(rep) ? L"%" w fL : L"%" fL))
+         (IncludePadding(rep) ? L"%" w fU : L"%" fU) :      \
+         (IncludePadding(rep) ? L"%" w fL : L"%" fL)))
 
 string PointerToStringA(
    const void *val,
@@ -1048,7 +1048,7 @@ string ToHexStringA(
          c = static_cast<BYTE>((b - 10) + (IsUpperCaseRepresentation(hexDigitRepresentation) ? 'A' : 'a'));
       }
 
-      result += (char)c;
+      result += static_cast<char>(c);
 
       b = static_cast<BYTE>(pBytes[i] & 0x0f);
 
@@ -1061,7 +1061,7 @@ string ToHexStringA(
          c = static_cast<BYTE>((b - 10) + (IsUpperCaseRepresentation(hexDigitRepresentation) ? 'A' : 'a'));
       }
 
-      result += (char)c;
+      result += static_cast<char>(c);
    }
 
    return result;
@@ -1100,7 +1100,7 @@ wstring ToHexStringW(
          c = static_cast<BYTE>((b - 10) + (IsUpperCaseRepresentation(hexDigitRepresentation) ? 'A' : 'a'));
       }
 
-      result += (wchar_t)c;
+      result += static_cast<wchar_t>(c);
 
       b = static_cast<BYTE>(pBytes[i] & 0x0f);
 
@@ -1113,7 +1113,7 @@ wstring ToHexStringW(
          c = static_cast<BYTE>((b - 10) + (IsUpperCaseRepresentation(hexDigitRepresentation) ? 'A' : 'a'));
       }
 
-      result += (char)c;
+      result += static_cast<char>(c);
    }
 
    return result;
@@ -1138,7 +1138,7 @@ string ToHexA(
 
    char buffer[3];
 
-   const int i = val;
+   const unsigned int i = val;
 
    if (-1 == sprintf_s(buffer, bufferSize, "%02X", i))
    {
@@ -1165,8 +1165,8 @@ wstring ToHexW(
    return buffer;
 }
 
-static const string s_emptyStringLinePrefixA;
-static const wstring s_emptyStringLinePrefixW;
+static const string s_emptyStringLinePrefixA = "";
+static const wstring s_emptyStringLinePrefixW = L"";
 
 string MakePrintableA(
    const BYTE * const pData,
@@ -1264,13 +1264,9 @@ static string InternalDumpDataA(
          hexDisplay += ToHexA(c) + " ";
       }
 
-      #if (VS2013_PREVIEW_BROKEN_ISPRINT == 1)
-      if (isprint(c) && c != 9)
-      #else
       if (isprint(c))
-      #endif
       {
-         display += (char)c;
+         display += static_cast<char>(c);
       }
       else
       {
@@ -1341,13 +1337,9 @@ static wstring InternalDumpDataW(
          hexDisplay += ToHexW(c) + L" ";
       }
 
-      #if (VS2013_PREVIEW_BROKEN_ISPRINT == 1)
-      if (isprint(c) && c != 9)
-      #else
       if (isprint(c))
-      #endif
       {
-         display += (wchar_t)c;
+         display += static_cast<wchar_t>(c);
       }
       else
       {

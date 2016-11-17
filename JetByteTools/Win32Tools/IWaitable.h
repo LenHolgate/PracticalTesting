@@ -80,28 +80,28 @@ class IWaitable
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         HANDLE handle,
+         const HANDLE handle,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         HANDLE handle,
+         const HANDLE handle,
          const Milliseconds timeout,
          const DWORD removeFlags);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles,
+         const HANDLE *pHandles,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles,
+         const HANDLE *pHandles,
          DWORD &signalledHandle,
          const Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
          const DWORD numHandles,
-         HANDLE *pHandles,
+         const HANDLE *pHandles,
          DWORD &signalledHandle,
          const Milliseconds timeout,
          const DWORD removeFlags);

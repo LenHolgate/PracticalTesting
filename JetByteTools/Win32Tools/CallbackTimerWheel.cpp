@@ -171,10 +171,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -191,10 +191,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
-      m_handlingTimeouts(0),
-      m_pTimeoutsToBeHandled(0)
+      m_handlingTimeouts(false),
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -211,10 +211,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -232,10 +232,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -252,10 +252,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -273,10 +273,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -294,10 +294,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -316,10 +316,10 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pTimersStart(CreateTimerWheel(m_numTimers)),
       m_pTimersEnd(m_pTimersStart + m_numTimers),
       m_pNow(m_pTimersStart),
-      m_pFirstTimerSetHint(0),
+      m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(0)
+      m_pTimeoutsToBeHandled(nullptr)
 {
 
 }
@@ -369,7 +369,7 @@ Milliseconds CCallbackTimerWheel::GetNextTimeout()
    {
       // A timer is set! Calculate the timeout in ms
 
-      nextTimeout = static_cast<Milliseconds>(((m_pFirstTimerSetHint >= m_pNow ? (m_pFirstTimerSetHint - m_pNow) : (m_pTimersEnd - m_pNow + m_pFirstTimerSetHint - m_pTimersStart)) + 1) * m_timerGranularity);
+      nextTimeout = static_cast<Milliseconds>(((m_pFirstTimerSetHint >= m_pNow ? (m_pFirstTimerSetHint - m_pNow) : ((m_pTimersEnd - m_pNow) + m_pFirstTimerSetHint - m_pTimersStart)) + 1) * m_timerGranularity);
 
       const Milliseconds now = m_tickCountProvider.GetTickCount();
 
@@ -403,7 +403,7 @@ Milliseconds CCallbackTimerWheel::GetNextTimeout()
 
 CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetFirstTimerSet() const
 {
-   TimerData **pFirstTimer = 0;
+   TimerData **pFirstTimer = nullptr;
 
    if (m_numTimersSet != 0)
    {
@@ -451,7 +451,7 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
 
    m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
 
-   m_handlingTimeouts = (m_pTimeoutsToBeHandled != 0);
+   m_handlingTimeouts = (m_pTimeoutsToBeHandled != nullptr);
 
    return m_handlingTimeouts;
 }
@@ -490,9 +490,9 @@ void CCallbackTimerWheel::EndTimeoutHandling()
 
    TimerData *pTimers = m_pTimeoutsToBeHandled;
 
-   m_pTimeoutsToBeHandled = 0;
+   m_pTimeoutsToBeHandled = nullptr;
 
-   TimerData *pDeadTimer = 0;
+   TimerData *pDeadTimer = nullptr;
 
    while (pTimers)
    {
@@ -513,7 +513,7 @@ void CCallbackTimerWheel::EndTimeoutHandling()
          m_monitor.OnTimerDeleted();
          #endif
 
-         pDeadTimer = 0;
+         pDeadTimer = nullptr;
       }
    }
 }
@@ -527,7 +527,7 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 }
 
 CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
-   TimerData *pData)
+   const TimerData *pData)
 {
    m_activeHandles.Insert(pData);
 
@@ -619,7 +619,7 @@ void CCallbackTimerWheel::InsertTimer(
 
    data.SetTimer(ppTimer, *ppTimer);
 
-   m_pFirstTimerSetHint = 0;
+   m_pFirstTimerSetHint = nullptr;
 
    if (!wasPending)
    {
@@ -655,7 +655,7 @@ void CCallbackTimerWheel::OnTimerCancelled()
 {
    --m_numTimersSet;
 
-   m_pFirstTimerSetHint = 0;
+   m_pFirstTimerSetHint = nullptr;
 }
 
 bool CCallbackTimerWheel::DestroyTimer(
@@ -747,9 +747,9 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetAllTimersToProcess(
    const Milliseconds now)
 {
-   TimerData *pTimers = 0;
+   TimerData *pTimers = nullptr;
 
-   TimerData *pLastTimer = 0;
+   TimerData *pLastTimer = nullptr;
 
    // Round 'now' down to the timer granularity
 
@@ -794,7 +794,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetAllTimersToProcess(
 
    if (pTimers)
    {
-      m_pFirstTimerSetHint = 0;
+      m_pFirstTimerSetHint = nullptr;
    }
 
    return pTimers;
@@ -820,7 +820,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::PrepareTimersForHandleTimeo
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
    const Milliseconds now)
 {
-   TimerData *pTimers = 0;
+   TimerData *pTimers = nullptr;
 
    // Round 'now' down to the timer granularity
 
@@ -851,7 +851,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
 
    if (pTimers)
    {
-      m_pFirstTimerSetHint = 0;
+      m_pFirstTimerSetHint = nullptr;
    }
 
    return pTimers;
@@ -885,9 +885,9 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::CreateTimerWheel(
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerWheel::TimerData::TimerData()
-   :  m_ppPrevious(0),
-      m_pNext(0),
-      m_pNextTimedout(0),
+   :  m_ppPrevious(nullptr),
+      m_pNext(nullptr),
+      m_pNextTimedout(nullptr),
       m_processingTimeout(false),
       m_deleteAfterTimeout(false)
 {
@@ -897,9 +897,9 @@ CCallbackTimerWheel::TimerData::TimerData()
 CCallbackTimerWheel::TimerData::TimerData(
    CCallbackTimerWheel::Timer &timer,
    CCallbackTimerWheel::UserData userData)
-   :  m_ppPrevious(0),
-      m_pNext(0),
-      m_pNextTimedout(0),
+   :  m_ppPrevious(nullptr),
+      m_pNext(nullptr),
+      m_pNextTimedout(nullptr),
       m_active(timer, userData),
       m_processingTimeout(false),
       m_deleteAfterTimeout(true)
@@ -925,8 +925,8 @@ bool CCallbackTimerWheel::TimerData::CancelTimer()
 
       *m_ppPrevious = m_pNext;
 
-      m_ppPrevious = 0;
-      m_pNext = 0;
+      m_ppPrevious = nullptr;
+      m_pNext = nullptr;
 
       m_active.Clear();
 
@@ -987,7 +987,7 @@ void CCallbackTimerWheel::TimerData::SetTimer(
 
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer()
 {
-   m_ppPrevious = 0;
+   m_ppPrevious = nullptr;
 
    m_processingTimeout = true;
 
@@ -1017,9 +1017,9 @@ void CCallbackTimerWheel::TimerData::Unlink()
 {
    if (m_ppPrevious)
    {
-      *m_ppPrevious = 0;
+      *m_ppPrevious = nullptr;
 
-      m_ppPrevious = 0;
+      m_ppPrevious = nullptr;
    }
 }
 
@@ -1039,9 +1039,9 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::PrepareForHandle
 
    m_pNextTimedout = m_pNext;
 
-   m_pNext = 0;
+   m_pNext = nullptr;
 
-   m_ppPrevious = 0;
+   m_ppPrevious = nullptr;
 
    return m_pNextTimedout;
 }
@@ -1061,7 +1061,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::TimeoutHandlingC
 
    TimerData *pNext = m_pNextTimedout;
 
-   m_pNextTimedout = 0;
+   m_pNextTimedout = nullptr;
 
    return pNext;
 }
@@ -1071,7 +1071,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::TimeoutHandlingC
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerWheel::TimerData::Data::Data()
-   :  pTimer(0),
+   :  pTimer(nullptr),
       userData(0)
 {
 
@@ -1088,7 +1088,7 @@ CCallbackTimerWheel::TimerData::Data::Data(
 
 void CCallbackTimerWheel::TimerData::Data::Clear()
 {
-   pTimer = 0;
+   pTimer = nullptr;
    userData = 0;
 }
 

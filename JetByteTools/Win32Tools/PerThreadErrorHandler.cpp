@@ -97,7 +97,7 @@ void CPerThreadErrorHandler::TerminateHandler()
    {
       if (::IsDebuggerPresent())
       {
-         MessageBox(0, _T("std::terminate!") , _T("std::terminate!"), MB_OK);
+         MessageBox(nullptr, _T("std::terminate!") , _T("std::terminate!"), MB_OK);
 
          DebugBreak();
       }
@@ -113,7 +113,7 @@ void CPerThreadErrorHandler::UnexpectedHandler()
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (::IsDebuggerPresent())
       {
-         MessageBox(0, _T("std::unexpected!"), _T("std::unexpected!"), MB_OK);
+         MessageBox(nullptr, _T("std::unexpected!") , _T("std::unexpected!"), MB_OK);
 
          DebugBreak();
       }

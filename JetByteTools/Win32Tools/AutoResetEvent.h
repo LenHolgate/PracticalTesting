@@ -78,12 +78,12 @@ class CAutoResetEvent : public IWaitable
 
       // Implement IWaitable
 
-      virtual HANDLE GetWaitHandle() const;
+      HANDLE GetWaitHandle() const override;
 
-      virtual void Wait() const;
+      void Wait() const override;
 
-      virtual bool Wait(
-         const Milliseconds timeout) const;
+      bool Wait(
+         const Milliseconds timeout) const override;
 
    private :
 

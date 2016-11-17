@@ -106,14 +106,14 @@ class TLockableObject : public Base
          CheckForReentrantUse();
          #endif
 
+         #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
+         m_owningThreadId = ::GetCurrentThreadId();
+         #endif
+
          #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
          ::AcquireSRWLockExclusive(&m_lock);
          #else
          ::EnterCriticalSection(&m_lock);
-         #endif
-
-         #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
-         m_owningThreadId = ::GetCurrentThreadId();
          #endif
       }
 
@@ -141,7 +141,7 @@ class TLockableObject : public Base
       #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
       DWORD m_owningThreadId;
 
-      inline void CheckForReentrantUse()
+      inline void CheckForReentrantUse() const
       {
          if (m_owningThreadId == ::GetCurrentThreadId())
          {

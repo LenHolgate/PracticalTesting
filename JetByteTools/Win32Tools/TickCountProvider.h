@@ -21,7 +21,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
 #include <WinBase.h>             // For GetTickCount()
 
 #include "IProvideTickCount.h"
@@ -49,7 +48,9 @@ class CTickCountProvider: public IProvideTickCount
 {
    public :
 
-      virtual Milliseconds GetTickCount() const
+      CTickCountProvider() {}
+
+      Milliseconds GetTickCount() const override
       {
          return ::GetTickCount();
       }

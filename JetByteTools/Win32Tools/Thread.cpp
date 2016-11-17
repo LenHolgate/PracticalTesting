@@ -128,7 +128,13 @@ void CThread::InternalStart(
 {
    if (!IsRunning())
    {
-      const uintptr_t result = ::_beginthreadex(0, 0, ThreadFunction, (void*)this, startSuspended, reinterpret_cast<unsigned int*>(&m_threadID));
+      const uintptr_t result = ::_beginthreadex(
+         nullptr,
+         0,
+         ThreadFunction,
+         reinterpret_cast<void*>(this),
+         startSuspended,
+         reinterpret_cast<unsigned int*>(&m_threadID));
 
       if (result == 0)
       {
@@ -247,9 +253,9 @@ bool CThread::Wait(
 unsigned int __stdcall CThread::ThreadFunction(
    void *pV)
 {
-   int result = 0;
+   unsigned int result = 0;
 
-   CThread* pThis = (CThread*)pV;
+   CThread* pThis = reinterpret_cast<CThread*>(pV);
 
    if (pThis)
    {

@@ -21,10 +21,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\IntrusiveMultiMapNode.h"
-#include "JetByteTools\Win32Tools\IntrusiveRedBlackTree.h"
+#include "IntrusiveMultiMapNode.h"
+#include "IntrusiveRedBlackTree.h"
 
-#include "JetByteTools\Win32Tools\Exception.h"
+#include "Exception.h"
+#include "ToString.h"
 
 //lint -esym(534, JetByteTools::Win32::TIntrusiveMultiMap<>::Insert)
 
@@ -187,11 +188,11 @@ class TIntrusiveMultiMap
 
             typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*();
 
-            typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+            const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
 
             typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->();
 
-            typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+            const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
 
          private :
 
@@ -245,11 +246,11 @@ class TIntrusiveMultiMap
 
                   typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*();
 
-                  typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+                  const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
 
                   typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->();
 
-                  typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+                  const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
 
                private :
 
@@ -501,7 +502,7 @@ T *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveOne(
 {
    T *pData = 0;
 
-   Tree::Iterator it m_tree.Find(key);
+   typename Tree::Iterator it = m_tree.Find(key);
 
    if (it != m_tree.End())
    {
@@ -764,7 +765,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveMultiMap<T,K,
 
    if (!m_pNode->m_pNext)
    {
-      m_it++;
+      ++m_it;
 
       m_pNode = node_accessor::GetNodeFromT(*m_it);
    }
@@ -834,7 +835,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator::operator *() const
+const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator::operator *() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
@@ -846,7 +847,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator::operator ->() const
+const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Iterator::operator ->() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
@@ -1084,7 +1085,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::operator *() const
+const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::operator *() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
@@ -1096,7 +1097,7 @@ typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
-typename const TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::operator ->() const
+const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::operator ->() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }

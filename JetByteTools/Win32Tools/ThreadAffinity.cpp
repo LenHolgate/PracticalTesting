@@ -22,6 +22,7 @@
 
 #include "ThreadAffinity.h"
 #include "Win32Exception.h"
+#include "ToString.h"
 
 #pragma hdrstop
 
@@ -121,6 +122,10 @@ static DWORD_PTR SetThreadAffinity(
          }
 
       break ;
+
+      default :
+
+         throw CException(_T("CThreadAffinity::SetThreadAffinity()"), _T("Unknown 'selectHow' value: ") + ToString(selectHow));
    }
 
    return previousMask;

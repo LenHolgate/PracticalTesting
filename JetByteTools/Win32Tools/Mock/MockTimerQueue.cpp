@@ -22,8 +22,6 @@
 
 #include "MockTimerQueue.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
-
 #include "JetByteTools\TestTools\TestException.h"
 
 #pragma hdrstop
@@ -53,11 +51,11 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CMockTimerQueue::CMockTimerQueue()
-   :  m_nextTimer(0),
+   :  waitForOnTimerWaitComplete(false),
+      includeHandleValuesInLogs(true),
+      m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
-      m_nextTimeout(INFINITE),
-      waitForOnTimerWaitComplete(false),
-      includeHandleValuesInLogs(true)
+      m_nextTimeout(INFINITE)
 {
 
 }
@@ -65,11 +63,11 @@ CMockTimerQueue::CMockTimerQueue()
 CMockTimerQueue::CMockTimerQueue(
    CTestLog *pLinkedLog)
    :  CTestLog(pLinkedLog),
+      waitForOnTimerWaitComplete(false),
+      includeHandleValuesInLogs(true),
       m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
-      m_nextTimeout(INFINITE),
-      waitForOnTimerWaitComplete(false),
-      includeHandleValuesInLogs(true)
+      m_nextTimeout(INFINITE)
 {
 
 }
@@ -81,7 +79,7 @@ void CMockTimerQueue::SetNextTimeout(
 }
 
 bool CMockTimerQueue::WaitForNextTimeout(
-   const Milliseconds timeout)
+   const Milliseconds timeout) const
 {
    return m_nextTimeoutEvent.Wait(timeout);
 }
@@ -360,7 +358,7 @@ CMockTimerQueue::TimerExpiryThread::~TimerExpiryThread()
 
 }
 
-int CMockTimerQueue::TimerExpiryThread::Run()
+unsigned int CMockTimerQueue::TimerExpiryThread::Run()
 {
    try
    {
@@ -375,7 +373,7 @@ int CMockTimerQueue::TimerExpiryThread::Run()
    return 0;
 }
 
-void CMockTimerQueue::TimerExpiryThread::WaitForCompletion()
+void CMockTimerQueue::TimerExpiryThread::WaitForCompletion() const
 {
    m_thread.Wait();
 }

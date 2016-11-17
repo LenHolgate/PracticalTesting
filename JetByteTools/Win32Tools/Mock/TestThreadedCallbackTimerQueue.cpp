@@ -56,7 +56,7 @@ void CTestThreadedCallbackTimerQueue::OnThreadTerminationException(
 }
 
 bool CTestThreadedCallbackTimerQueue::WaitForThreadTerminationException(
-   const Milliseconds timeout)
+   const Milliseconds timeout) const
 {
    return m_exceptionEvent.Wait(timeout);
 }

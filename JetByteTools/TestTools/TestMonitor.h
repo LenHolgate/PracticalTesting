@@ -89,9 +89,9 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 
       // Implement IRunnable
 
-      virtual int Run();
+      unsigned int Run() override;
 
-      void OutputTestDetails();
+      void OutputTestDetails() const;
 
       static JetByteTools::Milliseconds GetTimeoutForMachine();
 

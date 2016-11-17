@@ -69,7 +69,7 @@ class CMockTickCountProvider :
 
       // Implement IProvideTickCount
 
-      virtual Milliseconds GetTickCount() const;
+      Milliseconds GetTickCount() const override;
 
    private :
 

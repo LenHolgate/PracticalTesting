@@ -62,7 +62,7 @@ CMessageLog::CMessageLog(
 
 CMessageLog::~CMessageLog()
 {
-   m_pLog = 0;
+   m_pLog = nullptr;
 }
 
 ILogMessages *CMessageLog::SetLog(

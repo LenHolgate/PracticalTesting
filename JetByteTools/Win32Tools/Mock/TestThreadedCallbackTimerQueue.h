@@ -49,11 +49,11 @@ class CTestThreadedCallbackTimerQueue :
       explicit CTestThreadedCallbackTimerQueue(
          IManageTimerQueue &impl);
 
-      virtual void OnThreadTerminationException(
-         const _tstring &message);
+      void OnThreadTerminationException(
+         const _tstring &message) override;
 
       bool WaitForThreadTerminationException(
-         const Milliseconds timeout);
+         const Milliseconds timeout) const;
 
    private :
 

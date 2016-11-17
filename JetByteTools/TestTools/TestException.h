@@ -63,7 +63,7 @@ class CNonFatalTestException : public CTestException
 {
    public :
 
-      CNonFatalTestException(
+      explicit CNonFatalTestException(
          const JetByteTools::Win32::_tstring &message);
 
       CNonFatalTestException(

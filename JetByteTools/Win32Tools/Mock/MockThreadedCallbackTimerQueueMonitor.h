@@ -50,29 +50,29 @@ class CMockThreadedCallbackTimerQueueMonitor :
 
       // Implement IMonitorThreadedCallbackTimerQueue
 
-      virtual void OnTimerProcessingContention(
-         const ContentionLocation location);
+      void OnTimerProcessingContention(
+         const ContentionLocation location) override;
 
-      virtual void OnTimerProcessingStarted();
+      void OnTimerProcessingStarted() override;
 
-      virtual void OnTimerProcessingStopped();
+      void OnTimerProcessingStopped() override;
 
-      virtual void OnTimerCreated();
+      void OnTimerCreated() override;
 
-      virtual void OnOneOffTimerSet();
+      void OnOneOffTimerSet() override;
 
-      virtual void OnTimerSet(
-         const bool wasPending);
+      void OnTimerSet(
+         const bool wasPending) override;
 
-      virtual void OnTimer();
+      void OnTimer() override;
 
-      virtual void OnTimerCancelled(
-         const bool wasPending);
+      void OnTimerCancelled(
+         const bool wasPending) override;
 
-      virtual void OnTimerDestroyed(
-         const bool wasPending);
+      void OnTimerDestroyed(
+         const bool wasPending) override;
 
-      virtual void OnTimerDeleted();
+      void OnTimerDeleted() override;
 
    private :
 

@@ -79,7 +79,7 @@ DWORD CThreadLocalStorage::GetIndex() const
 
 void CThreadLocalStorage::ClearValue() const
 {
-   if (0 == ::TlsSetValue(m_index, 0))
+   if (0 == ::TlsSetValue(m_index, nullptr))
    {
       throw CWin32Exception(_T("CThreadLocalStorage::ClearValue()"), ::GetLastError());
    }
@@ -107,7 +107,7 @@ void *CThreadLocalStorage::GetValue() const
 {
    void *pV = ::TlsGetValue(m_index);
 
-   if (pV == 0)
+   if (pV == nullptr)
    {
       DWORD lastError = ::GetLastError();
 
@@ -124,7 +124,7 @@ DWORD CThreadLocalStorage::GetValueAsDWORD() const
 {
    void *pV = ::TlsGetValue(m_index);
 
-   if (pV == 0)
+   if (pV == nullptr)
    {
       DWORD lastError = ::GetLastError();
 

@@ -39,7 +39,7 @@ class CTestIntrusiveRedBlackTreeNode : public CIntrusiveRedBlackTreeNode
 {
    public : 
 
-      CTestIntrusiveRedBlackTreeNode(
+      explicit CTestIntrusiveRedBlackTreeNode(
          const int value);
 
       int Value() const;
@@ -60,7 +60,7 @@ class CTestIntrusiveRedBlackTreeNodeKeyAccessor
 {
    public :
 
-      static const unsigned long GetKeyFromT(
+      static unsigned long GetKeyFromT(
          const CTestIntrusiveRedBlackTreeNode *pNode)
       {
          return pNode->Key();
