@@ -23,9 +23,9 @@
 
 #include "CallbackTimerQueueTestBase.h"
 
-#include "JetByteTools\Win32Tools\Mock\TestCallbackTimerWheel.h"
+#include "JetByteTools/Win32Tools/Mock/TestCallbackTimerWheel.h"
 
-#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCountProvider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -45,9 +45,9 @@ namespace Test {
 
 class CCallbackTimerWheelTest :
    public TCallbackTimerQueueTestBase<
-      JetByteTools::Win32::Mock::CTestCallbackTimerWheel,
+      Mock::CTestCallbackTimerWheel,
       CCallbackTimerWheelTest,
-      JetByteTools::Win32::Mock::CMockTickCountProvider>
+      Mock::CMockTickCountProvider>
 {
    public :
 

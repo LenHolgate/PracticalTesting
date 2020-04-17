@@ -43,7 +43,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
     <ProjectName>Win32Tools</ProjectName>
     <ProjectGuid>{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}</ProjectGuid>
     <RootNamespace>Win32Tools</RootNamespace>
@@ -614,6 +613,7 @@
     <ClCompile Include="CallbackTimerQueueEx.cpp" />
     <ClCompile Include="CallbackTimerWheel.cpp" />
     <ClCompile Include="CodePage.cpp" />
+    <ClCompile Include="CompareStrings.cpp" />
     <ClCompile Include="CriticalSection.cpp" />
     <ClCompile Include="CrtReportHook.cpp" />
     <ClCompile Include="DebugTrace.cpp" />
@@ -655,11 +655,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h" />
-    <ClInclude Include="CallbackTimerQueue.h" />
-    <ClInclude Include="CallbackTimerQueueBase.h" />
     <ClInclude Include="CallbackTimerQueueEx.h" />
     <ClInclude Include="CallbackTimerWheel.h" />
     <ClInclude Include="CodePage.h" />
+    <ClInclude Include="CompareStrings.h" />
     <ClInclude Include="ConditionalSmartPointer.h" />
     <ClInclude Include="CriticalSection.h" />
     <ClInclude Include="CrtReportHook.h" />
@@ -671,6 +670,7 @@
     <ClInclude Include="GlobalErrorHandler.h" />
     <ClInclude Include="ICriticalSection.h" />
     <ClInclude Include="IKernelObjectName.h" />
+    <ClInclude Include="IListenToThreadNaming.h" />
     <ClInclude Include="ILockableObject.h" />
     <ClInclude Include="ILogMessages.h" />
     <ClInclude Include="IManageTimerQueue.h" />
@@ -698,12 +698,14 @@
     <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
     <ClInclude Include="PerformanceCounter.h" />
     <ClInclude Include="PerThreadErrorHandler.h" />
+    <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="PureCallHandler.h" />
     <ClInclude Include="ReentrantLockableObject.h" />
     <ClInclude Include="SEHException.h" />
     <ClInclude Include="SimpleMessageLog.h" />
     <ClInclude Include="SmartHandle.h" />
     <ClInclude Include="StringConverter.h" />
+    <ClInclude Include="StringVector.h" />
     <ClInclude Include="SystemTime.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreadAffinity.h" />

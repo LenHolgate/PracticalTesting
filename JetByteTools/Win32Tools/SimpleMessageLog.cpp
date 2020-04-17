@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "SimpleMessageLog.h"
 #include "StringConverter.h"
@@ -78,7 +78,7 @@ void CSimpleMessageLog::SetLogName(
 {
    CLockableObject::Owner lock(m_lock);
 
-   if (fileName != "")
+   if (!fileName.empty())
    {
       m_fileName = fileName;
    }
@@ -100,7 +100,9 @@ void CSimpleMessageLog::SetThreadIdentifier(
 {
    CLockableObject::Owner lock(m_lock);
 
-   const string *pThreadID = InternalSetThreadIdentifier(identifier + ": ");
+   const string id = identifier.empty() ? identifier : identifier + ": ";
+
+   const string *pThreadID = InternalSetThreadIdentifier(id);
 
    (void)pThreadID;
 }
@@ -110,7 +112,9 @@ void CSimpleMessageLog::SetThreadIdentifier(
 {
    CLockableObject::Owner lock(m_lock);
 
-   const string *pThreadID = InternalSetThreadIdentifier(CStringConverter::WtoA(identifier) + ": ");
+   const wstring id = identifier.empty() ? identifier : identifier + L": ";
+
+   const string *pThreadID = InternalSetThreadIdentifier(CStringConverter::WtoA(id));
 
    (void)pThreadID;
 }
@@ -123,11 +127,9 @@ _tstring CSimpleMessageLog::GetLogMessages() const
    {
       CLockableObject::Owner lock(m_lock);
 
-      for (Messages::const_iterator it = m_messages.begin(), end = m_messages.end();
-         it != end;
-         ++it)
+      for (const auto &m_message : m_messages)
       {
-         result += CStringConverter::AtoT(*it);
+         result += CStringConverter::AtoT(m_message);
          result += _T("\n");
       }
    }
@@ -151,10 +153,10 @@ string CSimpleMessageLog::GetTimestamp() const
       timestamp,
       sizeof(timestamp),
       "%02d:%02d:%02d.%03d - ",
-      localtime.wHour,
-      localtime.wMinute,
-      localtime.wSecond,
-      localtime.wMilliseconds);
+      static_cast<int>(localtime.wHour),
+      static_cast<int>(localtime.wMinute),
+      static_cast<int>(localtime.wSecond),
+      static_cast<int>(localtime.wMilliseconds));
 
    return timestamp;
 }
@@ -174,7 +176,7 @@ void CSimpleMessageLog::LogMessage(
       {
          // cout displays \n as a line break, we don't log it as such...
 
-         cout << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) << 
+         cout << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) <<
                  ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
                   message << endl;
       }
@@ -195,7 +197,7 @@ void CSimpleMessageLog::LogMessage(
             m_output << "****************New Log*****************\r\n";
          }
 
-         m_output << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) << 
+         m_output << ((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) <<
                      ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
                       message << "\r\n";
       }
@@ -203,7 +205,7 @@ void CSimpleMessageLog::LogMessage(
       if (m_logToMemory)
       {
          m_messages.push_back(((m_logEntryFormat & IncludeThreadId) ? threadId : s_emptyString) +
-                              ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) + 
+                              ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) +
                                message);
       }
    }

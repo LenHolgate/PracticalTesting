@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "GlobalErrorHandler.h"
 
@@ -26,7 +26,7 @@
 
 #include "PureCallHandler.h"
 
-#include <signal.h>
+#include <csignal>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -40,13 +40,13 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 CGlobalErrorHandler::CGlobalErrorHandler()
-   :  m_oldErrorMode(::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX)),
-      m_oldPureCallHandler(::_set_purecall_handler(PureCallHandler))
+   :  m_oldErrorMode(SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX)),
+      m_oldPureCallHandler(_set_purecall_handler(PureCallHandler))
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
-      ,m_oldNewHandler(std::set_new_handler(NewHandler))
+      , m_oldNewHandler(std::set_new_handler(NewHandler))
       #endif
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
-      ,m_pOldSigAbrtHandler(signal(SIGABRT, SigAbortHandler))
+      , m_pOldSigAbrtHandler(signal(SIGABRT, SigAbortHandler))
       #endif
 {
 
@@ -62,9 +62,9 @@ CGlobalErrorHandler::~CGlobalErrorHandler()
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
       std::set_new_handler(m_oldNewHandler);
       #endif
-      ::_set_purecall_handler(m_oldPureCallHandler);
+      _set_purecall_handler(m_oldPureCallHandler);
 
-      ::SetErrorMode(m_oldErrorMode);
+      SetErrorMode(m_oldErrorMode);
    }
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
@@ -75,15 +75,15 @@ void CGlobalErrorHandler::NewHandler()
    if (!ProcessIsExiting())
    {
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
-      if (::IsDebuggerPresent())
+      if (IsDebuggerPresent())
       {
-         MessageBox(0, _T("Memory allocation failure"), _T("Memory allocation failure!"), MB_OK);
+         MessageBox(nullptr, _T("Memory allocation failure"), _T("Memory allocation failure!"), MB_OK);
 
          DebugBreak();
       }
       #endif
 
-      JetByteTools::Win32::OutputEx(_T("Memory allocation failure!"));
+      OutputEx(_T("Memory allocation failure!\r\n"));
 
       // It would be nice to have the option of a crash dump here but since we don't have
       // any memory left we can't do that...
@@ -106,9 +106,9 @@ void CGlobalErrorHandler::SigAbortHandler(
    if (!ProcessIsExiting())
    {
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
-      if (::IsDebuggerPresent())
+      if (IsDebuggerPresent())
       {
-         MessageBox(0, _T("SIGABRT!"), _T("SIGABRT!"), MB_OK);
+         MessageBox(nullptr, _T("SIGABRT!"), _T("SIGABRT!"), MB_OK);
 
          DebugBreak();
       }
@@ -121,7 +121,7 @@ void CGlobalErrorHandler::SigAbortHandler(
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (::IsDebuggerPresent())
       {
-         MessageBox(0, _T("SIGABRT!") , _T("SIGABRT!"), MB_OK);
+         MessageBox(nullptr, _T("SIGABRT!"), _T("SIGABRT!"), MB_OK);
 
          DebugBreak();
       }

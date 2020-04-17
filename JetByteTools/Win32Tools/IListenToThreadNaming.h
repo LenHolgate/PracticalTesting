@@ -1,11 +1,11 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
-#define JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
+#ifndef JETBYTE_TOOLS_WIN32_I_LISTEN_TO_THREAD_NAMING_INCLUDED__
+#define JETBYTE_TOOLS_WIN32_I_LISTEN_TO_THREAD_NAMING_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IKernelObjectName.h
+// File: IListenToThreadNaming.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2005 JetByte Limited.
+// Copyright 2018 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -31,33 +31,23 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// IKernelObjectName
+// IListenToThreadNaming
 ///////////////////////////////////////////////////////////////////////////////
 
-/// An interface that represents a name in the kernel object namespace
-/// See <a href="http://msdn2.microsoft.com/en-us/library/aa382954.aspx">here</a>
-/// for more details.
-/// \ingroup KernelObjects
-/// \ingroup ProtectedDestructors
-
-class IKernelObjectName
+class IListenToThreadNaming
 {
    public :
 
-      virtual _tstring GetName() const = 0;
-
-      virtual bool IsGlobalName() const = 0;
-
-      virtual bool IsLocalName() const = 0;
-
-      virtual bool IsUnqualifiedName() const = 0;
+      virtual void OnThreadNaming(
+         const _tstring &threaId,
+         const _tstring &threadName) = 0;
 
    protected :
 
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IKernelObjectName() = default;
+      virtual ~IListenToThreadNaming() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,9 +57,8 @@ class IKernelObjectName
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
-#endif // JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
+#endif // JETBYTE_TOOLS_WIN32_I_LISTEN_TO_THREAD_NAMING_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: IKernelObjectName.h
+// End of file: IRunnable.h
 ///////////////////////////////////////////////////////////////////////////////
-

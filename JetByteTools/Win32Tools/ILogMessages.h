@@ -104,37 +104,37 @@ class ILogMessages
       /// and the various SetLogName calls.
 
       virtual void LogMessage(
-         const char * const pString) = 0;
+         const char *pString) = 0;
 
       /// Logs the message to the log.
       /// Note that you should manually synchronise access to this function
       /// and the various SetLogName calls.
 
       virtual void LogMessage(
-         const wchar_t * const pString) = 0;
+         const wchar_t *pString) = 0;
 
       /// Logs the message to the log.
       /// Note that you should manually synchronise access to this function
       /// and the various SetLogName calls.
 
       virtual void LogMessage(
-         const char * const pString,
-         const DataLength stringLength) = 0;
+         const char *pString,
+         DataLength stringLength) = 0;
 
       /// Logs the message to the log.
       /// Note that you should manually synchronise access to this function
       /// and the various SetLogName calls.
 
       virtual void LogMessage(
-         const wchar_t * const pString,
-         const DataLength stringLength) = 0;
+         const wchar_t *pString,
+         DataLength stringLength) = 0;
 
    protected :
 
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~ILogMessages() {}
+      virtual ~ILogMessages() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

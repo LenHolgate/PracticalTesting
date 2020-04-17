@@ -49,6 +49,10 @@ class CNullCallbackTimerQueueMonitor : public IMonitorCallbackTimerQueue
       void OnTimerSet(
          const bool /*wasPending*/) override {}
 
+      void OnTimerUpdated(
+         const bool /*wasPending*/,
+         const bool /*wasUpdated*/) override {}
+
       void OnTimer() override {}
 
       void OnTimerCancelled(

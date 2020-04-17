@@ -29,10 +29,13 @@
 /// build can copy a single file around to change the target environment.
 /// \ingroup Admin
 
-#include "JetByteTools\Admin\DetectPlatformSDKVersion.h"
+#include "JetByteTools/Admin/DetectPlatformSDKVersion.h"
 
 #define JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION 1
 #define JETBYTE_PURE_CALL_CRASH_DUMP_CREATION 1
+#define JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE 1
+
+#define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS 1
 
 #endif // JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
 

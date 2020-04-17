@@ -18,23 +18,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CallbackTimerWheelTest.h"
 
-#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
-#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
-#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCountProvider.h"
+#include "JetByteTools/Win32Tools/Mock/LoggingCallbackTimer.h"
+#include "JetByteTools/Win32Tools/Mock/MockTimerQueueMonitor.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools/Win32Tools/Utils.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
 
-#include "JetByteTools\TestTools\TestException.h"
-#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools/TestTools/TestException.h"
+#include "JetByteTools/TestTools/RunTest.h"
 
 #pragma hdrstop
 
-#include "JetByteTools\Win32Tools\CallbackTimerWheel.h"
+#include "JetByteTools/Win32Tools/CallbackTimerWheel.h"
 
 #ifndef JETBYTE_TEST_SHOW_INDIVIDUAL_TIMES
 #define JETBYTE_TEST_SHOW_INDIVIDUAL_TIMES 0
@@ -53,7 +53,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Test::CTestException;
-using JetByteTools::Test::CTestSkippedException;
 using JetByteTools::Test::CTestMonitor;
 
 using JetByteTools::Win32::Mock::CMockTickCountProvider;
@@ -375,7 +374,7 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCur
 
       const Milliseconds timeout2 = 500;
 
-      IQueueTimers::Handle handle2 = timerWheel.CreateTimer();
+      const IQueueTimers::Handle handle2 = timerWheel.CreateTimer();
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle2);
 
@@ -418,7 +417,7 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCur
 
       const Milliseconds timeout1 = 1000;
 
-      Milliseconds now = 2 * maximumTimeout;
+      const Milliseconds now = 2 * maximumTimeout;
 
       tickProvider.SetTickCount(now);
 
@@ -427,7 +426,7 @@ void CCallbackTimerWheelTest::TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCur
 
       IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerWheel, timer, timeout1, 1, now);
 
-      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
 
@@ -474,7 +473,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowNotEqualToCurrent()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      Milliseconds now = 200;
+      const Milliseconds now = 200;
 
       tickProvider.SetTickCount(now);        // time moves on
 
@@ -538,7 +537,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLa
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      Milliseconds now = 2 * maximumTimeout;
+      const Milliseconds now = 2 * maximumTimeout;
 
       tickProvider.SetTickCount(now);        // time moves on
 
@@ -590,7 +589,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLa
 
       const Milliseconds timeout1 = 1000;
 
-      Milliseconds now = 2 * maximumTimeout;
+      const Milliseconds now = 2 * maximumTimeout;
 
       tickProvider.SetTickCount(now);
 
@@ -601,7 +600,7 @@ void CCallbackTimerWheelTest::TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLa
 
       CheckTickProviderSetTimerResults(tickProvider);
 
-      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
 
       THROW_ON_FAILURE_EX(expectedTimeout == timerWheel.GetNextTimeout());
 
@@ -645,7 +644,7 @@ void CCallbackTimerWheelTest::TestGetNextTimeoutWhenWheelWraps()
 
          tickProvider.SetTickCount(3015);
 
-         CCallbackTimerQueueTestBase::HandleTimeouts(timerWheel);
+         HandleTimeouts(timerWheel);
 
          tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -671,7 +670,7 @@ void CCallbackTimerWheelTest::TestGetNextTimeoutWhenWheelWraps()
 
          tickProvider.SetTickCount(1005);
 
-         CCallbackTimerQueueTestBase::HandleTimeouts(timerWheel);
+         HandleTimeouts(timerWheel);
 
          tickProvider.CheckResult(_T("|GetTickCount|"));
 

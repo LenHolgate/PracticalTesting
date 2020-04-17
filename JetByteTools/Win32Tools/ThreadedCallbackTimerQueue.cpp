@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ThreadedCallbackTimerQueue.h"
 #include "CallbackTimerQueueEx.h"
@@ -33,8 +33,6 @@
 #endif
 
 #pragma hdrstop
-
-#pragma warning(disable: 4355)  // 'this' used as base member initialiser
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -80,7 +78,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor,tickProvider)),
+      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -150,10 +148,29 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
    return m_thread.Wait(timeout);
 }
 
+bool CThreadedCallbackTimerQueue::TimerIsSet(
+   const Handle &handle) const
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::IsSetTimerContention);
+
+      lock.Lock();
+   }
+   #else
+   CLockableObject::Owner lock(m_lock);
+   #endif
+
+   return m_spTimerQueue->TimerIsSet(handle);
+}
+
 CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -162,7 +179,7 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    return m_spTimerQueue->CreateTimer();
@@ -178,10 +195,11 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -190,12 +208,50 @@ bool CThreadedCallbackTimerQueue::SetTimer(
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
-   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData);
+   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData, setTimerIf);
 
    SignalStateChange();
+
+   return wasPending;
+}
+
+bool CThreadedCallbackTimerQueue::UpdateTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::SetTimerContention);
+
+      lock.Lock();
+   }
+   #else
+   CLockableObject::Owner lock(m_lock);
+   #endif
+
+   bool wasUpdated = false;
+
+   const bool wasPending = m_spTimerQueue->UpdateTimer(handle, timer, timeout, userData, updateIf, &wasUpdated);
+
+   if (pWasUpdated)
+   {
+      *pWasUpdated = wasUpdated;
+   }
+
+   if (wasUpdated && updateIf != UpdateAlwaysNoTimeoutChange)
+   {
+      SignalStateChange();
+   }
 
    return wasPending;
 }
@@ -204,7 +260,7 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
    const Handle &handle)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -213,7 +269,7 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    const bool wasPending = m_spTimerQueue->CancelTimer(handle);
@@ -227,7 +283,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
    Handle &handle)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -236,7 +292,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    return m_spTimerQueue->DestroyTimer(handle);
@@ -246,7 +302,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
    const Handle &handle)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -256,7 +312,7 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
    }
 
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    return m_spTimerQueue->DestroyTimer(handle);
@@ -268,7 +324,7 @@ void CThreadedCallbackTimerQueue::SetTimer(
    const UserData userData)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -277,7 +333,7 @@ void CThreadedCallbackTimerQueue::SetTimer(
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    m_spTimerQueue->SetTimer(timer, timeout, userData);
@@ -313,7 +369,7 @@ unsigned int CThreadedCallbackTimerQueue::Run()
                         m_spTimerQueue->HandleTimeout();
 
                      #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-                     CReentrantLockableObject::PotentialOwner lock(m_lock);
+                     CLockableObject::PotentialOwner lock(m_lock);
 
                      if (!lock.TryLock())
                      {
@@ -322,7 +378,7 @@ unsigned int CThreadedCallbackTimerQueue::Run()
                         lock.Lock();
                      }
                      #else
-                     CReentrantLockableObject::Owner lock(m_lock);
+                     CLockableObject::Owner lock(m_lock);
                      #endif
 
                      m_spTimerQueue->EndTimeoutHandling();
@@ -342,15 +398,15 @@ unsigned int CThreadedCallbackTimerQueue::Run()
             OnThreadShutdown();
          }
       }
-      catch(const CException &e)
+      catch (const CException &e)
       {
          OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
       }
-      catch(const CSEHException &e)
+      catch (const CSEHException &e)
       {
          OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - SEH Exception: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
       }
-      catch(const std::exception &e)
+      catch (const std::exception &e)
       {
          OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
       }
@@ -367,7 +423,7 @@ unsigned int CThreadedCallbackTimerQueue::Run()
 bool CThreadedCallbackTimerQueue::BeginTimeoutHandling()
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -376,7 +432,7 @@ bool CThreadedCallbackTimerQueue::BeginTimeoutHandling()
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
@@ -389,7 +445,7 @@ bool CThreadedCallbackTimerQueue::BeginTimeoutHandling()
 Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CReentrantLockableObject::PotentialOwner lock(m_lock);
+   CLockableObject::PotentialOwner lock(m_lock);
 
    if (!lock.TryLock())
    {
@@ -398,7 +454,7 @@ Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()
       lock.Lock();
    }
    #else
-   CReentrantLockableObject::Owner lock(m_lock);
+   CLockableObject::Owner lock(m_lock);
    #endif
 
    return m_spTimerQueue->GetNextTimeout();

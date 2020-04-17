@@ -18,22 +18,22 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CallbackTimerQueueExTest.h"
 
-#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
-#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
-#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCount64Provider.h"
+#include "JetByteTools/Win32Tools/Mock/LoggingCallbackTimer.h"
+#include "JetByteTools/Win32Tools/Mock/MockTimerQueueMonitor.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
+#include "JetByteTools/Win32Tools/Utils.h"
 
-#include "JetByteTools\TestTools\TestException.h"
-#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools/TestTools/TestException.h"
+#include "JetByteTools/TestTools/RunTest.h"
 
 #pragma hdrstop
 
-#include "JetByteTools\Win32Tools\CallbackTimerQueueEx.h"
+#include "JetByteTools/Win32Tools/CallbackTimerQueueEx.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -165,7 +165,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       // Check that the time goes off.
 
-      CCallbackTimerQueueTestBase::HandleTimeouts(timerQueue);
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount: 0|"));
 
@@ -193,7 +193,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       // Check that the timer goes off.
 
-      CCallbackTimerQueueTestBase::HandleTimeouts(timerQueue);
+      HandleTimeouts(timerQueue);
 
       tickProvider.CheckResult(_T("|GetTickCount: 1000|"));
 

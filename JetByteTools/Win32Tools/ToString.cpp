@@ -18,13 +18,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
-#include "Utils.h"            // For ToBool()
 #include "ToString.h"
 #include "Exception.h"
 
 #pragma hdrstop
+
+#include <limits>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -46,23 +47,23 @@ namespace Win32 {
 
 static string InternalDumpDataA(
    const string &linePrefix,
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength,
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength,
+   bool makePrintable,
+   bool useCR,
+   bool linePrefixOnFirstLine,
+   bool lineFeedOnLastLine);
 
 static wstring InternalDumpDataW(
    const wstring &linePrefix,
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength,
-   const bool makePrintable,
-   const bool useCR,
-   const bool linePrefixOnFirstLine,
-   const bool lineFeedOnLastLine);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength,
+   bool makePrintable,
+   bool useCR,
+   bool linePrefixOnFirstLine,
+   bool lineFeedOnLastLine);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -177,10 +178,35 @@ wstring ToStringW(
    return val ? L"1" : L"0";
 }
 
+#if (_MSC_VER > 1900)
+template <typename T>
+constexpr size_t SpaceRequiredForType(
+   const T & /*notUsed*/)
+{
+   constexpr const size_t spaceRequiredForSign = std::numeric_limits<T>::is_signed ? 1 : 0;
+
+   // digits10 gives us the maximum number of base 10 digits that can be
+   // represented, but allow 1 extra as we may not be able to represent all
+   // values 0-9 but could represent 0-4...
+
+   constexpr const size_t spaceRequiredForMaxDigits = std::numeric_limits<T>::digits10 + 1;
+
+   constexpr const size_t spaceRequiredForNullTerm = 1;
+
+   return spaceRequiredForSign + spaceRequiredForMaxDigits + spaceRequiredForNullTerm;
+}
+#else
+// VS2013 doesn't support constexpr and VS2015 doesn't support the usecase for the function
+// above, so we can't use the above code to determine the actual size required for the buffer,
+// so we use something that is bigger than we could ever need...
+// (famous last words alert...)
+#define SpaceRequiredForType(a) 25
+#endif
+
 string ToStringA(
    const unsigned int val)
 {
-   const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -195,7 +221,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned int val)
 {
-   const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -210,7 +236,7 @@ wstring ToStringW(
 string ToStringA(
    const signed int val)
 {
-   const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -225,7 +251,7 @@ string ToStringA(
 wstring ToStringW(
    const signed int val)
 {
-   const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -240,7 +266,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned short val)
 {
-   const size_t bufferSize = 5 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -255,7 +281,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned short val)
 {
-   const size_t bufferSize = 5 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -270,7 +296,7 @@ wstring ToStringW(
 string ToStringA(
    const signed short val)
 {
-   const size_t bufferSize = 5 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -285,7 +311,7 @@ string ToStringA(
 wstring ToStringW(
    const signed short val)
 {
-   const size_t bufferSize = 5 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -300,7 +326,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned long val)
 {
-   const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -315,7 +341,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned long val)
 {
-   const size_t bufferSize = 10 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -330,7 +356,7 @@ wstring ToStringW(
 string ToStringA(
    const signed long val)
 {
-   const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -345,7 +371,7 @@ string ToStringA(
 wstring ToStringW(
    const signed long val)
 {
-   const size_t bufferSize = 10 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -360,11 +386,11 @@ wstring ToStringW(
 string ToStringA(
    const unsigned __int64 val)
 {
-   const size_t bufferSize = 20 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, "%I64u", val))
+   if (-1 == sprintf_s(buffer, bufferSize, "%llu", val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -375,11 +401,11 @@ string ToStringA(
 wstring ToStringW(
    const unsigned __int64 val)
 {
-   const size_t bufferSize = 20 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, L"%I64u", val))
+   if (-1 == swprintf_s(buffer, bufferSize, L"%llu", val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -390,11 +416,11 @@ wstring ToStringW(
 string ToStringA(
    const signed __int64 val)
 {
-   const size_t bufferSize = 19 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
-   if (-1 == sprintf_s(buffer, bufferSize, "%I64i", val))
+   if (-1 == sprintf_s(buffer, bufferSize, "%lli", val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -405,11 +431,11 @@ string ToStringA(
 wstring ToStringW(
    const signed __int64 val)
 {
-   const size_t bufferSize = 19 + 1 + 1;
+   const size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
-   if (-1 == swprintf_s(buffer, bufferSize, L"%I64i", val))
+   if (-1 == swprintf_s(buffer, bufferSize, L"%lli", val))
    {
       throw CException(_T("ToString"), _T("sprintf_s failed"));
    }
@@ -529,7 +555,7 @@ wstring ToStringW(
 string ToStringA(
    const void *val)
 {
-   const size_t bufferSize = 16 + 1;
+   const size_t bufferSize = 2 + 16 + 1;
 
    char buffer[bufferSize];
 
@@ -544,7 +570,7 @@ string ToStringA(
 wstring ToStringW(
    const void *val)
 {
-   const size_t bufferSize = 16 + 1;
+   const size_t bufferSize = 2 + 16 + 1;
 
    wchar_t buffer[bufferSize];
 
@@ -600,7 +626,7 @@ string PointerToStringA(
 
    char buffer[bufferSize];
 
-   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
+   const auto value = reinterpret_cast<unsigned __int64>(val);
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
@@ -623,7 +649,7 @@ wstring PointerToStringW(
 
    wchar_t buffer[bufferSize];
 
-   unsigned __int64 value = reinterpret_cast<unsigned __int64>(val);
+   const auto value = reinterpret_cast<unsigned __int64>(val);
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
@@ -951,7 +977,7 @@ string ToHexStringA(
 
    char buffer[bufferSize];
 
-   const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
+   const auto value = reinterpret_cast<ULONG_PTR>(val);
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
 
@@ -998,7 +1024,7 @@ wstring ToHexStringW(
 
    wchar_t buffer[bufferSize];
 
-   const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
+   const auto value = reinterpret_cast<ULONG_PTR>(val);
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
 
@@ -1020,7 +1046,7 @@ string ToHexStringA(
    const size_t length,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   const BYTE *pBytes = reinterpret_cast<const BYTE *>(pData);
+   const auto *pBytes = reinterpret_cast<const BYTE *>(pData);
 
    string result;
 
@@ -1035,9 +1061,15 @@ string ToHexStringA(
 
    for (size_t i = 0; i < length; i++)
    {
-      BYTE c ;
+      if (((hexDigitRepresentation & HexDigitsSpacesBetween) == HexDigitsSpacesBetween) &&
+          i > 0)
+      {
+         result += " ";
+      }
 
-      BYTE b = static_cast<BYTE>(pBytes[i] >> 4);
+      BYTE c;
+
+      auto b = static_cast<BYTE>(pBytes[i] >> 4);
 
       if (9 >= b)
       {
@@ -1072,7 +1104,7 @@ wstring ToHexStringW(
    const size_t length,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   const BYTE *pBytes = reinterpret_cast<const BYTE *>(pData);
+   const auto *pBytes = reinterpret_cast<const BYTE *>(pData);
 
    wstring result;
 
@@ -1087,9 +1119,15 @@ wstring ToHexStringW(
 
    for (size_t i = 0; i < length; i++)
    {
-      BYTE c ;
+      if (((hexDigitRepresentation & HexDigitsSpacesBetween) == HexDigitsSpacesBetween) &&
+          i > 0)
+      {
+         result += L" ";
+      }
 
-      BYTE b = static_cast<BYTE>(pBytes[i] >> 4);
+      BYTE c;
+
+      auto b = static_cast<BYTE>(pBytes[i] >> 4);
 
       if (9 >= b)
       {
@@ -1165,8 +1203,8 @@ wstring ToHexW(
    return buffer;
 }
 
-static const string s_emptyStringLinePrefixA = "";
-static const wstring s_emptyStringLinePrefixW = L"";
+static const string s_emptyStringLinePrefixA;
+static const wstring s_emptyStringLinePrefixW;
 
 string MakePrintableA(
    const BYTE * const pData,
@@ -1286,9 +1324,12 @@ static string InternalDumpDataA(
             }
          }
 
-         const string prefix = (firstLine ? (linePrefixOnFirstLine ? linePrefix : "" ) : linePrefix);
+         const string prefix = firstLine ? (linePrefixOnFirstLine ? linePrefix : "" ) : linePrefix;
 
-         result += prefix + (!makePrintable ? hexDisplay + " - " : "") + display + (bytesPerLine ? lineSep : "");
+         result += prefix;
+         result += (!makePrintable ? hexDisplay + " - " : "");
+         result += display;
+         result += (bytesPerLine ? lineSep : "");
 
          firstLine = false;
 
@@ -1359,9 +1400,12 @@ static wstring InternalDumpDataW(
             }
          }
 
-         const wstring prefix = (firstLine ? (linePrefixOnFirstLine ? linePrefix : L"" ) : linePrefix);
+         const wstring prefix = firstLine ? (linePrefixOnFirstLine ? linePrefix : L"" ) : linePrefix;
 
-         result += prefix + (!makePrintable ? hexDisplay + L" - " : L"") + display + (bytesPerLine ? lineSep : L"");
+         result += prefix;
+         result += (!makePrintable ? hexDisplay + L" - " : L"");
+         result += display;
+         result += (bytesPerLine ? lineSep : L"");
 
          firstLine = false;
 

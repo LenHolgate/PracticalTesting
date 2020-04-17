@@ -21,14 +21,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
-#include "JetByteTools\Win32Tools\Mock\MockTimerQueueMonitor.h"
-#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
+#include "JetByteTools/Win32Tools/Mock/LoggingCallbackTimer.h"
+#include "JetByteTools/Win32Tools/Mock/MockTimerQueueMonitor.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCount64Provider.h"
 
-#include "JetByteTools\Win32Tools\DebugTrace.h"
-#include "JetByteTools\Win32Tools\IManageTimerQueue.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
+#include "JetByteTools/Win32Tools/IManageTimerQueue.h"
 
-#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools/TestTools/RunTest.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Defines - make sure they're set even if the user doesn't set them.
@@ -157,7 +157,7 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
 
       static void TestAll(
          JetByteTools::Test::CTestMonitor &monitor,
-         const JetByteTools::Win32::_tstring &className);
+         const _tstring &className);
 
       static IQueueTimers::Handle CreateAndSetTimer(
          TickProvider &tickProvider,
@@ -177,16 +177,16 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
          const Milliseconds expectedTickCount);
 
       static void CheckConstructionResults(
-         JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
+         Mock::CMockTimerQueueMonitor &monitor,
          TickProvider &tickProvider,
          const Milliseconds expectedTickCount = 0);
 
       static void CheckConstructionResults(
-         JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor);
+         Mock::CMockTimerQueueMonitor &monitor);
 
       static void CheckDestructionResults(
-         JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
-         const JetByteTools::Win32::_tstring &additional = _T("|"));
+         Mock::CMockTimerQueueMonitor &monitor,
+         const _tstring &additional = _T("|"));
 
       static void CheckTickProviderSetTimerResults(
          TickProvider &tickProvider,
@@ -211,7 +211,7 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    JetByteTools::Test::CTestMonitor &monitor,
-   const JetByteTools::Win32::_tstring &className)
+   const _tstring &className)
 {
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestConstruct);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCreateTimer);
@@ -277,7 +277,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestConstruct()
       CheckConstructionResults(tickProvider);
    }
 
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    {
       Q timerQueue(monitor);
@@ -300,7 +300,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestConstruct()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCreateTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -309,7 +309,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCreateTimer()
 
       CheckConstructionResults(monitor, tickProvider);
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+      const IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
       tickProvider.CheckNoResults();
 
@@ -322,7 +322,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCreateTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -363,7 +363,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutNoTimersSet()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -383,7 +383,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutNoTimersSet()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSetNoTimePassed()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -403,7 +403,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSetNoTimePa
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSet()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -427,7 +427,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutsNoTimersSet()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -455,7 +455,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -507,7 +507,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -535,7 +535,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerNotSet()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -561,7 +561,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerInvalidHandle()
 {
    if (T::handleValidationEnabled)
    {
-      JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+      Mock::CMockTimerQueueMonitor monitor;
 
       P tickProvider;
 
@@ -594,7 +594,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerInvalidHandle()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -622,7 +622,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -686,7 +686,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -765,7 +765,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
    // You do NOT need to call HandleTimeout() on the timeoutHandle that you
    // get from BeginTimeoutHandling()
 
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -809,7 +809,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -859,7 +859,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandlingFail()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -909,7 +909,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -965,7 +965,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1076,7 +1076,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1138,7 +1138,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1209,7 +1209,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1321,7 +1321,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerInOnTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1423,7 +1423,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerInOnTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1485,7 +1485,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1557,7 +1557,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1617,7 +1617,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestGetMaxTimeout()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1639,7 +1639,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetMaxTimeout()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    const Milliseconds initialTickCount = 1000;
 
@@ -1686,7 +1686,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1852,7 +1852,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -1946,7 +1946,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2008,7 +2008,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingOneShotTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2087,7 +2087,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2104,7 +2104,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
 
       CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
 
-      IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
+      const IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle2);
 
@@ -2128,7 +2128,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
       SKIP_TEST_EX(_T("Monitoring is not enabled"));
    }
 
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2238,7 +2238,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandleTimeouts()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2313,7 +2313,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBeginTimeoutHandling()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2394,7 +2394,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandleTimeouts()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
 
@@ -2445,7 +2445,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandle
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestCreateTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2487,7 +2487,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestCreateTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2531,7 +2531,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2593,7 +2593,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2658,7 +2658,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2740,7 +2740,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
 {
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor monitor;
+   Mock::CMockTimerQueueMonitor monitor;
 
    monitor.logMessages = false;
 
@@ -2833,7 +2833,7 @@ IQueueTimers::Handle TCallbackTimerQueueTestBase<Q, T, P>::CreateAndSetTimer(
    const IQueueTimers::UserData userData,
    const Milliseconds expectedTickCount)
 {
-   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+   const IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
    THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
@@ -2877,7 +2877,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderResults(
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
+   Mock::CMockTimerQueueMonitor &monitor,
    P &tickProvider,
    const Milliseconds expectedTickCount)
 {
@@ -2888,7 +2888,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor)
+   Mock::CMockTimerQueueMonitor &monitor)
 {
    if (T::monitoringEnabled && T::creationCreatesTimer)
    {
@@ -2902,8 +2902,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckConstructionResults(
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::CheckDestructionResults(
-   JetByteTools::Win32::Mock::CMockTimerQueueMonitor &monitor,
-   const JetByteTools::Win32::_tstring &additional)
+   Mock::CMockTimerQueueMonitor &monitor,
+   const _tstring &additional)
 {
    if (T::monitoringEnabled)
    {

@@ -1,11 +1,11 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
-#define JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
+#ifndef JETBYTE_TOOLS_WIN32_STRING_VECTOR__
+#define JETBYTE_TOOLS_WIN32_STRING_VECTOR__
 ///////////////////////////////////////////////////////////////////////////////
-// File: Config.h
+// File: StringVector.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2009 JetByte Limited.
+// Copyright 2007 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -21,31 +21,34 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/// \file ExampleConfigHeaders\Config.h
-/// This file is included by Admin.h and is used to set the various compilation
-/// options that are related to your compile environment.
-/// We use a separate header file for this so that it's easy to have multiple
-/// copies for different target environments so that the continuous integration
-/// build can copy a single file around to change the target environment.
-/// \ingroup Admin
-
-#include "JetByteTools\Admin\DetectPlatformSDKVersion.h"
-
-#define JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION 1
-#define JETBYTE_PURE_CALL_CRASH_DUMP_CREATION 1
-#define JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE 1
-
-#define JETBYTE_SHOW_TODO 1
-
-#define JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION 1
-#define JETBYTE_PURE_CALL_CRASH_DUMP_CREATION 1
-
-#define JETBYTE_DEPRECATE_MULTI_BUFFER_HANDLE 0
-
-#define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS 1
-
-#endif // JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
+#include "tstring.h"
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: Config.h
+// Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Win32 {
+
+///////////////////////////////////////////////////////////////////////////////
+// Typedefs
+///////////////////////////////////////////////////////////////////////////////
+
+typedef std::vector<_tstring> StringVector;
+typedef std::vector<std::string> StringVectorA;
+typedef std::vector<std::wstring> StringVectorW;
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Win32
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Win32
+} // End of namespace JetByteTools
+
+#endif // JETBYTE_TOOLS_WIN32_STRING_VECTOR__
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: StringVector.h
+///////////////////////////////////////////////////////////////////////////////
+

@@ -69,10 +69,16 @@ class CSimpleMessageLog : public ILogMessages
 
       explicit CSimpleMessageLog(
          const _tstring &fileName,
-         const DWORD targets = LogToAll,
-         const DWORD logEntryFormat = IncludeThreadId);
+         DWORD targets = LogToAll,
+         DWORD logEntryFormat = IncludeThreadId);
 
-      JetByteTools::Win32::_tstring GetLogMessages() const;
+      CSimpleMessageLog(
+         const CSimpleMessageLog &rhs) = delete;
+
+      CSimpleMessageLog &operator=(
+         const CSimpleMessageLog &rhs) = delete;
+
+      _tstring GetLogMessages() const;
 
       // Implement ILogMessages
 
@@ -83,10 +89,10 @@ class CSimpleMessageLog : public ILogMessages
          const std::wstring &identifier) override;
 
       void SetLogName(
-         const std::string &name) override;
+         const std::string &fileName) override;
 
       void SetLogName(
-         const std::wstring &name) override;
+         const std::wstring &fileName) override;
 
       void LogMessage(
          const std::string &message) override;
@@ -95,18 +101,18 @@ class CSimpleMessageLog : public ILogMessages
          const std::wstring &message) override;
 
       void LogMessage(
-         const char * const pString) override;
+         const char *pString) override;
 
       void LogMessage(
-         const wchar_t * const pString) override;
+         const wchar_t *pString) override;
 
       void LogMessage(
-         const char * const pString,
-         const DataLength stringLength) override;
+         const char *pString,
+         DataLength stringLength) override;
 
       void LogMessage(
-         const wchar_t * const pString,
-         const DataLength stringLength) override;
+         const wchar_t *pString,
+         DataLength stringLength) override;
 
    private :
 
@@ -139,11 +145,6 @@ class CSimpleMessageLog : public ILogMessages
       typedef std::deque<std::string> Messages;
 
       Messages m_messages;
-
-      /// No copies do not implement
-      CSimpleMessageLog(const CSimpleMessageLog &rhs);
-      /// No copies do not implement
-      CSimpleMessageLog &operator=(const CSimpleMessageLog &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -66,7 +66,7 @@ class ILockableObject
 
       /// Instances of this interface can be deleted by their users.
 
-      virtual ~ILockableObject() {}
+      virtual ~ILockableObject() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

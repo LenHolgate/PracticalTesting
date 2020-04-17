@@ -50,14 +50,17 @@ class TLockableObjectOwner
 {
    public:
 
-      inline explicit TLockableObjectOwner(
+      explicit TLockableObjectOwner(
          T &lock)
          : m_lock(lock)
       {
          m_lock.Lock();
       }
 
-      inline ~TLockableObjectOwner()
+      TLockableObjectOwner(
+         const TLockableObjectOwner &rhs) = delete;
+
+      ~TLockableObjectOwner()
       {
          try
          {
@@ -66,14 +69,12 @@ class TLockableObjectOwner
          JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
+      TLockableObjectOwner &operator=(
+         const TLockableObjectOwner &rhs) = delete;
+
    private :
 
       T &m_lock;
-
-      /// No copies do not implement
-      TLockableObjectOwner(const TLockableObjectOwner &rhs);
-      /// No copies do not implement
-      TLockableObjectOwner &operator=(const TLockableObjectOwner &rhs);
 };
 
 /// A class that may take ownership of a lockable object.
@@ -89,9 +90,9 @@ class TLockableObjectConditionalOwner
 {
    public:
 
-      inline explicit TLockableObjectConditionalOwner(
+      explicit TLockableObjectConditionalOwner(
          T &lock,
-         bool locked = true)
+         const bool locked = true)
          :  m_lock(lock),
             m_locked(locked)
       {
@@ -101,7 +102,10 @@ class TLockableObjectConditionalOwner
          }
       }
 
-      inline ~TLockableObjectConditionalOwner()
+      TLockableObjectConditionalOwner(
+         const TLockableObjectConditionalOwner &rhs) = delete;
+
+      ~TLockableObjectConditionalOwner()
       {
          try
          {
@@ -113,7 +117,10 @@ class TLockableObjectConditionalOwner
          JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
-      inline void Unlock()
+      TLockableObjectConditionalOwner &operator=(
+         const TLockableObjectConditionalOwner &rhs) = delete;
+
+      void Unlock()
       {
          if (m_locked)
          {
@@ -128,11 +135,6 @@ class TLockableObjectConditionalOwner
       T &m_lock;
 
       bool m_locked;
-
-      /// No copies do not implement
-      TLockableObjectConditionalOwner(const TLockableObjectConditionalOwner &rhs);
-      /// No copies do not implement
-      TLockableObjectConditionalOwner &operator=(const TLockableObjectConditionalOwner &rhs);
 };
 
 /// A class that could take ownership of an instance of a lockable object.
@@ -149,7 +151,7 @@ class TLockableObjectPotentialOwner
 {
    public:
 
-      inline explicit TLockableObjectPotentialOwner(
+      explicit TLockableObjectPotentialOwner(
          T &lock,
          const bool locked = false)
          :  m_lock(lock),
@@ -161,7 +163,10 @@ class TLockableObjectPotentialOwner
          }
       }
 
-      inline ~TLockableObjectPotentialOwner()
+      TLockableObjectPotentialOwner(
+         const TLockableObjectPotentialOwner &rhs) = delete;
+
+      ~TLockableObjectPotentialOwner()
       {
          try
          {
@@ -173,7 +178,10 @@ class TLockableObjectPotentialOwner
          JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
-      inline void Lock()
+      TLockableObjectPotentialOwner &operator=(
+         const TLockableObjectPotentialOwner &rhs) = delete;
+
+      void Lock()
       {
          if (m_locked)
          {
@@ -187,7 +195,7 @@ class TLockableObjectPotentialOwner
          m_locked = true;
       }
 
-      inline bool TryLock()
+      bool TryLock()
       {
          if (m_locked)
          {
@@ -201,7 +209,7 @@ class TLockableObjectPotentialOwner
          return m_locked;
       }
 
-      inline void Unlock()
+      void Unlock()
       {
          if (m_locked)
          {
@@ -216,11 +224,6 @@ class TLockableObjectPotentialOwner
       T &m_lock;
 
       bool m_locked;
-
-      /// No copies do not implement
-      TLockableObjectPotentialOwner(const TLockableObjectPotentialOwner &rhs);
-      /// No copies do not implement
-      TLockableObjectPotentialOwner &operator=(const TLockableObjectPotentialOwner &rhs);
 };
 
 template <typename T>
@@ -235,7 +238,11 @@ class TReentrantLockableObjectPotentialOwner
       {
       }
 
-      inline ~TReentrantLockableObjectPotentialOwner()
+
+      TReentrantLockableObjectPotentialOwner(
+         const TReentrantLockableObjectPotentialOwner &rhs) = delete;
+
+      ~TReentrantLockableObjectPotentialOwner()
       {
          try
          {
@@ -247,7 +254,10 @@ class TReentrantLockableObjectPotentialOwner
          JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
       }
 
-      inline void Lock()
+      TReentrantLockableObjectPotentialOwner &operator=(
+         const TReentrantLockableObjectPotentialOwner &rhs) = delete;
+
+      void Lock()
       {
          if (m_locked)
          {
@@ -261,7 +271,7 @@ class TReentrantLockableObjectPotentialOwner
          m_locked = true;
       }
 
-      inline bool TryLock()
+      bool TryLock()
       {
          if (m_locked)
          {
@@ -280,7 +290,7 @@ class TReentrantLockableObjectPotentialOwner
          return locked;
       }
 
-      inline void Unlock()
+      void Unlock()
       {
          if (m_locked)
          {
@@ -295,11 +305,6 @@ class TReentrantLockableObjectPotentialOwner
       T &m_lock;
 
       bool m_locked;
-
-      /// No copies do not implement
-      TReentrantLockableObjectPotentialOwner(const TReentrantLockableObjectPotentialOwner &rhs);
-      /// No copies do not implement
-      TReentrantLockableObjectPotentialOwner &operator=(const TReentrantLockableObjectPotentialOwner &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

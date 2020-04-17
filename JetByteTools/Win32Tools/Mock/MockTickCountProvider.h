@@ -21,9 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IProvideTickCount.h"
+#include "JetByteTools/Win32Tools/IProvideTickCount.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -55,7 +55,13 @@ class CMockTickCountProvider :
       /// calls to GetTickCount() will return this value.
 
       explicit CMockTickCountProvider(
-         const Milliseconds tickCount);
+         Milliseconds tickCount);
+
+      CMockTickCountProvider(
+         const CMockTickCountProvider &rhs) = delete;
+
+      CMockTickCountProvider &operator=(
+         const CMockTickCountProvider &rhs) = delete;
 
       bool logMessages;
 
@@ -65,7 +71,7 @@ class CMockTickCountProvider :
       /// GetTickCount().
 
       void SetTickCount(
-         const Milliseconds tickCount);
+         Milliseconds tickCount);
 
       // Implement IProvideTickCount
 
@@ -74,10 +80,6 @@ class CMockTickCountProvider :
    private :
 
       volatile Milliseconds m_tickCount;
-
-      // No copies do not implement
-      CMockTickCountProvider(const CMockTickCountProvider &rhs);
-      CMockTickCountProvider &operator=(const CMockTickCountProvider &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

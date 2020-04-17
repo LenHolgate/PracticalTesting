@@ -104,15 +104,12 @@
     <ClCompile Include="CrtReportHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CompareStrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AutoResetEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CallbackTimerQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CallbackTimerQueueBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CallbackTimerQueueEx.h">
@@ -288,6 +285,18 @@
     </ClInclude>
     <ClInclude Include="CrtReportHook.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CompareStrings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>Precompiled Header</Filter>
+    </ClInclude>
+    <ClInclude Include="IListenToThreadNaming.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="StringVector.h">
+      <Filter>Interfaces</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

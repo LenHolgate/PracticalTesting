@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Types.h"
+#include "JetByteTools/Admin/Types.h"
 
 #include "IQueueTimers.h"
 
@@ -78,7 +78,7 @@ class IManageTimerQueue : public IQueueTimers
 
       virtual void EndTimeoutHandling() = 0;
 
-      virtual ~IManageTimerQueue() {}
+      virtual ~IManageTimerQueue() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

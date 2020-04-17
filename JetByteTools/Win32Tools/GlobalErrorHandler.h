@@ -21,13 +21,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CrtReportHook.h"
 #include "SEHException.h"
 #include "PerThreadErrorHandler.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <exception>
 
@@ -48,7 +48,13 @@ class CGlobalErrorHandler : private CPerThreadErrorHandler
 
       CGlobalErrorHandler();
 
+      CGlobalErrorHandler(
+         const CGlobalErrorHandler &rhs) = delete;
+
       ~CGlobalErrorHandler();
+
+      CGlobalErrorHandler &operator=(
+         const CGlobalErrorHandler &rhs) = delete;
 
    private :
 
@@ -75,11 +81,6 @@ class CGlobalErrorHandler : private CPerThreadErrorHandler
 
       SignalHandlerFnc *m_pOldSigAbrtHandler;
       #endif
-
-      /// No copies do not implement
-      CGlobalErrorHandler(const CGlobalErrorHandler &rhs);
-      /// No copies do not implement
-      CGlobalErrorHandler &operator=(const CGlobalErrorHandler &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Types.h"
+#include "JetByteTools/Admin/Types.h"
 
 #include <wtypes.h>
 
@@ -66,52 +66,52 @@ class IWaitable
 
       //lint -esym(534, JetByteTools::Win32::*::Wait) (Ignoring return value of function)
       virtual bool Wait(
-         const Milliseconds timeout) const = 0;
+         Milliseconds timeout) const = 0;
 
       /// Wait indefinitely for the supplied handle to become signalled.
 
-      static void Wait(
+      static void WaitForHandle(
          HANDLE handle);
 
       /// Wait, with a time limit, for the supplied handle to become signalled.
 
-      static bool Wait(
+      static bool WaitForHandle(
          HANDLE handle,
-         const Milliseconds timeout);
+         Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         const HANDLE handle,
-         const Milliseconds timeout);
+         HANDLE handle,
+         Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         const HANDLE handle,
-         const Milliseconds timeout,
-         const DWORD removeFlags);
+         HANDLE handle,
+         Milliseconds timeout,
+         DWORD removeFlags);
 
       static bool WaitWithMessageLoop(
-         const DWORD numHandles,
+         DWORD numHandles,
          const HANDLE *pHandles,
-         const Milliseconds timeout);
+         Milliseconds timeout);
 
       static bool WaitWithMessageLoop(
-         const DWORD numHandles,
-         const HANDLE *pHandles,
-         DWORD &signalledHandle,
-         const Milliseconds timeout);
-
-      static bool WaitWithMessageLoop(
-         const DWORD numHandles,
+         DWORD numHandles,
          const HANDLE *pHandles,
          DWORD &signalledHandle,
-         const Milliseconds timeout,
-         const DWORD removeFlags);
+         Milliseconds timeout);
+
+      static bool WaitWithMessageLoop(
+         DWORD numHandles,
+         const HANDLE *pHandles,
+         DWORD &signalledHandle,
+         Milliseconds timeout,
+         DWORD removeFlags);
 
    protected :
 
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IWaitable() {}
+      virtual ~IWaitable() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

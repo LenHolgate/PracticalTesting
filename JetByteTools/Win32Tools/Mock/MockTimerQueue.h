@@ -21,15 +21,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IManageTimerQueue.h"
-#include "JetByteTools\Win32Tools\AutoResetEvent.h"
-#include "JetByteTools\Win32Tools\IRunnable.h"
-#include "JetByteTools\Win32Tools\Thread.h"
-#include "JetByteTools\Win32Tools\ReentrantLockableObject.h"
+#include "JetByteTools/Win32Tools/IManageTimerQueue.h"
+#include "JetByteTools/Win32Tools/AutoResetEvent.h"
+#include "JetByteTools/Win32Tools/IRunnable.h"
+#include "JetByteTools/Win32Tools/Thread.h"
+#include "JetByteTools/Win32Tools/ReentrantLockableObject.h"
 
 #include <list>
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -52,16 +53,22 @@ class CMockTimerQueue :
 {
    public :
 
-      class TimerExpiryThread : private JetByteTools::Win32::IRunnable
+      class TimerExpiryThread : private IRunnable
       {
          public :
 
             explicit TimerExpiryThread(
                CMockTimerQueue &timerQueue);
 
-            void WaitForCompletion() const;
+            TimerExpiryThread(
+               const TimerExpiryThread &rhs) = delete;
 
-            ~TimerExpiryThread();
+            ~TimerExpiryThread() = default;
+
+            TimerExpiryThread &operator=(
+               const TimerExpiryThread &rhs) = delete;
+
+            void WaitForCompletion() const;
 
          private :
 
@@ -69,37 +76,52 @@ class CMockTimerQueue :
 
             unsigned int Run() override;
 
-            JetByteTools::Win32::CThread m_thread;
+            CThread m_thread;
 
             CMockTimerQueue &m_timerQueue;
-
-            /// No copies do not implement
-            TimerExpiryThread(const TimerExpiryThread &rhs);
-            /// No copies do not implement
-            TimerExpiryThread &operator=(const TimerExpiryThread &rhs);
       };
 
       CMockTimerQueue();
 
       explicit CMockTimerQueue(
-         JetByteTools::Test::CTestLog *pLinkedLog);
+         CTestLog *pLinkedLog);
+
+      CMockTimerQueue(
+         const CMockTimerQueue &rhs) = delete;
+
+      CMockTimerQueue &operator=(
+         const CMockTimerQueue &rhs) = delete;
 
       bool waitForOnTimerWaitComplete;
 
       bool includeHandleValuesInLogs;
+
+      bool logSetTimerEvenIfNotSet;
+
+      void NameTimer(
+         const Handle &handle,
+         const _tstring &name);
+
+      _tstring GetHandleAsString(
+         Handle handle) const;
+
+      void PopTimer();
 
       void OnTimer();
 
       bool IsTimerSet() const;
 
       void SetNextTimeout(
-         const Milliseconds nextTimeout);
+         Milliseconds nextTimeout);
 
       bool WaitForNextTimeout(
-         const Milliseconds timeout) const;
+         Milliseconds timeout) const;
 
       bool WaitForOnTimer(
-         const Milliseconds timeout);
+         Milliseconds timeout);
+
+      bool WaitForSetTimer(
+         Milliseconds timeout);
 
       // Implement IManageTimerQueue
 
@@ -115,11 +137,23 @@ class CMockTimerQueue :
 
       Handle CreateTimer() override;
 
+      bool TimerIsSet(
+         const Handle &handle) const override;
+
       bool SetTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData) override;
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
          const Handle &handle) override;
@@ -132,20 +166,22 @@ class CMockTimerQueue :
 
       void SetTimer(
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData) override;
+         Milliseconds timeout,
+         UserData userData) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
    private :
 
-      mutable JetByteTools::Win32::CReentrantLockableObject m_lock;
+      mutable CReentrantLockableObject m_lock;
 
       CAutoResetEvent m_nextTimeoutEvent;
 
       CAutoResetEvent m_onTimerEvent;
 
       CAutoResetEvent m_onTimerWaitCompleteEvent;
+
+      CAutoResetEvent m_onSetTimerEvent;
 
       long m_nextTimer;
 
@@ -154,9 +190,11 @@ class CMockTimerQueue :
          TimerDetails(
             const Handle &handle_,
             Timer &timer_,
-            UserData userData_)
+            const Milliseconds timeout_,
+            const UserData userData_)
             :  handle(handle_),
                timer(timer_),
+               timeout(timeout_),
                userData(userData_)
          {
          }
@@ -164,6 +202,8 @@ class CMockTimerQueue :
          const Handle handle;
 
          Timer &timer;
+
+         Milliseconds timeout;
 
          UserData userData;
       };
@@ -176,10 +216,9 @@ class CMockTimerQueue :
 
       Milliseconds m_nextTimeout;
 
-      /// No copies do not implement
-      CMockTimerQueue(const CMockTimerQueue &rhs);
-      /// No copies do not implement
-      CMockTimerQueue &operator=(const CMockTimerQueue &rhs);
+      typedef std::map<Handle, _tstring> TimerNames;
+
+      TimerNames m_timerNames;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

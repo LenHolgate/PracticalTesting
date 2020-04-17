@@ -27,6 +27,11 @@
 #include "ILockableObject.h"
 #include "Exception.h"
 
+#if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP == 1)
+#include "DebugTrace.h"
+#include "MiniDumpGenerator.h"
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,33 +62,40 @@ class TLockableObject : public Base
          #endif
       {
          #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-         ::InitializeSRWLock(&m_lock);
+         InitializeSRWLock(&m_lock);
          #else
          ::InitializeCriticalSection(&m_lock);
          #endif
       }
 
+      TLockableObject(
+         const TLockableObject &rhs) = delete;
+
       //lint -esym(1509, TLockableObject) Base class destructor not virtual
+      #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1)
       ~TLockableObject()
       {
-         #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-         #else
          ::DeleteCriticalSection(&m_lock);
-         #endif
       }
+      #else
+      ~TLockableObject() = default;
+      #endif
+
+      TLockableObject &operator=(
+         const TLockableObject &rhs) = delete;
 
       bool TryLock()
       {
          #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
          #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-            const bool locked = (0 != ::TryAcquireSRWLockExclusive(&m_lock));
+            const bool locked = (0 != TryAcquireSRWLockExclusive(&m_lock));
          #else
             const bool locked = (0 != ::TryEnterCriticalSection(&m_lock));
          #endif
 
          if (locked)
          {
-            m_owningThreadId = ::GetCurrentThreadId();
+            m_owningThreadId = GetCurrentThreadId();
          }
          else
          {
@@ -107,11 +119,11 @@ class TLockableObject : public Base
          #endif
 
          #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
-         m_owningThreadId = ::GetCurrentThreadId();
+         m_owningThreadId = GetCurrentThreadId();
          #endif
 
          #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-         ::AcquireSRWLockExclusive(&m_lock);
+         AcquireSRWLockExclusive(&m_lock);
          #else
          ::EnterCriticalSection(&m_lock);
          #endif
@@ -124,7 +136,7 @@ class TLockableObject : public Base
          #endif
 
          #if (JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-         ::ReleaseSRWLockExclusive(&m_lock);
+         ReleaseSRWLockExclusive(&m_lock);
          #else
          ::LeaveCriticalSection(&m_lock);
          #endif
@@ -141,12 +153,17 @@ class TLockableObject : public Base
       #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
       DWORD m_owningThreadId;
 
-      inline void CheckForReentrantUse() const
+      void CheckForReentrantUse() const
       {
-         if (m_owningThreadId == ::GetCurrentThreadId())
+         if (m_owningThreadId == GetCurrentThreadId())
          {
             #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK == 1)
             ::DebugBreak();
+            #endif
+
+            #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP == 1)
+            JetByteTools::Win32::OutputEx(_T("WARNING - LockableObject lock recursion detected"));
+            JetByteTools::Win32::CMiniDumpGenerator::GenerateDumpHere(_T("LockRecursion"), JetByteTools::Win32::CMiniDumpGenerator::PerDumpTypeMaxDumpLimits);
             #endif
 
             #if (JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION == 1)
@@ -157,11 +174,6 @@ class TLockableObject : public Base
          }
       }
       #endif
-
-      /// No copies do not implement
-      TLockableObject(const TLockableObject &rhs);
-      /// No copies do not implement
-      TLockableObject &operator=(const TLockableObject &rhs);
 };
 
 class CLockableObject : public TLockableObject<ILockableObject>

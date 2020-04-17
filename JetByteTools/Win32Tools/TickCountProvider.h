@@ -48,7 +48,7 @@ class CTickCountProvider: public IProvideTickCount
 {
    public :
 
-      CTickCountProvider() {}
+      CTickCountProvider() = default;
 
       Milliseconds GetTickCount() const override
       {

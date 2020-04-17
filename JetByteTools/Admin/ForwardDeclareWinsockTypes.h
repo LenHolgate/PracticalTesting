@@ -27,7 +27,7 @@
 /// part of a crude attempt to avoid the problems. It doesn't work very well...
 /// \ingroup Admin
 
-#include <wtypes.h>
+#include "Types.h"
 
 #if (JETBYTE_NO_PLATFORM_SDK == 1)
 

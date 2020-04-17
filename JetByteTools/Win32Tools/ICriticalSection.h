@@ -44,6 +44,12 @@ class ICriticalSection
 {
    public :
 
+      static void EnsureLockedByThisThread(
+         const ICriticalSection &crit);
+
+      static void EnsureIsNotLockedByThisThread(
+         const ICriticalSection &crit);
+
       /// A class that takes ownership of an instance of ICriticalSection. That
       /// is it calls Enter() in the constructor and Leave() in the destructor
       /// and can therefore be used to support \ref RAII "scope based" locking
@@ -58,16 +64,17 @@ class ICriticalSection
             explicit Owner(
                ICriticalSection &crit);
 
+            Owner(
+               const Owner &rhs) = delete;
+
             ~Owner();
+
+            Owner &operator=(
+               const Owner &rhs) = delete;
 
          private :
 
             ICriticalSection &m_crit;
-
-            /// No copies do not implement
-            Owner(const Owner &rhs);
-            /// No copies do not implement
-            Owner &operator=(const Owner &rhs);
       };
 
       /// A class that may take ownership of an instance of ICriticalSection.
@@ -86,7 +93,13 @@ class ICriticalSection
                ICriticalSection &crit,
                bool locked = true);
 
+            ConditionalOwner(
+               const ConditionalOwner &rhs) = delete;
+
             ~ConditionalOwner();
+
+            ConditionalOwner &operator=(
+               const ConditionalOwner &rhs) = delete;
 
             void Leave();
 
@@ -95,11 +108,6 @@ class ICriticalSection
             ICriticalSection &m_crit;
 
             bool m_locked;
-
-            /// No copies do not implement
-            ConditionalOwner(const ConditionalOwner &rhs);
-            /// No copies do not implement
-            ConditionalOwner &operator=(const ConditionalOwner &rhs);
       };
 
       /// A class that may take ownership of an instance of ICriticalSection.
@@ -118,7 +126,13 @@ class ICriticalSection
             explicit PotentialOwner(
                ICriticalSection &crit);
 
+            PotentialOwner(
+               const PotentialOwner &rhs) = delete;
+
             ~PotentialOwner();
+
+            PotentialOwner &operator=(
+               const PotentialOwner &rhs) = delete;
 
             void Enter();
 
@@ -131,11 +145,6 @@ class ICriticalSection
             ICriticalSection &m_crit;
 
             bool m_locked;
-
-            /// No copies do not implement
-            PotentialOwner(const PotentialOwner &rhs);
-            /// No copies do not implement
-            PotentialOwner &operator=(const PotentialOwner &rhs);
       };
 
       /// Try to enter the critical section and lock other threads outside,
@@ -159,7 +168,7 @@ class ICriticalSection
 
       /// Instances of this interface can be deleted by their users.
 
-      virtual ~ICriticalSection() {}
+      virtual ~ICriticalSection() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

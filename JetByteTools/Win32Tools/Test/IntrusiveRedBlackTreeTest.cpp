@@ -4,33 +4,33 @@
 //
 // Copyright 2014 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "IntrusiveRedBlackTreeTest.h"
 
-#include "JetByteTools\TestTools\TestException.h"
-#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools/TestTools/TestException.h"
+#include "JetByteTools/TestTools/RunTest.h"
 
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
 
 #pragma hdrstop
 
-#include "JetByteTools\Win32Tools\IntrusiveRedBlackTree.h"
-#include "JetByteTools\Win32Tools\Mock\TestIntrusiveRedBlackTreeNode.h"
+#include "JetByteTools/Win32Tools/IntrusiveRedBlackTree.h"
+#include "JetByteTools/Win32Tools/Mock/TestIntrusiveRedBlackTreeNode.h"
 
 #include <deque>
 
@@ -533,7 +533,7 @@ void CIntrusiveRedBlackTreeTest::TestInsertWithIncorrectExplicitKey()
    #endif
 
    CTestIntrusiveRedBlackTreeNode node1(1);
-   CTestIntrusiveRedBlackTreeNode node2(2);
+   //CTestIntrusiveRedBlackTreeNode node2(2);
    CTestIntrusiveRedBlackTreeNode node3(3);
    CTestIntrusiveRedBlackTreeNode node4(4);
 
@@ -872,9 +872,11 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
          Tree tree;
          size_t i = 0;
 
-         NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
+         NodeList::const_iterator it = nodeList.begin();
 
-         for (; 
+         const NodeList::const_iterator end = nodeList.end();
+
+         for (;
             it != end && i < 7;
             ++it, ++i)
          {
@@ -894,7 +896,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
 
       size_t size = 0;
 
-      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
          it != end;
          ++it)
       {
@@ -909,7 +911,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
          size++;
       }
 
-      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
          it != end;
          ++it)
       {
@@ -926,7 +928,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertInOrder()
       }
    }
 
-   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
       it != end;
       ++it)
    {
@@ -952,9 +954,11 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
          Tree tree;
          size_t i = 0;
 
-         NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
+         NodeList::const_iterator it = nodeList.begin();
 
-         for (; 
+         const NodeList::const_iterator end = nodeList.end();
+
+         for (;
             it != end && i < 7;
             ++it, ++i)
          {
@@ -974,7 +978,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
 
       size_t size = 0;
 
-      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
          it != end;
          ++it)
       {
@@ -989,7 +993,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
          size++;
       }
 
-      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
          it != end;
          ++it)
       {
@@ -1006,7 +1010,7 @@ void CIntrusiveRedBlackTreeTest::TestBigInsertReverseOrder()
       }
    }
 
-   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
       it != end;
       ++it)
    {
@@ -1125,9 +1129,9 @@ void CIntrusiveRedBlackTreeTest::TestRemoveNodeNotPresent()
 
       tree.ValidateTree();
 
-      THROW_ON_FAILURE_EX(0 == tree.Remove(0));
-      THROW_ON_FAILURE_EX(0 == tree.Remove(5));
-      THROW_ON_FAILURE_EX(0 == tree.Remove(100));
+      THROW_ON_FAILURE_EX(nullptr == tree.Remove(0));
+      THROW_ON_FAILURE_EX(nullptr == tree.Remove(5));
+      THROW_ON_FAILURE_EX(nullptr == tree.Remove(100));
 
    }
 }
@@ -1150,7 +1154,7 @@ void CIntrusiveRedBlackTreeTest::TestForwardIterate()
    {
       Tree tree;
 
-      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+      for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
          it != end;
          ++it)
       {
@@ -1166,7 +1170,7 @@ void CIntrusiveRedBlackTreeTest::TestForwardIterate()
 
       Tree::Iterator it = tree.Begin();
 
-      Tree::Iterator end = tree.End();
+      const Tree::Iterator end = tree.End();
 
       THROW_ON_FAILURE_EX(it != end);
 
@@ -1205,7 +1209,7 @@ void CIntrusiveRedBlackTreeTest::TestForwardIterate()
       THROW_IF_NOT_EQUAL_EX(4, it2.Key());
    }
 
-   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end(); 
+   for (NodeList::const_iterator it = nodeList.begin(), end = nodeList.end();
       it != end;
       ++it)
    {
@@ -1223,7 +1227,7 @@ void CIntrusiveRedBlackTreeTest::TestForwardIterate()
 
 } // End of namespace Test
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: IntrusiveRedBlackTreeTest.cpp

@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #pragma hdrstop
 
@@ -44,21 +44,22 @@ class CCrtReportHook
 
       CCrtReportHook();
 
+      CCrtReportHook(
+         const CCrtReportHook &rhs) = delete;
+
       ~CCrtReportHook();
+
+      CCrtReportHook &operator=(
+         const CCrtReportHook &rhs) = delete;
 
    private :
 
       static int ReportHook(
          int reportType,
-         char *message,
-         int *returnValue);
+         char *pMessage,
+         int *pReturnValue);
 
       _CRT_REPORT_HOOK m_oldHook;
-
-      /// No copies do not implement
-      CCrtReportHook(const CCrtReportHook &rhs);
-      /// No copies do not implement
-      CCrtReportHook &operator=(const CCrtReportHook &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

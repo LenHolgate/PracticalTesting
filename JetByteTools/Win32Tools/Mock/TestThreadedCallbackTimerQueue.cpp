@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "TestThreadedCallbackTimerQueue.h"
 
@@ -42,7 +42,7 @@ namespace Mock {
 
 CTestThreadedCallbackTimerQueue::CTestThreadedCallbackTimerQueue(
    IManageTimerQueue &impl)
-   :  JetByteTools::Win32::CThreadedCallbackTimerQueue(impl)
+   :  CThreadedCallbackTimerQueue(impl)
 {
 
 }

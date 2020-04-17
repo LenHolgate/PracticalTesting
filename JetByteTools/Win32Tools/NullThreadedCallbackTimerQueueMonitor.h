@@ -56,6 +56,10 @@ class CNullThreadedCallbackTimerQueueMonitor : public IMonitorThreadedCallbackTi
       void OnTimerSet(
          const bool /*wasPending*/) override {}
 
+      void OnTimerUpdated(
+         const bool /*wasPending*/,
+         const bool /*wasUpdated*/) override {}
+
       void OnTimer() override {}
 
       void OnTimerCancelled(

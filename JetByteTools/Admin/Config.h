@@ -29,13 +29,7 @@
 /// build can copy a single file around to change the target environment.
 /// \ingroup Admin
 
-#include "JetByteTools\Admin\DetectPlatformSDKVersion.h"
-
-#ifdef JETBYTE_HAS_INTERLOCKED_64
-#undef JETBYTE_HAS_INTERLOCKED_64
-#endif 
-
-#define JETBYTE_HAS_INTERLOCKED_64 1
+#include "JetByteTools/Admin/DetectPlatformSDKVersion.h"
 
 #define JETBYTE_PERF_TIMER_QUEUE_MONITORING 1
 #define JETBYTE_PERF_TIMER_WHEEL_MONITORING 1
@@ -53,6 +47,9 @@
 //#define JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION 1
 
 #define JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE 1
+
+#define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS 1
+#define JETBYTE_HAS_ATL_HEADERS_INSTALLED 1
 
 #endif // JETBYTE_TOOLS_ADMIN_CONFIG_INCLUDED__
 

@@ -18,15 +18,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CompareAndLog.h"
 #include "TestException.h"
 
-#include "JetByteTools\Win32Tools\Win32Exception.h"
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
-#include "JetByteTools\Win32Tools\SmartHandle.h"
+#include "JetByteTools/Win32Tools/Win32Exception.h"
+#include "JetByteTools/Win32Tools/Utils.h"
+#include "JetByteTools/Win32Tools/StringConverter.h"
+#include "JetByteTools/Win32Tools/SmartHandle.h"
 
 #pragma hdrstop
 
@@ -44,7 +44,6 @@ using JetByteTools::Win32::DumpData;
 using JetByteTools::Win32::CException;
 using JetByteTools::Win32::CWin32Exception;
 using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::FileExists;
 using JetByteTools::Win32::CSmartHandle;
 
 using std::string;
@@ -81,18 +80,18 @@ bool FileContentsMatch(
 
       if (ok)
       {
-
          ok = (0 == memcmp(fileContents1.GetBuffer(), fileContents2.GetBuffer(), fileContents1.GetSize()));
       }
 
       if (!ok)
       {
          SaveBinaryDataAsFile(fileName2 + _T(".Actual"), fileContents1);
+         SaveBinaryDataAsFile(fileName2 + _T(".Data.log"), fileContents2);
       }
 
       return ok;
    }
-   catch(const CException &/*e*/)
+   catch (const CException &/*e*/)
    {
       SaveBinaryDataAsFile(fileName2 + _T(".Actual"), fileContents1);
 
@@ -107,12 +106,12 @@ bool FileExists(
       fileName.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
-   const DWORD lastError = ::GetLastError();
+   const DWORD lastError = GetLastError();
 
    return !hFile.IsValid() && lastError == ERROR_SUCCESS;
 }
@@ -124,12 +123,12 @@ bool FileDoesNotExist(
       fileName.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
-   const DWORD lastError = ::GetLastError();
+   const DWORD lastError = GetLastError();
 
    return !hFile.IsValid() && (lastError == ERROR_FILE_NOT_FOUND || lastError == ERROR_PATH_NOT_FOUND);
 }
@@ -154,18 +153,18 @@ bool FileExistsAndIsReadLocked(
 {
    bool ok = false;
 
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       fileName.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError == ERROR_SHARING_VIOLATION)
       {
@@ -217,7 +216,7 @@ bool FileExistsAndContains(
 bool DataAndFileContentsMatch(
    const BYTE * const pData,
    const DWORD dataLength,
-   const JetByteTools::Win32::_tstring &fileName)
+   const _tstring &fileName)
 {
    const _tstring data = DumpData(pData, dataLength, 60, true);
 
@@ -234,7 +233,7 @@ bool DataAndFileContentsMatch(
 
       return ok;
    }
-   catch(CException &/*e*/)
+   catch (CException &/*e*/)
    {
       SaveStringAsFile(fileName + _T(".Actual.log"), data);
 
@@ -286,4 +285,3 @@ void EnsureStringsMatchW(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CompareAndLog.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

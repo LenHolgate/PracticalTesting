@@ -32,14 +32,16 @@
 // unfortunately, useless if you want to compile code conditionally based on
 // the version of the JetByte Tools libraries that you're using...
 
-#define JETBYTE_TOOLS_VERSION 6.8
+// think about including dll runtime projects
+
+#define JETBYTE_TOOLS_VERSION 6.9.5
 
 // This is the new version define that can be used for conditional compilation.
 
-#define JETBYTE_TOOLS_VER 0x0680
+#define JETBYTE_TOOLS_VER 0x0695
 
-// VS 2010 and later want to warn us about this "problem" and we supress it in Warnings.h
-// but we need to supress it here as we use the construct in this header file and
+// VS 2010 and later want to warn us about this "problem" and we suppress it in Warnings.h
+// but we need to suppress it here as we use the construct in this header file and
 // in Config.h
 // Note that the cause of the warning is
 // #ifdef XXX
@@ -68,18 +70,19 @@
 /// Note that 6.6.5 was the last version to support Visual Studio 2008.
 /// Note that 6.7.x was the last version to support Visual Studio 2010.
 /// Note that 6.8.x was the last version to support Visual Studio 2012.
+/// Note that 6.9.2 was the last version to support Visual Studio 2013.
 
-#define JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION 1600
+#define JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION 1900
 
 /// This is the latest version of the compiler we will support from the
 /// next major release
 
-#define JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION 1700
+#define JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION 1900
 
 /// This is the latest compiler version that we've tested on.
 /// You might get away with later versions but we don't support them yet.
 
-#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1910
+#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1926
 
 /// Don't let Windows.h define macros for min and max. Force the use of the stl
 /// template versions
@@ -149,27 +152,27 @@
 // when the tranlator is be installed.
 
 // JETBYTE_CATCH_UNHANDLED_EXCEPTIONS
-// Define to 1 to enable catch(...) handlers. When disabled all catch(...) handlers
+// Define to 1 to enable catch (...) handlers. When disabled all catch (...) handlers
 // are removed from library code.
 
 // JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS
-// Define to 1 to enable catch(...) handlers in destructors. Some destructors have
-// catch(...) handlers present to prevent exceptions leaking from them. This option
+// Define to 1 to enable catch (...) handlers in destructors. Some destructors have
+// catch (...) handlers present to prevent exceptions leaking from them. This option
 // allows you to remove these handlers.
-// When disabled all catch(...) handlers in destructors are removed from library code.
+// When disabled all catch (...) handlers in destructors are removed from library code.
 
 // JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY
-// Define to 1 to enable catch(...) handlers in library threads. Most threads that
-// the libraries create have catch(...) handlers present to prevent exceptions leaking
+// Define to 1 to enable catch (...) handlers in library threads. Most threads that
+// the libraries create have catch (...) handlers present to prevent exceptions leaking
 // from them. This option allows you to remove these handlers.
-// When disabled all catch(...) handlers in threads are removed from library code.
+// When disabled all catch (...) handlers in threads are removed from library code.
 
 // JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_NOTHROW_FUNCTIONS
-// Define to 1 to enable catch(...) handlers in 'nothrow' functions in the libraries.
+// Define to 1 to enable catch (...) handlers in 'nothrow' functions in the libraries.
 // Most functions that are marked with a 'no throw' (<code>throw()</code>) exception
 // specification to indicate that the function does not throw exceptions also contain
-// a catch(...) handler to ensure that they don't. This option allows you to remove
-// these handlers. When disabled all catch(...) handlers in 'nothrow' functions are
+// a catch (...) handler to ensure that they don't. This option allows you to remove
+// these handlers. When disabled all catch (...) handlers in 'nothrow' functions are
 // removed from library code.
 
 // JETBYTE_EXCEPTION_STACK_TRACES
@@ -230,18 +233,26 @@
 // additional stack frames can soon add up.
 
 // JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE
-// Define to 1 to throw exceptions from TReferenceCountedSmartPointer<T>::GetRef()
+// Define to 1 to throw exceptions from TReferenceCountedSmartPointer<T> dereferences
 // if the reference is null. Normally we simply return the null reference and the
 // calling code goes boom...
+
+// JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE
+// Define to 1 to generate a mini dump from TReferenceCountedSmartPointer<T> dereferences
+// if the reference is null. Requires JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE
 
 // JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE
 // Define to 1 to throw exceptions from TConditionalSmartPointer<T> dereferences
 // if the reference is null. Normally we simply return the null reference and the
 // calling code goes boom...
 
+// JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE
+// Define to 1 to generate a mini dump from TConditionalSmartPointer<T> dereferences
+// if the reference is null. Requires JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE
+
 // JETBYTE_TINY_XML_2_6_2
 // From 6.5 TinyXML version 2.6.2 is available and is used by default. If you
-// would prefer to continue to use TinyXML 2.6.1 then define JETBYTE_TINY_XML_2_6_2 
+// would prefer to continue to use TinyXML 2.6.1 then define JETBYTE_TINY_XML_2_6_2
 // to 0 in your Config.h
 
 // JETBYTE_TINY_XML_2_6_1
@@ -295,14 +306,6 @@
 
 // Fix up optional defines that may not have been defined in Config.h
 
-#ifdef JETBYTE_PLATFORM_SDK_VERSION
-#if JETBYTE_PLATFORM_SDK_VERSION >= 0x0810
-// The Windows 8.1 SDK deprecates the GetVersion functions, defining BUILD_WINDOWS
-// disables this deprecation.
-#define BUILD_WINDOWS
-#endif
-#endif
-
 #ifndef JETBYTE_ALLOW_UNTESTED_COMPILE_ENV
 #define JETBYTE_ALLOW_UNTESTED_COMPILE_ENV 0
 #endif
@@ -335,7 +338,7 @@
 // values). To finish all of these things were moved out of Utils.h and into the
 // ToString.h header file.
 // Up until 6.4 you could switch back to the old strstream based implementation
-// by defining JETBYTE_USE_TEMPLATE_TO_STRING as 1. From now on you can't. 
+// by defining JETBYTE_USE_TEMPLATE_TO_STRING as 1. From now on you can't.
 // Some of the old functions can be found in OldToString.h but their use is
 // unsupported.
 #error The pre v6.0 ToString() functions are no longer supported. Use OldToString.h if you really must.
@@ -431,44 +434,44 @@ namespace JetByteTools
 #endif
 
 #if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch(...)
+#define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...)
 #else
-#define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch(const JetByteTools::Admin::CDummyCatchAllException &)
+#define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &)
 #endif
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch(...) { try{JetByteTools::Win32::OutputEx(_T("Unexpected exception in destructor: ") JETBYTE_T_FUNCTION);}catch(...){} }
+#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...) { try{JetByteTools::Win32::OutputEx("Unexpected exception in destructor: " __FUNCTION__ );}catch (...){} }
 #elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch(...) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...) {}
 #else
-#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch(const JetByteTools::Admin::CDummyCatchAllException &) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
 #endif
 
 #if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
-#define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(...)
+#define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...)
 #else
-#define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(const JetByteTools::Admin::CDummyCatchAllException &)
+#define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &)
 #endif
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(...) { try{JetByteTools::Win32::OutputEx(_T("Unexpected exception at thread boundary: ") JETBYTE_T_FUNCTION);}catch(...){} }
+#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...) { try{JetByteTools::Win32::OutputEx("Unexpected exception at thread boundary: " __FUNCTION__ );}catch (...){} }
 #elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(...) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...) {}
 #else
-#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(const JetByteTools::Admin::CDummyCatchAllException &) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
 #endif
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch(...) { try{JetByteTools::Win32::OutputEx(_T("Unexpected exception: ") JETBYTE_T_FUNCTION);}catch(...){} }
+#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (...) { try{JetByteTools::Win32::OutputEx("Unexpected exception: " __FUNCTION__ );}catch (...){} }
 #elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS == 1)
-#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch(...) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (...) {}
 #else
-#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch(const JetByteTools::Admin::CDummyCatchAllException &) {}
+#define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
 #endif
 
-#define JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch(...)
+#define JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...)
 
-#define JETBYTE_TESTS_CATCH_ALL_IF_ENABLED catch(...)
+#define JETBYTE_TESTS_CATCH_ALL_IF_ENABLED catch (...)
 
 #ifndef JETBYTE_EXCEPTION_STACK_TRACES
 #define JETBYTE_EXCEPTION_STACK_TRACES 0
@@ -530,8 +533,29 @@ namespace JetByteTools
 #define JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE 0
 #endif
 
+#ifndef JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE
+#define JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE 0
+#endif
+
+#if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+#if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE == 0)
+#error JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE requires JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE
+#endif
+#endif
+
 #ifndef JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE
 #define JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE 0
+#endif
+
+#ifndef JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE
+#define JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE 0
+#endif
+
+
+#if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 0)
+#error JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE requires JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE
+#endif
 #endif
 
 #if defined(JETBYTE_TINY_XML_2_5_2) && (JETBYTE_TINY_XML_2_5_2 == 0)          // Cannot explicitly disable 2.5.2
@@ -648,23 +672,23 @@ namespace JetByteTools
 // BUT now it's always the right version of windows...
 
 #ifdef JETBYTE_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_PERF_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_PERF_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO
-#error JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO should not be defined by YOU it's internal, define JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO instead
+#error JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO should not be defined by YOU it is internal, define JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO instead
 #endif
 
 #define JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO            JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO
@@ -813,6 +837,10 @@ namespace JetByteTools
 #define JETBYTE_TRACE_WEBSOCKET_INTERNAL_STATE_TO_DEBUG_LOG 0
 #endif
 
+#ifndef JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS
+#define JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS 1
+#endif
+
 #ifndef JETBYTE_TRACE_OPENSSL_TO_DEBUG_LOG
 #define JETBYTE_TRACE_OPENSSL_TO_DEBUG_LOG 0
 #endif
@@ -885,70 +913,6 @@ namespace JetByteTools
 #define JETBYTE_TRACE_SCHANNEL_CONTEXT 0
 #endif
 
-#ifdef JETBYTE_ENABLE_SOCKET_IDENTIFIERS
-#if (JETBYTE_ENABLE_SOCKET_IDENTIFIERS == 0)
-#if (JETBYTE_TRACE_STREAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_TRACE_STREAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_STREAM_SOCKET_WRITE_TO_DEBUG_LOG or JETBYTE_TRACE_STREAM_SOCKET_READ_TO_DEBUG_LOG are enabled
-#elif (JETBYTE_DUMP_STREAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_DUMP_STREAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_DUMP_STREAM_SOCKET_WRITE_TO_DEBUG_LOG or JETBYTE_DUMP_STREAM_SOCKET_READ_TO_DEBUG_LOG are enabled
-#elif (JETBYTE_DUMP_SCHANNEL_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_SCHANNEL_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_DUMP_SCHANNEL_READ_TO_DEBUG_LOG or JETBYTE_DUMP_SCHANNEL_WRITE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_TRACE_STREAM_SOCKET_INTERNAL_ABORTS == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_STREAM_SOCKET_INTERNAL_ABORTS is enabled
-#elif (JETBYTE_DUMP_WEBSOCKET_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_WEBSOCKET_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_WEBSOCKET_READ_TO_DEBUG_LOG or JETBYTE_TRACE_WEBSOCKET_WRITE_TO_DEBUG_LOG are enabled
-#elif (JETBYTE_TRACE_WEBSOCKET_INTERNAL_STATE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_WEBSOCKET_INTERNAL_STATE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_TRACE_OPENSSL_READ_TO_DEBUG_LOG == 1 || JETBYTE_TRACE_OPENSSL_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_OPENSSL_READ_TO_DEBUG_LOG or JETBYTE_TRACE_OPENSSL_WRITE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_DUMP_OPENSSL_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_OPENSSL_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_DUMP_OPENSSL_READ_TO_DEBUG_LOG or JETBYTE_DUMP_OPENSSL_WRITE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_TRACE_SCHANNEL_READ_TO_DEBUG_LOG == 1 || JETBYTE_TRACE_SCHANNEL_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_SCHANNEL_READ_TO_DEBUG_LOG or JETBYTE_TRACE_SCHANNEL_WRITE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_DUMP_SCHANNEL_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_SCHANNEL_WRITE_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_DUMP_SCHANNEL_READ_TO_DEBUG_LOG or JETBYTE_DUMP_SCHANNEL_WRITE_TO_DEBUG_LOG is enabled
-#elif (JETBYTE_TRACE_FLOW_CONTROL_TO_DEBUG_LOG == 1)
-#error JETBYTE_ENABLE_SOCKET_IDENTIFIERS must be 1 if JETBYTE_TRACE_FLOW_CONTROL_TO_DEBUG_LOG is enabled
-#endif
-#endif
-#endif
-
-#ifndef JETBYTE_ENABLE_SOCKET_IDENTIFIERS
-#if (JETBYTE_TRACE_DATAGRAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_TRACE_DATAGRAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_DUMP_DATAGRAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_DUMP_DATAGRAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-//#elif (JETBYTE_TRACE_DATAGRAM_SOCKET_INTERNAL_ABORTS == 1)
-//#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_STREAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_TRACE_STREAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_DUMP_STREAM_SOCKET_WRITE_TO_DEBUG_LOG == 1) || (JETBYTE_DUMP_STREAM_SOCKET_READ_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_STREAM_SOCKET_INTERNAL_ABORTS == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_WEBSOCKET_READ_TO_DEBUG_LOG == 1 || JETBYTE_TRACE_WEBSOCKET_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_DUMP_WEBSOCKET_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_WEBSOCKET_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_WEBSOCKET_INTERNAL_STATE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_OPENSSL_READ_TO_DEBUG_LOG == 1 || JETBYTE_TRACE_OPENSSL_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_DUMP_OPENSSL_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_OPENSSL_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_SCHANNEL_READ_TO_DEBUG_LOG == 1 || JETBYTE_TRACE_SCHANNEL_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_DUMP_SCHANNEL_READ_TO_DEBUG_LOG == 1 || JETBYTE_DUMP_SCHANNEL_WRITE_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#elif (JETBYTE_TRACE_FLOW_CONTROL_TO_DEBUG_LOG == 1)
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 1
-#endif
-#endif
-
-#ifndef JETBYTE_ENABLE_SOCKET_IDENTIFIERS
-#define JETBYTE_ENABLE_SOCKET_IDENTIFIERS 0
-#endif
-
 #ifdef JETBYTE_DISABLE_VS2005_DEBUG_UUIDLIB_CHECK
 #error JETBYTE_DISABLE_VS2005_DEBUG_UUIDLIB_CHECK is no longer supported. Apply the hotfix detailed here: http://www.lenholgate.com/archives/000864.html
 #endif
@@ -971,6 +935,10 @@ namespace JetByteTools
 
 #ifndef JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST
 #define JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST 0
+#elif (JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST == 1)
+#if (JETBYTE_TRACK_IO_BUFFER_REFERENCES == 1)
+#error JETBYTE_TRACK_IO_BUFFER_REFERENCES is invalid if JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST == 1, Cannot track buffer leaks
+#endif
 #endif
 
 #ifndef JETBYTE_PERF_BUFFER_ALLOCATION_CONTENTION_MONITORING
@@ -1037,16 +1005,22 @@ namespace JetByteTools
 #define JETBYTE_TRACK_THREAD_NAMES 0
 #endif
 
-#ifndef JETBYTE_DELAY_THREAD_TERMINATION_HACK
-#define JETBYTE_DELAY_THREAD_TERMINATION_HACK 0
+#ifndef JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS
+#define JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS 1
 #endif
 
-#ifndef JETBYTE_DELAY_THREAD_TERMINATION_DELAY
-#define JETBYTE_DELAY_THREAD_TERMINATION_DELAY 0
-#endif
-
+#if JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS != 0
 #ifndef JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE
 #define JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE 0
+#endif
+#endif
+
+#ifndef JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE
+#define JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE 0
+#endif
+
+#ifndef JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE
+#define JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE 0
 #endif
 
 #ifndef JETBYTE_TERMINATE_CRASH_DUMP_CREATION
@@ -1057,20 +1031,8 @@ namespace JetByteTools
 #define JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION 0
 #endif
 
-#ifndef JETBYTE_DEPRECATE_SOCKET_READ_AGAIN
-#define JETBYTE_DEPRECATE_SOCKET_READ_AGAIN 0
-#endif
-
-#ifndef JETBYTE_DEPRECATE_IN_ORDER_BUFFER_LIST
-#define JETBYTE_DEPRECATE_IN_ORDER_BUFFER_LIST 1
-#endif
-
-#ifndef JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST
-#define JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST 1
-#endif
-
-#ifndef JETBYTE_DEPRECATE_MULTI_BUFFER_HANDLE
-#define JETBYTE_DEPRECATE_MULTI_BUFFER_HANDLE 1
+#ifndef JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE
+#define JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE 1
 #endif
 
 #ifndef JETBYTE_DEPRECATE_CRITICAL_SECTION
@@ -1079,6 +1041,18 @@ namespace JetByteTools
 
 #ifndef JETBYTE_DEPRECATE_MULTI_CRITICAL_SECTION
 #define JETBYTE_DEPRECATE_MULTI_CRITICAL_SECTION 0
+#endif
+
+#ifndef JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS
+#if JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS == 1
+#define JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS 1
+#else
+#define JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS 0
+#endif
+#endif
+
+#ifndef JETBYTE_DEPRECATE_SOCKET_READ_AGAIN
+#define JETBYTE_DEPRECATE_SOCKET_READ_AGAIN JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS
 #endif
 
 #ifndef JETBYTE_DEPRECATE_BUFFER_PROCESSOR
@@ -1090,27 +1064,27 @@ namespace JetByteTools
 #endif
 
 #ifndef JETBYTE_DEPRECATE_LOCKABLE_BUFFER_PROCESSOR
-#define JETBYTE_DEPRECATE_LOCKABLE_BUFFER_PROCESSOR 0
+#define JETBYTE_DEPRECATE_LOCKABLE_BUFFER_PROCESSOR JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS
 #endif
 
 #ifndef JETBYTE_DEPRECATE_LOCKABLE_SORTED_BUFFER_PROCESSOR
-#define JETBYTE_DEPRECATE_LOCKABLE_SORTED_BUFFER_PROCESSOR 0
+#define JETBYTE_DEPRECATE_LOCKABLE_SORTED_BUFFER_PROCESSOR JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS
 #endif
 
 #ifndef JETBYTE_DEPRECATE_UNSORTED_BUFFER_PROCESSOR
-#define JETBYTE_DEPRECATE_UNSORTED_BUFFER_PROCESSOR 0
+#define JETBYTE_DEPRECATE_UNSORTED_BUFFER_PROCESSOR JETBYTE_DEPRECATE_IO_TOOLS_CODE_USED_IN_WEBSOCKETS_TOOLS
 #endif
 
 #ifndef JETBYTE_DEPRECATE_INPUT_FILTER_PROCESSOR
-#define JETBYTE_DEPRECATE_INPUT_FILTER_PROCESSOR 0
-#endif
-
-#ifndef JETBYTE_DEPRECATE_NON_POOLED_BUFFER
-#define JETBYTE_DEPRECATE_NON_POOLED_BUFFER 0
+#define JETBYTE_DEPRECATE_INPUT_FILTER_PROCESSOR 1
 #endif
 
 #ifndef JETBYTE_DEPRECATE_STACKABLE_WRITE_FILTERS
 #define JETBYTE_DEPRECATE_STACKABLE_WRITE_FILTERS 1
+#endif
+
+#ifndef JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION
+#define JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION 1
 #endif
 
 #if JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 0
@@ -1161,6 +1135,16 @@ namespace JetByteTools
 
 #ifndef JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED
 #define JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED 1
+#endif
+
+#ifdef _MSVC_LANG
+#if _MSVC_LANG > 201402
+#ifndef JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED
+#define JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED 0
+#elif JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1
+#error JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED cannot be enabled if C++/17 is being used
+#endif
+#endif
 #endif
 
 #ifndef JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED
@@ -1235,6 +1219,10 @@ namespace JetByteTools
 #define JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS 0
 #endif
 
+#ifndef JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS
+#define JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS 1
+#endif
+
 #ifndef JETBYTE_TRACE_FILTER_BASE_READ_TO_DEBUG_LOG
 #define JETBYTE_TRACE_FILTER_BASE_READ_TO_DEBUG_LOG 0
 #endif
@@ -1275,7 +1263,7 @@ namespace JetByteTools
 #define JETBYTE_TRACE_SERVICE_FAILURE_ACTION_DETECTION 0
 #endif
 
-// Define this to 1 if you have atl installed 
+// Define this to 1 if you have atl installed
 
 #ifndef JETBYTE_HAS_ATL_HEADERS_INSTALLED
 #define JETBYTE_HAS_ATL_HEADERS_INSTALLED 0
@@ -1283,6 +1271,18 @@ namespace JetByteTools
 
 #ifndef JETBYTE_SHOW_ADMIN_CONFIG_DETAILS
 #define JETBYTE_SHOW_ADMIN_CONFIG_DETAILS 0
+#endif
+
+#ifndef JETBYTE_RANDOM_BYTE_PROVIDER_ENUMERATE_ALL_PROVIDERS
+#define JETBYTE_RANDOM_BYTE_PROVIDER_ENUMERATE_ALL_PROVIDERS 0
+#endif
+
+#ifndef JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT
+#define JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT 1
+#endif
+
+#ifndef JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES
+#define JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES 1
 #endif
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -1305,6 +1305,12 @@ namespace JetByteTools
 // #defines and options.
 
 #define SuppressLNK4221Warning()   namespace { char NoEmptyFileDummy##__LINE__; }
+
+#if (_MSC_VER > 1900)
+#define JETBYTE_NOEXCEPT noexcept
+#else
+#define JETBYTE_NOEXCEPT throw()
+#endif
 
 #endif // JETBYTE_TOOLS_ADMIN_ADMIN_INCLUDED__
 

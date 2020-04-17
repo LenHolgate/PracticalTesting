@@ -18,17 +18,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "Thread.h"
 #include "IRunnable.h"
 #include "StringConverter.h"
 #include "Win32Exception.h"
 #include "PerThreadErrorHandler.h"
+#include "IListenToThreadNaming.h"
+#include "ToString.h"
 
 #pragma hdrstop
 
 #include <process.h>
+
+#include <deque>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -41,13 +45,17 @@ namespace Win32 {
 // File level statics
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (JETBYTE_TRACK_THREAD_NAMES == 1)
-
 static CLockableObject s_lock;
+
+#if (JETBYTE_TRACK_THREAD_NAMES == 1)
 
 CThread::ThreadNames CThread::s_threadNames;
 
 #endif
+
+typedef std::deque<IListenToThreadNaming *> ThreadNameListeners;
+
+static ThreadNameListeners s_threadNameListeners;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CThreadNameInfo
@@ -70,7 +78,7 @@ class CThreadNameInfo
    private :
 
       CThreadNameInfo(
-         const DWORD threadId,
+         DWORD threadID,
          const char *pThreadName);
 
       const DWORD_PTR m_type;
@@ -87,11 +95,6 @@ CThread::CThread(
    IRunnable &runnable)
    :  m_threadID(0),
       m_runnable(runnable)
-{
-
-}
-
-CThread::~CThread()
 {
 
 }
@@ -128,7 +131,7 @@ void CThread::InternalStart(
 {
    if (!IsRunning())
    {
-      const uintptr_t result = ::_beginthreadex(
+      const uintptr_t result = _beginthreadex(
          nullptr,
          0,
          ThreadFunction,
@@ -161,7 +164,6 @@ void CThread::StartWithPriority(
    InternalResume();
 }
 
-
 void CThread::Resume()
 {
    CLockableObject::Owner lock(m_lock);
@@ -173,9 +175,9 @@ void CThread::InternalResume()
 {
    if (IsRunning())
    {
-      if (static_cast<DWORD>(-1) == ::ResumeThread(m_hThread))
+      if (static_cast<DWORD>(-1) == ResumeThread(m_hThread))
       {
-         throw CWin32Exception(_T("CThread::Resume()"), ::GetLastError());
+         throw CWin32Exception(_T("CThread::Resume()"), GetLastError());
       }
    }
    else
@@ -186,9 +188,9 @@ void CThread::InternalResume()
 
 void CThread::EnableThreadPriorityBoost()
 {
-   if (!::SetThreadPriorityBoost(m_hThread, FALSE))
+   if (!SetThreadPriorityBoost(m_hThread, FALSE))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CThread::EnableThreadPriorityBoost()"), lastError);
    }
@@ -196,9 +198,9 @@ void CThread::EnableThreadPriorityBoost()
 
 void CThread::DisableThreadPriorityBoost()
 {
-   if (!::SetThreadPriorityBoost(m_hThread, TRUE))
+   if (!SetThreadPriorityBoost(m_hThread, TRUE))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CThread::DisableThreadPriorityBoost()"), lastError);
    }
@@ -208,9 +210,9 @@ bool CThread::ThreadPriorityBoostEnabled() const
 {
    BOOL disabled;
 
-   if (!::GetThreadPriorityBoost(m_hThread, &disabled))
+   if (!GetThreadPriorityBoost(m_hThread, &disabled))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CThread::ThreadPriorityBoostEnabled()"), lastError);
    }
@@ -223,7 +225,7 @@ void CThread::SetThreadPriority(
 {
    if (!::SetThreadPriority(m_hThread, priority))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CThread::SetThreadPriority()"), lastError);
    }
@@ -255,7 +257,7 @@ unsigned int __stdcall CThread::ThreadFunction(
 {
    unsigned int result = 0;
 
-   CThread* pThis = reinterpret_cast<CThread*>(pV);
+   auto* pThis = reinterpret_cast<CThread*>(pV);
 
    if (pThis)
    {
@@ -288,9 +290,9 @@ void CThread::Terminate(
    const DWORD exitCode)
 {
 #pragma warning(suppress: 6258)  // Using terminate thread
-   if (!::TerminateThread(m_hThread, exitCode))
+   if (!TerminateThread(m_hThread, exitCode))
    {
-      throw CWin32Exception(_T("CThread::Terminate() - TerminateThread"), ::GetLastError());
+      throw CWin32Exception(_T("CThread::Terminate() - TerminateThread"), GetLastError());
    }
 
    m_hThread = INVALID_HANDLE_VALUE;
@@ -318,16 +320,24 @@ void CThread::SetCurrentThreadName(
 }
 
 void CThread::SetThreadName(
-   DWORD threadID,
+   const DWORD threadID,
    const _tstring &threadName)
 {
    const std::string narrowString = CStringConverter::TtoA(threadName);
 
    CThreadNameInfo::SetThreadName(threadID, narrowString);
 
-#if (JETBYTE_TRACK_THREAD_NAMES == 1)
-
    CLockableObject::Owner lock(s_lock);
+
+   for (auto *pListener : s_threadNameListeners)
+   {
+      if (pListener)
+      {
+         pListener->OnThreadNaming(ToString(threadID), threadName);
+      }
+   }
+
+#if (JETBYTE_TRACK_THREAD_NAMES == 1)
 
    if (threadID != CThreadNameInfo::CurrentThreadID)
    {
@@ -347,7 +357,7 @@ bool CThread::IsThisThread() const
 
    if (IsRunning())
    {
-      isThisThread = (::GetCurrentThreadId() == m_threadID);
+      isThisThread = (GetCurrentThreadId() == m_threadID);
    }
 
    return isThisThread;
@@ -364,6 +374,27 @@ CThread::ThreadNames CThread::GetThreadNames()
 
 #endif
 
+void CThread::AddThreadNameListener(
+   IListenToThreadNaming &listener)
+{
+   CLockableObject::Owner lock(s_lock);
+
+   s_threadNameListeners.push_back(&listener);
+}
+
+void CThread::RemoveThreadNameListener(
+   IListenToThreadNaming &listener)
+{
+   CLockableObject::Owner lock(s_lock);
+
+   const auto it = std::find(s_threadNameListeners.begin(), s_threadNameListeners.end(), &listener);
+
+   if (it != s_threadNameListeners.end())
+   {
+      *it = nullptr;
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CThreadNameInfo
 ///////////////////////////////////////////////////////////////////////////////
@@ -371,7 +402,7 @@ CThread::ThreadNames CThread::GetThreadNames()
 const DWORD CThreadNameInfo::CurrentThreadID = 0xFFFFFFFF;
 
 CThreadNameInfo::CThreadNameInfo(
-   DWORD threadID,
+   const DWORD threadID,
    const char *pThreadName)
    :  m_type(0x1000),
       m_pName(pThreadName),
@@ -393,14 +424,14 @@ ULONG_PTR *CThreadNameInfo::GetData() const
 }
 
 void CThreadNameInfo::SetThreadName(
-   DWORD threadID,
+   const DWORD threadID,
    const std::string &threadName)
 {
-   CThreadNameInfo info(threadID, threadName.c_str());
+   const CThreadNameInfo info(threadID, threadName.c_str());
 
    __try
    {
-      ::RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
+      RaiseException(0x406D1388, 0, info.GetSize(), info.GetData());
    }
 #pragma warning(suppress: 6312)  // Exception continue execution loop - no, it's OK.
    __except(EXCEPTION_CONTINUE_EXECUTION)
@@ -418,4 +449,3 @@ void CThreadNameInfo::SetThreadName(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Thread.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

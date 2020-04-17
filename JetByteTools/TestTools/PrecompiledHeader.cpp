@@ -23,7 +23,7 @@
 // which use it.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "RunTest.h"
 #include "TestException.h"
@@ -31,9 +31,9 @@
 #include "CompareAndLog.h"
 #include "TestMonitor.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "JetByteTools/Win32Tools/Utils.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
+#include "JetByteTools/Win32Tools/StringConverter.h"
 
 #pragma hdrstop
 

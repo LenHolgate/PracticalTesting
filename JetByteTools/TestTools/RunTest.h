@@ -26,10 +26,10 @@
 #include "TestException.h"
 #include "TestMonitor.h"
 
-#include "JetByteTools\Win32Tools\Exception.h"
-#include "JetByteTools\Win32Tools\Win32Exception.h"
-#include "JetByteTools\Win32Tools\SEHException.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "JetByteTools/Win32Tools/Exception.h"
+#include "JetByteTools/Win32Tools/Win32Exception.h"
+#include "JetByteTools/Win32Tools/SEHException.h"
+#include "JetByteTools/Win32Tools/StringConverter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Email::Test
@@ -56,27 +56,27 @@ do                                                                            \
                                                                               \
       JetByteTools::Win32::Output(functionName + _T(" - stop"));              \
    }                                                                          \
-   catch(JetByteTools::Test::CTestException &e)                               \
+   catch (JetByteTools::Test::CTestException &e)                              \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CTestException - ") + e.GetWhere() +                \
          _T(" - ") + e.GetMessage());                                         \
    }                                                                          \
-   catch(JetByteTools::Win32::CWin32Exception &e)                             \
+   catch (JetByteTools::Win32::CWin32Exception &e)                            \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CTestException - ") + e.GetMessage());              \
    }                                                                          \
-   catch(JetByteTools::Win32::CException &e)                                  \
+   catch (JetByteTools::Win32::CException &e)                                 \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CException - ") + e.GetWhere() +                    \
          _T(" - ") + e.GetMessage());                                         \
    }                                                                          \
-   catch(JetByteTools::Win32::CSEHException &e)                               \
+   catch (JetByteTools::Win32::CSEHException &e)                              \
    {                                                                          \
       JetByteTools::Test::CCallStackCreator stackWalker;                      \
                                                                               \
@@ -86,28 +86,28 @@ do                                                                            \
          _T(" - ") + e.GetMessage() +                                         \
          _T(" - ") + stackWalker.GetStack(&e.GetContext()));                  \
    }                                                                          \
-   catch(std::exception &e)                                                   \
+   catch (std::exception &e)                                                  \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: std::exception - ") +                               \
          JetByteTools::Win32::CStringConverter::AtoT(e.what()));              \
    }                                                                          \
-   catch(const char *pE)                                                      \
+   catch (const char *pE)                                                     \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: Exception - ") +                                    \
          JetByteTools::Win32::CStringConverter::AtoT(pE));                    \
    }                                                                          \
-   catch(const wchar_t *pE)                                                   \
+   catch (const wchar_t *pE)                                                  \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: Exception - ") +                                    \
          JetByteTools::Win32::CStringConverter::WtoT(pE));                    \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
@@ -149,7 +149,7 @@ do                                                                            \
                                                                               \
       m.TestComplete();                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -179,7 +179,7 @@ do                                                                            \
          m.TestComplete();                                                    \
       }                                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -209,7 +209,7 @@ do                                                                            \
                                                                               \
       m.TestComplete();                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -229,7 +229,7 @@ do                                                                            \
          m.TestComplete();                                                    \
       }                                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -252,7 +252,7 @@ do                                                                            \
                                                                               \
       m.TestComplete();                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -272,7 +272,7 @@ do                                                                            \
          m.TestComplete();                                                    \
       }                                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -295,7 +295,7 @@ do                                                                            \
                                                                               \
       m.TestComplete();                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -315,7 +315,7 @@ do                                                                            \
          m.TestComplete();                                                    \
       }                                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \
@@ -335,7 +335,7 @@ do                                                                            \
          m.TestComplete();                                                    \
       }                                                                       \
    }                                                                          \
-   catch(...)                                                                 \
+   catch (...)                                                                \
    {                                                                          \
       m.TestException();                                                      \
    }                                                                          \

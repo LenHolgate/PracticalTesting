@@ -21,14 +21,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Types.h"
+#include "JetByteTools/Admin/Types.h"
 
 #include "IManageTimerQueue.h"
 #include "IProvideTickCount64.h"
 #include "Thread.h"
 #include "IRunnable.h"
 #include "AutoResetEvent.h"
-#include "ReentrantLockableObject.h"
+#include "LockableObject.h"
 #include "ConditionalSmartPointer.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,14 +104,20 @@ class CThreadedCallbackTimerQueue :
          IManageTimerQueue &impl,
          IMonitorThreadedCallbackTimerQueue &monitor);
 
+      CThreadedCallbackTimerQueue(
+         const CThreadedCallbackTimerQueue &rhs) = delete;
+
       ~CThreadedCallbackTimerQueue();
+
+      CThreadedCallbackTimerQueue &operator=(
+         const CThreadedCallbackTimerQueue &rhs) = delete;
 
       /// Sets the name of the timer queue thread as displayed in the Visual Studio debugger
       /// to the supplied name. By default the constructors set the name of the thread
       /// to "TimerQueue".
 
       void SetThreadName(
-         const JetByteTools::Win32::_tstring &threadName) const;
+         const _tstring &threadName) const;
 
       /// Starts the shutdown process and returns immediately.
 
@@ -123,33 +129,45 @@ class CThreadedCallbackTimerQueue :
 
       //lint -esym(534, JetByteTools::Win32::CThreadedCallbackTimerQueue::WaitForShutdownToComplete) (Ignoring return value of function)
       bool WaitForShutdownToComplete(
-         const Milliseconds timeout = INFINITE);
+         Milliseconds timeout = INFINITE);
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
-      IQueueTimers::Handle CreateTimer() override;
+      Handle CreateTimer() override;
+
+      bool TimerIsSet(
+         const Handle &handle) const override;
 
       bool SetTimer(
-         const IQueueTimers::Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       bool DestroyTimer(
-         IQueueTimers::Handle &handle) override;
+         Handle &handle) override;
 
       bool DestroyTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       void SetTimer(
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -182,7 +200,7 @@ class CThreadedCallbackTimerQueue :
 
       IMonitorThreadedCallbackTimerQueue &m_monitor;
 
-      mutable CReentrantLockableObject m_lock;
+      mutable CLockableObject m_lock;
 
       CAutoResetEvent m_stateChangeEvent;
 
@@ -191,11 +209,6 @@ class CThreadedCallbackTimerQueue :
       TConditionalSmartPointer<IManageTimerQueue> m_spTimerQueue;
 
       volatile bool m_shutdown;
-
-      /// No copies do not implement
-      CThreadedCallbackTimerQueue(const CThreadedCallbackTimerQueue &rhs);
-      /// No copies do not implement
-      CThreadedCallbackTimerQueue &operator=(const CThreadedCallbackTimerQueue &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

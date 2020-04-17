@@ -18,15 +18,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CriticalSection.h"
 #include "Utils.h"
 #include "Win32Exception.h"
 
 #pragma hdrstop
-
-SuppressLNK4221Warning()
 
 #if (JETBYTE_DEPRECATE_CRITICAL_SECTION == 0)
 
@@ -42,20 +40,22 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 CCriticalSection::CCriticalSection()
+   : m_crit()
 {
    // On some platforms...
    // Can fail under low memory conditions and rase a STATUS_NO_MEMORY
    // exception.
 
-   ::InitializeCriticalSection(&m_crit);
+   InitializeCriticalSection(&m_crit);
 }
 
 CCriticalSection::CCriticalSection(
    const DWORD spinCount)
+   :  m_crit()
 {
-   if (!::InitializeCriticalSectionAndSpinCount(&m_crit, spinCount))
+   if (!InitializeCriticalSectionAndSpinCount(&m_crit, spinCount))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CCriticalSection::CCriticalSection()"), lastError);
    }
@@ -63,18 +63,18 @@ CCriticalSection::CCriticalSection(
 
 CCriticalSection::~CCriticalSection()
 {
-   ::DeleteCriticalSection(&m_crit);
+   DeleteCriticalSection(&m_crit);
 }
 
 void CCriticalSection::SetSpinCount(
    const DWORD spinCount)
 {
-   ::SetCriticalSectionSpinCount(&m_crit, spinCount);
+   SetCriticalSectionSpinCount(&m_crit, spinCount);
 }
 
 bool CCriticalSection::TryEnter()
 {
-   return ToBool(::TryEnterCriticalSection(&m_crit));
+   return ToBool(TryEnterCriticalSection(&m_crit));
 }
 
 void CCriticalSection::Enter()
@@ -83,17 +83,17 @@ void CCriticalSection::Enter()
    // Can fail if there's contention and the event can't be created and will
    // raise an EXCEPTION_INVALID_HANDLE exception.
 
-   ::EnterCriticalSection(&m_crit);
+   EnterCriticalSection(&m_crit);
 }
 
 void CCriticalSection::Leave()
 {
-   ::LeaveCriticalSection(&m_crit);
+   LeaveCriticalSection(&m_crit);
 }
 
 bool CCriticalSection::IsLockedByThisThread() const
 {
-   const DWORD threadId = ::GetCurrentThreadId(); 
+   const DWORD threadId = GetCurrentThreadId();
 
    return m_crit.OwningThread == reinterpret_cast<HANDLE>(static_cast<ULONG_PTR>(threadId));
 }
@@ -105,6 +105,8 @@ bool CCriticalSection::IsLockedByThisThread() const
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
+#else
+SuppressLNK4221Warning()
 #endif // JETBYTE_DEPRECATE_CRITICAL_SECTION
 
 ///////////////////////////////////////////////////////////////////////////////

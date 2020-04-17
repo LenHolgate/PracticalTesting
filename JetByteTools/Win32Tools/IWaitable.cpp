@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "IWaitable.h"
 #include "Win32Exception.h"
@@ -41,27 +41,27 @@ bool IWaitable::IsSignalled() const
    return Wait(static_cast<Milliseconds>(0));
 }
 
-void IWaitable::Wait(
+void IWaitable::WaitForHandle(
    HANDLE handle)
 {
-   if (!Wait(handle, INFINITE))
+   if (!WaitForHandle(handle, INFINITE))
    {
-      throw CException(_T("IWaitable::Wait()"), _T("Unexpected timeout on infinite wait"));
+      throw CException(_T("IWaitable::WaitForHandle()"), _T("Unexpected timeout on infinite wait"));
    }
 }
 
-bool IWaitable::Wait(
+bool IWaitable::WaitForHandle(
    HANDLE handle,
    const Milliseconds timeout)
 {
    if (handle == INVALID_HANDLE_VALUE)
    {
-      throw CException(_T("IWaitable::Wait()"), _T("Handle is invalid"));
+      throw CException(_T("IWaitable::WaitForHandle()"), _T("Handle is invalid"));
    }
 
    bool ok;
 
-   DWORD result = ::WaitForSingleObject(handle, timeout);
+   const DWORD result = WaitForSingleObject(handle, timeout);
 
    if (result == WAIT_TIMEOUT)
    {
@@ -73,14 +73,14 @@ bool IWaitable::Wait(
    }
    else
    {
-      throw CWin32Exception(_T("IWaitable::Wait() - WaitForSingleObject"), ::GetLastError());
+      throw CWin32Exception(_T("IWaitable::Wait() - WaitForSingleObject"), GetLastError());
    }
 
    return ok;
 }
 
 bool IWaitable::WaitWithMessageLoop(
-   const HANDLE handle,
+   HANDLE handle,
    const Milliseconds timeout)
 {
    DWORD notUsed;
@@ -89,7 +89,7 @@ bool IWaitable::WaitWithMessageLoop(
 }
 
 bool IWaitable::WaitWithMessageLoop(
-   const HANDLE handle,
+   HANDLE handle,
    const Milliseconds timeout,
    const DWORD removeFlags)
 {
@@ -128,7 +128,7 @@ bool IWaitable::WaitWithMessageLoop(
 
    bool result = false;
 
-   const DWORD startTime = ::GetTickCount();
+   const DWORD startTime = GetTickCount();
 
    const DWORD originalTimeout = timeout;
 
@@ -176,19 +176,19 @@ bool IWaitable::WaitWithMessageLoop(
          {
             if (msg.message == WM_QUIT)
             {
-               ::PostQuitMessage(0);
+               PostQuitMessage(0);
 
                return false;
             }
 
-            ::TranslateMessage(&msg);
+            TranslateMessage(&msg);
 
             ::DispatchMessage(&msg);
          }
 
          // Adjust the timeout so that we don't wait forever...
 
-         const DWORD now = ::GetTickCount();
+         const DWORD now = GetTickCount();
 
          if (now - startTime >= originalTimeout)
          {

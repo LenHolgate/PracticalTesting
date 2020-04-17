@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "SystemTime.h"
 #include "Exception.h"
@@ -27,7 +27,7 @@
 
 #pragma hdrstop
 
-#include "JetByteTools\Admin\FunctionName.h"
+#include "JetByteTools/Admin/FunctionName.h"
 
 #include <ctime>
 
@@ -48,10 +48,6 @@ using std::string;
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
-/// The number of 100-nanosecond intervals in a millisecond.
-
-const __int64 CSystemTime::IntervalsInAMillisecond = 10000;
-
 static const __int64 s_millisecondsInADay = 1000 * 60 * 60 * 24;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,16 +62,16 @@ static int GetDaysThisYearTo(
    const SYSTEMTIME &date);
 
 static const TCHAR *GetDay(
-   const WORD day);
+   WORD day);
 
 static const TCHAR *GetMonth(
-   const WORD month);
+   WORD month);
 
 static const char *GetDayA(
-   const WORD day);
+   WORD day);
 
 static const char *GetMonthA(
-   const WORD month);
+   WORD month);
 
 static void ValidateInRangeForDisplay(
    const SYSTEMTIME &date,
@@ -86,20 +82,22 @@ static void ValidateInRangeForDisplay(
 ///////////////////////////////////////////////////////////////////////////////
 
 CSystemTime::CSystemTime()
+   : SYSTEMTIME()
 {
    ::ZeroMemory(this, sizeof(SYSTEMTIME));
 }
 
 CSystemTime::CSystemTime(
    const FILETIME &fileTime)
+   : SYSTEMTIME()
 {
    ::ZeroMemory(this, sizeof(SYSTEMTIME));
 
    SetLastError(ERROR_SUCCESS);
 
-   if (0 != ::FileTimeToSystemTime(&fileTime, this))
+   if (0 != FileTimeToSystemTime(&fileTime, this))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError != ERROR_SUCCESS)
       {
@@ -110,6 +108,7 @@ CSystemTime::CSystemTime(
 
 CSystemTime::CSystemTime(
    const __int64 dateTime)
+   : SYSTEMTIME()
 {
    if (dateTime > 0 && dateTime < IntervalsInAMillisecond)
    {
@@ -129,9 +128,9 @@ CSystemTime::CSystemTime(
 
    SetLastError(ERROR_SUCCESS);
 
-   if (0 != ::FileTimeToSystemTime(&fileTime, this))
+   if (0 != FileTimeToSystemTime(&fileTime, this))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError != ERROR_SUCCESS)
       {
@@ -152,12 +151,14 @@ CSystemTime::CSystemTime(
 
 CSystemTime::CSystemTime(
    const SYSTEMTIME &systemTime)
+   : SYSTEMTIME()
 {
-   ::memcpy(this, &systemTime, sizeof(SYSTEMTIME));
+   memcpy(this, &systemTime, sizeof(SYSTEMTIME));
 }
 
 CSystemTime::CSystemTime(
    const _tstring &yyyymmddhhmmssmmm)
+   : SYSTEMTIME()
 {
    ::ZeroMemory(this, sizeof(SYSTEMTIME));
 
@@ -308,11 +309,11 @@ bool CSystemTime::TryParseDate(
 
          FILETIME temp;
 
-         ok = ToBool(::SystemTimeToFileTime(&result, &temp));
+         ok = ToBool(SystemTimeToFileTime(&result, &temp));
 
          if (ok)
          {
-            ok = ToBool(::FileTimeToSystemTime(&temp, &result));
+            ok = ToBool(FileTimeToSystemTime(&temp, &result));
          }
 
          if (ok)
@@ -364,11 +365,11 @@ bool CSystemTime::TryParseTime(
 
          FILETIME temp;
 
-         ok = ToBool(::SystemTimeToFileTime(&result, &temp));
+         ok = ToBool(SystemTimeToFileTime(&result, &temp));
 
          if (ok)
          {
-            ok = ToBool(::FileTimeToSystemTime(&temp, &result));
+            ok = ToBool(FileTimeToSystemTime(&temp, &result));
          }
 
          if (ok)
@@ -391,104 +392,74 @@ void CSystemTime::ParseTime(
 }
 
 void CSystemTime::SetAsSystemTimeFromLocalTime(
-   const SYSTEMTIME &localtime)
+   const SYSTEMTIME &localTime)
 {
-   FILETIME localFileTime;
+   //DYNAMIC_TIME_ZONE_INFORMATION dynamicTimeZoneInformation;
 
-   SetLastError(ERROR_SUCCESS);
+   //DWORD result = GetDynamicTimeZoneInformation(&dynamicTimeZoneInformation);
 
-   if (0 != ::SystemTimeToFileTime(&localtime, &localFileTime))
+   TIME_ZONE_INFORMATION timeZoneInformation;
+
+   DWORD result = GetTimeZoneInformation(&timeZoneInformation);
+
+   // the following needs Win7 
+
+   //if (!GetTimeZoneInformationForYear(localtime.wYear, &dynamicTimeZoneInformation, &timeZoneInformation))
+   //{
+   //   const DWORD lastError = GetLastError();
+
+   //   throw CWin32Exception(_T("CSystemTime::SetAsSystemTimeFromLocalTime("), _T("GetTimeZoneInformationForYear - Failed"), lastError);
+   //}
+
+   (void)result;
+
+   SetAsSystemTimeFromLocalTime(localTime, timeZoneInformation);
+}
+
+void CSystemTime::SetAsSystemTimeFromLocalTime(
+   const SYSTEMTIME &localTime,
+   const TIME_ZONE_INFORMATION &timeZoneInformation)
+{
+   if (!TzSpecificLocalTimeToSystemTime(&timeZoneInformation, &localTime, this))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
-            _T("SystemTimeToFileTime failed"),
-            lastError);
-      }
-   }
-
-   FILETIME fileTime;
-
-   if (!::LocalFileTimeToFileTime(&localFileTime, &fileTime))
-   {
-      const DWORD lastError = ::GetLastError();
-
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
-            _T("LocalFileTimeToFileTime failed"),
-            lastError);
-      }
-   }
-
-   ::ZeroMemory(this, sizeof(SYSTEMTIME));
-
-   if (!::FileTimeToSystemTime(&fileTime, this))
-   {
-      const DWORD lastError = ::GetLastError();
-
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
-            _T("FileTimeToSystemTime failed"),
-            lastError);
-      }
+      throw CWin32Exception(_T("CSystemTime::SetAsSystemTimeFromLocalTime("), _T("TzSpecificLocalTimeToSystemTime - Failed"), lastError);
    }
 }
 
 void CSystemTime::SetAsLocalTimeFromSystemTime(
-   const SYSTEMTIME &systemtime)
+   const SYSTEMTIME &systemTime)
 {
-   FILETIME systemFileTime;
+   //DYNAMIC_TIME_ZONE_INFORMATION dynamicTimeZoneInformation;
 
-   SetLastError(ERROR_SUCCESS);
+   //DWORD result = GetDynamicTimeZoneInformation(&dynamicTimeZoneInformation);
 
-   if (0 != ::SystemTimeToFileTime(&systemtime, &systemFileTime))
+   TIME_ZONE_INFORMATION timeZoneInformation;
+
+   DWORD result = GetTimeZoneInformation(&timeZoneInformation);
+
+   //if (!GetTimeZoneInformationForYear(systemtime.wYear, &dynamicTimeZoneInformation, &timeZoneInformation))
+   //{
+   //   const DWORD lastError = GetLastError();
+
+   //   throw CWin32Exception(_T("CSystemTime::SetAsLocalTimeFromSystemTime("), _T("GetTimeZoneInformationForYear - Failed"), lastError);
+   //}
+
+   (void)result;
+
+   SetAsLocalTimeFromSystemTime(systemTime, timeZoneInformation);
+}
+
+void CSystemTime::SetAsLocalTimeFromSystemTime(
+   const SYSTEMTIME &systemTime,
+   const TIME_ZONE_INFORMATION &timeZoneInformation)
+{
+   if (!SystemTimeToTzSpecificLocalTime(&timeZoneInformation, &systemTime, this))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsLocalTimeFromSystemTime()"),
-            _T("SystemTimeToFileTime failed"),
-            lastError);
-      }
-   }
-
-   FILETIME fileTime;
-
-   if (!::FileTimeToLocalFileTime(&systemFileTime, &fileTime))
-   {
-      const DWORD lastError = ::GetLastError();
-
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
-            _T("FileTimeToLocalFileTime failed"),
-            lastError);
-      }
-   }
-
-   ::ZeroMemory(this, sizeof(SYSTEMTIME));
-
-   if (!::FileTimeToSystemTime(&fileTime, this))
-   {
-      const DWORD lastError = ::GetLastError();
-
-      if (lastError != ERROR_SUCCESS)
-      {
-         throw CWin32Exception(
-            _T("CSystemTime::SetAsSystemTimeFromLocalTime()"),
-            _T("FileTimeToSystemTime failed"),
-            lastError);
-      }
+      throw CWin32Exception(_T("CSystemTime::SetAsLocalTimeFromSystemTime("), _T("SystemTimeToTzSpecificLocalTime - Failed"), lastError);
    }
 }
 
@@ -497,10 +468,10 @@ void CSystemTime::SetFromTimeT32(
 {
    // from https://blogs.msdn.microsoft.com/joshpoley/2007/12/19/datetime-formats-and-conversions/
 
-   LARGE_INTEGER jan1970FT = {0};
+   LARGE_INTEGER jan1970FT {};
    jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
 
-   LARGE_INTEGER utcFT = {0};
+   LARGE_INTEGER utcFT {};
    utcFT.QuadPart = static_cast<unsigned __int64>(timet)*10000000 + jan1970FT.QuadPart;
 
    FileTimeToSystemTime(reinterpret_cast<FILETIME*>(&utcFT), this);
@@ -511,18 +482,18 @@ void CSystemTime::SetFromTimeT64(
 {
    // from https://blogs.msdn.microsoft.com/joshpoley/2007/12/19/datetime-formats-and-conversions/
 
-   LARGE_INTEGER jan1970FT = {0};
+   LARGE_INTEGER jan1970FT {};
    jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
 
-   LARGE_INTEGER utcFT = {0};
+   LARGE_INTEGER utcFT {};
    utcFT.QuadPart = static_cast<unsigned __int64>(timet)*10000000 + jan1970FT.QuadPart;
 
    FileTimeToSystemTime(reinterpret_cast<FILETIME*>(&utcFT), this);
 }
 
-__time32_t CSystemTime::GetAsTimeT32() const
+__time32_t CSystemTime::GetSystemTimeAsTimeT32() const
 {
-   struct tm tm;
+   struct tm tm {};
    memset(&tm, 0, sizeof(tm));
 
    tm.tm_year = wYear - 1900;
@@ -532,13 +503,57 @@ __time32_t CSystemTime::GetAsTimeT32() const
    tm.tm_hour = wHour;
    tm.tm_min = wMinute;
    tm.tm_sec = wSecond;
+
+   // We assume that our date/time is in system time (UTC) form
+   // if you need a localtime converted to a time_t then we need to use
+   // _mktime32()
+
+   return _mkgmtime32(&tm);
+}
+
+__time64_t CSystemTime::GetSystemTimeAsTimeT64() const
+{
+   struct tm tm {};
+   memset(&tm, 0, sizeof(tm));
+
+   tm.tm_year = wYear - 1900;
+   tm.tm_mon = wMonth - 1;
+   tm.tm_mday = wDay;
+
+   tm.tm_hour = wHour;
+   tm.tm_min = wMinute;
+   tm.tm_sec = wSecond;
+
+   // We assume that our date/time is in system time (UTC) form
+   // if you need a localtime converted to a time_t then we need to use
+   // _mktime64()
+
+   return _mkgmtime64(&tm);
+}
+
+__time32_t CSystemTime::GetLocalTimeAsTimeT32() const
+{
+   struct tm tm {};
+   memset(&tm, 0, sizeof(tm));
+
+   tm.tm_year = wYear - 1900;
+   tm.tm_mon = wMonth - 1;
+   tm.tm_mday = wDay;
+
+   tm.tm_hour = wHour;
+   tm.tm_min = wMinute;
+   tm.tm_sec = wSecond;
+
+   // We assume that our date/time is in local time form
+   // if you need a UTC time converted to a time_t then we need to use
+   // _mkgmtime32()
 
    return _mktime32(&tm);
 }
 
-__time64_t CSystemTime::GetAsTimeT64() const
+__time64_t CSystemTime::GetLocalTimeAsTimeT64() const
 {
-   struct tm tm;
+   struct tm tm {};
    memset(&tm, 0, sizeof(tm));
 
    tm.tm_year = wYear - 1900;
@@ -548,6 +563,10 @@ __time64_t CSystemTime::GetAsTimeT64() const
    tm.tm_hour = wHour;
    tm.tm_min = wMinute;
    tm.tm_sec = wSecond;
+
+   // We assume that our date/time is in local time form
+   // if you need a UTC time converted to a time_t then we need to use
+   // _mkgmtime64()
 
    return _mktime64(&tm);
 }
@@ -675,7 +694,7 @@ bool CSystemTime::IsValid() const
 
    FILETIME fileTime;
 
-   if (::SystemTimeToFileTime(this, &fileTime))
+   if (SystemTimeToFileTime(this, &fileTime))
    {
       ULARGE_INTEGER largeInteger;
 
@@ -740,7 +759,7 @@ __int64 CSystemTime::GetTimeAsMilliseconds() const
 void CSystemTime::AddDays(
    const int days)
 {
-   __int64 daysInIntervals = days * s_millisecondsInADay * IntervalsInAMillisecond;
+   const __int64 daysInIntervals = days * s_millisecondsInADay * IntervalsInAMillisecond;
 
 
    *this = CSystemTime(GetAsInt64() + daysInIntervals);
@@ -804,9 +823,9 @@ __int64 CSystemTime::GetAsInt64(
 {
    FILETIME fileTime;
 
-   if (!::SystemTimeToFileTime(&source, &fileTime))
+   if (!SystemTimeToFileTime(&source, &fileTime))
    {
-      throw CWin32Exception(_T("CSystemTime::GetAsInt64()"), ::GetLastError());
+      throw CWin32Exception(_T("CSystemTime::GetAsInt64()"), GetLastError());
    }
 
    ULARGE_INTEGER largeInteger;
@@ -996,7 +1015,7 @@ WORD CSystemTime::GetDaysInMonth(
 {
    static const WORD daysInTheMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-   const bool isLeap = (month == 2 && CSystemTime::IsLeapYear(year));
+   const bool isLeap = (month == 2 && IsLeapYear(year));
 
    return static_cast<WORD>(daysInTheMonth[month - 1] + (isLeap ? 1 : 0));
 }
@@ -1041,7 +1060,7 @@ CSystemTime::TimeDifference::TimeDifference()
 CSystemTime::TimeDifference::TimeDifference(
    const SYSTEMTIME &now,
    const SYSTEMTIME &base)
-   :  m_difference(CSystemTime::GetTimeAsInt64(base) - CSystemTime::GetTimeAsInt64(now))
+   :  m_difference(GetTimeAsInt64(base) - GetTimeAsInt64(now))
 {
 
 }
@@ -1049,7 +1068,7 @@ CSystemTime::TimeDifference::TimeDifference(
 void CSystemTime::TimeDifference::Apply(
    SYSTEMTIME &time) const
 {
-   time = static_cast<const SYSTEMTIME &>(CSystemTime(CSystemTime::GetAsInt64(time) + m_difference));
+   time = static_cast<const SYSTEMTIME &>(CSystemTime(GetAsInt64(time) + m_difference));
 }
 
 __int64 CSystemTime::TimeDifference::GetDifference() const
@@ -1070,7 +1089,7 @@ CSystemTime::DateDifference::DateDifference()
 CSystemTime::DateDifference::DateDifference(
    const SYSTEMTIME &now,
    const SYSTEMTIME &base)
-   :  m_difference(CSystemTime::GetDateAsInt64(base) - CSystemTime::GetDateAsInt64(now))
+   :  m_difference(GetDateAsInt64(base) - GetDateAsInt64(now))
 {
 
 }
@@ -1078,7 +1097,7 @@ CSystemTime::DateDifference::DateDifference(
 void CSystemTime::DateDifference::Apply(
    SYSTEMTIME &date) const
 {
-   CSystemTime difference(CSystemTime::GetAsInt64(date) + m_difference);
+   const CSystemTime difference(GetAsInt64(date) + m_difference);
 
    difference.CopyDateTo(date);
 }
@@ -1112,7 +1131,7 @@ static int GetDaysThisYearFrom(
 
    WORD month = date1.wMonth;
 
-   const WORD endMonth = static_cast<WORD>(sameYear ? date2.wMonth - 1 : 12);
+   const auto endMonth = static_cast<WORD>(sameYear ? date2.wMonth - 1 : 12);
 
    int days = 0;
 
@@ -1170,7 +1189,7 @@ static const TCHAR *GetDay(
          return _T("Fri");
       case 6 :
          return _T("Sat");
-      default : 
+      default :
          return _T(" ? ");
    }
 }
@@ -1204,7 +1223,7 @@ static const TCHAR *GetMonth(
          return _T("Nov");
       case 12 :
          return _T("Dec");
-      default : 
+      default :
          return _T(" ? ");
    }
 }
@@ -1228,7 +1247,7 @@ static const char *GetDayA(
          return "Fri";
       case 6 :
          return "Sat";
-      default : 
+      default :
          return " ? ";
    }
 }
@@ -1262,7 +1281,7 @@ static const char *GetMonthA(
          return "Nov";
       case 12 :
          return "Dec";
-      default : 
+      default :
          return " ? ";
    }
 }
@@ -1284,7 +1303,7 @@ static void ValidateInRangeForDisplay(
          location,
          _T("Month is out of range: ") + ToString(date.wMonth) + _T(", max is 99 (!)"));
    }
-   
+
    if (date.wDay > 99)
    {
       throw CException(

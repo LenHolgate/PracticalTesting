@@ -2,7 +2,7 @@
 #ifndef JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IntrusiveRedBlackTree.h 
+// File: IntrusiveRedBlackTree.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2014 JetByte Limited.
@@ -12,16 +12,16 @@
 // and also with ideas from original public domain source code from:
 // http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,9 +48,6 @@
 #include "DebugTrace.h"
 #endif
 
-//lint -save
-//lint -e1060 (private member is not accessible to non-member non-friend functions)
-
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +67,7 @@ class TIntrusiveRedBlackTreeNodeIsBaseClass
       static CIntrusiveRedBlackTreeNode * GetNodeFromT(
          const T *pT)
       {
-         CIntrusiveRedBlackTreeNode *pNode = const_cast<CIntrusiveRedBlackTreeNode *>(static_cast<const CIntrusiveRedBlackTreeNode *>(pT));
+         auto *pNode = const_cast<CIntrusiveRedBlackTreeNode *>(static_cast<const CIntrusiveRedBlackTreeNode *>(pT));
 
          return pNode;
       }
@@ -105,7 +102,7 @@ class TIntrusiveRedBlackTreeNodeIsEmbeddedMember
    {
       CIntrusiveRedBlackTreeNode *pNodeOffset = &(reinterpret_cast<T*>(0)->*memberPointer);
 
-      ULONG_PTR offset = reinterpret_cast<ULONG_PTR>(pNodeOffset);
+      const ULONG_PTR offset = reinterpret_cast<ULONG_PTR>(pNodeOffset);
 
       T *pT = const_cast<T *>(reinterpret_cast<const T *>(reinterpret_cast<const char *>(pNode) - offset));
 
@@ -131,7 +128,13 @@ class TIntrusiveRedBlackTree
 
       TIntrusiveRedBlackTree();
 
+      TIntrusiveRedBlackTree(
+         const TIntrusiveRedBlackTree &rhs) = delete;
+
       ~TIntrusiveRedBlackTree();
+
+      TIntrusiveRedBlackTree &operator=(
+         const TIntrusiveRedBlackTree &rhs) = delete;
 
       size_t Size() const;
 
@@ -152,7 +155,7 @@ class TIntrusiveRedBlackTree
          const Iterator &it);
 
       void Erase(
-         const T *pItemErase);
+         const T *pDataToErase);
 
       void Clear();
 
@@ -178,28 +181,29 @@ class TIntrusiveRedBlackTree
 
             K Key() const;
 
-            Iterator &operator=(const Iterator &rhs);
+            Iterator &operator=(
+               const Iterator &rhs);
 
             Iterator &operator++();    // prefix
             Iterator operator++(int);  //postfix
 
             Iterator &operator+=(
-               const size_t rhs);
+               size_t value);
 
             Iterator operator+(
-               const size_t rhs) const;
+               size_t value) const;
 
             bool operator==(const Iterator &rhs) const;
 
             bool operator!=(const Iterator &rhs) const;
 
-            typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator*();
+            value_type * operator*();
 
-            const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+            const value_type * operator*() const;
 
-            typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator->();
+            value_type * operator->();
 
-            const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+            const value_type * operator->() const;
 
          private :
 
@@ -242,7 +246,7 @@ class TIntrusiveRedBlackTree
       typedef void (ValidateNodeFnc)(const T *pNode, ULONG_PTR userData);
 
       void ValidateTree(
-         ValidateNodeFnc *pValidateNodeFnc = 0,
+         ValidateNodeFnc *pValidateNodeFnc = nullptr,
          ULONG_PTR userData = 0) const;
 
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
@@ -256,7 +260,7 @@ class TIntrusiveRedBlackTree
 
       pairib InternalInsert(
          CIntrusiveRedBlackTreeNode *pNode,
-         const K &key);
+         const K &newKey);
 
       void ReplaceNode(
          CIntrusiveRedBlackTreeNode *pOldNode,
@@ -264,7 +268,7 @@ class TIntrusiveRedBlackTree
 
       void Rotate(
          CIntrusiveRedBlackTreeNode *pNode,
-         const int dir);
+         int dir);
 
       void InsertRebalance(
          CIntrusiveRedBlackTreeNode *pNode);
@@ -314,16 +318,11 @@ class TIntrusiveRedBlackTree
       _tstring m_previousDump;
       #endif
       #endif
-
-      /// No copies do not implement
-      TIntrusiveRedBlackTree(const TIntrusiveRedBlackTree &rhs);
-      /// No copies do not implement
-      TIntrusiveRedBlackTree &operator=(const TIntrusiveRedBlackTree &rhs);
 };
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::TIntrusiveRedBlackTree()
-   :  m_pRoot(0),
+   :  m_pRoot(nullptr),
       m_size(0),
       m_comp()
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
@@ -348,7 +347,7 @@ TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::~TIntrusiveRedBlackTree()
    }
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 
-   m_pRoot = 0;
+   m_pRoot = nullptr;
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -631,9 +630,9 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::RemoveFromTree(
          _T("pNode is null"));
    }
 
-   pNode->m_pParent = 0;
-   pNode->m_pLinks[0] = 0;
-   pNode->m_pLinks[1] = 0;
+   pNode->m_pParent = nullptr;
+   pNode->m_pLinks[0] = nullptr;
+   pNode->m_pLinks[1] = nullptr;
    pNode->m_red = true;
 }
 
@@ -934,7 +933,7 @@ template <class T, class K, class TtoK, class Pr, class TtoN>
 T *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Remove(
    const K &key)
 {
-   T *pData = 0;
+   T *pData = nullptr;
 
    const Iterator it = Find(key);
 
@@ -1013,7 +1012,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
 
          pPrev->m_pLinks[1] = pNode->m_pLinks[1];
          pPrev->m_pLinks[1]->m_pParent = pPrev;
-         pNode->m_pLinks[1] = 0;
+         pNode->m_pLinks[1] = nullptr;
 
          // swap our parent with our prev node's parent
 
@@ -1273,7 +1272,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
          }
       }
    }
-   catch(...)
+   catch (...)
    {
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       m_isValid = false;
@@ -1359,7 +1358,7 @@ _tstring TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DumpTree() const
 template <class T, class K, class TtoK, class Pr, class TtoN>
 void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
    ValidateNodeFnc *pValidateNodeFnc,
-   ULONG_PTR userData) const
+   const ULONG_PTR userData) const
 {
    try
    {
@@ -1400,7 +1399,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
       {
          (void)ValidateTree(m_pRoot, pValidateNodeFnc, userData);
       }
-      catch(...)
+      catch (...)
       {
          #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
          OutputEx(_T("Exception during tree validation"));
@@ -1416,7 +1415,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
          throw;
       }
    }
-   catch(...)
+   catch (...)
    {
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       m_isValid = false;
@@ -1446,7 +1445,7 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
       if (rootIsRed)
       {
-         if (IsRed(pLeftNode) || 
+         if (IsRed(pLeftNode) ||
              IsRed(pRightNode))
          {
             const _tstring message = _T("Red violation");
@@ -1572,7 +1571,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTr
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator()
-   :  m_pNode(0),
+   :  m_pNode(nullptr),
       #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
       m_depth(0),
       #endif
@@ -1704,7 +1703,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
 
          if (m_pNode && m_nextMove == GoUp)
          {
-            m_pNode = 0;
+            m_pNode = nullptr;
             m_nextMove = GoRight;
          }
 
@@ -1712,7 +1711,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
       }
    }
 
-   m_pNode = 0;
+   m_pNode = nullptr;
    m_nextMove = GoRight;
 
    return *this;
@@ -1793,14 +1792,12 @@ const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveR
    return node_accessor::GetTFromNode(m_pNode);
 }
 
-//lint -restore
-
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_INCLUDED__
 

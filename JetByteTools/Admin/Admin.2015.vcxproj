@@ -43,7 +43,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    
     <ProjectName>Admin</ProjectName>
     <ProjectGuid>{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}</ProjectGuid>
     <RootNamespace>Admin</RootNamespace>

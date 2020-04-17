@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 #include "EmptyBase.h"
 #include "IReentrantLockableObject.h"
@@ -59,19 +59,25 @@ class TReentrantLockableObject : public Base
          // Can fail under low memory conditions and rase a STATUS_NO_MEMORY
          // exception.
 
-         ::InitializeCriticalSection(&m_lock);
+         InitializeCriticalSection(&m_lock);
       }
+
+      TReentrantLockableObject(
+         const TReentrantLockableObject &rhs) = delete;
 
       virtual ~TReentrantLockableObject()
       {
-         ::DeleteCriticalSection(&m_lock);
+         DeleteCriticalSection(&m_lock);
       }
+
+      TReentrantLockableObject &operator=(
+         const TReentrantLockableObject &rhs) = delete;
 
       // Implement IReentrantLockableObject
 
       virtual bool TryLock()
       {
-         return 0 != ::TryEnterCriticalSection(&m_lock);
+         return 0 != TryEnterCriticalSection(&m_lock);
       }
 
       virtual void Lock()
@@ -80,24 +86,17 @@ class TReentrantLockableObject : public Base
          // Can fail if there's contention and the event can't be created and will
          // raise an EXCEPTION_INVALID_HANDLE exception.
 
-         ::EnterCriticalSection(&m_lock);
+         EnterCriticalSection(&m_lock);
       }
 
       virtual void Unlock()
       {
-         ::LeaveCriticalSection(&m_lock);
+         LeaveCriticalSection(&m_lock);
       }
 
    protected :
 
       CRITICAL_SECTION m_lock;
-
-   private :
-
-      /// No copies do not implement
-      TReentrantLockableObject(const TReentrantLockableObject &rhs);
-      /// No copies do not implement
-      TReentrantLockableObject &operator=(const TReentrantLockableObject &rhs);
 };
 
 class CReentrantLockableObject : public TReentrantLockableObject<IReentrantLockableObject>

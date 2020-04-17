@@ -21,9 +21,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 #include "tstring.h"
+
+#if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
+#include "CallStack.h"
+#endif
+
+#include <wtypes.h>     // for HWND
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -41,25 +47,44 @@ namespace Win32 {
 
 class CException
 {
-   public : 
+   public :
+
+      #ifdef _UNICODE
+      CException(
+         const std::string &where,
+         const std::string &message);
+      #endif
 
       CException(
-         const _tstring &where, 
+         const _tstring &where,
          const _tstring &message);
 
-      virtual ~CException() {}
+      virtual ~CException() = default;
 
       virtual _tstring GetWhere() const;
 
-      virtual _tstring GetMessage() const; 
+      virtual _tstring GetMessage() const;
+
+      virtual _tstring GetDetails() const;
+
+      virtual std::string GetDetailsA() const;
+
+      virtual _tstring GetCallStack() const;
 
       void MessageBox(
-         HWND hWnd = NULL) const; 
+         HWND hWnd = nullptr) const;
 
    protected :
-      
+
       const _tstring m_where;
       const _tstring m_message;
+      const _tstring m_details;
+
+#if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
+
+      CCallStack m_stack;
+
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

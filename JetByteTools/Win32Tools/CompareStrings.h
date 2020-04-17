@@ -1,11 +1,11 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
-#define JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
+#ifndef COMPARE_STRINGS_INCLUDED__
+#define COMPARE_STRINGS_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IKernelObjectName.h
+// File: CompareStrings.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2005 JetByte Limited.
+// Copyright 2017 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "tstring.h"
+#include "StringVector.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -31,33 +32,40 @@ namespace JetByteTools {
 namespace Win32 {
 
 ///////////////////////////////////////////////////////////////////////////////
-// IKernelObjectName
+// CCompareStrings
 ///////////////////////////////////////////////////////////////////////////////
 
-/// An interface that represents a name in the kernel object namespace
-/// See <a href="http://msdn2.microsoft.com/en-us/library/aa382954.aspx">here</a>
-/// for more details.
-/// \ingroup KernelObjects
-/// \ingroup ProtectedDestructors
-
-class IKernelObjectName
+class CCompareStrings
 {
    public :
 
-      virtual _tstring GetName() const = 0;
+      enum UseAlternativesMode
+      {
+         DoNotCheckAlternatives     = 0x000,
+         CheckWildcards             = 0x001,
+         CheckAlternatives          = 0x010,
+         CheckRepeats               = 0x100,
+         CheckAllAlternatives       = 0x111
+      };
 
-      virtual bool IsGlobalName() const = 0;
+      static bool CompareStrings(
+         const _tstring &expectedResult,
+         const _tstring &actualResult,
+         UseAlternativesMode useAlternatives,
+         StringVector &errorMessages);
 
-      virtual bool IsLocalName() const = 0;
+   private :
 
-      virtual bool IsUnqualifiedName() const = 0;
+      static bool DoCompareStrings(
+         const _tstring &expectedResult,
+         const _tstring &actualResult,
+         UseAlternativesMode useAlternatives);
 
-   protected :
+      static bool DoCheckWildcards(
+         const _tstring &expectedResult,
+         const _tstring &actualResult,
+         UseAlternativesMode useAlternatives);
 
-      /// We never delete instances of this interface; you must manage the
-      /// lifetime of the class that implements it.
-
-      virtual ~IKernelObjectName() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,9 +75,8 @@ class IKernelObjectName
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
-#endif // JETBYTE_TOOLS_WIN32_I_KERNEL_OBJECT_NAME__
+#endif // COMPARE_STRINGS_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: IKernelObjectName.h
+// End of file: CompareStrings.h
 ///////////////////////////////////////////////////////////////////////////////
-

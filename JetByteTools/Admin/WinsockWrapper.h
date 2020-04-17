@@ -29,11 +29,11 @@
 
 #ifndef _WINDOWS_
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #endif
 
-#include <winsock2.h>
+#include <WinSock2.h>
 
 #pragma comment(lib, "ws2_32.lib")
 

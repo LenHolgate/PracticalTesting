@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ManualResetEvent.h"
 
@@ -36,7 +36,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 CManualResetEvent::CManualResetEvent(
-   CEvent::InitialState initialState,
+   const CEvent::InitialState initialState,
    SECURITY_ATTRIBUTES *pSecurityAttributes)
    :  m_event(pSecurityAttributes, CEvent::ManualReset, initialState)
 {
@@ -46,7 +46,7 @@ CManualResetEvent::CManualResetEvent(
 CManualResetEvent::CManualResetEvent(
    const IKernelObjectName &name,
    SECURITY_ATTRIBUTES *pSecurityAttributes,
-   CEvent::InitialState initialState)
+   const CEvent::InitialState initialState)
    :  m_event(pSecurityAttributes, CEvent::ManualReset, initialState, name)
 {
 
@@ -56,7 +56,7 @@ CManualResetEvent::CManualResetEvent(
    const IKernelObjectName &name,
    const CEvent::CreationFlags creationFlags,
    SECURITY_ATTRIBUTES *pSecurityAttributes,
-   CEvent::InitialState initialState)
+   const CEvent::InitialState initialState)
    :  m_event(pSecurityAttributes, CEvent::ManualReset, initialState, name, creationFlags)
 {
 

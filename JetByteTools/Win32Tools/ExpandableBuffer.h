@@ -46,7 +46,7 @@ template <class T> class TExpandableBuffer
       /// Create a buffer of the specified initialSize. If the size is 0 then
       /// the buffer must be resized or expanded before use.
       explicit TExpandableBuffer(
-         size_t intialSize = 0);
+         size_t initialSize = 0);
 
       TExpandableBuffer(
          const TExpandableBuffer &rhs);
@@ -73,14 +73,14 @@ template <class T> class TExpandableBuffer
 
       //lint -esym(534, JetByteTools::Win32::TExpandableBuffer<*>::Resize) (Ignoring return value of function)
       size_t Resize(
-         const size_t newSize);
+         size_t newSize);
 
       /// Make the buffer bigger and copy the previous contents to the new
       /// buffer. Return the new size.
 
       //lint -esym(534, JetByteTools::Win32::TExpandableBuffer<*>::Expand) (Ignoring return value of function)
       size_t Expand(
-         const size_t newSize);
+         size_t newSize);
 
       /// Remove the actual memory used to store the date from the buffer. The
       /// buffer is left with a buffer of size 0. The caller is responsible for
@@ -111,7 +111,7 @@ template <class T> class TExpandableBuffer
 template <class T>
 TExpandableBuffer<T>::TExpandableBuffer(
    const size_t initialSize)
-   :  m_pBuffer(0),
+   :  m_pBuffer(nullptr),
       m_logicalSize(0),
       m_physicalSize(0)
 {
@@ -121,7 +121,7 @@ TExpandableBuffer<T>::TExpandableBuffer(
 template <class T>
 TExpandableBuffer<T>::TExpandableBuffer(
    const TExpandableBuffer<T> &rhs)
-   :  m_pBuffer(0),
+   :  m_pBuffer(nullptr),
       m_logicalSize(0),
       m_physicalSize(0)
 {
@@ -183,7 +183,7 @@ T *TExpandableBuffer<T>::ReleaseBuffer()
 {
    T *pBuffer = m_pBuffer;
 
-   m_pBuffer = 0;
+   m_pBuffer = nullptr;
    m_logicalSize = 0;
    m_physicalSize = 0;
 
@@ -209,7 +209,7 @@ size_t TExpandableBuffer<T>::Resize(
 {
    if (m_physicalSize < newSize)
    {
-      T *pNewBuffer = new T[newSize];
+      auto *pNewBuffer = new T[newSize];
 
       delete[] m_pBuffer;
 
@@ -232,7 +232,7 @@ size_t TExpandableBuffer<T>::Expand(
 {
    if (m_physicalSize < newSize)
    {
-      T *pNewBuffer = new T[newSize];
+      auto *pNewBuffer = new T[newSize];
 
       if (m_pBuffer)
       {

@@ -21,11 +21,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CallStackCreator.h"
 
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
 
 #pragma hdrstop
 
@@ -39,9 +39,9 @@ static void PureCallHandler()
 
    const JetByteTools::Win32::_tstring stack = stackWalker.GetStack();
 
-   if (::IsDebuggerPresent())
+   if (IsDebuggerPresent())
    {
-      MessageBox(0, stack.c_str(), _T("Purecall!"), MB_OK);
+      MessageBox(nullptr, stack.c_str(), _T("Purecall!"), MB_OK);
 
       DebugBreak();
    }

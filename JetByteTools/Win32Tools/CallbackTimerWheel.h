@@ -21,11 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Types.h"
+#include "JetByteTools/Admin/Types.h"
 
 #include "IManageTimerQueue.h"
-
-#include <WTypes.h>
 
 #include "IntrusiveSet.h"
 
@@ -52,42 +50,48 @@ class CCallbackTimerWheel : public IManageTimerQueue
    public :
 
       explicit CCallbackTimerWheel(
-         const Milliseconds maximumTimeout);
+         Milliseconds maximumTimeout);
 
       explicit CCallbackTimerWheel(
          IMonitorCallbackTimerQueue &monitor,
-         const Milliseconds maximumTimeout);
+         Milliseconds maximumTimeout);
 
       CCallbackTimerWheel(
-         const Milliseconds maximumTimeout,
-         const Milliseconds timerGranularity);
-
-      CCallbackTimerWheel(
-         IMonitorCallbackTimerQueue &monitor,
-         const Milliseconds maximumTimeout,
-         const Milliseconds timerGranularity);
-
-      CCallbackTimerWheel(
-         const Milliseconds maximumTimeout,
-         const IProvideTickCount &tickCountProvider);
+         Milliseconds maximumTimeout,
+         Milliseconds timerGranularity);
 
       CCallbackTimerWheel(
          IMonitorCallbackTimerQueue &monitor,
-         const Milliseconds maximumTimeout,
-         const IProvideTickCount &tickCountProvider);
+         Milliseconds maximumTimeout,
+         Milliseconds timerGranularity);
 
       CCallbackTimerWheel(
-         const Milliseconds maximumTimeout,
-         const Milliseconds timerGranularity,
+         Milliseconds maximumTimeout,
          const IProvideTickCount &tickCountProvider);
 
       CCallbackTimerWheel(
          IMonitorCallbackTimerQueue &monitor,
-         const Milliseconds maximumTimeout,
-         const Milliseconds timerGranularity,
+         Milliseconds maximumTimeout,
          const IProvideTickCount &tickCountProvider);
+
+      CCallbackTimerWheel(
+         Milliseconds maximumTimeout,
+         Milliseconds timerGranularity,
+         const IProvideTickCount &tickCountProvider);
+
+      CCallbackTimerWheel(
+         IMonitorCallbackTimerQueue &monitor,
+         Milliseconds maximumTimeout,
+         Milliseconds timerGranularity,
+         const IProvideTickCount &tickCountProvider);
+
+      CCallbackTimerWheel(
+         const CCallbackTimerWheel &rhs) = delete;
 
       ~CCallbackTimerWheel();
+
+      CCallbackTimerWheel &operator=(
+         const CCallbackTimerWheel &rhs) = delete;
 
       // Implement IManageTimerQueue
 
@@ -103,27 +107,39 @@ class CCallbackTimerWheel : public IManageTimerQueue
       // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
-      IQueueTimers::Handle CreateTimer() override;
+      Handle CreateTimer() override;
+
+      bool TimerIsSet(
+         const Handle &handle) const override;
 
       bool SetTimer(
-         const IQueueTimers::Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       bool DestroyTimer(
-         IQueueTimers::Handle &handle) override;
+         Handle &handle) override;
 
       bool DestroyTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       void SetTimer(
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -132,18 +148,18 @@ class CCallbackTimerWheel : public IManageTimerQueue
       class TimerData;
 
       Milliseconds CalculateTimeout(
-         const Milliseconds timeout);
+         Milliseconds timeout);
 
       Handle OnTimerCreated(
          const TimerData *pData);
 
       void InsertTimer(
-         const Milliseconds timeout,
+         Milliseconds timeout,
          TimerData &data,
-         const bool wasPending = false);
+         bool wasPending = false);
 
       static TimerData **CreateTimerWheel(
-         const size_t numTimers);
+         size_t numTimers);
 
       TimerData &ValidateHandle(
          const Handle &handle) const;
@@ -153,13 +169,13 @@ class CCallbackTimerWheel : public IManageTimerQueue
       void OnTimerCancelled();
 
       TimerData *GetTimersToProcess(
-         const Milliseconds now);
+         Milliseconds now);
 
       TimerData *GetAllTimersToProcess(
-         const Milliseconds now);
+         Milliseconds now);
 
       TimerData **GetTimerAtOffset(
-         const size_t offset) const;
+         size_t offset) const;
 
       TimerData *PrepareTimersForHandleTimeout(
          TimerData *pTimers);
@@ -193,11 +209,6 @@ class CCallbackTimerWheel : public IManageTimerQueue
       bool m_handlingTimeouts;
 
       TimerData *m_pTimeoutsToBeHandled;
-
-      /// No copies do not implement
-      CCallbackTimerWheel(const CCallbackTimerWheel &rhs);
-      /// No copies do not implement
-      CCallbackTimerWheel &operator=(const CCallbackTimerWheel &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

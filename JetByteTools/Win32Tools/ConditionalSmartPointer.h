@@ -21,7 +21,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+#include <tchar.h>
+#include "Exception.h"
+#if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+#include "MiniDumpGenerator.h"
+#endif
+#endif
+
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -57,9 +67,15 @@ template <class T> class TConditionalSmartPointer
 
       explicit TConditionalSmartPointer(
          T *pMemoryThatWasAllocatedWithNew,
-         const bool takeOwnershipOfMemory = true);
+         bool takeOwnershipOfMemory = true);
+
+      TConditionalSmartPointer(
+         const TConditionalSmartPointer &rhs) = delete;
 
       ~TConditionalSmartPointer();
+
+      TConditionalSmartPointer &operator=(
+         const TConditionalSmartPointer &rhs) = delete;
 
       TConditionalSmartPointer &operator=(T *pMemoryThatWasAllocatedWithNew);
 
@@ -68,7 +84,7 @@ template <class T> class TConditionalSmartPointer
 
       TConditionalSmartPointer &Assign(
          T *pMemoryThatWasAllocatedWithNew,
-         const bool takeOwnershipOfMemory);
+         bool takeOwnershipOfMemory);
 
       /// Obtain access to any memory that is owned by the pointer.
 
@@ -95,15 +111,11 @@ template <class T> class TConditionalSmartPointer
       T *m_pMemoryThatWasAllocatedWithNew;
 
       bool m_weOwnMemory;
-
-      // No copies do not implement
-      TConditionalSmartPointer(const TConditionalSmartPointer &rhs);
-      TConditionalSmartPointer &operator=(const TConditionalSmartPointer &rhs);
 };
 
 template <class T>
 TConditionalSmartPointer<T>::TConditionalSmartPointer()
-   :  m_pMemoryThatWasAllocatedWithNew(0),
+   :  m_pMemoryThatWasAllocatedWithNew(nullptr),
       m_weOwnMemory(false)
 {
 
@@ -112,9 +124,9 @@ TConditionalSmartPointer<T>::TConditionalSmartPointer()
 template <class T>
 TConditionalSmartPointer<T>::TConditionalSmartPointer(
    T *pMemoryThatWasAllocatedWithNew,
-   const bool weOwnMemory)
+   const bool takeOwnershipOfMemory)
    :  m_pMemoryThatWasAllocatedWithNew(pMemoryThatWasAllocatedWithNew),
-      m_weOwnMemory(weOwnMemory)
+      m_weOwnMemory(takeOwnershipOfMemory)
 {
 
 }
@@ -124,7 +136,11 @@ TConditionalSmartPointer<T>::~TConditionalSmartPointer()
 {
    if (m_weOwnMemory)
    {
-      delete m_pMemoryThatWasAllocatedWithNew;
+      try
+      {
+         delete m_pMemoryThatWasAllocatedWithNew;
+      }
+      JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
    }
 }
 
@@ -147,7 +163,7 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::operator=(
 template <class T>
 TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::Assign(
    T *pMemoryThatWasAllocatedWithNew,
-   const bool weOwnMemory)
+   const bool takeOwnershipOfMemory)
 {
    if (m_weOwnMemory)
    {
@@ -156,7 +172,7 @@ TConditionalSmartPointer<T> &TConditionalSmartPointer<T>::Assign(
 
    m_pMemoryThatWasAllocatedWithNew = pMemoryThatWasAllocatedWithNew;
 
-   m_weOwnMemory = weOwnMemory;
+   m_weOwnMemory = takeOwnershipOfMemory;
 
    return *this;
 }
@@ -182,12 +198,16 @@ T *TConditionalSmartPointer<T>::Detach()
 template <class T>
 TConditionalSmartPointer<T>::operator T *() const
 {
-#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   #if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
    if (!m_pMemoryThatWasAllocatedWithNew)
    {
+      #if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+      JetByteTools::Win32::CMiniDumpGenerator::GenerateDumpHere(_T("SmartPointerNullReference"), JetByteTools::Win32::CMiniDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(_T("TConditionalSmartPointer<T>::operator*()"), _T("operator*() called on null reference"));
    }
-#endif
+   #endif
 
    return m_pMemoryThatWasAllocatedWithNew;
 }
@@ -195,12 +215,16 @@ TConditionalSmartPointer<T>::operator T *() const
 template<class T>
 T* TConditionalSmartPointer<T>::operator->() const
 {
-#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   #if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
    if (!m_pMemoryThatWasAllocatedWithNew)
    {
+      #if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+      JetByteTools::Win32::CMiniDumpGenerator::GenerateDumpHere(_T("SmartPointerNullReference"), JetByteTools::Win32::CMiniDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(_T("TConditionalSmartPointer<T>::operator->()"), _T("operator->() called on null reference"));
    }
-#endif
+   #endif
 
    return m_pMemoryThatWasAllocatedWithNew;
 }
@@ -208,12 +232,16 @@ T* TConditionalSmartPointer<T>::operator->() const
 template<class T>
 T& TConditionalSmartPointer<T>::operator*() const
 {
-#if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
+   #if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
    if (!m_pMemoryThatWasAllocatedWithNew)
    {
+      #if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+      JetByteTools::Win32::CMiniDumpGenerator::GenerateDumpHere(_T("SmartPointerNullReference"), JetByteTools::Win32::CMiniDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(_T("TConditionalSmartPointer<T>::operator*()"), _T("operator*() called on null reference"));
    }
-#endif
+   #endif
 
    return *m_pMemoryThatWasAllocatedWithNew;
 }
@@ -221,7 +249,7 @@ T& TConditionalSmartPointer<T>::operator*() const
 template <class T>
 bool TConditionalSmartPointer<T>::IsValid() const
 {
-   return m_pMemoryThatWasAllocatedWithNew != 0;
+   return m_pMemoryThatWasAllocatedWithNew != nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

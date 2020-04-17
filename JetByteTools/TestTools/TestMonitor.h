@@ -21,12 +21,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\tstring.h"
-#include "JetByteTools\Win32Tools\Thread.h"
-#include "JetByteTools\Win32Tools\IRunnable.h"
-#include "JetByteTools\Win32Tools\AutoResetEvent.h"
-#include "JetByteTools\Win32Tools\ManualResetEvent.h"
-#include "JetByteTools\Win32Tools\PerformanceCounter.h"
+#include "JetByteTools/Admin/Admin.h"
+#include "JetByteTools/Win32Tools/tstring.h"
+#include "JetByteTools/Win32Tools/Thread.h"
+#include "JetByteTools/Win32Tools/IRunnable.h"
+#include "JetByteTools/Win32Tools/AutoResetEvent.h"
+#include "JetByteTools/Win32Tools/ManualResetEvent.h"
+#include "JetByteTools/Win32Tools/PerformanceCounter.h"
 
 #include <list>
 
@@ -45,15 +46,21 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 {
    public :
 
-      CTestMonitor(
+      explicit CTestMonitor(
          const JetByteTools::Win32::_tstring &name,
-         const bool includePerformanceTests = true,
-         const bool stopOnFailure = false,
-         const bool debugOnFailure = true);
+         bool includePerformanceTests = true,
+         bool stopOnFailure = false,
+         bool debugOnFailure = true);
 
       CTestMonitor();
 
+      CTestMonitor(
+         const CTestMonitor &rhs) = delete;
+
       ~CTestMonitor();
+
+      CTestMonitor &operator=(
+         const CTestMonitor &rhs) = delete;
 
       static bool DebugOnFailure();
 
@@ -63,12 +70,12 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
       void StartTest(
          const JetByteTools::Win32::_tstring &className,
          const JetByteTools::Win32::_tstring &functionName,
-         const JetByteTools::Milliseconds timeout = 0);
+         JetByteTools::Milliseconds timeout = 0);
 
       bool StartPerformanceTest(
          const JetByteTools::Win32::_tstring &className,
          const JetByteTools::Win32::_tstring &functionName,
-         const JetByteTools::Milliseconds timeout = 0);
+         JetByteTools::Milliseconds timeout = 0);
 
       void TestComplete();
 
@@ -81,7 +88,8 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
          const JetByteTools::Win32::_tstring &reason);
 
       bool Report(
-         const size_t expectedTests) const;
+         const size_t expectedTests,
+         const bool failIfTestsSkipped = false) const;
 
       void HandlePureCall();
 
@@ -132,10 +140,6 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
       typedef std::list<JetByteTools::Win32::_tstring> TraceMessages;
 
       TraceMessages m_traceMessages;
-
-      // no copies - do not implement
-      CTestMonitor(const CTestMonitor &rhs);
-      CTestMonitor &operator=(const CTestMonitor &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

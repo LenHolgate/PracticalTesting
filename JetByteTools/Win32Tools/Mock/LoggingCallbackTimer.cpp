@@ -18,19 +18,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "LoggingCallbackTimer.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
+#include "JetByteTools/Win32Tools/Utils.h"
 
 #pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::ToString;
 
 using JetByteTools::Test::CTestLog;
 
@@ -87,7 +85,7 @@ void CLoggingCallbackTimer::SetTimerInOnTimer(
    IQueueTimers &timerQueue,
    IQueueTimers::Handle &handle,
    const Milliseconds timeout,
-   UserData userData)
+   const UserData userData)
 {
    m_pTimerQueue = &timerQueue;
 
@@ -110,7 +108,7 @@ unsigned long CLoggingCallbackTimer::GetNumTimerEvents() const
 }
 
 void CLoggingCallbackTimer::OnTimer(
-   UserData userData)
+   const UserData userData)
 {
    if (logMessage)
    {
@@ -164,4 +162,3 @@ void CLoggingCallbackTimer::OnTimer(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: LoggingCallbackTimer.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

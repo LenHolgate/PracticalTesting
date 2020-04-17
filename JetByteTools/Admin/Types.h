@@ -48,7 +48,7 @@ typedef unsigned long Seconds;
 // This saves us having to include wtypes.h and basetsd.h
 
 typedef unsigned short WORD;
-
+typedef unsigned short USHORT;
 typedef unsigned long DWORD;
 
 typedef unsigned char BYTE;
@@ -57,17 +57,45 @@ typedef __int64 LONGLONG;
 typedef unsigned __int64 ULONGLONG;
 
 #if defined(_WIN64)
-    typedef __int64 INT_PTR;
-    typedef unsigned __int64 UINT_PTR;
+    typedef __int64 INT_PTR, *PINT_PTR;
+    typedef unsigned __int64 UINT_PTR, *PUINT_PTR;
 
-    typedef __int64 LONG_PTR;
-    typedef unsigned __int64 ULONG_PTR;
+    typedef __int64 LONG_PTR, *PLONG_PTR;
+    typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
+
+    #define __int3264   __int64
+
 #else
-    typedef int INT_PTR;
-    typedef unsigned int UINT_PTR;
 
-    typedef long LONG_PTR;
-    typedef unsigned long ULONG_PTR;
+#if !defined _W64
+#define _W64
+#endif
+
+   typedef _W64 int INT_PTR, *PINT_PTR;
+   typedef _W64 unsigned int UINT_PTR, *PUINT_PTR;
+
+   typedef _W64 long LONG_PTR, *PLONG_PTR;
+   typedef _W64 unsigned long ULONG_PTR, *PULONG_PTR;
+
+   #define __int3264   __int32
+
+#endif
+
+typedef ULONG_PTR DWORD_PTR, *PDWORD_PTR;
+
+typedef DWORD * LPDWORD;
+typedef DWORD * PDWORD;
+typedef unsigned long ULONG;
+typedef long LONG;
+typedef long HRESULT;
+
+typedef unsigned char BYTE;
+
+typedef __int64 LONGLONG;
+typedef unsigned __int64 ULONGLONG;
+
+#ifndef INFINITE
+#define INFINITE            0xFFFFFFFF  // Infinite timeout
 #endif
 
 #endif // JETBYTE_TOOLS_ADMIN_TYPES_INCLUDED__

@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 #include "IWaitable.h"
 
@@ -66,7 +66,7 @@ class CSmartHandle : public IWaitable
       ~CSmartHandle();
 
       CSmartHandle &operator=(
-         const HANDLE handle);
+         HANDLE handle);
 
       CSmartHandle &operator=(
          const CSmartHandle &rhs);
@@ -109,7 +109,7 @@ class CSmartHandle : public IWaitable
       void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeoutMillis) const override;
+         Milliseconds timeoutMillis) const override;
 
    private :
 

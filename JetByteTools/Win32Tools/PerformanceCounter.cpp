@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "PerformanceCounter.h"
 #include "Win32Exception.h"
@@ -46,7 +46,7 @@ static LARGE_INTEGER GetCounter();
 ///////////////////////////////////////////////////////////////////////////////
 
 CPerformanceCounter::CPerformanceCounter(
-   ThreadAffinity threadAffinity)
+   const ThreadAffinity threadAffinity)
    :  m_frequency(GetFrequency()),
       m_threadAffinity(threadAffinity == NoThreadAffinity ? CThreadAffinity::DontChangeAffinity : CThreadAffinity::SelectSingleProcessor),
       m_start(GetCounter())
@@ -97,9 +97,9 @@ static LARGE_INTEGER GetFrequency()
 {
    LARGE_INTEGER frequency;
 
-   if (!::QueryPerformanceFrequency(&frequency))
+   if (!QueryPerformanceFrequency(&frequency))
    {
-      throw CWin32Exception(_T("CPerformanceCounter::GetFrequency()"), ::GetLastError());
+      throw CWin32Exception(_T("CPerformanceCounter::GetFrequency()"), GetLastError());
    }
 
    return frequency;
@@ -109,9 +109,9 @@ static LARGE_INTEGER GetCounter()
 {
    LARGE_INTEGER counter;
 
-   if (!::QueryPerformanceCounter(&counter))
+   if (!QueryPerformanceCounter(&counter))
    {
-      throw CWin32Exception(_T("CPerformanceCounter::GetCounter()"), ::GetLastError());
+      throw CWin32Exception(_T("CPerformanceCounter::GetCounter()"), GetLastError());
    }
 
    return counter;

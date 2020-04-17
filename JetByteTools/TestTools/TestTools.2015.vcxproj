@@ -53,7 +53,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>TestTools</ProjectName>
     <ProjectGuid>{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}</ProjectGuid>
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" Label="Configuration">

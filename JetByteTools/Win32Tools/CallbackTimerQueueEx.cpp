@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CallbackTimerQueueEx.h"
 #include "TickCount64Provider.h"
@@ -28,8 +28,6 @@
 #include "IntrusiveMultiMapNode.h"
 
 #pragma hdrstop
-
-#pragma warning(disable: 4355) // this used in base member initialiser list
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
 #include "DebugTrace.h"
@@ -85,15 +83,13 @@ class CCallbackTimerQueueEx::TimerData : private CIntrusiveRedBlackTreeNode
          UserData userData);
 
       void SetTimer(
-         const ULONGLONG absoluteTimeout);
+         ULONGLONG absoluteTimeout);
 
       ULONGLONG GetTimeout() const;
 
       bool IsSet() const;
 
       void ClearTimer();
-
-      void OnTimer();
 
       void PrepareForHandleTimeout();
 
@@ -133,7 +129,7 @@ class CCallbackTimerQueueEx::TimerData : private CIntrusiveRedBlackTreeNode
          ULONGLONG absoluteTimeout;
       };
 
-      void OnTimer(
+      static void OnTimer(
          const Data &data);
 
       Data m_active;
@@ -144,12 +140,12 @@ class CCallbackTimerQueueEx::TimerData : private CIntrusiveRedBlackTreeNode
 
       bool m_processingTimeout;
 
-      // For storing in the active handles collection we need a 
+      // For storing in the active handles collection we need a
       // node.
 
-      friend class CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor;
+      friend class TimerDataIntrusiveMultiMapNodeKeyAccessor;
 
-     friend class CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor;
+      friend class TimerDataIntrusiveMultiMapNodeAccessor;
 
       CIntrusiveMultiMapNode m_timerQueueNode;
 
@@ -220,7 +216,7 @@ CCallbackTimerQueueEx::~CCallbackTimerQueueEx()
 
       while (it != end)
       {
-         ActiveHandles::Iterator next = it + 1;
+         const ActiveHandles::Iterator next = it + 1;
 
          TimerData *pData = *it;
 
@@ -240,7 +236,7 @@ CCallbackTimerQueueEx::~CCallbackTimerQueueEx()
 
 CCallbackTimerQueueEx::Handle CCallbackTimerQueueEx::CreateTimer()
 {
-   TimerData *pData = new TimerData();
+   auto *pData = new TimerData();
 
    if (!m_activeHandles.Insert(pData).second)
    {
@@ -256,11 +252,20 @@ CCallbackTimerQueueEx::Handle CCallbackTimerQueueEx::CreateTimer()
    return reinterpret_cast<Handle>(pData);
 }
 
+bool CCallbackTimerQueueEx::TimerIsSet(
+   const Handle &handle) const
+{
+   TimerData *pData = ValidateHandle(handle);
+
+   return pData->IsSet();
+}
+
 bool CCallbackTimerQueueEx::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
    if (timeout > m_maxTimeout)
    {
@@ -271,15 +276,95 @@ bool CCallbackTimerQueueEx::SetTimer(
 
    TimerData *pData = ValidateHandle(handle);
 
-   const bool wasPending = CancelTimer(pData);
+   const bool wasPending = pData->IsSet();
 
-   pData->UpdateData(timer, userData);
+   if (setTimerIf == SetTimerAlways || !wasPending)
+   {
+      if (wasPending)
+      {
+         CancelTimer(pData);
+      }
 
-   InsertTimer(pData, timeout);
+      pData->UpdateData(timer, userData);
+
+      InsertTimer(pData, timeout);
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+      m_monitor.OnTimerSet(wasPending);
+      #endif
+   }
+
+   return wasPending;
+}
+
+bool CCallbackTimerQueueEx::UpdateTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   bool updated = false;
+
+   if (timeout > m_maxTimeout)
+   {
+      throw CException(
+         _T("CCallbackTimerQueueEx::UpdateTimer()"),
+         _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
+   }
+
+   TimerData *pData = ValidateHandle(handle);
+
+   const bool wasPending = pData->IsSet();
+
+   if (wasPending)
+   {
+      if (updateIf == UpdateAlwaysNoTimeoutChange)
+      {
+         updated = true;
+
+         pData->UpdateData(timer, userData);
+      }
+      else
+      {
+         const ULONGLONG currentAbsoluteTimeout = pData->GetTimeout();
+
+         const ULONGLONG newAbsoluteTimeout = GetAbsoluteTimeout(*pData, timeout);
+
+         if (updateIf == UpdateAlways ||
+            (updateIf == UpdateTimerIfNewTimeIsLater && newAbsoluteTimeout > currentAbsoluteTimeout) ||
+            (updateIf == UpdateTimerIfNewTimeIsSooner && newAbsoluteTimeout < currentAbsoluteTimeout))
+         {
+            updated = true;
+
+            pData->UpdateData(timer, userData);
+
+            // need to cancel and set
+
+            m_queue.Erase(pData);
+
+            InsertTimer(pData, newAbsoluteTimeout);
+         }
+      }
+   }
+   else
+   {
+      pData->UpdateData(timer, userData);
+
+      InsertTimer(pData, timeout);
+
+      updated = true;
+   }
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-   m_monitor.OnTimerSet(wasPending);
+   m_monitor.OnTimerUpdated(wasPending, updated);
    #endif
+
+   if (pWasUpdated)
+   {
+      *pWasUpdated = updated;
+   }
 
    return wasPending;
 }
@@ -348,7 +433,7 @@ void CCallbackTimerQueueEx::SetTimer(
    }
 
 #pragma warning(suppress: 28197) // Possibly leaking memory - No, we're not.
-   TimerData *pData = new TimerData(timer, userData);
+   auto *pData = new TimerData(timer, userData);
 
    if (!m_activeHandles.Insert(pData).second)
    {
@@ -373,9 +458,9 @@ Milliseconds CCallbackTimerQueueEx::GetMaximumTimeout() const
    return m_maxTimeout;
 }
 
-void CCallbackTimerQueueEx::InsertTimer(
-   TimerData * const pData,
-   const Milliseconds timeout)
+ULONGLONG CCallbackTimerQueueEx::GetAbsoluteTimeout(
+   TimerData &data,
+   const Milliseconds timeout) const
 {
    const ULONGLONG now = m_tickProvider.GetTickCount64();
 
@@ -383,14 +468,23 @@ void CCallbackTimerQueueEx::InsertTimer(
 
    if (absoluteTimeout < now)
    {
-      pData->ClearTimer();
+      data.ClearTimer();
 
       throw CException(
-         _T("CCallbackTimerQueueEx::InsertTimer()"),
+         _T("CCallbackTimerQueueEx::GetAbsoluteTimeout()"),
          _T("Timeout will extend beyond the wrap point of GetTickCount64(). ")
          _T("Well done at having your machine running for this long, ")
          _T("but this is outside of our specificiation..."));
    }
+
+   return absoluteTimeout;
+}
+
+void CCallbackTimerQueueEx::InsertTimer(
+   TimerData * const pData,
+   const Milliseconds timeout)
+{
+   const ULONGLONG absoluteTimeout = GetAbsoluteTimeout(*pData, timeout);
 
    InsertTimer(pData, absoluteTimeout);
 }
@@ -407,10 +501,10 @@ void CCallbackTimerQueueEx::InsertTimer(
 CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::ValidateHandle(
    const Handle &handle) const
 {
-   TimerData *pData = reinterpret_cast<TimerData *>(handle);
+   auto *pData = reinterpret_cast<TimerData *>(handle);
 
    #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
-   ActiveHandles::Iterator it = m_activeHandles.Find(pData);
+   const ActiveHandles::Iterator it = m_activeHandles.Find(pData);
 
    if (it == m_activeHandles.End())
    {
@@ -605,7 +699,7 @@ CCallbackTimerQueueEx::TimerData::TimerData()
 
 CCallbackTimerQueueEx::TimerData::TimerData(
    Timer &timer,
-   UserData userData)
+   const UserData userData)
    :  m_active(timer, userData),
       m_deleteAfterTimeout(true),
       m_processingTimeout(false),
@@ -642,7 +736,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerData::PopNext()
 
 void CCallbackTimerQueueEx::TimerData::UpdateData(
    Timer &timer,
-   UserData userData)
+   const UserData userData)
 {
    if (m_deleteAfterTimeout)
    {
@@ -656,7 +750,7 @@ void CCallbackTimerQueueEx::TimerData::UpdateData(
 }
 
 void CCallbackTimerQueueEx::TimerData::SetTimer(
-   ULONGLONG absoluteTimeout)
+   const ULONGLONG absoluteTimeout)
 {
    m_active.absoluteTimeout = absoluteTimeout;
 }
@@ -674,17 +768,6 @@ bool CCallbackTimerQueueEx::TimerData::IsSet() const
 void CCallbackTimerQueueEx::TimerData::ClearTimer()
 {
    m_active.Clear();
-}
-
-void CCallbackTimerQueueEx::TimerData::OnTimer()
-{
-   m_processingTimeout = true;
-
-   OnTimer(m_active);
-
-   m_active.Clear();
-
-   m_processingTimeout = false;
 }
 
 void CCallbackTimerQueueEx::TimerData::OnTimer(
@@ -750,7 +833,7 @@ CCallbackTimerQueueEx::TimerData::Data::Data()
 
 CCallbackTimerQueueEx::TimerData::Data::Data(
    Timer &timer,
-   UserData userData_)
+   const UserData userData_)
    :  pTimer(&timer),
       userData(userData_),
       absoluteTimeout(0)
@@ -770,7 +853,7 @@ void CCallbackTimerQueueEx::TimerData::Data::Clear()
 ///////////////////////////////////////////////////////////////////////////////
 
 ULONGLONG CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor::GetKeyFromT(
-   const CCallbackTimerQueueEx::TimerData *pNode)
+   const TimerData *pNode)
 {
    return pNode->GetTimeout();
 }

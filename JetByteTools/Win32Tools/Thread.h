@@ -42,6 +42,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 class IRunnable;
+class IListenToThreadNaming;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CThread
@@ -57,12 +58,24 @@ class CThread : public IWaitable
 {
    public :
 
+      static void AddThreadNameListener(
+         IListenToThreadNaming &listener);
+
+      static void RemoveThreadNameListener(
+         IListenToThreadNaming &listener);
+
       /// Create a thread to run the supplied instance of IRunnable.
 
       explicit CThread(
          IRunnable &runnable);
 
-      virtual ~CThread();
+      CThread(
+         const CThread &rhs) = delete;
+
+      virtual ~CThread() = default;
+
+      CThread &operator=(
+         const CThread &rhs) = delete;
 
       /// Start the thread running.
 
@@ -71,7 +84,7 @@ class CThread : public IWaitable
       /// Start the thread running and optionally start it in a suspended state.
 
       void Start(
-         const bool startSuspended);
+         bool startSuspended);
 
       /// Start the thread in a suspended state.
 
@@ -80,7 +93,7 @@ class CThread : public IWaitable
       /// Start the thread with the specified thread priority.
 
       void StartWithPriority(
-         const int priority);
+         int priority);
 
       /// Resume a suspended thread.
 
@@ -90,7 +103,7 @@ class CThread : public IWaitable
       /// Note that this should be used with great care!
 
       void Terminate(
-         const DWORD exitCode = 0);
+         DWORD exitCode = 0);
 
       /// Returns true if the thread is running.
 
@@ -114,7 +127,7 @@ class CThread : public IWaitable
       /// Sets the supplied threads name so that it can be queried in a debugger.
 
       static void SetThreadName(
-         const DWORD threadID,
+         DWORD threadID,
          const _tstring &threadName);
 
       void EnableThreadPriorityBoost();
@@ -124,7 +137,7 @@ class CThread : public IWaitable
       bool ThreadPriorityBoostEnabled() const;
 
       void SetThreadPriority(
-         const int priority);
+         int priority);
 
       int GetThreadPriority() const;
 
@@ -143,12 +156,12 @@ class CThread : public IWaitable
       void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeout) const override;
+         Milliseconds timeout) const override;
 
    private :
 
       void InternalStart(
-         const bool startSuspended);
+         bool startSuspended);
 
       void InternalResume();
 
@@ -167,11 +180,6 @@ class CThread : public IWaitable
       static ThreadNames s_threadNames;
 
 #endif
-
-      /// No copies do not implement
-      CThread(const CThread &rhs);
-      /// No copies do not implement
-      CThread &operator=(const CThread &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 #include "tstring.h"
 #include "StringConverter.h"
@@ -67,13 +67,13 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename TV, typename TM>
-inline TV RoundDown(TV Value, TM Multiple)
+TV RoundDown(TV Value, TM Multiple)
 {
    return((Value / Multiple) * Multiple);
 }
 
 template <typename TV, typename TM>
-inline TV RoundUp(TV Value, TM Multiple)
+TV RoundUp(TV Value, TM Multiple)
 {
    return(RoundDown(Value, Multiple) + (((Value % Multiple) > 0) ? Multiple : 0));
 }
@@ -133,27 +133,27 @@ void WriteResourceToFile(
    HANDLE hFile,
    const _tstring &resourceName,
    const _tstring &resourceType,
-   HMODULE hModule = 0);
+   HMODULE hModule = nullptr);
 
 unsigned long GetLongFromString(
    const _tstring &numeric,
-   const size_t startOffset,
-   const size_t length);
+   size_t startOffset,
+   size_t length);
 
 unsigned short GetShortFromString(
    const _tstring &numeric,
-   const size_t startOffset,
-   const size_t length);
+   size_t startOffset,
+   size_t length);
 
 unsigned long GetLongFromStringA(
    const std::string &numeric,
-   const size_t startOffset,
-   const size_t length);
+   size_t startOffset,
+   size_t length);
 
 unsigned short GetShortFromStringA(
    const std::string &numeric,
-   const size_t startOffset,
-   const size_t length);
+   size_t startOffset,
+   size_t length);
 
 bool IsAllDigits(
    const _tstring &numeric);
@@ -161,8 +161,11 @@ bool IsAllDigits(
 bool IsAllDigitsA(
    const std::string &numeric);
 
+bool IsAllHexDigits(
+   const _tstring &hex);
+
 bool IsAllHexDigitsA(
-   const std::string &numeric);
+   const std::string &hex);
 
 bool StringToBool(
    const _tstring &stringRepresentation);
@@ -186,7 +189,7 @@ _tstring GetLastErrorMessageIfPossible(
    bool stripTrailingLineFeed = false);
 
 _tstring GetLastErrorMessageIfPossible(
-   const HMODULE hModule, 
+   HMODULE hModule,
    DWORD last_error,
    bool stripTrailingLineFeed = false);
 
@@ -195,7 +198,7 @@ _tstring GetLastErrorMessage(
    bool stripTrailingLineFeed = false);
 
 _tstring GetLastErrorMessage(
-   const HMODULE hModule, 
+   HMODULE hModule,
    DWORD last_error,
    bool stripTrailingLineFeed = false);
 
@@ -265,11 +268,11 @@ _tstring GetTempPath();
 _tstring GetTempFileName(
    const _tstring &pathName,
    const _tstring &prefixString,
-   const unsigned int unique = 0);
+   unsigned int unique = 0);
 
 _tstring GetTempFileName(
    const _tstring &prefixString,
-   const unsigned int unique = 0);
+   unsigned int unique = 0);
 
 _tstring GetComputerName();
 
@@ -283,10 +286,10 @@ bool GetModuleFileName(
    _tstring &name);
 
 _tstring GetModuleFileName(
-   HINSTANCE hModule = 0);
+   HINSTANCE hModule = nullptr);
 
 _tstring GetModulePathName(
-   HINSTANCE hModule = 0);
+   HINSTANCE hModule = nullptr);
 
 _tstring StripFileExtension(
    const _tstring &filename);
@@ -363,14 +366,14 @@ _tstring GetFileVersion(
    const _tstring &charsetID);
 
 _tstring GetFileVersion(
-   const HMODULE hModule);
+   HMODULE hModule);
 
 _tstring GetFileVersion(
-   const HMODULE hModule,
+   HMODULE hModule,
    const _tstring &languageID);
 
 _tstring GetFileVersion(
-   const HMODULE hModule,
+   HMODULE hModule,
    const _tstring &languageID,
    const _tstring &charsetID);
 
@@ -387,16 +390,16 @@ _tstring GetFileVersionString(
    const _tstring &requiredString);
 
 _tstring GetFileVersionString(
-   const HMODULE hModule,
+   HMODULE hModule,
    const _tstring &requiredString);
 
 _tstring GetFileVersionString(
-   const HMODULE hModule,
+   HMODULE hModule,
    const _tstring &languageID,
    const _tstring &requiredString);
 
 _tstring GetFileVersionString(
-   const HMODULE hModule,
+   HMODULE hModule,
    const _tstring &languageID,
    const _tstring &charsetID,
    const _tstring &requiredString);
@@ -415,19 +418,19 @@ std::string StripSurroundingWhiteSpaceA(
 
 _tstring StripLeading(
    const _tstring &source,
-   const char toStrip);
+   char toStrip);
 
 _tstring StripTrailing(
    const _tstring &source,
-   const char toStrip);
+   char toStrip);
 
 std::string StripLeadingA(
    const std::string &source,
-   const char toStrip);
+   char toStrip);
 
 std::string StripTrailingA(
    const std::string &source,
-   const char toStrip);
+   char toStrip);
 
 void MoveFile(
    const _tstring &filenameFrom,
@@ -436,7 +439,7 @@ void MoveFile(
 void CopyFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo,
-   const bool failIfExists);
+   bool failIfExists);
 
 __int64 GetFileSize(
    const _tstring &filename);
@@ -451,7 +454,7 @@ void SaveBinaryDataAsFile(
 
 std::wstring LoadFileAsUnicodeString(
    const _tstring &filename,
-   bool *pFileWasUnicode = 0);
+   bool *pFileWasUnicode = nullptr);
 
 void SaveUnicodeStringAsFile(
    const _tstring &filename,
@@ -465,11 +468,11 @@ std::string LoadFileAsStringA(
    const _tstring &filename);
 
 _tstring LoadFileAsString(
-   HANDLE hFile, 
+   HANDLE hFile,
    const _tstring &filename);
 
 std::string LoadFileAsStringA(
-   HANDLE hFile, 
+   HANDLE hFile,
    const _tstring &filename);
 
 void SaveStringAsFile(
@@ -497,27 +500,27 @@ _tstring FindAndReplace(
    const _tstring &phrase,
    const _tstring &findString,
    const _tstring &replaceString,
-   const size_t numReplacements = INFINITE);
+   size_t numReplacements = INFINITE);
 
 //lint -esym(534, JetByteTools::Win32::InPlaceFindAndReplace) (Ignoring return value of function)
 bool InPlaceFindAndReplace(
    _tstring &phrase,
    const _tstring &findString,
    const _tstring &replaceString,
-   const size_t numReplacements = INFINITE);
+   size_t numReplacements = INFINITE);
 
 std::string FindAndReplaceA(
    const std::string &phrase,
    const std::string &findString,
    const std::string &replaceString,
-   const size_t numReplacements = INFINITE);
+   size_t numReplacements = INFINITE);
 
 //lint -esym(534, JetByteTools::Win32::InPlaceFindAndReplaceA) (Ignoring return value of function)
 bool InPlaceFindAndReplaceA(
    std::string &phrase,
    const std::string &findString,
    const std::string &replaceString,
-   const size_t numReplacements = INFINITE);
+   size_t numReplacements = INFINITE);
 
 bool IsGoodReadPtr(
    const void *pv,
@@ -539,16 +542,16 @@ bool IsGoodWritePtr(
 
 _tstring GUIDAsString(
    const GUID &guid,
-   const bool stripBrackets = true);
+   bool stripBrackets = true);
 
 _tstring CreateGUIDAsString(
-   const bool stripBrackets = true);
+   bool stripBrackets = true);
 
 _tstring GetFileNameFromHandle(
-   const HANDLE hFile);
+   HANDLE hFile);
 
 _tstring GetFileNameFromHandleIfPossible(
-   const HANDLE hFile);
+   HANDLE hFile);
 
 _tstring TranslateDeviceNamePathToDriveLetterPath(
    const _tstring &deviceNamePath);

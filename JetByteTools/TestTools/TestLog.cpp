@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "TestLog.h"
 #include "TestException.h"
@@ -26,14 +26,16 @@
 
 #include <iostream>
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
-#include "JetByteTools\Win32Tools\StringConverter.h"
+#include "JetByteTools/Win32Tools/Utils.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
+#include "JetByteTools/Win32Tools/StringConverter.h"
+#include "JetByteTools/Win32Tools/CompareStrings.h"
+#include "JetByteTools/Win32Tools/StringVector.h"
 
 #pragma hdrstop
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,31 +53,17 @@ using JetByteTools::Win32::SaveStringAsFile;
 using JetByteTools::Win32::CException;
 using JetByteTools::Win32::FindAndReplace;
 using JetByteTools::Win32::InPlaceFindAndReplace;
+using JetByteTools::Win32::CCompareStrings;
+using JetByteTools::Win32::StringVector;
 
 using std::string;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Test {
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static _tstring RemoveOptionalTags(
-   const _tstring &input);
-
-static _tstring RemoveTagMarks(
-   const _tstring &input);
-
-static _tstring RemoveFirstAlternative(
-   const _tstring &input);
-
-static _tstring RemoveSecondAlternative(
-   const _tstring &input);
 
 ///////////////////////////////////////////////////////////////////////////////
 // CTestLog
@@ -132,6 +120,17 @@ CTestLog::~CTestLog()
    }
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
+
+CTestLog *CTestLog::GetLogObject() const
+{
+   if (m_pLog)
+   {
+      return m_pLog;
+   }
+
+   return const_cast<CTestLog *>(this);
+}
+
 
 void CTestLog::UnlinkLog()
 {
@@ -243,274 +242,35 @@ void CTestLog::CheckResult(
    CheckResult(expectedResult, m_separator + RemoveMessages(), displayOnFailure, useAlternatives);
 }
 
-static bool CheckWildcards(
-   const _tstring &expectedResult,
-   const _tstring &actualResult,
-   const CTestLog::UseAlternativesMode useAlternatives)
-{
-   bool ok = true;
-
-   if ((useAlternatives & CTestLog::CheckWildcards) == CTestLog::CheckWildcards)
-   {
-      const _tstring::size_type expectedLength = expectedResult.length();
-
-      const _tstring::size_type actualLength = actualResult.length();
-
-      _tstring::size_type actualStart = 0;
-
-      _tstring::size_type expectedStart = 0;
-
-      _tstring::size_type wildCardStart = expectedResult.find(_T("@@@"));
-
-      _tstring::size_type matchLength = expectedLength;
-
-      if (wildCardStart != _tstring::npos)
-      {
-         matchLength = wildCardStart - expectedStart;
-      }
-
-      while (ok && matchLength != 0)
-      {
-         const _tstring expectedMatch = expectedResult.substr(expectedStart, matchLength);
-
-         const _tstring actualMatch = actualResult.substr(actualStart, matchLength);
-
-         ok = (actualMatch == expectedMatch);
-
-         if (ok && (expectedStart + matchLength < expectedLength))
-         {
-            // Find the length of the next match
-
-            const _tstring::size_type newExpectedStart = expectedStart + matchLength + 3;
-
-            wildCardStart = expectedResult.find(_T("@@@"), newExpectedStart);
-
-            matchLength = expectedLength - newExpectedStart;
-
-            if (wildCardStart != _tstring::npos)
-            {
-               matchLength = wildCardStart - newExpectedStart;
-            }
-
-            // Skip the wildcard data in the actual result by scanning to the next
-            // non wildcard character.
-
-            const TCHAR nextExpectedChar = expectedResult[newExpectedStart];
-
-            _tstring::size_type i = actualStart + actualMatch.length();
-
-            while (i < actualLength &&
-                     actualResult[i] != nextExpectedChar)
-            {
-               ++i;
-            }
-
-            if (actualResult[i] != nextExpectedChar)
-            {
-               ok = false;
-            }
-            else
-            {
-               actualStart = i;
-
-               expectedStart = newExpectedStart;
-            }
-         }
-         else
-         {
-            matchLength = 0;
-         }
-      }
-   }
-   else
-   {
-      ok = (expectedResult == actualResult);
-   }
-
-   return ok;
-}
-
-static bool CheckResultInternal(
-   const _tstring &expectedResult,
-   const _tstring &actualResult,
-   const CTestLog::UseAlternativesMode useAlternatives)
-{
-   bool ok = true;
-
-   if ((useAlternatives & CTestLog::CheckRepeats) == CTestLog::CheckRepeats && _tstring::npos != expectedResult.find(_T("[[")))
-   {
-      // TOOD - be able to specify a number (min and max?) [[0]]MATCHME[[2]] (0-2 instances of MATCHME) [[2]]MATCHME[[5]] (2-5 instances)?
-
-      // repeats are specified like this [[|AddRef|Release]] and can match 1 or more repeats of the enclosed phrase before
-      // continuing with the rest of the string
-
-      // build the correct 'expected' string by expanding the repeats to the correct number.
-
-      //const _tstring::size_type expectedLength = expectedResult.length();
-
-      const _tstring::size_type actualLength = actualResult.length();
-
-      _tstring::size_type actualStart = 0;
-
-      _tstring::size_type repeatStart = expectedResult.find(_T("[["));
-
-      _tstring expandedExpectedResult;
-
-      while (ok && repeatStart != _tstring::npos)
-      {
-         size_t patternMatchCount = 0;
-
-         repeatStart += 2;
-
-         const _tstring::size_type repeatEnd = expectedResult.find(_T("]]"), repeatStart);
-
-         const _tstring::size_type repeatLength = (repeatEnd != _tstring::npos) ? repeatEnd - repeatStart : 0;
-
-         const _tstring repeatPattern = expectedResult.substr(repeatStart, repeatLength);
-
-         bool done = false;
-
-         while (ok && !done)
-         {
-            if (actualStart + repeatLength > actualLength)
-            {
-               // not enough data in 'actualResult' to match the pattern...
-
-               if (patternMatchCount == 0)
-               {
-                  // Must match at least once!
-                  ok = false;
-               }
-               else
-               {
-                  done = true;
-               }
-            }
-
-            if (ok && !done)
-            {
-               // actual pattern can be longer/shorter than repeatPattern if repeat contains @@@ wildcards
-               // need to work with remaining actualResult and compare wildcards from pattern and get 
-               // given the amount of actual consumed by the match
-
-               const _tstring actualPattern = actualResult.substr(actualStart, repeatLength);
-
-               done = !CheckWildcards(repeatPattern, actualPattern, useAlternatives);
-
-               if (!done)
-               {
-                  patternMatchCount++;
-
-                  actualStart += repeatLength;
-
-                  expandedExpectedResult += repeatPattern;
-               }
-               else if (patternMatchCount == 0)
-               {
-                  ok = false;
-               }
-            }
-         }
-
-         const _tstring::size_type endOfRepeatTag = repeatEnd + 2;
-
-         const _tstring::size_type nextStart = expectedResult.find(_T("[["), endOfRepeatTag);
-
-         expandedExpectedResult += expectedResult.substr(endOfRepeatTag, nextStart);
-
-         repeatStart = nextStart;
-      }
-
-      if (ok)
-      {
-         if (expandedExpectedResult.length() == 0)
-         {
-            expandedExpectedResult = expectedResult;
-         }
-
-         ok = CheckWildcards(expandedExpectedResult, actualResult, useAlternatives);
-      }
-   }
-   else
-   {
-      ok = CheckWildcards(expectedResult, actualResult, useAlternatives);
-   }
-
-   return ok;
-}
-
 void CTestLog::CheckResult(
    const _tstring &expectedResult,
    const _tstring &actualResult,
    const DisplayOnFailureMode displayOnFailure,
-   const UseAlternativesMode useAlternatives)
+   const UseAlternativesMode useAlternatives) const
 {
-   if (((useAlternatives & CheckAlternatives) == CheckAlternatives) && _tstring::npos != expectedResult.find(_T("{")))
+   StringVector errorMessages;
+
+   if (!CCompareStrings::CompareStrings(
+      expectedResult,
+      actualResult,
+      static_cast<CCompareStrings::UseAlternativesMode>(useAlternatives),
+      errorMessages))
    {
-      // Optional, eg "{|Release|}", try as "|Release|" and ""
+      _tstring message = _T("Log does not contain expected result\n");
 
-      const _tstring expectedResultWithoutOptional = RemoveOptionalTags(expectedResult);
-
-      if (!CheckResultInternal(expectedResultWithoutOptional, actualResult, useAlternatives))
+      for (StringVector::const_iterator it = errorMessages.begin(), end = errorMessages.end();
+         it != end;
+         ++it)
       {
-         const _tstring expectedResultWithOptional = RemoveTagMarks(expectedResult);
-
-         if (!CheckResultInternal(expectedResultWithOptional, actualResult, useAlternatives))
+         if (displayOnFailure == DisplayOnFailure)
          {
-            if (displayOnFailure == DisplayOnFailure)
-            {
-               OutputEx(_T("  result: ") + actualResult);
-               OutputEx(_T("expected: ") + expectedResultWithOptional);
-               OutputEx(_T("      or: ") + expectedResultWithoutOptional);
-            }
-
-            throw CTestException(_T("CTestLog::CheckResult()"),
-               _T("Log does not contain expected result\n")
-               _T("  result: ") + actualResult + _T("\n")
-               _T("expected: ") + expectedResultWithOptional + _T("\n")
-               _T("      or: ") + expectedResultWithoutOptional);
+            OutputEx(*it);
          }
-      }
-   }
-   else if (((useAlternatives & CheckAlternatives) == CheckAlternatives) && _tstring::npos != expectedResult.find(_T("<<<")))
-   {
-      // alternate, eg <<<|Release>>>|AddRef<<<|Release>>>|, try as "|Release|AddRef|" and "|AddRef|Release|"
 
-      const _tstring firstAlternative = RemoveSecondAlternative(expectedResult);
-
-      if (!CheckResultInternal(firstAlternative, actualResult, useAlternatives))
-      {
-         const _tstring secondAlternative = RemoveFirstAlternative(expectedResult);
-
-         if (!CheckResultInternal(secondAlternative, actualResult, useAlternatives))
-         {
-            if (displayOnFailure == DisplayOnFailure)
-            {
-               OutputEx(_T("  result: ") + actualResult);
-               OutputEx(_T("expected: ") + firstAlternative);
-               OutputEx(_T("      or: ") + secondAlternative);
-            }
-
-            throw CTestException(_T("CTestLog::CheckResult()"),
-               _T("Log does not contain expected result\n")
-               _T("  result: ") + actualResult + _T("\n")
-               _T("expected: ") + firstAlternative + _T("\n")
-               _T("      or: ") + secondAlternative);
-         }
-      }
-   }
-   else if (!CheckResultInternal(expectedResult, actualResult, useAlternatives))
-   {
-      if (displayOnFailure == DisplayOnFailure)
-      {
-         OutputEx(_T("  result: ") + actualResult);
-         OutputEx(_T("expected: ") + expectedResult);
+         message += *it + _T("\n");
       }
 
-      throw CTestException(_T("CTestLog::CheckResult()"),
-         _T("Log does not contain expected result\n")
-         _T("result:   ") + actualResult + _T("\n")
-         _T("expected: ") + expectedResult);
+      throw CTestException(_T("CTestLog::CheckResult()"), message);
    }
 
    // tell the monitor of a successful check
@@ -564,7 +324,7 @@ void CTestLog::CheckResultFromFile(
          {
             CheckResult(m_separator + expectedResults, m_separator + comparedTo, DoNotDisplayOnFailure, DoNotCheckAlternatives);
          }
-         catch(const CException &/*e*/)
+         catch (const CException &/*e*/)
          {
             //SaveStringAsFile(fileNameBase + _T(".Expected.log"), expectedResults);
             //SaveStringAsFile(fileNameBase + _T(".Compared.log"), comparedTo);
@@ -572,120 +332,13 @@ void CTestLog::CheckResultFromFile(
             throw;
          }
       }
-      catch(const CException &/*e*/)
+      catch (const CException &/*e*/)
       {
          SaveStringAsFile(fileNameBase + _T(".Actual.log"), actualResults);
 
          throw;
       }
    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static _tstring RemoveOptionalTags(
-   const _tstring &input)
-{
-   _tstring output = input;
-
-   const _tstring startTag = _T("{");
-
-   const _tstring endTag = _T("}");
-
-   _tstring::size_type pos = output.find(startTag);
-
-   while (pos != _tstring::npos)
-   {
-      _tstring::size_type end = output.find(endTag, pos);
-
-      output.erase(pos, (end - pos) + 1);
-
-      pos = output.find(startTag, end + 1);
-   }
-
-   return output;
-}
-
-static _tstring RemoveTagMarks(
-   const _tstring &input)
-{
-   _tstring output = FindAndReplace(input, _T("{"), _T(""));
-
-   InPlaceFindAndReplace(output, _T("}"), _T(""));
-
-   return output;
-}
-
-static _tstring RemoveFirstAlternative(
-   const _tstring &input)
-{
-   const _tstring::size_type startPos = input.find(_T("<<<"));
-
-   if (startPos != _tstring::npos)
-   {
-      const _tstring::size_type stopPos = input.find(_T(">>>"), startPos);
-
-      if (stopPos != _tstring::npos)
-      {
-         const _tstring::size_type secondStartPos = input.find(_T("<<<"), stopPos);
-
-         if (secondStartPos != _tstring::npos)
-         {
-            const _tstring::size_type secondStopPos = input.find(_T(">>>"), secondStartPos);
-
-            if (secondStopPos != _tstring::npos)
-            {
-               _tstring output = input;
-
-               output.replace(startPos, (stopPos - startPos) + 3, _T(""));
-
-               InPlaceFindAndReplace(output, _T("<<<"), _T(""));
-               InPlaceFindAndReplace(output, _T(">>>"), _T(""));
-
-               return output;
-            }
-         }
-      }
-   }
-
-   return input;
-}
-
-static _tstring RemoveSecondAlternative(
-   const _tstring &input)
-{
-   const _tstring::size_type startPos = input.find(_T("<<<"));
-
-   if (startPos != _tstring::npos)
-   {
-      const _tstring::size_type stopPos = input.find(_T(">>>"), startPos);
-
-      if (stopPos != _tstring::npos)
-      {
-         const _tstring::size_type secondStartPos = input.find(_T("<<<"), stopPos);
-
-         if (secondStartPos != _tstring::npos)
-         {
-            const _tstring::size_type secondStopPos = input.find(_T(">>>"), secondStartPos);
-
-            if (secondStopPos != _tstring::npos)
-            {
-               _tstring output = input;
-
-               output.replace(secondStartPos, (secondStopPos - secondStartPos) + 3, _T(""));
-
-               InPlaceFindAndReplace(output, _T("<<<"), _T(""));
-               InPlaceFindAndReplace(output, _T(">>>"), _T(""));
-
-               return output;
-            }
-         }
-      }
-   }
-
-   return input;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,8 +1,11 @@
+#pragma once
+#ifndef JETBYTE_TOOLS_ADMIN_CONSTEXPR_INCLUDED__
+#define JETBYTE_TOOLS_ADMIN_CONSTEXPR_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: PrecompiledHeader.cpp
+// File: Constexpr.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2018 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -18,30 +21,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/// \file JetByteTools\Win32Tools\Test\PrecompiledHeader.cpp
-/// This file is compiled to produce the precompiled header in builds which use
-/// it.
-/// \ingroup Precomp
+#define JETBYTE_CONSTEXPR  constexpr
 
-#include "JetByteTools/Admin/Admin.h"
-
-#include "CallbackTimerQueueExTest.h"
-#include "CallbackTimerWheelTest.h"
-#include "ThreadedCallbackTimerQueueTest.h"
-#include "IntrusiveRedBlackTreeTest.h"
-#include "IntrusiveMultiMapTest.h"
-
-#include "JetByteTools/Win32Tools/Mock/PrecompiledHeader.h"
-
-#include "JetByteTools/Win32Tools/PrecompiledHeader.h"
-
-#include "JetByteTools/TestTools/TestException.h"
-#include "JetByteTools/TestTools/RunTest.h"
-#include "JetByteTools/TestTools/TestMonitor.h"
-
-#pragma hdrstop
+#endif // JETBYTE_TOOLS_ADMIN_CONSTEXPR_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: PrecompiledHeader.cpp
+// End of file: Constexpr.h
 ///////////////////////////////////////////////////////////////////////////////
-

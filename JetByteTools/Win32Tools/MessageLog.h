@@ -44,10 +44,16 @@ class CMessageLog : public ILogMessages
 
       CMessageLog();
 
-      virtual ~CMessageLog();
-
       explicit CMessageLog(
          ILogMessages &log);
+
+      CMessageLog(
+         const CMessageLog &rhs) = delete;
+
+      virtual ~CMessageLog();
+
+      CMessageLog &operator=(
+         const CMessageLog &rhs) = delete;
 
       ILogMessages *SetLog(
          ILogMessages &log);
@@ -75,27 +81,22 @@ class CMessageLog : public ILogMessages
          const std::wstring &message) override;
 
       void LogMessage(
-         const char * const pString) override;
+         const char *pString) override;
 
       void LogMessage(
-         const wchar_t * const pString) override;
+         const wchar_t *pString) override;
 
       void LogMessage(
-         const char * const pString,
-         const DataLength stringLength) override;
+         const char *pString,
+         DataLength stringLength) override;
 
       void LogMessage(
-         const wchar_t * const pString,
-         const DataLength stringLength) override;
+         const wchar_t *pString,
+         DataLength stringLength) override;
 
    private :
 
       ILogMessages *m_pLog;
-
-      /// No copies do not implement
-      CMessageLog(const CMessageLog &rhs);
-      /// No copies do not implement
-      CMessageLog &operator=(const CMessageLog &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

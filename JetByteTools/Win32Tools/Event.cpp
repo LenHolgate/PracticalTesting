@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "Event.h"
 #include "IKernelObjectName.h"
@@ -42,7 +42,7 @@ static HANDLE Create(
    bool bManualReset,
    bool bInitialState,
    LPCTSTR lpName,
-   const CEvent::CreationFlags creationFlags);
+   CEvent::CreationFlags creationFlags);
 
 static HANDLE Create(
    SECURITY_ATTRIBUTES *pEventAttributes,
@@ -53,46 +53,46 @@ static HANDLE Create(
 ///////////////////////////////////////////////////////////////////////////////
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes,
-   ResetType resetType,
-   InitialState initialState)
-   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), nullptr, CEvent::CreateOrConnect))
+   SECURITY_ATTRIBUTES *pSecurityAttributes,
+   const ResetType resetType,
+   const InitialState initialState)
+   :  m_hEvent(Create(pSecurityAttributes, (resetType == ManualReset), (initialState == Signaled), nullptr, CreateOrConnect))
 {
 
 }
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes,
-   ResetType resetType,
-   InitialState initialState,
+   SECURITY_ATTRIBUTES *pSecurityAttributes,
+   const ResetType resetType,
+   const InitialState initialState,
    const IKernelObjectName &name,
    const CreationFlags creationFlags)
-   :  m_hEvent(Create(pEventAttributes, (resetType == ManualReset), (initialState == Signaled), name.GetName().c_str(), creationFlags))
+   :  m_hEvent(Create(pSecurityAttributes, (resetType == ManualReset), (initialState == Signaled), name.GetName().c_str(), creationFlags))
 {
 
 }
 
 CEvent::CEvent(
-   SECURITY_ATTRIBUTES *pEventAttributes,
+   SECURITY_ATTRIBUTES *pSecurityAttributes,
    const IKernelObjectName &name)
-   :  m_hEvent(Create(pEventAttributes, name.GetName().c_str()))
+   :  m_hEvent(Create(pSecurityAttributes, name.GetName().c_str()))
 {
 
 }
 
 void CEvent::Reset()
 {
-   if (!::ResetEvent(m_hEvent))
+   if (!ResetEvent(m_hEvent))
    {
-      throw CWin32Exception(_T("CEvent::Reset()"), ::GetLastError());
+      throw CWin32Exception(_T("CEvent::Reset()"), GetLastError());
    }
 }
 
 void CEvent::Set()
 {
-   if (!::SetEvent(m_hEvent))
+   if (!SetEvent(m_hEvent))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CEvent::Set()"), lastError);
    }
@@ -100,9 +100,9 @@ void CEvent::Set()
 
 void CEvent::Pulse()
 {
-   if (!::PulseEvent(m_hEvent))
+   if (!PulseEvent(m_hEvent))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CEvent::Pulse()"), lastError);
    }
@@ -115,13 +115,13 @@ HANDLE CEvent::GetWaitHandle() const
 
 void CEvent::Wait() const
 {
-   IWaitable::Wait(m_hEvent);
+   WaitForHandle(m_hEvent);
 }
 
 bool CEvent::Wait(
    const Milliseconds timeout) const
 {
-   return IWaitable::Wait(m_hEvent, timeout);
+   return WaitForHandle(m_hEvent, timeout);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ bool CEvent::Wait(
 
 static HANDLE Create(
    SECURITY_ATTRIBUTES *pEventAttributes,
-   LPCTSTR lpName)
+   const LPCTSTR lpName)
 {
    static const bool notUsedWhenConnecting = false;
 
@@ -140,12 +140,12 @@ static HANDLE Create(
 
 static HANDLE Create(
    SECURITY_ATTRIBUTES *pEventAttributes,
-   bool bManualReset,
-   bool bInitialState,
-   LPCTSTR lpName,
+   const bool bManualReset,
+   const bool bInitialState,
+   const LPCTSTR lpName,
    const CEvent::CreationFlags creationFlags)
 {
-   ::SetLastError(ERROR_SUCCESS);
+   SetLastError(ERROR_SUCCESS);
 
    CSmartHandle hEvent;
 
@@ -157,19 +157,19 @@ static HANDLE Create(
       if (creationFlags == CEvent::ConnectToExisting &&
           hEvent == nullptr)
       {
-         const DWORD lastError = ::GetLastError();
-   
+         const DWORD lastError = GetLastError();
+
          throw CWin32Exception(_T("CEvent::Create()"), lastError);
       }
    }
 
-   if (!hEvent.IsValid() && 
-       creationFlags == CEvent::CreateNew ||
-       creationFlags == CEvent::CreateOrConnect)
+   if (!hEvent.IsValid() &&
+      (creationFlags == CEvent::CreateNew ||
+       creationFlags == CEvent::CreateOrConnect))
    {
       hEvent.Attach(::CreateEvent(pEventAttributes, bManualReset, bInitialState, lpName));
 
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (hEvent == nullptr)
       {

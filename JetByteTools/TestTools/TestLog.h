@@ -21,14 +21,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\tstring.h"
-#include "JetByteTools\Win32Tools\LockableObject.h"
+#include "JetByteTools/Win32Tools/tstring.h"
+#include "JetByteTools/Win32Tools/LockableObject.h"
+#include "JetByteTools/Win32Tools/CompareStrings.h"
 
 #include <vector>
 #include <string>
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
@@ -54,13 +55,21 @@ class CTestLog
          CTestLog *pLinkedLog,
          const JetByteTools::Win32::_tstring &separator);
 
+      CTestLog(
+         const CTestLog &rhs) = delete;
+
       virtual ~CTestLog();
+
+      CTestLog &operator=(
+         const CTestLog &rhs) = delete;
+
+      CTestLog *GetLogObject() const;
 
       void UnlinkLog();
 
       void ClearLog();
 
-      void LogMessage(
+      virtual void LogMessage(
          const JetByteTools::Win32::_tstring &message) const;
 
       JetByteTools::Win32::_tstring GetMessages() const;
@@ -75,32 +84,32 @@ class CTestLog
 
       enum UseAlternativesMode
       {
-         DoNotCheckAlternatives     = 0x000,
-         CheckWildcards             = 0x001,
-         CheckAlternatives          = 0x010,
-         CheckRepeats               = 0x100,
-         CheckAllAlternatives       = 0x111
+         DoNotCheckAlternatives     = JetByteTools::Win32::CCompareStrings::DoNotCheckAlternatives,
+         CheckWildcards             = JetByteTools::Win32::CCompareStrings::CheckWildcards,
+         CheckAlternatives          = JetByteTools::Win32::CCompareStrings::CheckAlternatives,
+         CheckRepeats               = JetByteTools::Win32::CCompareStrings::CheckRepeats,
+         CheckAllAlternatives       = JetByteTools::Win32::CCompareStrings::CheckAllAlternatives
       };
 
       void ResetLog();
 
       void CheckNoResults(
-         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
-         const UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
+         DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
+         UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
       void CheckResult(
          const JetByteTools::Win32::_tstring &expectedResult,
-         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
-         const UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
+         DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
+         UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
       void CheckResultA(
          const std::string &expectedResult,
-         const DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
-         const UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
+         DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
+         UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
       void CheckResultFromFile(
          const JetByteTools::Win32::_tstring &fileName,
-         const bool fileContainsLineEndBars = false);
+         bool fileContainsLineEndBars = false);
 
    protected :
 
@@ -108,7 +117,7 @@ class CTestLog
          const JetByteTools::Win32::_tstring &expectedResult,
          const JetByteTools::Win32::_tstring &actualResult,
          DisplayOnFailureMode displayOnFailure,
-         const UseAlternativesMode useAlternatives);
+         UseAlternativesMode useAlternatives) const;
 
       JetByteTools::Win32::_tstring GetFileName(
          const JetByteTools::Win32::_tstring &fileName);
@@ -130,11 +139,6 @@ class CTestLog
       mutable Log m_log;
 
       CTestLog *m_pLog;
-
-      /// No copies do not implement
-      CTestLog(const CTestLog &rhs);
-      /// No copies do not implement
-      CTestLog &operator=(const CTestLog &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

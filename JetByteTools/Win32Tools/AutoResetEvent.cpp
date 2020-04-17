@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "AutoResetEvent.h"
 
@@ -36,7 +36,7 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 CAutoResetEvent::CAutoResetEvent(
-   CEvent::InitialState initialState,
+   const CEvent::InitialState initialState,
    SECURITY_ATTRIBUTES *pSecurityAttributes)
    :  m_event(pSecurityAttributes, CEvent::AutoReset, initialState)
 {
@@ -46,7 +46,7 @@ CAutoResetEvent::CAutoResetEvent(
 CAutoResetEvent::CAutoResetEvent(
    const IKernelObjectName &name,
    SECURITY_ATTRIBUTES *pSecurityAttributes,
-   CEvent::InitialState initialState)
+   const CEvent::InitialState initialState)
    :  m_event(pSecurityAttributes, CEvent::AutoReset, initialState, name)
 {
 
@@ -56,7 +56,7 @@ CAutoResetEvent::CAutoResetEvent(
    const IKernelObjectName &name,
    const CEvent::CreationFlags creationFlags,
    SECURITY_ATTRIBUTES *pSecurityAttributes,
-   CEvent::InitialState initialState)
+   const CEvent::InitialState initialState)
    :  m_event(pSecurityAttributes, CEvent::AutoReset, initialState, name, creationFlags)
 {
 
@@ -98,4 +98,3 @@ bool CAutoResetEvent::Wait(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: AutoResetEvent.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

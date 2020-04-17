@@ -18,8 +18,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
-#include "JetByteTools\Admin\CompilerName.h"
+#include "JetByteTools/Admin/Admin.h"
+#include "JetByteTools/Admin/CompilerName.h"
 
 #pragma hdrstop
 
@@ -56,7 +56,13 @@
 #ifdef _MSC_VER
 #pragma JETBYTE_MESSAGE(" Build configuration: Compiler Version = " JETBYTE_MACROASSTRING(_MSC_VER) " - " JETBYTE_MACROASSTRING(JETBYTE_COMPILER_LONG_NAME_A))
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: Compiler Library Version = UNSET")
+#pragma JETBYTE_MESSAGE(" Build configuration: Compiler Version = UNSET")
+#endif
+
+#ifdef _MSVC_LANG
+#pragma JETBYTE_MESSAGE(" Build configuration: C++ Language Version = " JETBYTE_MACROASSTRING(_MSVC_LANG))
+#else
+#pragma JETBYTE_MESSAGE(" Build configuration: C++ Language Version = UNSET")
 #endif
 
 #pragma JETBYTE_MESSAGE(" Build configuration:")
@@ -90,7 +96,7 @@
 #if (NTDDI_VERSION < JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION)
 #pragma JETBYTE_MESSAGE(" **** Build configuration UNSUPPORTED ****")
 #elif (NTDDI_VERSION == 0x06000000)
-#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista)")
+#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista)")
 #elif (NTDDI_VERSION == 0x06000100)
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista SP1/Windows Server 2008)")
 #elif (NTDDI_VERSION == 0x06000200)
@@ -161,7 +167,7 @@
 #if JETBYTE_ALLOW_UNTESTED_COMPILE_ENV == 0
 #error Untested compiler version: _MSC_VER > JETBYTE_LATEST_TESTED_COMPILER_VERSION
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: Untested compiler version: _MSC_VER > JETBYTE_LATEST_TESTED_COMPILER_VERSION")
+#pragma JETBYTE_MESSAGE("Build configuration: Untested compiler version: _MSC_VER (" JETBYTE_MACROASSTRING(_MSC_VER) ") > JETBYTE_LATEST_TESTED_COMPILER_VERSION")
 #endif
 #endif
 #if _MSC_VER < JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION
@@ -264,15 +270,15 @@
 #endif
 
 #if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions in destructors with catch(...)")
+#pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions in destructors with catch (...)")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions in destructors with catch(...), allow them to propogate and remain uncaught")
+#pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions in destructors with catch (...), allow them to propogate and remain uncaught")
 #endif
 
 #if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions at thread boundaries with catch(...)")
+#pragma JETBYTE_MESSAGE("Build configuration: Catch unhandled exceptions at thread boundaries with catch (...)")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions at thread boundaries with catch(...), allow them to propogate and remain uncaught")
+#pragma JETBYTE_MESSAGE("Build configuration: Do NOT catch unhandled exceptions at thread boundaries with catch (...), allow them to propogate and remain uncaught")
 #endif
 
 #if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
@@ -324,12 +330,22 @@
 
 #if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE enabled: YES")
+#if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_COUNTED_SMART_POINTER_DUMP_ON_NULL_REFERENCE enabled: NO")
+#endif
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE enabled: NO")
 #endif
 
 #if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE enabled: YES")
+#if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE enabled: NO")
+#endif
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE enabled: NO")
 #endif
@@ -528,10 +544,27 @@
 #pragma JETBYTE_MESSAGE("Build configuration: _SECURE_SCL enabled: NO")
 #endif
 
+#if (JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS enabled: YES")
 #if (JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE enabled: NO")
+#endif
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS enabled: NO")
+#endif
+
+#if (JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE enabled: NO")
+#endif
+
+#if (JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE enabled: NO")
 #endif
 
 #if (JETBYTE_TERMINATE_CRASH_DUMP_CREATION == 1)
@@ -546,22 +579,22 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION enabled: NO")
 #endif
 
-#if JETBYTE_DEPRECATE_IN_ORDER_BUFFER_LIST == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_IN_ORDER_BUFFER_LIST enabled: YES")
+#if JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_IN_ORDER_BUFFER_LIST enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_SEQUENTIAL_BUFFER_LIST enabled: NO")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE enabled: NO")
 #endif
 
 #if JETBYTE_DEPRECATE_CRITICAL_SECTION == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: NO")
+#endif
+
+#if JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION enabled: NO")
 #endif
 
 #if JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1
@@ -659,6 +692,18 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: NO")
 #endif
 
+#if JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: NO")
+#endif
+
+#if JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS enabled: NO")
+#endif
+
 #if JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES enabled: YES")
 #else
@@ -669,6 +714,30 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: NO")
+#endif
+
+#if JETBYTE_HAS_ATL_HEADERS_INSTALLED == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_HAS_ATL_HEADERS_INSTALLED enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_HAS_ATL_HEADERS_INSTALLED enabled: NO")
+#endif
+
+#if JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS enabled: NO")
+#endif
+
+#if JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT enabled: NO")
+#endif
+
+#if JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES enabled: NO")
 #endif
 
 #endif

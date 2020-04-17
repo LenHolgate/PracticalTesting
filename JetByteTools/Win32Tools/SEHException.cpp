@@ -18,13 +18,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "SEHException.h"
 
 #include "Utils.h"
 
 #pragma hdrstop
+
+#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#include "DebugTrace.h"
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using std::string;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -38,17 +48,17 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 static _tstring Where(
-   EXCEPTION_POINTERS *pPointers);
+   const EXCEPTION_POINTERS *pPointers);
 
 static const _tstring &Message(
-   unsigned int code);
+   unsigned long code);
 
 ///////////////////////////////////////////////////////////////////////////////
 // CSEHException
 ///////////////////////////////////////////////////////////////////////////////
 
 CSEHException::CSEHException(
-   unsigned int code,
+   const unsigned int code,
    EXCEPTION_POINTERS *pPointers)
    :  m_code(code),
       m_pPointers(pPointers)
@@ -80,24 +90,61 @@ const _tstring &CSEHException::GetMessage() const
    return Message(m_code);
 }
 
+string CSEHException::GetDetailsA() const
+{
+   return CStringConverter::TtoA(GetWhere() + _T(" - ") + GetMessage());
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // CSEHException::Translator
 ///////////////////////////////////////////////////////////////////////////////
 
+#if (JETBYTE_BREAK_SEH_EXCEPTION_TRANSLATOR_COMPATABILITY == 0)
 CSEHException::Translator::Translator()
-   :  m_prev(_set_se_translator(Translator::trans_func))
+   :  m_prev(ConstructionHelper())
 {
+}
+#endif
 
+CSEHException::Translator::Translator(
+   int /*NotUsedJustBreakCompatibility*/)
+   :  m_prev(ConstructionHelper())
+{
 }
 
 CSEHException::Translator::~Translator()
 {
-   _set_se_translator(m_prev);
+   try
+   {
+      if (m_prev)
+      {
+         _set_se_translator(m_prev);
+      }
+   }
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+}
+
+_se_translator_function CSEHException::Translator::ConstructionHelper()
+{
+   #if (JETBYTE_TRANSLATE_SEH_EXCEPTIONS == 1)
+   #if (JETBYTE_TRANSLATE_SEH_EXCEPTIONS_IN_DEBUGGER == 1)
+   return _set_se_translator(trans_func);
+   #else
+   if (!::IsDebuggerPresent())
+   {
+      return _set_se_translator(Translator::trans_func);
+   }
+
+   return nullptr;
+   #endif
+   #else
+   return nullptr;
+   #endif
 }
 
 void CSEHException::Translator::trans_func(
-   unsigned int code,
+   const unsigned int code,
    EXCEPTION_POINTERS *pPointers)
 {
    throw CSEHException(code, pPointers);
@@ -117,7 +164,7 @@ void CSEHException::Translator::trans_func(
 ///////////////////////////////////////////////////////////////////////////////
 
 static _tstring Where(
-   EXCEPTION_POINTERS *pPointers)
+   const EXCEPTION_POINTERS *pPointers)
 {
    TCHAR buffer[2 + 16 + 1];
 
@@ -154,7 +201,7 @@ DEFINE_MSG(INVALID_HANDLE);
 static const _tstring s_unknown = _T("Unknown exception");
 
 static const _tstring &Message(
-   unsigned int code)
+   const unsigned long code)
 {
    switch (code)
    {
@@ -180,9 +227,10 @@ static const _tstring &Message(
       CASE_MSG(INVALID_DISPOSITION);
       CASE_MSG(GUARD_PAGE);
       CASE_MSG(INVALID_HANDLE);
-   }
 
-   return s_unknown;
+      default:
+         return s_unknown;
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

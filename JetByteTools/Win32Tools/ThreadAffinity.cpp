@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ThreadAffinity.h"
 #include "Win32Exception.h"
@@ -26,7 +26,7 @@
 
 #pragma hdrstop
 
-#include <winbase.h>
+#include <WinBase.h>
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
 #include "DebugTrace.h"
@@ -45,7 +45,7 @@ namespace Win32 {
 
 static DWORD_PTR SetThreadAffinity(
    HANDLE hThread,
-   const CThreadAffinity::SelectHow selectHow,
+   CThreadAffinity::SelectHow selectHow,
    DWORD_PTR affinityMask = 0);
 
 static DWORD_PTR SelectSingleProcessor();
@@ -67,8 +67,8 @@ CThreadAffinity::CThreadAffinity(
 CThreadAffinity::CThreadAffinity(
    const SelectHow selectHow,
    const DWORD_PTR affinityMask)
-   :  m_previousThreadAffinity(SetThreadAffinity(::GetCurrentThread(), selectHow, affinityMask)),
-      m_hThread(::GetCurrentThread())
+   :  m_previousThreadAffinity(SetThreadAffinity(GetCurrentThread(), selectHow, affinityMask)),
+      m_hThread(GetCurrentThread())
 {
 
 }
@@ -94,7 +94,7 @@ CThreadAffinity::~CThreadAffinity()
 static DWORD_PTR SetThreadAffinity(
    HANDLE hThread,
    const CThreadAffinity::SelectHow selectHow,
-   DWORD_PTR affinityMask)
+   const DWORD_PTR affinityMask)
 {
    DWORD_PTR previousMask = 0;
 
@@ -114,14 +114,14 @@ static DWORD_PTR SetThreadAffinity(
 
       case CThreadAffinity::UseAffinityMask :
 
-         previousMask = ::SetThreadAffinityMask(hThread, affinityMask);
+         previousMask = SetThreadAffinityMask(hThread, affinityMask);
 
          if (0 == previousMask)
          {
-            throw CWin32Exception(_T("CThreadAffinity::SetThreadAffinity()"), ::GetLastError());
+            throw CWin32Exception(_T("CThreadAffinity::SetThreadAffinity()"), GetLastError());
          }
 
-      break ;
+      break;
 
       default :
 
@@ -137,9 +137,9 @@ static DWORD_PTR SelectSingleProcessor()
 
    DWORD_PTR systemAffinity;
 
-   if (!::GetProcessAffinityMask(::GetCurrentProcess(), &processAffinity, &systemAffinity))
+   if (!GetProcessAffinityMask(GetCurrentProcess(), &processAffinity, &systemAffinity))
    {
-      throw CWin32Exception(_T("CThreadAffinity::SelectSingleProcessor()"), ::GetLastError());
+      throw CWin32Exception(_T("CThreadAffinity::SelectSingleProcessor()"), GetLastError());
    }
 
 // 11/3/2010 - #pragma JETBYTE_TODO("Make this static so we select a different one each time")
@@ -170,4 +170,3 @@ static DWORD_PTR SelectSingleProcessor()
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadAffinity.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

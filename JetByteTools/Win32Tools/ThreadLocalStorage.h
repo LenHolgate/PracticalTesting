@@ -53,9 +53,15 @@ class CThreadLocalStorage
       explicit CThreadLocalStorage(
          DWORD tlsIndex);
 
+      CThreadLocalStorage(
+         const CThreadLocalStorage &rhs) = delete;
+
       /// If this object owns the TLS slot then it releases it.
 
       ~CThreadLocalStorage();
+
+      CThreadLocalStorage &operator=(
+         const CThreadLocalStorage &rhs) = delete;
 
       /// Returns the object's TLS index.
 
@@ -73,7 +79,7 @@ class CThreadLocalStorage
       /// Sets a DWORD value in the TLS stot without casting at the call site.
 
       void SetValue(
-         const DWORD value) const;
+         DWORD value) const;
 
       /// Returns the stored value of the TLS slot.
 
@@ -88,11 +94,6 @@ class CThreadLocalStorage
       const DWORD m_index;
 
       const bool m_owner;
-
-      /// No copies do not implement
-      CThreadLocalStorage(const CThreadLocalStorage &rhs);
-      /// No copies do not implement
-      CThreadLocalStorage &operator=(const CThreadLocalStorage &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

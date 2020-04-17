@@ -61,7 +61,7 @@ class CStringConverter
 
       static int GetSpaceRequiredForAtoT(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static _tstring AtoT(
@@ -74,7 +74,7 @@ class CStringConverter
 
       static _tstring AtoT(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static int GetSpaceRequiredForAtoW(
@@ -87,7 +87,7 @@ class CStringConverter
 
       static int GetSpaceRequiredForAtoW(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::wstring AtoW(
@@ -100,7 +100,7 @@ class CStringConverter
 
       static std::wstring AtoW(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static BSTR AtoBSTR(
@@ -113,20 +113,20 @@ class CStringConverter
 
       static BSTR AtoBSTR(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static int AtoUTF8(
          const std::string &input,
          BYTE *pBuffer,
-         const int bufferSize,
+         int bufferSize,
          const CCodePage &codePage = s_CP_ACP);
 
       static int AtoUTF8(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          BYTE *pBuffer,
-         const int bufferSize,
+         int bufferSize,
          const CCodePage &codePage = s_CP_ACP);
 
       static int GetSpaceRequiredForAtoUTF8(
@@ -135,7 +135,7 @@ class CStringConverter
 
       static int GetSpaceRequiredForAtoUTF8(
          const char *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       // Wto
@@ -150,7 +150,7 @@ class CStringConverter
 
       static int GetSpaceRequiredForWtoT(
          const wchar_t *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static _tstring WtoT(
@@ -163,7 +163,7 @@ class CStringConverter
 
       static _tstring WtoT(
          const wchar_t *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static int GetSpaceRequiredForWtoA(
@@ -176,7 +176,7 @@ class CStringConverter
 
       static int GetSpaceRequiredForWtoA(
          const wchar_t *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::string WtoA(
@@ -189,7 +189,7 @@ class CStringConverter
 
       static std::string WtoA(
          const wchar_t *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static BSTR WtoBSTR(
@@ -198,20 +198,20 @@ class CStringConverter
       static int WtoUTF8(
          const std::wstring &input,
          BYTE *pBuffer,
-         const int bufferSize);
+         int bufferSize);
 
       static int WtoUTF8(
          const wchar_t *pInput,
-         const int inputLength,
+         int inputLength,
          BYTE *pBuffer,
-         const int bufferSize);
+         int bufferSize);
 
       static int GetSpaceRequiredForWtoUTF8(
          const std::wstring &input);
 
       static int GetSpaceRequiredForWtoUTF8(
          const wchar_t *pInput,
-         const int inputLength);
+         int inputLength);
 
       // Tto
 
@@ -225,7 +225,7 @@ class CStringConverter
 
       static std::string TtoA(
          const TCHAR *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::wstring TtoW(
@@ -238,7 +238,7 @@ class CStringConverter
 
       static std::wstring TtoW(
          const TCHAR *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static BSTR TtoBSTR(
@@ -248,14 +248,14 @@ class CStringConverter
       static int TtoUTF8(
          const _tstring &input,
          BYTE *pBuffer,
-         const int bufferSize,
+         int bufferSize,
          const CCodePage &codePage = s_CP_ACP);
 
       static int TtoUTF8(
          const TCHAR *pInput,
-         const int inputLength,
+         int inputLength,
          BYTE *pBuffer,
-         const int bufferSize,
+         int bufferSize,
          const CCodePage &codePage = s_CP_ACP);
 
       static int GetSpaceRequiredForTtoUTF8(
@@ -264,24 +264,24 @@ class CStringConverter
 
       static int GetSpaceRequiredForTtoUTF8(
          const TCHAR *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       // BSTRto
 
       static _tstring BSTRtoT(
-         const BSTR bstr,
+         BSTR bstr,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::string BSTRtoA(
-         const BSTR bstr,
+         BSTR bstr,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::wstring BSTRtoW(
-         const BSTR bstr);
+         BSTR bstr);
 
       static void BSTRtoA(
-         const BSTR bstr,
+         BSTR bstr,
          const char **ppResult,
          const CCodePage &codePage = s_CP_ACP);
 
@@ -293,14 +293,14 @@ class CStringConverter
 
       static _tstring UTF8toT(
          const BYTE *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static _tstring UTF8toT(
          const BYTE *pPartialCharacter,
-         const int partialLength,
+         int partialLength,
          const BYTE *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::string UTF8toA(
@@ -309,14 +309,14 @@ class CStringConverter
 
       static std::string UTF8toA(
          const BYTE *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::string UTF8toA(
          const BYTE *pPartialCharacter,
-         const int partialLength,
+         int partialLength,
          const BYTE *pInput,
-         const int inputLength,
+         int inputLength,
          const CCodePage &codePage = s_CP_ACP);
 
       static std::wstring UTF8toW(
@@ -324,20 +324,20 @@ class CStringConverter
 
       static std::wstring UTF8toW(
          const BYTE *pInput,
-         const int inputLength);
+         int inputLength);
 
       static std::wstring UTF8toW(
          const BYTE *pPartialCharacter,
-         const int partialLength,
+         int partialLength,
          const BYTE *pInput,
-         const int inputLength);
+         int inputLength);
 
       static int GetBytesInUTF8Character(
-         const BYTE input);
+         BYTE input);
 
       static int GetBytesAfterLastCompleteUTF8Character(
          const BYTE *pInput,
-         const int inputLength);
+         int inputLength);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

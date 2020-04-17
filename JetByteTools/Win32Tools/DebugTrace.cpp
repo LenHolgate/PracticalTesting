@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "DebugTrace.h"
 #include "SimpleMessageLog.h"
@@ -88,7 +88,7 @@ CDebugTrace &CDebugTrace::Instance()
 
 CDebugTrace::LogInstaller::LogInstaller(
    ILogMessages &log)
-   :  m_pOldLog(CDebugTrace::Instance().SetLog(log))
+   :  m_pOldLog(Instance().SetLog(log))
 {
 
 }
@@ -106,7 +106,7 @@ void CDebugTrace::LogInstaller::Uninstall()
 {
    if (m_pOldLog)
    {
-      ILogMessages *pPreviousLog = CDebugTrace::Instance().SetLog(*m_pOldLog);
+      ILogMessages *pPreviousLog = Instance().SetLog(*m_pOldLog);
 
       (void)pPreviousLog;
 

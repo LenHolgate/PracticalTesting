@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 #include "SmartHandle.h"
 #include "IWaitable.h"
@@ -95,13 +95,19 @@ class CEvent : public IWaitable
          ResetType resetType,
          InitialState initialState,
          const IKernelObjectName &name,
-         const CreationFlags creationFlags = CreateOrConnect);
+         CreationFlags creationFlags = CreateOrConnect);
 
       /// Connect to an existing named CEvent object for cross-process use.
 
       CEvent(
          SECURITY_ATTRIBUTES *pSecurityAttributes,
          const IKernelObjectName &name);
+
+      CEvent(
+         const CEvent &rhs) = delete;
+
+      CEvent &operator=(
+         const CEvent &rhs) = delete;
 
       /// Reset the event to the unsignalled state.
 
@@ -122,16 +128,11 @@ class CEvent : public IWaitable
       void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeout) const override;
+         Milliseconds timeout) const override;
 
    private :
 
       CSmartHandle m_hEvent;
-
-      /// No copies do not implement
-      CEvent(const CEvent &rhs);
-      /// No copies do not implement
-      CEvent &operator=(const CEvent &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

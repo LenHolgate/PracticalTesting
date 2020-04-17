@@ -52,7 +52,7 @@ class IRunnable
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IRunnable() {}
+      virtual ~IRunnable() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

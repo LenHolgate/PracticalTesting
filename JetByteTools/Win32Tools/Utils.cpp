@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "Utils.h"
 #include "Exception.h"
@@ -35,7 +35,7 @@
 
 #include <Psapi.h>
 
-#include <Lmcons.h>     // UNLEN
+#include <lmcons.h>     // UNLEN
 
 #include <Shlwapi.h>    // PathCombine
 
@@ -51,7 +51,6 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-using std::endl;
 using std::string;
 using std::wstring;
 using std::min;
@@ -158,12 +157,25 @@ bool IsAllDigitsA(
    return ok;
 }
 
-bool IsAllHexDigitsA(
-   const string &numeric)
+bool IsAllHexDigits(
+   const _tstring &hex)
 {
-   bool ok = (numeric.length() != 0);
+   bool ok = (hex.length() != 0);
 
-   for (string::const_iterator it = numeric.begin(); ok && it != numeric.end(); ++it)
+   for (_tstring::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
+   {
+      ok = ToBool(_istxdigit(*it));
+   }
+
+   return ok;
+}
+
+bool IsAllHexDigitsA(
+   const string &hex)
+{
+   bool ok = (hex.length() != 0);
+
+   for (string::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
    {
       ok = ToBool(isxdigit(static_cast<unsigned char>(*it)));
    }
@@ -172,8 +184,8 @@ bool IsAllHexDigitsA(
 }
 
 _tstring GetLastErrorMessageIfPossible(
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    TCHAR errmsg[512];
 
@@ -207,9 +219,9 @@ _tstring GetLastErrorMessageIfPossible(
 }
 
 _tstring GetLastErrorMessageIfPossible(
-   const HMODULE hModule, 
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const HMODULE hModule,
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    TCHAR errmsg[512];
 
@@ -243,8 +255,8 @@ _tstring GetLastErrorMessageIfPossible(
 }
 
 _tstring GetLastErrorMessage(
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    TCHAR errmsg[512];
 
@@ -258,7 +270,12 @@ _tstring GetLastErrorMessage(
    {
       // if we fail, call ourself to find out why and return that error
 
-      const DWORD thisError = ::GetLastError();
+      const DWORD thisError = GetLastError();
+
+      if (thisError == 8)
+      {
+         return _T("Failed to obtain error string - Not enough storage is available to process this command.");
+      }
 
       if (thisError != last_error)
       {
@@ -289,9 +306,9 @@ _tstring GetLastErrorMessage(
 }
 
 _tstring GetLastErrorMessage(
-   const HMODULE hModule, 
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const HMODULE hModule,
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    TCHAR errmsg[512];
 
@@ -305,7 +322,12 @@ _tstring GetLastErrorMessage(
    {
       // if we fail, call ourself to find out why and return that error
 
-      const DWORD thisError = ::GetLastError();
+      const DWORD thisError = GetLastError();
+
+      if (thisError == 8)
+      {
+         return _T("Failed to obtain error string - Not enough storage is available to process this command.");
+      }
 
       if (thisError != last_error)
       {
@@ -336,8 +358,8 @@ _tstring GetLastErrorMessage(
 }
 
 string GetLastErrorMessageA(
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    CHAR errmsg[512];
 
@@ -351,7 +373,12 @@ string GetLastErrorMessageA(
    {
       // if we fail, call ourself to find out why and return that error
 
-      const DWORD thisError = ::GetLastError();
+      const DWORD thisError = GetLastError();
+
+      if (thisError == 8)
+      {
+         return "Failed to obtain error string - Not enough storage is available to process this command.";
+      }
 
       if (thisError != last_error)
       {
@@ -382,8 +409,8 @@ string GetLastErrorMessageA(
 }
 
 wstring GetLastErrorMessageW(
-   DWORD last_error,
-   bool stripTrailingLineFeed)
+   const DWORD last_error,
+   const bool stripTrailingLineFeed)
 {
    wchar_t errmsg[512];
 
@@ -397,7 +424,7 @@ wstring GetLastErrorMessageW(
    {
       // if we fail, call ourself to find out why and return that error
 
-      const DWORD thisError = ::GetLastError();
+      const DWORD thisError = GetLastError();
 
       if (thisError != last_error)
       {
@@ -428,21 +455,21 @@ wstring GetLastErrorMessageW(
 }
 
 void StringToHex(
-   const _tstring &ts,
+   const _tstring &str,
    BYTE *pBuffer,
-   size_t nBytes)
+   const size_t nBytes)
 {
-   const string s = CStringConverter::TtoA(ts);
+   const string s = CStringConverter::TtoA(str);
 
    for (size_t i = 0; i < nBytes; i++)
    {
       const size_t stringOffset = i * 2;
 
-      const BYTE b = static_cast<const BYTE>(s[stringOffset]);
+      const auto b = static_cast<const BYTE>(s[stringOffset]);
 
       BYTE val = isdigit(b) ? static_cast<BYTE>((b - '0') * 16) : static_cast<BYTE>(((toupper(b) - 'A') + 10) * 16);
 
-      const BYTE b1 = static_cast<const BYTE >(s[stringOffset + 1]);
+      const auto b1 = static_cast<const BYTE >(s[stringOffset + 1]);
 
       val = isdigit(b1) ? static_cast<BYTE>(val + b1 - '0') : static_cast<BYTE>(val + (toupper(b1) - 'A') + 10);
 
@@ -453,9 +480,9 @@ void StringToHex(
 void CreateDirectory(
    const _tstring &directory)
 {
-   if (!::CreateDirectory(directory.c_str(), 0))
+   if (!::CreateDirectory(directory.c_str(), nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CreateDirectory()"), lastError);
    }
@@ -466,11 +493,11 @@ bool CreateDirectoryIfRequired(
 {
    bool created = false;
 
-   if (!::CreateDirectory(directory.c_str(), 0))
+   if (!::CreateDirectory(directory.c_str(), nullptr))
    {
       created = true;
 
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError != ERROR_ALREADY_EXISTS)
       {
@@ -486,13 +513,13 @@ size_t CreateDirectoriesIfRequired(
 {
    size_t numCreated = 0;
 
-   if (!::CreateDirectory(directory.c_str(), 0))
+   if (!::CreateDirectory(directory.c_str(), nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError == ERROR_PATH_NOT_FOUND)
       {
-         const _tstring::size_type pos = directory.find_last_of(_T("\\"));
+         const _tstring::size_type pos = directory.find_last_of(_T('\\'));
 
          if (pos != _tstring::npos)
          {
@@ -525,7 +552,7 @@ size_t CreateDirectoriesIfRequired(
 
 _tstring GetCurrentDirectory()
 {
-   DWORD size = ::GetCurrentDirectory(0, nullptr);
+   const DWORD size = ::GetCurrentDirectory(0, nullptr);
 
    _tstring result;
 
@@ -546,7 +573,7 @@ void SetCurrentDirectory(
 {
    if (!::SetCurrentDirectory(directory.c_str()))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SetCurrentDirectory()"), lastError);
    }
@@ -557,7 +584,7 @@ _tstring EnsurePathEndsWithSingleBackslash(
 {
    _tstring result = path;
 
-   _tstring::size_type pos = result.find_last_of(_T("\\"));
+   _tstring::size_type pos = result.find_last_of(_T('\\'));
 
    const _tstring::size_type lastPos = result.length() - 1;
 
@@ -592,7 +619,7 @@ _tstring CombinePath(
 
    if (!TryCombinePath(combinedPath, path1, path2))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CombinePath() failed for \"") + path1 + _T("\", \"") + path2 + _T("\""), lastError);
    }
@@ -609,7 +636,7 @@ bool TryCombinePath(
 
    TCHAR outBuffer[MAX_PATH];
 
-   if (0 != ::PathCombine(outBuffer, path1.c_str(), path2.c_str()))
+   if (nullptr != ::PathCombine(outBuffer, path1.c_str(), path2.c_str()))
    {
       combinedPath = outBuffer;
 
@@ -629,7 +656,7 @@ _tstring MakePathAbsolute(
 
    if (!TryCombinePath(absolutePath, path, _T(".")))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("MakePathAbsolute() failed for \"") + path + _T("\""), lastError);
    }
@@ -693,7 +720,7 @@ string GetTimeStampA()
 
 _tstring GetComputerName()
 {
-   TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] ;
+   TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1];
    DWORD computerNameLen = MAX_COMPUTERNAME_LENGTH + 1;
 
    if (::GetComputerName(computerName, &computerNameLen))
@@ -722,8 +749,8 @@ bool GetModuleFileName(
    HINSTANCE hModule,
    _tstring &name)
 {
-   TCHAR moduleFileName[MAX_PATH + 1] ;
-   DWORD moduleFileNameLen = MAX_PATH ;
+   TCHAR moduleFileName[MAX_PATH + 1];
+   const DWORD moduleFileNameLen = MAX_PATH;
 
    const bool ok = ToBool(::GetModuleFileNameEx(hProcess, hModule, moduleFileName, moduleFileNameLen));
 
@@ -736,12 +763,12 @@ bool GetModuleFileName(
 }
 
 _tstring GetModuleFileName(
-   HINSTANCE hModule /* = 0 */)
+   HINSTANCE hModule)
 {
    _tstring name = _T("UNAVAILABLE");
 
-   TCHAR moduleFileName[MAX_PATH + 1] ;
-   DWORD moduleFileNameLen = MAX_PATH ;
+   TCHAR moduleFileName[MAX_PATH + 1];
+   const DWORD moduleFileNameLen = MAX_PATH;
 
    if (::GetModuleFileName(hModule, moduleFileName, moduleFileNameLen))
    {
@@ -752,11 +779,11 @@ _tstring GetModuleFileName(
 }
 
 _tstring GetModulePathName(
-   HINSTANCE hModule /* = 0 */)
+   HINSTANCE hModule)
 {
-   _tstring path = GetModuleFileName(hModule);
+   const _tstring path = GetModuleFileName(hModule);
 
-   _tstring::size_type pos = path.find_last_of(_T("\\/:")); //lint !e691 (Suspicious use of backslash)
+   const _tstring::size_type pos = path.find_last_of(_T("\\/:")); //lint !e691 (Suspicious use of backslash)
 
    return path.substr(0, pos);
 }
@@ -764,7 +791,7 @@ _tstring GetModulePathName(
 _tstring StripFileExtension(
    const _tstring &filename)
 {
-   _tstring::size_type pos = filename.find_last_of(_T("."));
+   const _tstring::size_type pos = filename.find_last_of(_T('.'));
 
    return filename.substr(0, pos);
 }
@@ -772,7 +799,7 @@ _tstring StripFileExtension(
 string StripFileExtensionA(
    const string &filename)
 {
-   string::size_type pos = filename.find_last_of(".");
+   const string::size_type pos = filename.find_last_of('.');
 
    return filename.substr(0, pos);
 }
@@ -781,13 +808,13 @@ _tstring GetSystemWindowsDirectory()
 {
    TCHAR buffer[MAX_PATH + 1];
 
-   DWORD bufferLen = MAX_PATH;
+   const DWORD bufferLen = MAX_PATH;
 
    const UINT result = ::GetSystemWindowsDirectory(buffer, bufferLen);
 
    if (result == 0)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("GetSystemWindowsDirectory()"), lastError);
    }
@@ -804,13 +831,13 @@ _tstring GetSystemDirectory()
 {
    TCHAR buffer[MAX_PATH + 1];
 
-   DWORD bufferLen = MAX_PATH;
+   const DWORD bufferLen = MAX_PATH;
 
    const UINT result = ::GetSystemDirectory(buffer, bufferLen);
 
    if (result == 0)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("GetSystemDirectory()"), lastError);
    }
@@ -915,7 +942,7 @@ void DeleteFile(
 {
    if (!::DeleteFile(fileName.c_str()))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("DeleteFile() - \"") + fileName + _T("\""), lastError);
    }
@@ -933,7 +960,7 @@ bool Is64bitSystem()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
-   LPFN_ISWOW64PROCESS pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
+   const auto pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -974,7 +1001,7 @@ bool IsWow64Process()
 
    typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
-   LPFN_ISWOW64PROCESS pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
+   const auto pfnIsWow64Process = reinterpret_cast<LPFN_ISWOW64PROCESS>(::GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process"));
 
    // 32-bit programs run on both 32-bit and 64-bit Windows
    // so must sniff
@@ -1022,7 +1049,7 @@ bool Is32bitProcess()
 
 #else
 
-   return true ;  // Compiled as a 32-bit program
+   return true;  // Compiled as a 32-bit program
 
 #endif
 }
@@ -1031,7 +1058,7 @@ _tstring GetSystemWow64Directory()
 {
    TCHAR buffer[MAX_PATH + 1];
 
-   DWORD bufferLen = MAX_PATH;
+   const DWORD bufferLen = MAX_PATH;
 
    typedef UINT (WINAPI *LPFN_GETSYSTEMWOW64DIRECTORY) (LPTSTR, UINT);
 
@@ -1041,7 +1068,7 @@ _tstring GetSystemWow64Directory()
    const LPCSTR pFunctionName = "GetSystemWow64DirectoryA";
 #endif
 
-   LPFN_GETSYSTEMWOW64DIRECTORY pfnGetSystemWow64Directory = reinterpret_cast<LPFN_GETSYSTEMWOW64DIRECTORY>(::GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName));
+   const auto pfnGetSystemWow64Directory = reinterpret_cast<LPFN_GETSYSTEMWOW64DIRECTORY>(GetProcAddress(::GetModuleHandle(_T("kernel32")), pFunctionName));
 
    if (pfnGetSystemWow64Directory)
    {
@@ -1049,7 +1076,7 @@ _tstring GetSystemWow64Directory()
 
       if (result == 0)
       {
-         const DWORD lastError = ::GetLastError();
+         const DWORD lastError = GetLastError();
 
          throw CWin32Exception(_T("GetSystemWow64Directory()"), lastError);
       }
@@ -1071,7 +1098,7 @@ _tstring GetUserName()
 {
    _tstring name = _T("UNAVAILABLE");
 
-   TCHAR userName[UNLEN + 1] ;
+   TCHAR userName[UNLEN + 1];
    DWORD userNameLen = UNLEN;
 
    if (::GetUserName(userName, &userNameLen))
@@ -1091,7 +1118,7 @@ _tstring StripWhiteSpace(
 
    const TCHAR *pSrc = source.c_str();
 
-   TCHAR *pDst = const_cast<TCHAR *>(destination.c_str());
+   auto *pDst = const_cast<TCHAR *>(destination.c_str());
 
    size_t i = 0;
 
@@ -1121,7 +1148,7 @@ string StripWhiteSpaceA(
 
    const char *pSrc = source.c_str();
 
-   char *pDst = const_cast<char *>(destination.c_str());
+   auto *pDst = const_cast<char *>(destination.c_str());
 
    size_t i = 0;
 
@@ -1152,7 +1179,12 @@ _tstring StripSurroundingWhiteSpace(
       ++pSrc;
    }
 
-   _tstring result = pSrc;
+   _tstring result;
+
+   if (pSrc)
+   {
+      result = pSrc;
+   }
 
    size_t i = result.length();
 
@@ -1179,7 +1211,12 @@ string StripSurroundingWhiteSpaceA(
       ++pSrc;
    }
 
-   string result = pSrc;
+   string result;
+
+   if (pSrc)
+   {
+      result = pSrc;
+   }
 
    size_t i = result.length();
 
@@ -1307,7 +1344,7 @@ _tstring GetFileVersionString(
    const _tstring &requiredString)
 {
    return GetFileVersionString(
-      0,
+      nullptr,
       requiredString);
 }
 
@@ -1316,7 +1353,7 @@ _tstring GetFileVersionString(
    const _tstring &requiredString)
 {
    return GetFileVersionString(
-      0,
+      nullptr,
       languageID,
       requiredString);
 }
@@ -1327,7 +1364,7 @@ _tstring GetFileVersionString(
    const _tstring &requiredString)
 {
    return GetFileVersionString(
-      0,
+      nullptr,
       languageID,
       charsetID,
       requiredString);
@@ -1366,19 +1403,19 @@ _tstring GetFileVersionString(
 
    const _tstring moduleFileName = GetModuleFileName(hModule);
 
-   LPTSTR pModuleFileName = const_cast<LPTSTR>(moduleFileName.c_str());
+   const auto pModuleFileName = const_cast<LPTSTR>(moduleFileName.c_str());
 
    DWORD zero = 0;
 
-   DWORD verSize = ::GetFileVersionInfoSize(pModuleFileName, &zero);
+   const DWORD verSize = ::GetFileVersionInfoSize(pModuleFileName, &zero);
 
    if (verSize != 0)
    {
-      TExpandableBuffer<BYTE> buffer(verSize);
+      const TExpandableBuffer<BYTE> buffer(verSize);
 
       if (::GetFileVersionInfo(pModuleFileName, 0, verSize, buffer))
       {
-         LPTSTR pVersion = 0;
+         LPTSTR pVersion = nullptr;
          UINT verLen = 0;
 
          const _tstring query = _T("\\StringFileInfo\\") + languageID + charsetID + _T("\\") + requiredString;
@@ -1492,7 +1529,7 @@ void MoveFile(
 {
    if (!::MoveFile(filenameFrom.c_str(), filenameTo.c_str()))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("MoveFile"), lastError);
    }
@@ -1505,7 +1542,7 @@ void CopyFile(
 {
    if (!::CopyFile(filenameFrom.c_str(), filenameTo.c_str(), failIfExists))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CopyFile"), lastError);
    }
@@ -1522,34 +1559,34 @@ void SaveStringAsFileA(
    const _tstring &filename,
    const string &data)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_WRITE,
       0,
-      0,
+      nullptr,
       CREATE_ALWAYS,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveStringAsFile() \"") + filename + _T("\""), lastError);
    }
 
    DWORD bytesWritten = 0;
 
-   if (!::WriteFile(hFile, data.c_str(), GetStringLength<DWORD>(data), &bytesWritten, 0))
+   if (!WriteFile(hFile, data.c_str(), GetStringLength<DWORD>(data), &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveStringAsFile()"), _T("\"") + filename + _T("\""), lastError);
    }
 
    if (bytesWritten != data.length())
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveStringAsFile()"), _T("\"") + filename + _T("\" - Failed to write all data"), lastError);
    }
@@ -1570,16 +1607,16 @@ void SaveStringToFileA(
 {
    DWORD bytesWritten = 0;
 
-   if (!::WriteFile(hFile, data.c_str(), GetStringLength<DWORD>(data), &bytesWritten, 0))
+   if (!WriteFile(hFile, data.c_str(), GetStringLength<DWORD>(data), &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveStringToFile()"), _T("\"") + filename + _T("\""), lastError);
    }
 
    if (bytesWritten != data.length())
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveStringToFile()"), _T("\"") + filename + _T("\" - Failed to write all data"), lastError);
    }
@@ -1588,27 +1625,27 @@ void SaveStringToFileA(
 __int64 GetFileSize(
    const _tstring &filename)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("GetFileSize() \"") + filename + _T("\""), lastError);
    }
 
    BY_HANDLE_FILE_INFORMATION info;
 
-   if (!::GetFileInformationByHandle(hFile, &info))
+   if (!GetFileInformationByHandle(hFile, &info))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("GetFileSize() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
    }
@@ -1629,27 +1666,27 @@ wstring LoadFileAsUnicodeString(
    // unicode little-endian 0xFE 0xFF indicates unicode big-endian but we don't support that right now. Anything else
    // means ASCII, UTF-8 or MBCS and we assume ASCII here
 
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsUnicodeString() \"") + filename + _T("\""), lastError);
    }
 
    BY_HANDLE_FILE_INFORMATION info;
 
-   if (!::GetFileInformationByHandle(hFile, &info))
+   if (!GetFileInformationByHandle(hFile, &info))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsUnicodeString() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
    }
@@ -1660,14 +1697,14 @@ wstring LoadFileAsUnicodeString(
 
    BYTE buffer[2];
 
-   while (::ReadFile(hFile, buffer + totalBytesRead, sizeof(buffer) - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
+   while (ReadFile(hFile, buffer + totalBytesRead, sizeof(buffer) - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
 
    if (totalBytesRead != 2)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsUnicodeString() - Initial 2 byte read failed \"") + filename + _T("\""), lastError);
    }
@@ -1684,7 +1721,7 @@ wstring LoadFileAsUnicodeString(
    }
    else if (buffer[0] == 0xFE && buffer[1] == 0xFF)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsUnicodeString() - We don't handle UCS-2 big-endian yet. \"") + filename + _T("\""), lastError);
    }
@@ -1697,9 +1734,9 @@ wstring LoadFileAsUnicodeString(
       fileIsUnicode = true;
       fileIsUTF8 = true;
 
-      if (0 == ::ReadFile(hFile, buffer, 1, &bytesRead, nullptr))
+      if (0 == ReadFile(hFile, buffer, 1, &bytesRead, nullptr))
       {
-         const DWORD lastError = ::GetLastError();
+         const DWORD lastError = GetLastError();
 
          throw CWin32Exception(_T("LoadFileAsUnicodeString() - Failed to read 3rd byte in UTF-8 BOM. \"") + filename + _T("\""), lastError);
       }
@@ -1713,9 +1750,9 @@ wstring LoadFileAsUnicodeString(
    {
       // bare ascii file, we need those 2 bytes...
 
-      if (INVALID_SET_FILE_POINTER == ::SetFilePointer(hFile, 0, nullptr, FILE_BEGIN))
+      if (INVALID_SET_FILE_POINTER == SetFilePointer(hFile, 0, nullptr, FILE_BEGIN))
       {
-         const DWORD lastError = ::GetLastError();
+         const DWORD lastError = GetLastError();
 
          throw CWin32Exception(_T("LoadFileAsUnicodeString() - Failed to seek to start of file. \"") + filename + _T("\""), lastError);
       }
@@ -1736,7 +1773,7 @@ wstring LoadFileAsUnicodeString(
 
    fileAsString.resize(bufferSize);
 
-   while (::ReadFile(hFile, reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, 0) && bytesRead > 0)
+   while (ReadFile(hFile, reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -1762,25 +1799,25 @@ wstring LoadFileAsUnicodeString(
 void SaveUnicodeStringAsFile(
    const _tstring &filename,
    const std::wstring &data,
-   bool saveAsANSIifPossible)
+   const bool saveAsANSIifPossible)
 {
    if (saveAsANSIifPossible && StringIsAllANSI(data))
    {
       SaveStringAsFile(filename, CStringConverter::WtoT(data));
    }
 
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_WRITE,
       0,
-      0,
+      nullptr,
       CREATE_ALWAYS,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveUnicodeStringAsFile() \"") + filename + _T("\""), lastError);
    }
@@ -1789,25 +1826,25 @@ void SaveUnicodeStringAsFile(
 
    const BYTE header[] = { 0xFF, 0xFE };
 
-   if (!::WriteFile(hFile, header, sizeof(header), &bytesWritten, nullptr))
+   if (!WriteFile(hFile, header, sizeof(header), &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveUnicodeStringAsFile() \"") + filename + _T("\""), lastError);
    }
 
    const DWORD dataToWrite = GetStringLength<DWORD>(data) * sizeof(wchar_t);
 
-   if (!::WriteFile(hFile, data.c_str(), dataToWrite, &bytesWritten, 0))
+   if (!WriteFile(hFile, data.c_str(), dataToWrite, &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveUnicodeStringAsFile() \"") + filename + _T("\""), lastError);
    }
 
    if (bytesWritten != dataToWrite)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveUnicodeStringAsFile() \"") + filename + _T("\" - Failed to write all data"), lastError);
    }
@@ -1817,27 +1854,27 @@ void LoadFileAsBinaryData(
    const _tstring &filename,
    TExpandableBuffer<BYTE> &buffer)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsBinaryData() \"") + filename + _T("\""), lastError);
    }
 
    BY_HANDLE_FILE_INFORMATION info;
 
-   if (!::GetFileInformationByHandle(hFile, &info))
+   if (!GetFileInformationByHandle(hFile, &info))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsBinaryData() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
    }
@@ -1847,7 +1884,7 @@ void LoadFileAsBinaryData(
    fileSize.LowPart = info.nFileSizeLow;
    fileSize.HighPart = info.nFileSizeHigh;
 
-   const size_t bufferSize = static_cast<size_t>(fileSize.QuadPart);
+   const auto bufferSize = static_cast<size_t>(fileSize.QuadPart);
 
    buffer.Resize(bufferSize);
 
@@ -1855,11 +1892,11 @@ void LoadFileAsBinaryData(
 
    size_t totalBytesRead = 0;
 
-   while (::ReadFile(
+   while (ReadFile(
       hFile,
       static_cast<void*>(buffer.GetBuffer() + totalBytesRead),
       static_cast<DWORD>(std::min<size_t>(bufferSize - totalBytesRead, std::numeric_limits<DWORD>::max())),
-      &bytesRead, 0) && bytesRead > 0)
+      &bytesRead, nullptr) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -1869,18 +1906,18 @@ void SaveBinaryDataAsFile(
    const _tstring &filename,
    const TExpandableBuffer<BYTE> &buffer)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_WRITE,
       0,
-      0,
+      nullptr,
       CREATE_ALWAYS,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveBinaryDataAsFile() \"") + filename + _T("\""), lastError);
    }
@@ -1889,16 +1926,16 @@ void SaveBinaryDataAsFile(
 
    // Does not work with big files, change to use multiple writes
 
-   if (!::WriteFile(hFile, buffer.GetBuffer(), static_cast<DWORD>(buffer.GetSize()), &bytesWritten, 0))
+   if (!WriteFile(hFile, buffer.GetBuffer(), static_cast<DWORD>(buffer.GetSize()), &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveBinaryDataAsFile() \"") + filename + _T("\""), lastError);
    }
 
    if (bytesWritten != buffer.GetSize())
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("SaveBinaryDataAsFile() \"") + filename + _T("\" - Failed to write all data"), lastError);
    }
@@ -1913,18 +1950,18 @@ _tstring LoadFileAsString(
 string LoadFileAsStringA(
    const _tstring &filename)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsString() \"") + filename + _T("\""), lastError);
    }
@@ -1933,21 +1970,21 @@ string LoadFileAsStringA(
 }
 
 _tstring LoadFileAsString(
-   HANDLE hFile, 
+   HANDLE hFile,
    const _tstring &filename)
 {
    return CStringConverter::AtoT(LoadFileAsStringA(hFile, filename));
 }
 
 string LoadFileAsStringA(
-   HANDLE hFile, 
+   HANDLE hFile,
    const _tstring &filename)
 {
    BY_HANDLE_FILE_INFORMATION info;
 
-   if (!::GetFileInformationByHandle(hFile, &info))
+   if (!GetFileInformationByHandle(hFile, &info))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsString() - GetFileInformationByHandle \"") + filename + _T("\""), lastError);
    }
@@ -1959,11 +1996,11 @@ string LoadFileAsStringA(
       throw CException(_T("LoadFileAsString()"), _T("File \"") + filename + _T("\" too big"));
    }
 
-   const DWORD currentPosition = ::SetFilePointer(hFile, 0, nullptr, FILE_CURRENT);
+   const DWORD currentPosition = SetFilePointer(hFile, 0, nullptr, FILE_CURRENT);
 
    if (currentPosition == INVALID_SET_FILE_POINTER)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("LoadFileAsString()"), _T("Failed to read file position for file \"") + filename + _T("\""), lastError);
    }
@@ -1976,11 +2013,11 @@ string LoadFileAsStringA(
 
    DWORD totalBytesRead = 0;
 
-   while (::ReadFile(
+   while (ReadFile(
       hFile,
       reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead),
       bufferSize - totalBytesRead,
-      &bytesRead, 0) &&
+      &bytesRead, nullptr) &&
       bytesRead > 0)
    {
       totalBytesRead += bytesRead;
@@ -1992,14 +2029,14 @@ string LoadFileAsStringA(
 bool FileExists(
    const _tstring &filename)
 {
-   CSmartHandle hFile(::CreateFile(
+   const CSmartHandle hFile(::CreateFile(
       filename.c_str(),
       GENERIC_READ,
       FILE_SHARE_READ,
-      0,
+      nullptr,
       OPEN_EXISTING,
       FILE_ATTRIBUTE_NORMAL,
-      0));
+      nullptr));
 
    return hFile.IsValid();
 }
@@ -2086,7 +2123,7 @@ bool InPlaceFindAndReplaceA(
 
 bool IsGoodReadPtr(
    const void *pv,
-   ULONG cb)
+   const ULONG cb)
 {
    return IsGoodReadPtr(GetCurrentProcess(), pv, cb);
 }
@@ -2094,7 +2131,7 @@ bool IsGoodReadPtr(
 bool IsGoodReadPtr(
    HANDLE hProcess,
    const void *pv,
-   ULONG cb)
+   const ULONG cb)
 {
    return IsGoodPtr(
       hProcess,
@@ -2110,7 +2147,7 @@ bool IsGoodReadPtr(
 
 bool IsGoodWritePtr(
    const void *pv,
-   ULONG cb)
+   const ULONG cb)
 {
    return IsGoodWritePtr(GetCurrentProcess(), pv, cb);
 }
@@ -2118,7 +2155,7 @@ bool IsGoodWritePtr(
 bool IsGoodWritePtr(
    HANDLE hProcess,
    const void *pv,
-   ULONG cb)
+   const ULONG cb)
 {
    return IsGoodPtr(
       hProcess,
@@ -2139,7 +2176,7 @@ _tstring GetTempFileName(
 
    if (0 == ::GetTempFileName(pathName.c_str(), prefixString.c_str(), unique, buffer))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("GetTempFileName()"), lastError);
    }
@@ -2239,42 +2276,42 @@ void WriteResourceToFile(
    HANDLE hFile,
    const _tstring &resourceName,
    const _tstring &resourceType,
-   HMODULE hModule)
+   const HMODULE hModule)
 {
-   HRSRC hResource = ::FindResource(hModule, resourceName.c_str(), resourceType.c_str());
+   const HRSRC hResource = ::FindResource(hModule, resourceName.c_str(), resourceType.c_str());
 
    if (!hResource)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - FindResource"), lastError);
    }
 
-   HGLOBAL hGlobal = ::LoadResource(hModule, hResource);
+   const HGLOBAL hGlobal = LoadResource(hModule, hResource);
 
    if (!hGlobal)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - LoadResource"), lastError);
    }
 
-   void *pData = ::LockResource(hGlobal);
+   void *pData = LockResource(hGlobal);
 
    if (!pData)
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - LockResource"), lastError);
    }
 
-   const DWORD bytes = ::SizeofResource(hModule, hResource);
+   const DWORD bytes = SizeofResource(hModule, hResource);
 
    DWORD bytesWritten = 0;
 
-   if (!::WriteFile(hFile, pData, bytes, &bytesWritten, nullptr))
+   if (!WriteFile(hFile, pData, bytes, &bytesWritten, nullptr))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("WriteResourceToFile() - WriteFile"), lastError);
    }
@@ -2291,11 +2328,11 @@ _tstring GUIDAsString(
 {
    wchar_t *pString = nullptr;
 
-   HRESULT hr = ::StringFromIID(guid, &pString);
+   const HRESULT hr = StringFromIID(guid, &pString);
 
    if (FAILED(hr))
    {
-      ::CoTaskMemFree(pString);
+      CoTaskMemFree(pString);
 
       throw CWin32Exception(_T("GUIDAoString() - StringFromIID"), hr);
    }
@@ -2307,7 +2344,7 @@ _tstring GUIDAsString(
       result = result.substr(1, result.length() - 2);
    }
 
-   ::CoTaskMemFree(pString);
+   CoTaskMemFree(pString);
 
    return result;
 }
@@ -2317,7 +2354,7 @@ _tstring CreateGUIDAsString(
 {
    GUID guid;
 
-   HRESULT hr = ::CoCreateGuid(&guid);
+   const HRESULT hr = CoCreateGuid(&guid);
 
    if (FAILED(hr))
    {
@@ -2371,7 +2408,7 @@ _tstring TranslateDeviceNamePathToDriveLetterPath(
 }
 
 _tstring GetFileNameFromHandleIfPossible(
-   const HANDLE hFile)
+   HANDLE hFile)
 {
    _tstring fileName;
 
@@ -2390,7 +2427,7 @@ _tstring GetFileNameFromHandleIfPossible(
 
       if (hFileMapping.IsValid())
       {
-         void *pMem = ::MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
+         void *pMem = MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
 
          if (pMem)
          {
@@ -2405,7 +2442,7 @@ _tstring GetFileNameFromHandleIfPossible(
                fileName = TranslateDeviceNamePathToDriveLetterPath(buffer);
             }
 
-            ::UnmapViewOfFile(pMem);
+            UnmapViewOfFile(pMem);
          }
       }
    }
@@ -2414,7 +2451,7 @@ _tstring GetFileNameFromHandleIfPossible(
 }
 
 _tstring GetFileNameFromHandle(
-   const HANDLE hFile)
+   HANDLE hFile)
 {
    _tstring fileName;
 
@@ -2438,7 +2475,7 @@ _tstring GetFileNameFromHandle(
 
    if (hFileMapping.IsValid())
    {
-      void *pMem = ::MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
+      void *pMem = MapViewOfFile(hFileMapping.GetHandle(), FILE_MAP_READ, 0, 0, 1);
 
       if (pMem)
       {
@@ -2455,12 +2492,12 @@ _tstring GetFileNameFromHandle(
       }
       else
       {
-         const DWORD lastError = ::GetLastError();
+         const DWORD lastError = GetLastError();
 
          throw CWin32Exception(_T("GetFileNameFromHandle()"), lastError);
       }
 
-      ::UnmapViewOfFile(pMem);
+      UnmapViewOfFile(pMem);
    }
 
    return fileName;
@@ -2473,7 +2510,7 @@ _tstring GetFileNameFromHandle(
 static bool StringIsAllANSI(
    const std::wstring &data)
 {
-   const BYTE *pData = reinterpret_cast<const BYTE *>(data.c_str());
+   const auto *pData = reinterpret_cast<const BYTE *>(data.c_str());
 
    const size_t dataLength = data.length() * sizeof(wchar_t);
 
@@ -2493,8 +2530,8 @@ static bool StringIsAllANSI(
 static bool IsGoodPtr(
    HANDLE hProcess,
    const void *pv,
-   ULONG cb,
-   DWORD dwFlags)
+   const ULONG cb,
+   const DWORD dwFlags)
 {
    MEMORY_BASIC_INFORMATION meminfo;
 

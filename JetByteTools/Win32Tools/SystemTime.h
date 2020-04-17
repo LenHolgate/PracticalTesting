@@ -21,6 +21,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "JetByteTools/Admin/Constexpr.h"
+
 #include <wtypes.h>
 
 #include "tstring.h"
@@ -55,7 +57,7 @@ class CSystemTime : public SYSTEMTIME
       /// Constructs a SYSTEMTIME with the specified date/time.
 
       explicit CSystemTime(
-         const __int64 dateTime);
+         __int64 dateTime);
 
       /// Constructs a SYSTEMTIME from a FILETIME...
 
@@ -72,7 +74,7 @@ class CSystemTime : public SYSTEMTIME
       /// is optional).
 
       explicit CSystemTime(
-         const _tstring &yyyymmddhhmmss);
+         const _tstring &yyyymmddhhmmssmmm);
 
       /// Calls the operating system's GetSystemTime() with this object.
 
@@ -121,25 +123,43 @@ class CSystemTime : public SYSTEMTIME
          const _tstring &hhmmssmmm);
 
       void SetAsSystemTimeFromLocalTime(
-         const SYSTEMTIME &localtime);
+         const SYSTEMTIME &localTime);
+
+      void SetAsSystemTimeFromLocalTime(
+         const SYSTEMTIME &localTime,
+         const TIME_ZONE_INFORMATION &timeZoneInformation);
 
       void SetAsLocalTimeFromSystemTime(
-         const SYSTEMTIME &systemtime);
+         const SYSTEMTIME &systemTime);
+
+      void SetAsLocalTimeFromSystemTime(
+         const SYSTEMTIME &systemTime,
+         const TIME_ZONE_INFORMATION &timeZoneInformation);
 
       void SetFromTimeT32(
-         const __time32_t timet);
+         __time32_t timet);
 
       void SetFromTimeT64(
-         const __time64_t timet);
+         __time64_t timet);
 
-      __time32_t GetAsTimeT32() const;
+      __time32_t GetSystemTimeAsTimeT32() const;
 
-      __time64_t GetAsTimeT64() const;
+      __time64_t GetSystemTimeAsTimeT64() const;
 
       #ifdef _USE_32BIT_TIME_T
-      inline time_t GetAsTimeT() const { return GetAsTimeT32(); }
+      time_t GetSystemTimeAsTimeT() const { return GetSystemTimeAsTimeT32(); }
       #else
-      inline time_t GetAsTimeT() const { return GetAsTimeT64(); }
+      time_t GetSystemTimeAsTimeT() const { return GetSystemTimeAsTimeT64(); }
+      #endif
+
+      __time32_t GetLocalTimeAsTimeT32() const;
+
+      __time64_t GetLocalTimeAsTimeT64() const;
+
+      #ifdef _USE_32BIT_TIME_T
+      time_t GetLocalTimeAsTimeT() const { return GetLocalTimeAsTimeT32(); }
+      #else
+      time_t GetLocalTimeAsTimeT() const { return GetLocalTimeAsTimeT64(); }
       #endif
 
       //void ParseFromNTP(
@@ -212,17 +232,17 @@ class CSystemTime : public SYSTEMTIME
       /// Adds the specified number of months to the date.
 
       void AddDays(
-         const int days);
+         int days);
 
       /// Adds the specified number of months to the date.
 
       void AddMonths(
-         const int months);
+         int months);
 
       /// Adds the specified number of years to the date.
 
       void AddYears(
-         const int years);
+         int years);
 
       /// Returns the number of days in the month.
 
@@ -250,8 +270,8 @@ class CSystemTime : public SYSTEMTIME
       /// Returns the number of days in the specified month.
 
       static WORD GetDaysInMonth(
-         const WORD year,
-         const WORD month);
+         WORD year,
+         WORD month);
 
       /// Returns the number of days in the month of the supplied date.
 
@@ -261,7 +281,7 @@ class CSystemTime : public SYSTEMTIME
       /// Returns true if the supplied year is a leap year.
 
       static bool IsLeapYear(
-         const WORD year);
+         WORD year);
 
       /// Returns true if the supplied date is in a leap year.
 
@@ -337,7 +357,7 @@ class CSystemTime : public SYSTEMTIME
       /// The number of Int64 intervals in a Millisecond, you can use this
       /// to convert between the Int64 values returned and Milliseconds.
 
-      static const __int64 IntervalsInAMillisecond;
+      static JETBYTE_CONSTEXPR __int64 IntervalsInAMillisecond = 10000;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

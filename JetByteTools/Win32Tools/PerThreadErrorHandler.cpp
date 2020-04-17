@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "PerThreadErrorHandler.h"
 
@@ -26,7 +26,7 @@
 
 #pragma hdrstop
 
-#include <signal.h>
+#include <csignal>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -53,6 +53,9 @@ static bool s_processIsExiting = false;
 
 CPerThreadErrorHandler::CPerThreadErrorHandler()
    :
+      #if (JETBYTE_BREAK_SEH_EXCEPTION_TRANSLATOR_COMPATABILITY == 1)
+      m_sehTranslator(0),
+      #endif
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
       m_oldTerminateHandler(std::set_terminate(TerminateHandler))
       #endif

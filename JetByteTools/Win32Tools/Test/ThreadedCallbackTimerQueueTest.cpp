@@ -18,24 +18,24 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ThreadedCallbackTimerQueueTest.h"
 
-#include "JetByteTools\Win32Tools\Mock\MockTickCountProvider.h"
-#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
-#include "JetByteTools\Win32Tools\Mock\LoggingCallbackTimer.h"
-#include "JetByteTools\Win32Tools\Mock\MockTimerQueue.h"
-#include "JetByteTools\Win32Tools\Mock\MockThreadedCallbackTimerQueueMonitor.h"
-#include "JetByteTools\Win32Tools\Mock\TestThreadedCallbackTimerQueue.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCountProvider.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCount64Provider.h"
+#include "JetByteTools/Win32Tools/Mock/LoggingCallbackTimer.h"
+#include "JetByteTools/Win32Tools/Mock/MockTimerQueue.h"
+#include "JetByteTools/Win32Tools/Mock/MockThreadedCallbackTimerQueueMonitor.h"
+#include "JetByteTools/Win32Tools/Mock/TestThreadedCallbackTimerQueue.h"
 
-#include "JetByteTools\TestTools\TestException.h"
-#include "JetByteTools\TestTools\RunTest.h"
+#include "JetByteTools/TestTools/TestException.h"
+#include "JetByteTools/TestTools/RunTest.h"
 
 #pragma hdrstop
 
-#include "JetByteTools\Win32Tools\ThreadedCallbackTimerQueue.h"
-#include "JetByteTools\Win32Tools\CallbackTimerWheel.h"
+#include "JetByteTools/Win32Tools/ThreadedCallbackTimerQueue.h"
+#include "JetByteTools/Win32Tools/CallbackTimerWheel.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -50,7 +50,6 @@ using JetByteTools::Win32::Mock::CMockTickCount64Provider;
 using JetByteTools::Win32::Mock::CLoggingCallbackTimer;
 using JetByteTools::Win32::Mock::CMockTimerQueue;
 using JetByteTools::Win32::Mock::CMockThreadedCallbackTimerQueueMonitor;
-using JetByteTools::Win32::Mock::CTestThreadedCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -133,7 +132,7 @@ void CThreadedCallbackTimerQueueTest::TestConstructWithTimerWheel()
 {
    const Milliseconds maximumTimeout = 4000;
 
-   CMockTickCountProvider tickProvider;
+   const CMockTickCountProvider tickProvider;
 
    CCallbackTimerWheel wheel(maximumTimeout, tickProvider);
 
@@ -184,7 +183,7 @@ void CThreadedCallbackTimerQueueTest::TestTimer()
 
    CLoggingCallbackTimer timer;
 
-   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+   const IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
    queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 
@@ -252,7 +251,7 @@ void CThreadedCallbackTimerQueueTest::TestTimerTimerWheel()
    {
       CThreadedCallbackTimerQueue timerQueue(timerWheel);
 
-      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+      const IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
@@ -354,7 +353,7 @@ void CThreadedCallbackTimerQueueTest::TestMonitorTimer()
 
    THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
-   IQueueTimers::Handle handle = timerQueue.CreateTimer();
+   const IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
    queue.CheckResult(_T("|GetNextTimeout|CreateTimer: 1|"));
 

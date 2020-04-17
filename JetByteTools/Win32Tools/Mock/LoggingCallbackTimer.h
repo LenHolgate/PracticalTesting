@@ -21,10 +21,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IQueueTimers.h"
-#include "JetByteTools\Win32Tools\AutoResetEvent.h"
+#include "JetByteTools/Win32Tools/IQueueTimers.h"
+#include "JetByteTools/Win32Tools/AutoResetEvent.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -51,7 +51,13 @@ class CLoggingCallbackTimer :
       CLoggingCallbackTimer();
 
       explicit CLoggingCallbackTimer(
-         JetByteTools::Test::CTestLog &linkedLog);
+         CTestLog &linkedLog);
+
+      CLoggingCallbackTimer(
+         const CLoggingCallbackTimer &rhs) = delete;
+
+      CLoggingCallbackTimer &operator=(
+         const CLoggingCallbackTimer &rhs) = delete;
 
       bool logMessage;
 
@@ -64,11 +70,11 @@ class CLoggingCallbackTimer :
       void SetTimerInOnTimer(
          IQueueTimers &timerQueue,
          IQueueTimers::Handle &handle,
-         const Milliseconds timeout,
-         const UserData userData /* = 0*/);
+         Milliseconds timeout,
+         UserData userData /* = 0*/);
 
       bool WaitForTimer(
-         const Milliseconds timeout) const;
+         Milliseconds timeout) const;
 
       unsigned long GetNumTimerEvents() const;
 
@@ -90,10 +96,6 @@ class CLoggingCallbackTimer :
       Milliseconds m_timeout;
 
       UserData m_userData;
-
-      // No copies do not implement
-      CLoggingCallbackTimer(const CLoggingCallbackTimer &rhs);
-      CLoggingCallbackTimer &operator=(const CLoggingCallbackTimer &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

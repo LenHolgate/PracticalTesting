@@ -42,7 +42,7 @@ class CCodePage : public CPINFOEX
    public :
 
       explicit CCodePage(
-         const unsigned int codePage);
+         unsigned int codePage);
 
       unsigned int GetCodePage() const;
 

@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "SmartHandle.h"
 #include "Exception.h"
@@ -37,8 +37,8 @@
 namespace JetByteTools {
 namespace Win32 {
 
-static const HANDLE s_currentThreadPseudoHandle = ::GetCurrentThread();
-static const HANDLE s_currentProcessPseudoHandle = ::GetCurrentProcess();
+static HANDLE s_currentThreadPseudoHandle = GetCurrentThread();
+static HANDLE s_currentProcessPseudoHandle = GetCurrentProcess();
 
 ///////////////////////////////////////////////////////////////////////////////
 // CSmartHandle
@@ -59,7 +59,7 @@ CSmartHandle::CSmartHandle(
 CSmartHandle::CSmartHandle(
    const CSmartHandle &rhs)
    :  IWaitable(rhs),
-      m_handle(rhs.DuplicateHandle().Detach())
+      m_handle(rhs.DuplicateHandle().Detach()) //lint !e1793 (invoking non-const member function of class on a temporary)
 {
 }
 
@@ -86,7 +86,7 @@ CSmartHandle CSmartHandle::DuplicateHandle(
       FALSE,
       DUPLICATE_SAME_ACCESS))
    {
-      const DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       throw CWin32Exception(_T("CSmartHandle::DuplicateHandle()"), lastError);
    }
@@ -104,7 +104,7 @@ void CSmartHandle::Attach(
 
 HANDLE CSmartHandle::Detach()
 {
-   HANDLE handle = m_handle;
+   auto const handle = m_handle;
 
    m_handle = INVALID_HANDLE_VALUE;
 
@@ -123,9 +123,9 @@ void CSmartHandle::Close()
       if (m_handle != s_currentProcessPseudoHandle &&
           m_handle != s_currentThreadPseudoHandle)
       {
-         if (!::CloseHandle(m_handle))
+         if (!CloseHandle(m_handle))
          {
-            const DWORD lastError = ::GetLastError();
+            const DWORD lastError = GetLastError();
 
             throw CWin32Exception(_T("CSmartHandle::Close()"), lastError);
          }
@@ -135,7 +135,8 @@ void CSmartHandle::Close()
    }
 } //lint !e1578 (Pointer member (m_handle) neither freed nor zeroed by cleanup function)
 
-CSmartHandle &CSmartHandle::operator=(const HANDLE handle)
+CSmartHandle &CSmartHandle::operator=(
+   HANDLE handle)
 {
    if (handle != m_handle)
    {
@@ -181,13 +182,13 @@ HANDLE CSmartHandle::GetWaitHandle() const
 
 void CSmartHandle::Wait() const
 {
-   IWaitable::Wait(m_handle);
+   WaitForHandle(m_handle);
 }
 
 bool CSmartHandle::Wait(
    const Milliseconds timeoutMillis) const
 {
-   return IWaitable::Wait(m_handle, timeoutMillis);
+   return WaitForHandle(m_handle, timeoutMillis);
 }
 
 bool CSmartHandle::IsValid() const

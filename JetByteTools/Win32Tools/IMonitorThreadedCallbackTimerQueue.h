@@ -52,11 +52,12 @@ class IMonitorThreadedCallbackTimerQueue : public IMonitorCallbackTimerQueue
          CancelTimerContention,
          DestroyTimerContention,
          TimerProcessingContention,
-         GetNextTimeoutContention
+         GetNextTimeoutContention,
+         IsSetTimerContention
       };
 
       virtual void OnTimerProcessingContention(
-         const ContentionLocation location) = 0;
+         ContentionLocation location) = 0;
 
       virtual void OnTimerProcessingStarted() = 0;
 
@@ -67,7 +68,7 @@ class IMonitorThreadedCallbackTimerQueue : public IMonitorCallbackTimerQueue
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IMonitorThreadedCallbackTimerQueue() {}
+      virtual ~IMonitorThreadedCallbackTimerQueue() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ICriticalSection.h"
 
@@ -26,8 +26,6 @@
 #include "DebugTrace.h"
 
 #pragma hdrstop
-
-SuppressLNK4221Warning()
 
 #if (JETBYTE_DEPRECATE_CRITICAL_SECTION == 0)
 
@@ -37,6 +35,46 @@ SuppressLNK4221Warning()
 
 namespace JetByteTools {
 namespace Win32 {
+
+///////////////////////////////////////////////////////////////////////////////
+// ICriticalSection
+///////////////////////////////////////////////////////////////////////////////
+
+void ICriticalSection::EnsureLockedByThisThread(
+   const ICriticalSection &crit)
+{
+   if (!crit.IsLockedByThisThread())
+   {
+      OutputEx(_T("Thread should hold lock and does not!"));
+
+      if (IsDebuggerPresent())
+      {
+         DebugBreak();
+      }
+
+      throw CException(
+         _T("ICriticalSection::EnsureLockedByThisThread()"),
+         _T("Thread should hold lock and does not!"));
+   }
+}
+
+void ICriticalSection::EnsureIsNotLockedByThisThread(
+   const ICriticalSection &crit)
+{
+   if (crit.IsLockedByThisThread())
+   {
+      OutputEx(_T("Thread should hold NOT lock and does!"));
+
+      if (IsDebuggerPresent())
+      {
+         DebugBreak();
+      }
+
+      throw CException(
+         _T("ICriticalSection::EnsureIsNotLockedByThisThread()"),
+         _T("Thread should NOT hold lock and does!"));
+   }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // ICriticalSection::Owner
@@ -64,7 +102,7 @@ ICriticalSection::Owner::~Owner()
 
 ICriticalSection::ConditionalOwner::ConditionalOwner(
    ICriticalSection &crit,
-   bool locked)
+   const bool locked)
    :  m_crit(crit),
       m_locked(locked)
 {
@@ -160,6 +198,8 @@ void ICriticalSection::PotentialOwner::Leave()
 } // End of namespace Win32
 } // End of namespace JetByteTools
 
+#else
+SuppressLNK4221Warning()
 #endif // JETBYTE_DEPRECATE_CRITICAL_SECTION
 
 ///////////////////////////////////////////////////////////////////////////////

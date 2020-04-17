@@ -2,21 +2,21 @@
 #ifndef JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_INCLUDED_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_INCLUDED_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IntrusiveMultiMap.h 
+// File: IntrusiveMultiMap.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2014 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,13 @@ class TIntrusiveMultiMap
 
       TIntrusiveMultiMap();
 
+      TIntrusiveMultiMap(
+         const TIntrusiveMultiMap &rhs) = delete;
+
       ~TIntrusiveMultiMap();
+
+      TIntrusiveMultiMap &operator=(
+         const TIntrusiveMultiMap &rhs) = delete;
 
       size_t Size() const;
 
@@ -129,7 +135,7 @@ class TIntrusiveMultiMap
 
       Iterator Insert(
          const T *pItemToInsert,
-         const K key);
+         K key);
 
       Iterator Find(
          const K &key) const;
@@ -177,22 +183,22 @@ class TIntrusiveMultiMap
             Iterator operator++(int);  //postfix
 
             Iterator &operator+=(
-               const size_t rhs);
+               size_t value);
 
             Iterator operator+(
-               const size_t rhs);
+               size_t value);
 
             bool operator==(const Iterator &rhs) const;
 
             bool operator!=(const Iterator &rhs) const;
 
-            typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*();
+            value_type * operator*();
 
-            const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+            const value_type * operator*() const;
 
-            typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->();
+            value_type * operator->();
 
-            const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+            const value_type * operator->() const;
 
          private :
 
@@ -209,7 +215,7 @@ class TIntrusiveMultiMap
 
             Iterator(
                const typename Tree::Iterator &it,
-               CIntrusiveMultiMapNode *m_pNode);
+               CIntrusiveMultiMapNode *pNode);
 
             typename Tree::Iterator m_it;
 
@@ -229,28 +235,31 @@ class TIntrusiveMultiMap
 
                   K Key() const;
 
-                  Iterator &operator=(const Iterator &rhs);
+                  Iterator &operator=(
+                     const Iterator &rhs);
 
                   Iterator &operator++();    // prefix
                   Iterator operator++(int);  //postfix
 
                   Iterator &operator+=(
-                     const size_t rhs);
+                     size_t value);
 
                   Iterator operator+(
-                     const size_t rhs);
+                     size_t value);
 
-                  bool operator==(const Iterator &rhs) const;
+                  bool operator==(
+                     const Iterator &rhs) const;
 
-                  bool operator!=(const Iterator &rhs) const;
+                  bool operator!=(
+                     const Iterator &rhs) const;
 
-                  typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*();
+                  value_type * operator*();
 
-                  const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator*() const;
+                  const value_type * operator*() const;
 
-                  typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->();
+                  value_type * operator->();
 
-                  const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type * operator->() const;
+                  const value_type * operator->() const;
 
                private :
 
@@ -269,7 +278,13 @@ class TIntrusiveMultiMap
 
             NodeCollection();
 
+            NodeCollection(
+               const NodeCollection &rhs) = delete;
+
             ~NodeCollection();
+
+            NodeCollection &operator=(
+               const NodeCollection &rhs) = delete;
 
             size_t Size() const;
 
@@ -292,11 +307,6 @@ class TIntrusiveMultiMap
                CIntrusiveMultiMapNode *pNode);
 
             CIntrusiveMultiMapNode *m_pNode;
-
-            /// No copies do not implement
-            NodeCollection(const NodeCollection &rhs);
-            /// No copies do not implement
-            NodeCollection &operator=(const NodeCollection &rhs);
       };
 
    private :
@@ -320,7 +330,7 @@ class TIntrusiveMultiMap
 
       static void AddNodeToList(
          CIntrusiveMultiMapNode *pNode,
-         CIntrusiveMultiMapNode *pNodeToBeAdded);
+         CIntrusiveMultiMapNode *pNodeToAdd);
 
       CIntrusiveMultiMapNode *RemoveOneNode(
          CIntrusiveMultiMapNode *pNode);
@@ -335,11 +345,6 @@ class TIntrusiveMultiMap
       Tree m_tree;
 
       size_t m_size;
-
-      /// No copies do not implement
-      TIntrusiveMultiMap(const TIntrusiveMultiMap &rhs);
-      /// No copies do not implement
-      TIntrusiveMultiMap &operator=(const TIntrusiveMultiMap &rhs);
 };
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -482,7 +487,7 @@ void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveAll(
    const typename Tree::Iterator &it,
    NodeCollection &nodes)
 {
-   T *pData = 0;
+   T *pData = nullptr;
 
    if (it != m_tree.End())
    {
@@ -500,7 +505,7 @@ template <class T, class K, class TtoK, class Pr, class TtoN>
 T *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveOne(
    const K &key)
 {
-   T *pData = 0;
+   T *pData = nullptr;
 
    typename Tree::Iterator it = m_tree.Find(key);
 
@@ -598,7 +603,7 @@ void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::Validate() const
 template <class T, class K, class TtoK, class Pr, class TtoN>
 void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::ValidateNode(
    const T *pNode,
-   ULONG_PTR userData)
+   const ULONG_PTR userData)
 {
    std::pair<size_t, size_t> &sizeCheck = *reinterpret_cast<std::pair<size_t, size_t> *>(userData);
 
@@ -650,15 +655,15 @@ void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveFromMap(
          _T("pNode is null"));
    }
 
-   pNode->m_pPrev = 0;
-   pNode->m_pNext = 0;
+   pNode->m_pPrev = nullptr;
+   pNode->m_pNext = nullptr;
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 CIntrusiveMultiMapNode *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveOneNode(
    CIntrusiveMultiMapNode *pNode)
 {
-   CIntrusiveMultiMapNode *pRemovedNode = 0;
+   CIntrusiveMultiMapNode *pRemovedNode = nullptr;
 
    if (pNode)
    {
@@ -670,7 +675,7 @@ CIntrusiveMultiMapNode *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveOneNode(
 
             pNode = pNode->m_pNext;
 
-            pNode->m_pPrev = 0;
+            pNode->m_pPrev = nullptr;
 
             m_tree.SwapNode(pRemovedNode, pNode);
 
@@ -702,8 +707,8 @@ CIntrusiveMultiMapNode *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::RemoveOneNode(
 
       if (pRemovedNode)
       {
-         pRemovedNode->m_pPrev = 0;
-         pRemovedNode->m_pNext = 0;
+         pRemovedNode->m_pPrev = nullptr;
+         pRemovedNode->m_pNext = nullptr;
       }
    }
 
@@ -858,7 +863,7 @@ const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMulti
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::NodeCollection()
-   :  m_pNode(0)
+   :  m_pNode(nullptr)
 {
 
 }
@@ -870,8 +875,8 @@ TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::~NodeCollection()
    {
       CIntrusiveMultiMapNode *pNext = m_pNode->m_pNext;
 
-      m_pNode->m_pNext = 0;
-      m_pNode->m_pPrev = 0;
+      m_pNode->m_pNext = nullptr;
+      m_pNode->m_pPrev = nullptr;
 
       m_pNode = pNext;
    }
@@ -894,7 +899,7 @@ void TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::SetNodes(
 template <class T, class K, class TtoK, class Pr, class TtoN>
 bool TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Empty() const
 {
-   return m_pNode == 0;
+   return m_pNode == nullptr;
 }
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
@@ -917,7 +922,7 @@ size_t TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Size() const
 template <class T, class K, class TtoK, class Pr, class TtoN>
 T *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Pop()
 {
-   T *pData = 0;
+   T *pData = nullptr;
 
    if (m_pNode)
    {
@@ -927,10 +932,10 @@ T *TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Pop()
 
       if (m_pNode)
       {
-         m_pNode->m_pPrev = 0;
+         m_pNode->m_pPrev = nullptr;
       }
 
-      pPoppedNode->m_pNext = 0;
+      pPoppedNode->m_pNext = nullptr;
 
       pData = node_accessor::GetTFromNode(pPoppedNode);
    }
@@ -987,7 +992,7 @@ K TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::Key() const
 
 template <class T, class K, class TtoK, class Pr, class TtoN>
 TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::NodeCollection::Iterator::Iterator()
-   :  m_pNode(0)
+   :  m_pNode(nullptr)
 {
 }
 
@@ -1107,7 +1112,7 @@ const typename TIntrusiveMultiMap<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveMulti
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_INCLUDED_INCLUDED__
 

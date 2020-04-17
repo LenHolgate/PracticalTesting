@@ -53,7 +53,7 @@ class IReentrantLockableObject : public virtual ILockableObject
 
       /// Instances of this interface can be deleted by their users.
 
-      virtual ~IReentrantLockableObject() {}
+      virtual ~IReentrantLockableObject() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

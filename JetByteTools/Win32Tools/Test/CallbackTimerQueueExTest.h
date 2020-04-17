@@ -23,9 +23,9 @@
 
 #include "CallbackTimerQueueTestBase.h"
 
-#include "JetByteTools\Win32Tools\CallbackTimerQueueEx.h"
+#include "JetByteTools/Win32Tools/CallbackTimerQueueEx.h"
 
-#include "JetByteTools\Win32Tools\Mock\MockTickCount64Provider.h"
+#include "JetByteTools/Win32Tools/Mock/MockTickCount64Provider.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Test
@@ -74,7 +74,7 @@ class CCallbackTimerQueueExTest :
    public TCallbackTimerQueueTestBase<
       CCallbackTimerQueueEx,
       CCallbackTimerQueueExTestTraits,
-      JetByteTools::Win32::Mock::CMockTickCount64Provider>
+      Mock::CMockTickCount64Provider>
 {
    public :
 
@@ -82,7 +82,6 @@ class CCallbackTimerQueueExTest :
          JetByteTools::Test::CTestMonitor &monitor);
 
       static void TestGetMaxTimeout();
-      static void TestMaxTimeout();
       static void TestSetTimerPastTickCount64CountWrap();
 };
 

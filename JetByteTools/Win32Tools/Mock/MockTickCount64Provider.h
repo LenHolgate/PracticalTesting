@@ -21,11 +21,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Types.h"
+#include "JetByteTools/Admin/Types.h"
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IProvideTickCount64.h"
+#include "JetByteTools/Win32Tools/IProvideTickCount64.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -57,7 +57,13 @@ class CMockTickCount64Provider :
       /// calls to GetTickCount54() will return this value.
 
       explicit CMockTickCount64Provider(
-         const ULONGLONG tickCount);
+         ULONGLONG tickCount);
+
+      CMockTickCount64Provider(
+         const CMockTickCount64Provider &rhs) = delete;
+
+      CMockTickCount64Provider &operator=(
+         const CMockTickCount64Provider &rhs) = delete;
 
       bool logMessages;
 
@@ -67,7 +73,7 @@ class CMockTickCount64Provider :
       /// GetTickCount64().
 
       void SetTickCount(
-         const ULONGLONG tickCount);
+         ULONGLONG tickCount);
 
       // Implement IProvideTickCount64
 
@@ -76,10 +82,6 @@ class CMockTickCount64Provider :
    private :
 
       volatile ULONGLONG m_tickCount;
-
-      // No copies do not implement
-      CMockTickCount64Provider(const CMockTickCount64Provider &rhs);
-      CMockTickCount64Provider &operator=(const CMockTickCount64Provider &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -2,26 +2,26 @@
 #ifndef JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_NODE_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_NODE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IntrusiveMultiMapNode.h 
+// File: IntrusiveMultiMapNode.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2014 JetByte Limited.
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\IntrusiveRedBlackTreeNode.h"
+#include "JetByteTools/Win32Tools/IntrusiveRedBlackTreeNode.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -76,11 +76,17 @@ class CIntrusiveMultiMapNode : public CIntrusiveRedBlackTreeNode
       // tree node to the red black tree.
 
       CIntrusiveMultiMapNode()
-         :  m_pPrev(0),
-            m_pNext(0)
+         :  m_pPrev(nullptr),
+            m_pNext(nullptr)
       {
 
       }
+
+      CIntrusiveMultiMapNode(
+         const CIntrusiveMultiMapNode &rhs) = delete;
+
+      CIntrusiveMultiMapNode &operator=(
+         const CIntrusiveMultiMapNode &rhs) = delete;
 
    private :
 
@@ -88,11 +94,6 @@ class CIntrusiveMultiMapNode : public CIntrusiveRedBlackTreeNode
 
       CIntrusiveMultiMapNode *m_pPrev;
       CIntrusiveMultiMapNode *m_pNext;
-
-      /// No copies do not implement
-      CIntrusiveMultiMapNode(const CIntrusiveMultiMapNode &rhs);
-      /// No copies do not implement
-      CIntrusiveMultiMapNode &operator=(const CIntrusiveMultiMapNode &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,7 @@ class CIntrusiveMultiMapNode : public CIntrusiveRedBlackTreeNode
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_INTRUSIVE_MULTI_MAP_NODE_INCLUDED__
 

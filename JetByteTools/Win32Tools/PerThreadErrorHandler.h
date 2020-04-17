@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "SEHException.h"
 
@@ -44,7 +44,13 @@ class CPerThreadErrorHandler
 
       CPerThreadErrorHandler();
 
+      CPerThreadErrorHandler(
+         const CPerThreadErrorHandler &rhs) = delete;
+
       virtual ~CPerThreadErrorHandler();
+
+      CPerThreadErrorHandler &operator=(
+         const CPerThreadErrorHandler &rhs) = delete;
 
       static bool ProcessIsExiting();
 
@@ -64,13 +70,9 @@ class CPerThreadErrorHandler
       std::terminate_handler m_oldTerminateHandler;
       #endif
       #if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+      // deprecated in c++ 11, removed in c++ 17
       std::unexpected_handler m_oldUnexpectedHandler;
       #endif
-
-      /// No copies do not implement
-      CPerThreadErrorHandler(const CPerThreadErrorHandler &rhs);
-      /// No copies do not implement
-      CPerThreadErrorHandler &operator=(const CPerThreadErrorHandler &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

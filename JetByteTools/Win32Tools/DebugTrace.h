@@ -74,7 +74,13 @@ class CDebugTrace : public CMessageLog
             explicit LogInstaller(
                ILogMessages &log);
 
+            LogInstaller(
+               const LogInstaller &rhs) = delete;
+
             ~LogInstaller();
+
+            LogInstaller &operator=(
+               const LogInstaller &rhs) = delete;
 
             //lint -sem(JetByteTools::Win32::CDebugTrace::LogInstaller::Uninstall,cleanup)
             void Uninstall();
@@ -82,11 +88,6 @@ class CDebugTrace : public CMessageLog
          private :
 
             ILogMessages *m_pOldLog;
-
-            /// No copies do not implement
-            LogInstaller(const LogInstaller &rhs);
-            /// No copies do not implement
-            LogInstaller &operator=(const LogInstaller &rhs);
       };
 
    private :
@@ -131,6 +132,8 @@ inline void OutputEx(
    }
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void OutputEx(
@@ -142,6 +145,8 @@ inline void OutputEx(
    }
 }
 
+#endif
+
 /// \ingroup DebugTrace
 
 inline void OutputEx(
@@ -153,6 +158,8 @@ inline void OutputEx(
    }
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void OutputEx(
@@ -163,6 +170,8 @@ inline void OutputEx(
       CDebugTrace::Instance().LogMessage(pString);
    }
 }
+
+#endif
 
 /// \ingroup DebugTrace
 
@@ -176,6 +185,8 @@ inline void OutputEx(
    }
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void OutputEx(
@@ -187,6 +198,8 @@ inline void OutputEx(
       CDebugTrace::Instance().LogMessage(pString, stringLength);
    }
 }
+
+#endif
 
 #ifdef _DEBUG
 
@@ -198,6 +211,8 @@ inline void Output(
    OutputEx(s);
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void Output(
@@ -205,6 +220,8 @@ inline void Output(
 {
    OutputEx(s);
 }
+
+#endif
 
 /// \ingroup DebugTrace
 
@@ -214,6 +231,8 @@ inline void Output(
    OutputEx(pString);
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void Output(
@@ -221,6 +240,8 @@ inline void Output(
 {
    OutputEx(pString);
 }
+
+#endif
 
 /// \ingroup DebugTrace
 
@@ -231,6 +252,8 @@ inline void Output(
    OutputEx(pString, stringLength);
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void Output(
@@ -239,6 +262,8 @@ inline void Output(
 {
    OutputEx(pString, stringLength);
 }
+
+#endif
 
 #else
 
@@ -249,12 +274,16 @@ inline void Output(
 {
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void Output(
    const std::wstring & /*s*/)
 {
 }
+
+#endif
 
 /// \ingroup DebugTrace
 
@@ -263,12 +292,16 @@ inline void Output(
 {
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
+
 /// \ingroup DebugTrace
 
 inline void Output(
    const wchar_t * const /*pString*/)
 {
 }
+
+#endif
 
 /// \ingroup DebugTrace
 
@@ -278,6 +311,7 @@ inline void Output(
 {
 }
 
+#ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
 /// \ingroup DebugTrace
 
 inline void Output(
@@ -285,6 +319,8 @@ inline void Output(
    const ILogMessages::DataLength /*stringLength*/)
 {
 }
+
+#endif
 
 #endif
 

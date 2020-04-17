@@ -21,10 +21,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\Exception.h"
+#include "JetByteTools/Win32Tools/Exception.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Email::Test
+// Namespace: JetByteTools::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
@@ -59,14 +59,14 @@ bool FileExistsAndContains(
    const std::string &data);
 
 bool DataAndFileContentsMatch(
-   const BYTE * const pData,
-   const DWORD dataLength,
+   const BYTE *pData,
+   DWORD dataLength,
    const JetByteTools::Win32::_tstring &fileName);
 
 void EnsureDataMatches(
-   const BYTE * const pData,
-   const BYTE * const pExpectedData,
-   const DWORD dataLength);
+   const BYTE *pData,
+   const BYTE *pExpectedData,
+   DWORD dataLength);
 
 void EnsureStringsMatchA(
    const std::string &string1,

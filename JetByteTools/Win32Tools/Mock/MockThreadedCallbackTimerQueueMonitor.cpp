@@ -18,19 +18,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "MockThreadedCallbackTimerQueueMonitor.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
-
 #pragma hdrstop
-
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::ToString;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -43,11 +35,6 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 // CMockThreadedCallbackTimerQueueMonitor
 ///////////////////////////////////////////////////////////////////////////////
-
-CMockThreadedCallbackTimerQueueMonitor::CMockThreadedCallbackTimerQueueMonitor()
-{
-
-}
 
 void CMockThreadedCallbackTimerQueueMonitor::OnTimerProcessingContention(
    const ContentionLocation /*location*/)
@@ -86,6 +73,30 @@ void CMockThreadedCallbackTimerQueueMonitor::OnTimerSet(
    {
       LogMessage(_T("OnTimerSet"));
    }
+}
+
+void CMockThreadedCallbackTimerQueueMonitor::OnTimerUpdated(
+   const bool wasPending,
+   const bool wasUpdated)
+{
+   _tstring message;
+
+   if (wasPending)
+   {
+      message = _T(": WasPending");
+   }
+
+   if (wasUpdated)
+   {
+      if (message.length() == 0)
+      {
+         message += _T(":");
+      }
+
+      message += _T(" WasUpdated");
+   }
+
+   LogMessage(_T("OnTimerUpdated") + message);
 }
 
 void CMockThreadedCallbackTimerQueueMonitor::OnTimer()
@@ -136,4 +147,3 @@ void CMockThreadedCallbackTimerQueueMonitor::OnTimerDeleted()
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: MockThreadedCallbackTimerQueueMonitor.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

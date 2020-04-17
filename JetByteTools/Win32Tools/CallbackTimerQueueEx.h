@@ -88,7 +88,13 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
          IMonitorCallbackTimerQueue &monitor,
          const IProvideTickCount64 &tickProvider);
 
+      CCallbackTimerQueueEx(
+         const CCallbackTimerQueueEx &rhs) = delete;
+
       virtual ~CCallbackTimerQueueEx();
+
+      CCallbackTimerQueueEx &operator=(
+         const CCallbackTimerQueueEx &rhs) = delete;
 
       // Implement IManageTimerQueue
 
@@ -104,27 +110,39 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
       // We need to fully specify the IQueueTimers types to get around a bug in
       // doxygen 1.5.2
 
-      IQueueTimers::Handle CreateTimer() override;
+      Handle CreateTimer() override;
+
+      bool TimerIsSet(
+         const Handle &handle) const override;
 
       bool SetTimer(
-         const IQueueTimers::Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       bool DestroyTimer(
-         IQueueTimers::Handle &handle) override;
+         Handle &handle) override;
 
       bool DestroyTimer(
-         const IQueueTimers::Handle &handle) override;
+         const Handle &handle) override;
 
       void SetTimer(
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData) override;
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -160,7 +178,7 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
          TimerData,
          ULONGLONG,
          TimerDataIntrusiveMultiMapNodeKeyAccessor,
-         std::less<ULONGLONG>,
+         std::less<>,
          TimerDataIntrusiveMultiMapNodeAccessor> TimerQueue;
 
       typedef TIntrusiveSet<TimerData> ActiveHandles;
@@ -172,13 +190,17 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
       bool CancelTimer(
          TimerData *pData);
 
-      void InsertTimer(
-         TimerData * const pData,
-         const Milliseconds timeout);
+      ULONGLONG GetAbsoluteTimeout(
+         TimerData &data,
+         Milliseconds timeout) const;
 
       void InsertTimer(
-         TimerData * const pData,
-         const ULONGLONG absoluteTimeout);
+         TimerData *pData,
+         Milliseconds timeout);
+
+      void InsertTimer(
+         TimerData *pData,
+         ULONGLONG absoluteTimeout);
 
       TimerQueue m_queue;
 
@@ -193,11 +215,6 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
       bool m_handlingTimeouts;
 
       TimerData *m_pTimeoutsToBeHandled;
-
-      /// No copies do not implement
-      CCallbackTimerQueueEx(const CCallbackTimerQueueEx &rhs);
-      /// No copies do not implement
-      CCallbackTimerQueueEx &operator=(const CCallbackTimerQueueEx &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

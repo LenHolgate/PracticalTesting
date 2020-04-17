@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "CrtReportHook.h"
 
@@ -74,8 +74,8 @@ CCrtReportHook::~CCrtReportHook()
 }
 
 int CCrtReportHook::ReportHook(
-   int reportType,
-   char *message,
+   const int reportType,
+   char *pMessage, //lint !e818 (parameter could be pointer to const)
    int *pReturnValue)
 {
    if (s_processIsExiting)
@@ -83,9 +83,9 @@ int CCrtReportHook::ReportHook(
       ExitProcess(666);
    }
 
-   OutputEx(_T("CRT Debug: ") + CStringConverter::AtoT(message));
+   OutputEx(_T("CRT Debug: ") + CStringConverter::AtoT(pMessage));
 
-   cout << "CRT Debug: " << message << endl;
+   cout << "CRT Debug: " << pMessage << endl;
 
    if (reportType == _CRT_ASSERT ||
        reportType == _CRT_ERROR)
@@ -132,4 +132,3 @@ static void CrtReportHookAtExitDetector()
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CrtReportHook.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

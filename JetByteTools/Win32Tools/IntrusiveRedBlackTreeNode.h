@@ -2,7 +2,7 @@
 #ifndef JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_NODE_INCLUDED__
 #define JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_NODE_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
-// File: IntrusiveRedBlackTreeNode.h 
+// File: IntrusiveRedBlackTreeNode.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2014 JetByte Limited.
@@ -12,16 +12,16 @@
 // and also with ideas from original public domain source code from:
 // http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
 //
-// This software is provided "as is" without a warranty of any kind. All 
+// This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
 // any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors 
-// shall not be liable for any damages suffered by licensee as a result of 
-// using the software. In no event will JetByte Limited be liable for any 
-// lost revenue, profit or data, or for direct, indirect, special, 
-// consequential, incidental or punitive damages, however caused and regardless 
-// of the theory of liability, arising out of the use of or inability to use 
-// software, even if JetByte Limited has been advised of the possibility of 
+// or non-infringement, are hereby excluded. JetByte Limited and its licensors
+// shall not be liable for any damages suffered by licensee as a result of
+// using the software. In no event will JetByte Limited be liable for any
+// lost revenue, profit or data, or for direct, indirect, special,
+// consequential, incidental or punitive damages, however caused and regardless
+// of the theory of liability, arising out of the use of or inability to use
+// software, even if JetByte Limited has been advised of the possibility of
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,11 +49,19 @@ class TIntrusiveRedBlackTree;
 
 class CIntrusiveRedBlackTreeNode
 {
+   public :
+
+      CIntrusiveRedBlackTreeNode(
+         const CIntrusiveRedBlackTreeNode &rhs) = delete;
+
+      CIntrusiveRedBlackTreeNode &operator=(
+         const CIntrusiveRedBlackTreeNode &rhs) = delete;
+
    protected :
 
       CIntrusiveRedBlackTreeNode()
          :  m_red(true),
-            m_pParent(0)
+            m_pParent(nullptr)
       {
          // Note that by using an array of 2 links rather than explicit left and right
          // pointers we can collapse much of the duplicated code into code which operates
@@ -61,11 +69,11 @@ class CIntrusiveRedBlackTreeNode
          // See http://www.eternallyconfuzzled.com/tuts/datastructures/jsw_tut_rbtree.aspx
          // for details.
 
-         m_pLinks[0] = 0;
-         m_pLinks[1] = 0;
+         m_pLinks[0] = nullptr;
+         m_pLinks[1] = nullptr;
       }
 
-      //lint -esym(1510, CIntrusiveRedBlackTreeNode) Base class has no destructor
+      ~CIntrusiveRedBlackTreeNode() = default;
 
    private :
 
@@ -79,11 +87,6 @@ class CIntrusiveRedBlackTreeNode
 
       CIntrusiveRedBlackTreeNode *m_pParent;
       CIntrusiveRedBlackTreeNode *m_pLinks[2];
-
-      /// No copies do not implement
-      CIntrusiveRedBlackTreeNode(const CIntrusiveRedBlackTreeNode &rhs);
-      /// No copies do not implement
-      CIntrusiveRedBlackTreeNode &operator=(const CIntrusiveRedBlackTreeNode &rhs);
 };
 
 //lint -restore
@@ -93,7 +96,7 @@ class CIntrusiveRedBlackTreeNode
 ///////////////////////////////////////////////////////////////////////////////
 
 } // End of namespace Win32
-} // End of namespace JetByteTools 
+} // End of namespace JetByteTools
 
 #endif // JETBYTE_TOOLS_WIN32_INTRUSIVE_RED_BLACK_TREE_NODE_INCLUDED__
 

@@ -21,9 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IMonitorCallbackTimerQueue.h"
+#include "JetByteTools/Win32Tools/IMonitorCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -48,6 +48,12 @@ class CMockTimerQueueMonitor :
 
       CMockTimerQueueMonitor();
 
+      CMockTimerQueueMonitor(
+         const CMockTimerQueueMonitor &rhs) = delete;
+
+      CMockTimerQueueMonitor &operator=(
+         const CMockTimerQueueMonitor &rhs) = delete;
+
       bool logMessages;
 
       bool NoTimersAreActive() const;
@@ -59,26 +65,25 @@ class CMockTimerQueueMonitor :
       void OnOneOffTimerSet() override;
 
       void OnTimerSet(
-         const bool wasPending) override;
+         bool wasPending) override;
+
+      void OnTimerUpdated(
+         bool wasPending,
+         bool wasUpdated) override;
 
       void OnTimer() override;
 
       void OnTimerCancelled(
-         const bool wasPending) override;
+         bool wasPending) override;
 
       void OnTimerDestroyed(
-         const bool wasPending) override;
+         bool wasPending) override;
 
       void OnTimerDeleted() override;
 
    private :
 
       volatile long m_numTimersActive;
-
-      /// No copies do not implement
-      CMockTimerQueueMonitor(const CMockTimerQueueMonitor &rhs);
-      /// No copies do not implement
-      CMockTimerQueueMonitor &operator=(const CMockTimerQueueMonitor &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -46,7 +46,7 @@ class CTickCount64Provider: public IProvideTickCount64
 {
    public :
 
-      CTickCount64Provider() {}
+      CTickCount64Provider() = default;
 
       ULONGLONG GetTickCount64() const override
       {

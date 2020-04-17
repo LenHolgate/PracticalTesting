@@ -47,15 +47,19 @@ class IMonitorCallbackTimerQueue
       virtual void OnOneOffTimerSet() = 0;
 
       virtual void OnTimerSet(
-         const bool wasPending) = 0;
+         bool wasPending) = 0;
+
+      virtual void OnTimerUpdated(
+         bool wasPending,
+         bool wasUpdated) = 0;
 
       virtual void OnTimer() = 0;
 
       virtual void OnTimerCancelled(
-         const bool wasPending) = 0;
+         bool wasPending) = 0;
 
       virtual void OnTimerDestroyed(
-         const bool wasPending) = 0;
+         bool wasPending) = 0;
 
       virtual void OnTimerDeleted() = 0;
 
@@ -64,7 +68,7 @@ class IMonitorCallbackTimerQueue
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IMonitorCallbackTimerQueue() {}
+      virtual ~IMonitorCallbackTimerQueue() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

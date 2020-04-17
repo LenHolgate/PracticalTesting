@@ -23,14 +23,14 @@
 /// it.
 /// \ingroup Precomp
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "PrecompiledHeader.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
-#include "JetByteTools\Win32Tools\DebugTrace.h"
+#include "JetByteTools/Win32Tools/Utils.h"
+#include "JetByteTools/Win32Tools/DebugTrace.h"
 
-#include "JetByteTools\TestTools\TestException.h"
+#include "JetByteTools/TestTools/TestException.h"
 
 #pragma hdrstop
 

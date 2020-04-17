@@ -43,7 +43,7 @@ class CWin32Exception : public CException
 
       CWin32Exception(
          const _tstring &where,
-         const DWORD error);
+         DWORD error);
 
       CWin32Exception(
          const _tstring &where,
@@ -52,7 +52,7 @@ class CWin32Exception : public CException
       CWin32Exception(
          const _tstring &where,
          const _tstring &message,
-         const DWORD error);
+         DWORD error);
 
       DWORD GetError() const;
 

@@ -43,7 +43,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    
     <ProjectName>Win32ToolsTest</ProjectName>
     <ProjectGuid>{673D9A12-1869-4DDF-BC37-A463EAC46722}</ProjectGuid>
   </PropertyGroup>

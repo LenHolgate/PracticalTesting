@@ -21,9 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "tstring.h"
+#include "JetByteTools/Admin/Types.h"
 
-#include <wtypes.h>
+#include "tstring.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -37,16 +37,18 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 unsigned short CalculateRequiredPrecision(
-   const double value);
+   double value);
 
 enum ToHexStringHexDigitRepresentation
 {
-   HexDigitsLowerCase   = 0x000,
-   HexDigitsUpperCase   = 0x001,
-   HexDigitsNoPrefix    = 0x000,
-   HexDigitsWithPrefix  = 0x010,       // Prefix with 0x
-   HexDigitsNoPadding   = 0x000,
-   HexDigitsWithPadding = 0x100,       // Pad to full width for type with leading 0's
+   HexDigitsLowerCase      = 0x0000,
+   HexDigitsUpperCase      = 0x0001,
+   HexDigitsNoPrefix       = 0x0000,
+   HexDigitsWithPrefix     = 0x0010,      // Prefix with 0x
+   HexDigitsNoPadding      = 0x0000,
+   HexDigitsWithPadding    = 0x0100,      // Pad to full width for type with leading 0's
+   HexDigitsSpacesBetween  = 0x1000,      // Only for blocks of 'void *' data,
+                                          // space between each digit eg "00 AF FF" rather than "00AFFF"
 
    HexDigitsNoPrefixUpperCase                = HexDigitsUpperCase | HexDigitsNoPadding | HexDigitsNoPrefix,
    HexDigitsNoPrefixLowerCase                = HexDigitsLowerCase | HexDigitsNoPadding | HexDigitsNoPrefix,
@@ -83,10 +85,10 @@ enum ToHexStringHexDigitRepresentation
 // out of Utils.h and into this header file.
 
 std::string ToStringA(
-   const bool val);
+   bool val);
 
 std::wstring ToStringW(
-   const bool val);
+   bool val);
 
 inline _tstring ToString(
    const bool val)
@@ -99,10 +101,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const unsigned int val);
+   unsigned int val);
 
 std::wstring ToStringW(
-   const unsigned int val);
+   unsigned int val);
 
 inline _tstring ToString(
    const unsigned int val)
@@ -115,10 +117,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const signed int val);
+   signed int val);
 
 std::wstring ToStringW(
-   const signed int val);
+   signed int val);
 
 inline _tstring ToString(
    const signed int val)
@@ -131,10 +133,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const unsigned short val);
+   unsigned short val);
 
 std::wstring ToStringW(
-   const unsigned short val);
+   unsigned short val);
 
 inline _tstring ToString(
    const unsigned short val)
@@ -147,10 +149,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const signed short val);
+   signed short val);
 
 std::wstring ToStringW(
-   const signed short val);
+   signed short val);
 
 inline _tstring ToString(
    const signed short val)
@@ -163,10 +165,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const unsigned long val);
+   unsigned long val);
 
 std::wstring ToStringW(
-   const unsigned long val);
+   unsigned long val);
 
 inline _tstring ToString(
    const unsigned long val)
@@ -179,10 +181,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const signed long val);
+   signed long val);
 
 std::wstring ToStringW(
-   const signed long val);
+   signed long val);
 
 inline _tstring ToString(
    const signed long val)
@@ -195,10 +197,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const unsigned __int64 val);
+   unsigned __int64 val);
 
 std::wstring ToStringW(
-   const unsigned __int64 val);
+   unsigned __int64 val);
 
 inline _tstring ToString(
    const unsigned __int64 val)
@@ -211,10 +213,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const signed __int64 val);
+   signed __int64 val);
 
 std::wstring ToStringW(
-   const signed __int64 val);
+   signed __int64 val);
 
 inline _tstring ToString(
    const signed __int64 val)
@@ -227,10 +229,10 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const float val);
+   float val);
 
 std::wstring ToStringW(
-   const float val);
+   float val);
 
 inline _tstring ToString(
    const float val)
@@ -243,12 +245,12 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const double val,
-   const unsigned short precision = 0);
+   double val,
+   unsigned short precision = 0);
 
 std::wstring ToStringW(
-   const double val,
-   const unsigned short precision = 0);
+   double val,
+   unsigned short precision = 0);
 
 inline _tstring ToString(
    const double val,
@@ -262,12 +264,12 @@ inline _tstring ToString(
 }
 
 std::string ToStringA(
-   const long double val,
-   const unsigned short precision = 0);
+   long double val,
+   unsigned short precision = 0);
 
 std::wstring ToStringW(
-   const long double val,
-   const unsigned short precision = 0);
+   long double val,
+   unsigned short precision = 0);
 
 inline _tstring ToString(
    const long double val,
@@ -298,11 +300,11 @@ inline _tstring ToString(
 
 std::string PointerToStringA(
    const void *val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingNoPrefixUpperCase);
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingNoPrefixUpperCase);
 
 std::wstring PointerToStringW(
    const void *val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingNoPrefixUpperCase);
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingNoPrefixUpperCase);
 
 inline _tstring PointerToString(
    const void *val,
@@ -316,12 +318,12 @@ inline _tstring PointerToString(
 }
 
 std::string ToHexStringA(
-   const unsigned char val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned char val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const unsigned char val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned char val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const unsigned char val,
@@ -335,12 +337,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const signed char val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed char val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const signed char val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed char val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const signed char val,
@@ -354,12 +356,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const unsigned int val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned int val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const unsigned int val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned int val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const unsigned int val,
@@ -373,12 +375,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const signed int val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed int val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const signed int val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed int val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const signed int val,
@@ -392,12 +394,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const unsigned short val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned short val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const unsigned short val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned short val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const unsigned short val,
@@ -411,12 +413,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const signed short val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed short val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const signed short val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed short val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const signed short val,
@@ -430,12 +432,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const unsigned long val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned long val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const unsigned long val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned long val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const unsigned long val,
@@ -449,12 +451,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const signed long val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed long val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const signed long val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed long val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const signed long val,
@@ -468,12 +470,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const unsigned __int64 val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned __int64 val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const unsigned __int64 val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   unsigned __int64 val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const unsigned __int64 val,
@@ -487,12 +489,12 @@ inline _tstring ToHexString(
 }
 
 std::string ToHexStringA(
-   const signed __int64 val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed __int64 val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
-   const signed __int64 val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   signed __int64 val,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const signed __int64 val,
@@ -507,11 +509,11 @@ inline _tstring ToHexString(
 
 std::string ToHexStringA(
    const void *val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingWithPrefixLowerCase);
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingWithPrefixLowerCase);
 
 std::wstring ToHexStringW(
    const void *val,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingWithPrefixLowerCase);
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsWithPaddingWithPrefixLowerCase);
 
 inline _tstring ToHexString(
    const void *val,
@@ -526,13 +528,13 @@ inline _tstring ToHexString(
 
 std::string ToHexStringA(
    const void *pData,
-   const size_t length,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   size_t length,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 std::wstring ToHexStringW(
    const void *pData,
-   const size_t length,
-   const ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
+   size_t length,
+   ToHexStringHexDigitRepresentation hexDigitRepresentation = HexDigitsDefault);
 
 inline _tstring ToHexString(
    const void *pData,
@@ -546,14 +548,11 @@ inline _tstring ToHexString(
 #endif
 }
 
-_tstring BoolAsString(
-   const bool value);
-
 std::string ToHexA(
-   const BYTE val);
+   BYTE val);
 
 std::wstring ToHexW(
-   const BYTE val);
+   BYTE val);
 
 inline _tstring ToHex(
    const BYTE val)
@@ -566,16 +565,16 @@ inline _tstring ToHex(
 }
 
 std::string MakePrintableA(
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false);
 
 std::wstring MakePrintableW(
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false);
 
 inline _tstring MakePrintable(
    const BYTE * const pData,
@@ -591,16 +590,16 @@ inline _tstring MakePrintable(
 }
 
 std::string DumpDataA(
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false);
 
 std::wstring DumpDataW(
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false);
 
 inline _tstring DumpData(
    const BYTE * const pData,
@@ -617,21 +616,21 @@ inline _tstring DumpData(
 
 std::string DumpDataA(
    const std::string &linePrefix,
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false,
-   const bool linePrefixOnFirstLine = true,
-   const bool lineFeedOnLastLine = true);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false,
+   bool linePrefixOnFirstLine = true,
+   bool lineFeedOnLastLine = true);
 
 std::wstring DumpDataW(
    const std::wstring &linePrefix,
-   const BYTE * const pData,
-   const size_t dataLength,
-   const size_t lineLength = 0,
-   const bool useCR = false,
-   const bool linePrefixOnFirstLine = true,
-   const bool lineFeedOnLastLine = true);
+   const BYTE *pData,
+   size_t dataLength,
+   size_t lineLength = 0,
+   bool useCR = false,
+   bool linePrefixOnFirstLine = true,
+   bool lineFeedOnLastLine = true);
 
 inline _tstring DumpData(
    const _tstring &linePrefix,
@@ -650,10 +649,10 @@ inline _tstring DumpData(
 }
 
 _tstring BoolAsString(
-   const bool value);
+   bool value);
 
 std::string BoolAsStringA(
-   const bool value);
+   bool value);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32

@@ -21,9 +21,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools\Win32Tools\IMonitorThreadedCallbackTimerQueue.h"
+#include "JetByteTools/Win32Tools/IMonitorThreadedCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -46,12 +46,18 @@ class CMockThreadedCallbackTimerQueueMonitor :
 {
    public :
 
-      CMockThreadedCallbackTimerQueueMonitor();
+      CMockThreadedCallbackTimerQueueMonitor() = default;
+
+      CMockThreadedCallbackTimerQueueMonitor(
+         const CMockThreadedCallbackTimerQueueMonitor &rhs) = delete;
+
+      CMockThreadedCallbackTimerQueueMonitor &operator=(
+         const CMockThreadedCallbackTimerQueueMonitor &rhs) = delete;
 
       // Implement IMonitorThreadedCallbackTimerQueue
 
       void OnTimerProcessingContention(
-         const ContentionLocation location) override;
+         ContentionLocation location) override;
 
       void OnTimerProcessingStarted() override;
 
@@ -62,24 +68,21 @@ class CMockThreadedCallbackTimerQueueMonitor :
       void OnOneOffTimerSet() override;
 
       void OnTimerSet(
-         const bool wasPending) override;
+         bool wasPending) override;
+
+      void OnTimerUpdated(
+         bool wasPending,
+         bool wasUpdated) override;
 
       void OnTimer() override;
 
       void OnTimerCancelled(
-         const bool wasPending) override;
+         bool wasPending) override;
 
       void OnTimerDestroyed(
-         const bool wasPending) override;
+         bool wasPending) override;
 
       void OnTimerDeleted() override;
-
-   private :
-
-      /// No copies do not implement
-      CMockThreadedCallbackTimerQueueMonitor(const CMockThreadedCallbackTimerQueueMonitor &rhs);
-      /// No copies do not implement
-      CMockThreadedCallbackTimerQueueMonitor &operator=(const CMockThreadedCallbackTimerQueueMonitor &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

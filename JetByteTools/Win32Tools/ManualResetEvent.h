@@ -48,14 +48,14 @@ class CManualResetEvent : public IWaitable
 
       explicit CManualResetEvent(
          CEvent::InitialState initialState = CEvent::NonSignaled,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0);
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr);
 
       /// Create a new named CManualResetEvent object or connect to an existing
       /// one with the same name, for cross-process use.
 
       explicit CManualResetEvent(
          const IKernelObjectName &name,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr,
          CEvent::InitialState initialState = CEvent::NonSignaled);
 
       /// Create a new named CManualResetEvent object or connect to an existing
@@ -64,9 +64,15 @@ class CManualResetEvent : public IWaitable
 
       CManualResetEvent(
          const IKernelObjectName &name,
-         const CEvent::CreationFlags creationFlags,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         CEvent::CreationFlags creationFlags,
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr,
          CEvent::InitialState initialState = CEvent::NonSignaled);
+
+      CManualResetEvent(
+         const CManualResetEvent &rhs) = delete;
+
+      CManualResetEvent &operator=(
+         const CManualResetEvent &rhs) = delete;
 
       /// Set the event to the signalled state.
 
@@ -87,16 +93,11 @@ class CManualResetEvent : public IWaitable
       void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeoutMillis) const override;
+         Milliseconds timeout) const override;
 
    private :
 
       CEvent m_event;
-
-      /// No copies do not implement
-      CManualResetEvent(const CManualResetEvent &rhs);
-      /// No copies do not implement
-      CManualResetEvent &operator=(const CManualResetEvent &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

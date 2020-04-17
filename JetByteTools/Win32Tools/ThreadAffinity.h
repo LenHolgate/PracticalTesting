@@ -52,25 +52,26 @@ class CThreadAffinity
 
       CThreadAffinity(
          HANDLE hThread,
-         const SelectHow selectHow,
-         const DWORD_PTR affinityMask = 0);
+         SelectHow selectHow,
+         DWORD_PTR affinityMask = 0);
 
       explicit CThreadAffinity(
-         const SelectHow selectHow,
-         const DWORD_PTR affinityMask = 0);
+         SelectHow selectHow,
+         DWORD_PTR affinityMask = 0);
+
+      CThreadAffinity(
+         const CThreadAffinity &rhs) = delete;
 
       ~CThreadAffinity();
+
+      CThreadAffinity &operator=(
+         const CThreadAffinity &rhs) = delete;
 
    private :
 
       const DWORD_PTR m_previousThreadAffinity;
 
-      const HANDLE m_hThread;
-
-      /// No copies do not implement
-      CThreadAffinity(const CThreadAffinity &rhs);
-      /// No copies do not implement
-      CThreadAffinity &operator=(const CThreadAffinity &rhs);
+      HANDLE m_hThread;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

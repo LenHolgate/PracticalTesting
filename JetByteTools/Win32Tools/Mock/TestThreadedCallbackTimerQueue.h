@@ -21,10 +21,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Win32Tools\ThreadedCallbackTimerQueue.h"
-#include "JetByteTools\Win32Tools\AutoResetEvent.h"
+#include "JetByteTools/Win32Tools/ThreadedCallbackTimerQueue.h"
+#include "JetByteTools/Win32Tools/AutoResetEvent.h"
 
-#include "JetByteTools\TestTools\TestLog.h"
+#include "JetByteTools/TestTools/TestLog.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -53,11 +53,11 @@ class CTestThreadedCallbackTimerQueue :
          const _tstring &message) override;
 
       bool WaitForThreadTerminationException(
-         const Milliseconds timeout) const;
+         Milliseconds timeout) const;
 
    private :
 
-      JetByteTools::Win32::CAutoResetEvent m_exceptionEvent;
+      CAutoResetEvent m_exceptionEvent;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

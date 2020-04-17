@@ -59,12 +59,18 @@ class CCriticalSection : public ICriticalSection
       /// count.
 
       explicit CCriticalSection(
-         const DWORD spinCount);
+         DWORD spinCount);
+
+      CCriticalSection(
+         const CCriticalSection &rhs) = delete;
 
       ~CCriticalSection();
 
+      CCriticalSection &operator=(
+         const CCriticalSection &rhs) = delete;
+
       void SetSpinCount(
-         const DWORD spinCount);
+         DWORD spinCount);
 
       // Implement ICriticalSection
 
@@ -79,11 +85,6 @@ class CCriticalSection : public ICriticalSection
    private :
 
       CRITICAL_SECTION m_crit;
-
-      /// No copies do not implement
-      CCriticalSection(const CCriticalSection &rhs);
-      /// No copies do not implement
-      CCriticalSection &operator=(const CCriticalSection &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

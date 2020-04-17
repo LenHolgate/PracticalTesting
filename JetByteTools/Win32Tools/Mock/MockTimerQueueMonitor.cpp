@@ -18,23 +18,15 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "MockTimerQueueMonitor.h"
 
-#include "JetByteTools\Win32Tools\Utils.h"
+#include "JetByteTools/Win32Tools/Utils.h"
 
-#include "JetByteTools\TestTools\TestException.h"
+#include "JetByteTools/TestTools/TestException.h"
 
 #pragma hdrstop
-
-///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-using JetByteTools::Win32::ToString;
-
-using JetByteTools::Test::CTestException;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32::Mock
@@ -91,6 +83,33 @@ void CMockTimerQueueMonitor::OnTimerSet(
       {
          LogMessage(_T("OnTimerSet"));
       }
+   }
+}
+
+void CMockTimerQueueMonitor::OnTimerUpdated(
+   const bool wasPending,
+   const bool wasUpdated)
+{
+   if (logMessages)
+   {
+      _tstring message;
+
+      if (wasPending)
+      {
+         message = _T(": WasPending");
+      }
+
+      if (wasUpdated)
+      {
+         if (message.length() == 0)
+         {
+            message += _T(":");
+         }
+
+         message += _T(" WasUpdated");
+      }
+
+      LogMessage(_T("OnTimerUpdated") + message);
    }
 }
 
@@ -152,4 +171,3 @@ void CMockTimerQueueMonitor::OnTimerDeleted()
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: MockTimerQueueMonitor.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

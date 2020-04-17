@@ -54,6 +54,12 @@ class CPerformanceCounter
       explicit CPerformanceCounter(
          ThreadAffinity threadAffinity = NoThreadAffinity);
 
+      CPerformanceCounter(
+         const CPerformanceCounter &rhs) = delete;
+
+      CPerformanceCounter &operator=(
+         const CPerformanceCounter &rhs) = delete;
+
       /// Resets a counter.
 
       void Reset();
@@ -80,11 +86,6 @@ class CPerformanceCounter
       CThreadAffinity m_threadAffinity;
 
       LARGE_INTEGER m_start;
-
-      /// No copies do not implement
-      CPerformanceCounter(const CPerformanceCounter &rhs);
-      /// No copies do not implement
-      CPerformanceCounter &operator=(const CPerformanceCounter &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <wtypes.h>
+#include "JetByteTools/Admin/Types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -57,7 +57,7 @@ class IProvideTickCount64
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~IProvideTickCount64() {}
+      virtual ~IProvideTickCount64() = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

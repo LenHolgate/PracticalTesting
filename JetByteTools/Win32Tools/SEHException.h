@@ -65,6 +65,8 @@ class CSEHException
 
       const _tstring &GetMessage() const;
 
+      std::string GetDetailsA() const;
+
    protected :
 
       const unsigned int m_code;
@@ -89,11 +91,17 @@ class CSEHException::Translator
 {
    public :
 
+      #if (JETBYTE_BREAK_SEH_EXCEPTION_TRANSLATOR_COMPATABILITY == 0)
+      // Prefer using CPerThreadErrorHandler in place of this translator
       Translator();
+      #endif
+      explicit Translator(int NotUsedJustBreakCompatibility);
 
       ~Translator();
 
    private :
+
+      static _se_translator_function ConstructionHelper();
 
       static void trans_func(
          unsigned int code,

@@ -48,14 +48,14 @@ class CAutoResetEvent : public IWaitable
 
       explicit CAutoResetEvent(
          CEvent::InitialState initialState = CEvent::NonSignaled,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0);
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr);
 
       /// Create a new named CAutoResetEvent object or connect to an existing
       /// one with the same name, for cross-process use.
 
       explicit CAutoResetEvent(
          const IKernelObjectName &name,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr,
          CEvent::InitialState initialState = CEvent::NonSignaled);
 
       /// Create a new named CAutoResetEvent object or connect to an existing
@@ -64,9 +64,16 @@ class CAutoResetEvent : public IWaitable
 
       CAutoResetEvent(
          const IKernelObjectName &name,
-         const CEvent::CreationFlags creationFlags,
-         SECURITY_ATTRIBUTES *pSecurityAttributes = 0,
+         CEvent::CreationFlags creationFlags,
+         SECURITY_ATTRIBUTES *pSecurityAttributes = nullptr,
          CEvent::InitialState initialState = CEvent::NonSignaled);
+
+
+      CAutoResetEvent(
+         const CAutoResetEvent &rhs) = delete;
+
+      CAutoResetEvent &operator=(
+         const CAutoResetEvent &rhs) = delete;
 
       /// Set the event to the signalled state.
 
@@ -83,16 +90,11 @@ class CAutoResetEvent : public IWaitable
       void Wait() const override;
 
       bool Wait(
-         const Milliseconds timeout) const override;
+         Milliseconds timeout) const override;
 
    private :
 
       CEvent m_event;
-
-      /// No copies do not implement
-      CAutoResetEvent(const CAutoResetEvent &rhs);
-      /// No copies do not implement
-      CAutoResetEvent &operator=(const CAutoResetEvent &rhs);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

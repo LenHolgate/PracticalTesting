@@ -18,7 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools\Admin\Admin.h"
+#include "JetByteTools/Admin/Admin.h"
 
 #include "ThreadLocalStorage.h"
 #include "Win32Exception.h"
@@ -39,17 +39,17 @@ namespace Win32 {
 ///////////////////////////////////////////////////////////////////////////////
 
 CThreadLocalStorage::CThreadLocalStorage()
-   :  m_index(::TlsAlloc()),
+   :  m_index(TlsAlloc()),
       m_owner(true)
 {
    if (m_index == TLS_OUT_OF_INDEXES)
    {
-      throw CWin32Exception(_T("CThreadLocalStorage::CThreadLocalStorage()"), ::GetLastError());
+      throw CWin32Exception(_T("CThreadLocalStorage::CThreadLocalStorage()"), GetLastError());
    }
 }
 
 CThreadLocalStorage::CThreadLocalStorage(
-   DWORD tlsIndex)
+   const DWORD tlsIndex)
    :  m_index(tlsIndex),
       m_owner(false)
 {
@@ -61,7 +61,7 @@ CThreadLocalStorage::~CThreadLocalStorage()
    {
       if (m_owner)
       {
-         if (0 == ::TlsFree(m_index))
+         if (0 == TlsFree(m_index))
          {
             DEBUG_ONLY(Output(_T("~CThreadLocalStorage() - error:") + GetLastErrorMessage(::GetLastError())));
          }
@@ -79,41 +79,41 @@ DWORD CThreadLocalStorage::GetIndex() const
 
 void CThreadLocalStorage::ClearValue() const
 {
-   if (0 == ::TlsSetValue(m_index, nullptr))
+   if (0 == TlsSetValue(m_index, nullptr))
    {
-      throw CWin32Exception(_T("CThreadLocalStorage::ClearValue()"), ::GetLastError());
+      throw CWin32Exception(_T("CThreadLocalStorage::ClearValue()"), GetLastError());
    }
 }
 
 void CThreadLocalStorage::SetValue(
    void *pValue) const
 {
-   if (0 == ::TlsSetValue(m_index, pValue))
+   if (0 == TlsSetValue(m_index, pValue))
    {
-      throw CWin32Exception(_T("CThreadLocalStorage::SetValue()"), ::GetLastError());
+      throw CWin32Exception(_T("CThreadLocalStorage::SetValue()"), GetLastError());
    }
 }
 
 void CThreadLocalStorage::SetValue(
    const DWORD value) const
 {
-   if (0 == ::TlsSetValue(m_index, reinterpret_cast<void *>(static_cast<ULONG_PTR>(value))))
+   if (0 == TlsSetValue(m_index, reinterpret_cast<void *>(static_cast<ULONG_PTR>(value))))
    {
-      throw CWin32Exception(_T("CThreadLocalStorage::SetValue()"), ::GetLastError());
+      throw CWin32Exception(_T("CThreadLocalStorage::SetValue()"), GetLastError());
    }
 }
 
 void *CThreadLocalStorage::GetValue() const
 {
-   void *pV = ::TlsGetValue(m_index);
+   void *pV = TlsGetValue(m_index);
 
    if (pV == nullptr)
    {
-      DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError != NO_ERROR)
       {
-         throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), ::GetLastError());
+         throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), GetLastError());
       }
    }
 
@@ -122,15 +122,15 @@ void *CThreadLocalStorage::GetValue() const
 
 DWORD CThreadLocalStorage::GetValueAsDWORD() const
 {
-   void *pV = ::TlsGetValue(m_index);
+   void *pV = TlsGetValue(m_index);
 
    if (pV == nullptr)
    {
-      DWORD lastError = ::GetLastError();
+      const DWORD lastError = GetLastError();
 
       if (lastError != NO_ERROR)
       {
-         throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), ::GetLastError());
+         throw CWin32Exception(_T("CThreadLocalStorage::GetValue()"), GetLastError());
       }
    }
 
