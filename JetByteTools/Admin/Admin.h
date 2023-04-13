@@ -71,18 +71,19 @@
 /// Note that 6.7.x was the last version to support Visual Studio 2010.
 /// Note that 6.8.x was the last version to support Visual Studio 2012.
 /// Note that 6.9.2 was the last version to support Visual Studio 2013.
+/// Note that 7.3 was the last version to support Visual Studio 2015.
 
-#define JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION 1900
+#define JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION 1910
 
 /// This is the latest version of the compiler we will support from the
 /// next major release
 
-#define JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION 1900
+#define JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION 1910
 
 /// This is the latest compiler version that we've tested on.
 /// You might get away with later versions but we don't support them yet.
 
-#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1926
+#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1936
 
 /// Don't let Windows.h define macros for min and max. Force the use of the stl
 /// template versions

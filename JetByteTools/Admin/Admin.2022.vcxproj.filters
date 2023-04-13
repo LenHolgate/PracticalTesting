@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Documentation">
-      <UniqueIdentifier>{b2f255ce-5fee-46bf-b873-7912f8fa9439}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{57be5c34-3b6f-4c14-9a76-2ae6b54c55bf}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
@@ -31,31 +28,13 @@
     <ClInclude Include="ExampleConfigHeaders\Config.h">
       <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\EARTH-Config.h">
-      <Filter>Header Files\Example Config Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\MERCURY-Config.h">
-      <Filter>Header Files\Example Config Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\SATURN-Config.h">
-      <Filter>Header Files\Example Config Headers</Filter>
-    </ClInclude>
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_VISTA.h">
-      <Filter>Header Files\Example Config Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN2K.h">
       <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN7.h">
       <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WINXP.h">
-      <Filter>Header Files\Example Config Headers</Filter>
-    </ClInclude>
     <ClInclude Include="ForwardDeclareWinsockTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SecureCRT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TargetWindowsVersion.h">
@@ -67,17 +46,11 @@
     <ClInclude Include="Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UsingMFC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Warnings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WinsockWrapper.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExampleConfigHeaders\x64-STLPort-Config.h">
-      <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN8.h">
       <Filter>Header Files\Example Config Headers</Filter>
@@ -88,32 +61,6 @@
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN81.h">
       <Filter>Header Files\Example Config Headers</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Docs\BuildConfiguration.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\FAQ.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\Groups.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\MainPage.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\Overview.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\ProgrammingConcepts.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\ReleaseNotes.txt">
-      <Filter>Documentation</Filter>
-    </None>
-    <None Include="Docs\Testing.txt">
-      <Filter>Documentation</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Admin.cpp">

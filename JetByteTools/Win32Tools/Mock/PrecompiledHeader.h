@@ -1,11 +1,9 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_WIN32_MOCK_PRECOMPILED_HEADER_INCLUDED__
-#define JETBYTE_TOOLS_WIN32_MOCK_PRECOMPILED_HEADER_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: PrecompiledHeader.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// Copyright 2021 JetByte Limited.
 //
 // This software is provided "as is" without a warranty of any kind. All
 // express or implied conditions, representations and warranties, including
@@ -20,19 +18,19 @@
 // such damages.
 //
 ///////////////////////////////////////////////////////////////////////////////
+// This file was automatically generated. Do not edit.
+///////////////////////////////////////////////////////////////////////////////
 
 #include "LoggingCallbackTimer.h"
-#include "MockTickCountProvider.h"
-#include "MockTickCount64Provider.h"
 #include "MockThreadedCallbackTimerQueueMonitor.h"
+#include "MockTickCount64Provider.h"
+#include "MockTickCountProvider.h"
 #include "MockTimerQueue.h"
 #include "MockTimerQueueMonitor.h"
 #include "TestCallbackTimerWheel.h"
-#include "TestThreadedCallbackTimerQueue.h"
-#include "TestIntrusiveRedBlackTreeNode.h"
 #include "TestIntrusiveMultiMapNode.h"
-
-#endif // JETBYTE_TOOLS_WIN32_MOCK_PRECOMPILED_HEADER_INCLUDED__
+#include "TestIntrusiveRedBlackTreeNode.h"
+#include "TestThreadedCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: PrecompiledHeader.h

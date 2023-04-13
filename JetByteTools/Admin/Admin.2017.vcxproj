@@ -43,7 +43,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    
     <ProjectName>Admin</ProjectName>
     <ProjectGuid>{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}</ProjectGuid>
     <RootNamespace>Admin</RootNamespace>
@@ -593,33 +592,15 @@
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN10.h" />
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN8.h" />
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN81.h" />
-    <ClInclude Include="ExampleConfigHeaders\x64-STLPort-Config.h" />
     <ClInclude Include="ForwardDeclareWinsockTypes.h" />
-    <ClInclude Include="SecureCRT.h" />
     <ClInclude Include="TargetWindowsVersion.h" />
     <ClInclude Include="Todo.h" />
     <ClInclude Include="Types.h" />
-    <ClInclude Include="UsingMFC.h" />
     <ClInclude Include="Warnings.h" />
     <ClInclude Include="WinsockWrapper.h" />
     <ClInclude Include="ExampleConfigHeaders\Config.h" />
-    <ClInclude Include="ExampleConfigHeaders\EARTH-Config.h" />
-    <ClInclude Include="ExampleConfigHeaders\MERCURY-Config.h" />
-    <ClInclude Include="ExampleConfigHeaders\SATURN-Config.h" />
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_VISTA.h" />
-    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN2K.h" />
     <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WIN7.h" />
-    <ClInclude Include="ExampleConfigHeaders\TargetWindowsVersion_WINXP.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Docs\BuildConfiguration.txt" />
-    <None Include="Docs\FAQ.txt" />
-    <None Include="Docs\Groups.txt" />
-    <None Include="Docs\MainPage.txt" />
-    <None Include="Docs\Overview.txt" />
-    <None Include="Docs\ProgrammingConcepts.txt" />
-    <None Include="Docs\ReleaseNotes.txt" />
-    <None Include="Docs\Testing.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Admin.cpp" />

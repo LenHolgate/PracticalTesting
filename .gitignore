@@ -1,0 +1,6 @@
+*.user
+Output
+.vs
+PrecompiledHeaderGenerator.exe
+
+VisualStudioProjectFileCreatorFrom2017.exe
