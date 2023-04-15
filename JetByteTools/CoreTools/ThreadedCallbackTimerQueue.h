@@ -33,7 +33,7 @@
 #include "Thread.h"
 #include "IRunnable.h"
 #include "AutoResetEvent.h"
-#include "ReentrantLockableObject.h"
+#include "LockableObject.h"
 #include "ConditionalSmartPointer.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,7 +192,7 @@ class CThreadedCallbackTimerQueue :
 
       IMonitorThreadedCallbackTimerQueue &m_monitor;
 
-      mutable CReentrantLockableObject m_lock;
+      mutable CLockableObject m_lock;
 
       CAutoResetEvent m_stateChangeEvent;
 
