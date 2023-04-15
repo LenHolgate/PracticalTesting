@@ -1,23 +1,29 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
-#define JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: RunTest.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2008 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2008 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,10 +32,8 @@
 #include "TestException.h"
 #include "TestMonitor.h"
 
-#include "JetByteTools/Win32Tools/Exception.h"
-#include "JetByteTools/Win32Tools/Win32Exception.h"
-#include "JetByteTools/Win32Tools/SEHException.h"
-#include "JetByteTools/Win32Tools/StringConverter.h"
+#include "JetByteTools/CoreTools/Exception.h"
+#include "JetByteTools/CoreTools/StringConverter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Email::Test
@@ -46,66 +50,50 @@ namespace Test {
 #define RUN_TEST(f)                                                           \
 do                                                                            \
 {                                                                             \
-   const JetByteTools::Win32::_tstring functionName(_T(#f) _T("()"));         \
+   const JetByteTools::Core::_tstring functionName(_T(#f) _T("()"));          \
                                                                               \
    try                                                                        \
    {                                                                          \
-      JetByteTools::Win32::Output(functionName + _T(" - start"));             \
+      JetByteTools::Core::Output(functionName + _T(" - start"));              \
                                                                               \
       f();                                                                    \
                                                                               \
-      JetByteTools::Win32::Output(functionName + _T(" - stop"));              \
+      JetByteTools::Core::Output(functionName + _T(" - stop"));               \
    }                                                                          \
    catch (JetByteTools::Test::CTestException &e)                              \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CTestException - ") + e.GetWhere() +                \
-         _T(" - ") + e.GetMessage());                                         \
+         _T(" - ") + e.GetWhat());                                            \
    }                                                                          \
-   catch (JetByteTools::Win32::CWin32Exception &e)                            \
-   {                                                                          \
-      throw JetByteTools::Test::CTestException(                               \
-         functionName,                                                        \
-         _T("Test failed: CTestException - ") + e.GetMessage());              \
-   }                                                                          \
-   catch (JetByteTools::Win32::CException &e)                                 \
+   catch (JetByteTools::Core::CException &e)                                  \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: CException - ") + e.GetWhere() +                    \
-         _T(" - ") + e.GetMessage());                                         \
-   }                                                                          \
-   catch (JetByteTools::Win32::CSEHException &e)                              \
-   {                                                                          \
-      JetByteTools::Test::CCallStackCreator stackWalker;                      \
-                                                                              \
-      throw JetByteTools::Test::CTestException(                               \
-         functionName,                                                        \
-         _T("Test failed: CSEHException - ") + e.GetWhere() +                 \
-         _T(" - ") + e.GetMessage() +                                         \
-         _T(" - ") + stackWalker.GetStack(&e.GetContext()));                  \
+         _T(" - ") + e.GetWhat());                                            \
    }                                                                          \
    catch (std::exception &e)                                                  \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: std::exception - ") +                               \
-         JetByteTools::Win32::CStringConverter::AtoT(e.what()));              \
+         JetByteTools::Core::CStringConverter::AtoT(e.what()));               \
    }                                                                          \
    catch (const char *pE)                                                     \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: Exception - ") +                                    \
-         JetByteTools::Win32::CStringConverter::AtoT(pE));                    \
+         JetByteTools::Core::CStringConverter::AtoT(pE));                     \
    }                                                                          \
    catch (const wchar_t *pE)                                                  \
    {                                                                          \
       throw JetByteTools::Test::CTestException(                               \
          functionName,                                                        \
          _T("Test failed: Exception - ") +                                    \
-         JetByteTools::Win32::CStringConverter::WtoT(pE));                    \
+         JetByteTools::Core::CStringConverter::WtoT(pE));                     \
    }                                                                          \
    catch (...)                                                                \
    {                                                                          \
@@ -118,7 +106,7 @@ do                                                                            \
 #define RUN_PERFORMANCE_TEST(f, r)                                            \
 do                                                                            \
 {                                                                             \
-   const JetByteTools::Win32::_tstring functionName(_T(#f) _T("()"));         \
+   const JetByteTools::Core::_tstring functionName(_T(#f) _T("()"));          \
                                                                               \
    if (r)                                                                     \
    {                                                                          \
@@ -220,7 +208,7 @@ do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      const JetByteTools::Win32::_tstring t_(t);                              \
+      const JetByteTools::Core::_tstring t_(t);                               \
                                                                               \
       if (m.StartPerformanceTest(t, _T(#f)))                                  \
       {                                                                       \
@@ -263,7 +251,7 @@ do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      const JetByteTools::Win32::_tstring t_(t);                              \
+      const JetByteTools::Core::_tstring t_(t);                               \
                                                                               \
       if (m.StartPerformanceTest(t, _T(#f)))                                  \
       {                                                                       \
@@ -306,7 +294,7 @@ do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      const JetByteTools::Win32::_tstring t_(t);                              \
+      const JetByteTools::Core::_tstring t_(t);                               \
                                                                               \
       if (m.StartPerformanceTest(t, _T(#f)))                                  \
       {                                                                       \
@@ -326,7 +314,7 @@ do                                                                            \
 {                                                                             \
    try                                                                        \
    {                                                                          \
-      const JetByteTools::Win32::_tstring t_(t);                              \
+      const JetByteTools::Core::_tstring t_(t);                               \
                                                                               \
       if (m.StartPerformanceTest(t, _T(#f), ms))                              \
       {                                                                       \
@@ -347,8 +335,6 @@ do                                                                            \
 
 } // End of namespace Test
 } // End of namespace JetByteTools
-
-#endif // JETBYTE_TOOLS_TEST_RUN_TEST_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: RunTest.h

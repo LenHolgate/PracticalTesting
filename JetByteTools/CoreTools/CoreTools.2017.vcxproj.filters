@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Documentation">
+      <UniqueIdentifier>{b2f255ce-5fee-46bf-b873-7912f8fa9439}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{57be5c34-3b6f-4c14-9a76-2ae6b54c55bf}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{968919d7-6913-4276-b2da-96740b1d62e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Precompiled Header">
+      <UniqueIdentifier>{5b701dde-b3e3-4b44-be7f-c6fa023bd380}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{f43e1179-2a75-4ea2-b480-fa33b6b3d27b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Platform Specific">
+      <UniqueIdentifier>{40c3fa02-d137-4ce2-b6eb-3d8c8b8a5e25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Platform Specific\Windows">
+      <UniqueIdentifier>{31007df8-0a6f-4931-8e8d-8f1311364eff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Platform Specific">
+      <UniqueIdentifier>{b676c947-5647-492d-881f-d0f877d3ce1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Platform Specific\Windows">
+      <UniqueIdentifier>{6103ebd3-eb65-47b5-9197-8004980d79f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Atomic Values">
+      <UniqueIdentifier>{1240d26d-d9dd-4a80-88cb-2135188f5e15}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CallbackTimerQueueEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackTimerWheel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EmptyBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LockableObjectOwners.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTrace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageLog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Admin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveMultiMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveMultiMapNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveRedBlackTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveRedBlackTreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IntrusiveSetNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NullCallbackTimerQueueMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ILockableObject.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ILogMessages.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IManageTimerQueue.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IQueueTimers.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IProvideTickCount.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadedCallbackTimerQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ToString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IRunnable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IWaitable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="tstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TickCountCompare.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IMonitorCallbackTimerQueue.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="LockableObject.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ManualResetEvent.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadId.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalErrorHandler.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadLocalStorage.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="IMonitorThreadedCallbackTimerQueue.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ReentrantLockableObject.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="StringVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerformanceCounter.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ToBool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringConverter.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="FileUtils.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="IReentrantLockableObject.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="TickCount64Provider.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="TickCountProvider.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\Event.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\GlobalErrorHandler.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\IWaitable.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\LockableObject.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\PerformanceCounter.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\ReentrantLockableObject.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\StringConverter.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\Thread.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\ThreadLocalStorage.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\TickCount64Provider.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\TickCountProvider.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleMessageLog.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\PerThreadErrorHandler.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="PerThreadErrorHandler.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\Types.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainingRecord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Printf.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="IListenToThreadNaming.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\FileUtils.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCodeToErrorMessage.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>Precompiled Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\Atomic.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Atomic.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="AtomicBool.h">
+      <Filter>Header Files\Atomic Values</Filter>
+    </ClInclude>
+    <ClInclude Include="AtomicCounter.h">
+      <Filter>Header Files\Atomic Values</Filter>
+    </ClInclude>
+    <ClInclude Include="AtomicLong.h">
+      <Filter>Header Files\Atomic Values</Filter>
+    </ClInclude>
+    <ClInclude Include="OneWayToggle.h">
+      <Filter>Header Files\Atomic Values</Filter>
+    </ClInclude>
+    <ClInclude Include="ReferenceCount.h">
+      <Filter>Header Files\Atomic Values</Filter>
+    </ClInclude>
+    <ClInclude Include="DeclareDerivedClass.h">
+      <Filter>Header Files\Platform Specific</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCodeException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeclareDerivedClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\SystemTime.h">
+      <Filter>Header Files\Platform Specific\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="IListenToThreadStart.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IListenToThreadStop.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IProvideTickCount64.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CallbackTimerQueueEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CallbackTimerWheel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <Filter>Precompiled Header</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTrace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Admin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadedCallbackTimerQueue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ToString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\Event.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\GlobalErrorHandler.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\IWaitable.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\PerformanceCounter.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\StringConverter.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\Thread.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\ThreadLocalStorage.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\PerThreadErrorHandler.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\FileUtils.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\ErrorCodeToErrorMessage.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorCodeException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleMessageLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\SystemTime.cpp">
+      <Filter>Source Files\Platform Specific\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="CompareStrings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadId.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Docs\Groups.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+    <Text Include="Docs\MainPage.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+    <Text Include="Docs\Overview.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+    <Text Include="Docs\ReleaseNotes.txt">
+      <Filter>Documentation</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

@@ -2,19 +2,27 @@
 // File: Admin.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2007 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2007 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -32,21 +40,12 @@
 #endif
 
 #ifdef JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION
-#if (JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION == 1400)
-#pragma JETBYTE_MESSAGE(" Build configuration: Minimum supported compiler version = " JETBYTE_MACROASSTRING(JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION) " - \"Visual Studio 2005\"")
-#else
 #pragma JETBYTE_MESSAGE(" Build configuration: Minimum supported compiler version = " JETBYTE_MACROASSTRING(JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION))
-#endif
 #else
 #pragma JETBYTE_MESSAGE(" Build configuration: Minimum supported compiler version = UNSET")
-#endif
 
 #ifdef JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION
 #if (JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION != JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION)
-#if (JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION == 1400)
-#pragma JETBYTE_MESSAGE(" Build configuration: Minimum non deprecated compiler version = " JETBYTE_MACROASSTRING(JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION) " - \"Visual Studio 2005\"")
-#pragma JETBYTE_MESSAGE(" Build configuration: Deprecated compilers will become unsupported from the next release")
-#else
 #pragma JETBYTE_MESSAGE(" Build configuration: Minimum non deprecated compiler version = " JETBYTE_MACROASSTRING(JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION))
 #pragma JETBYTE_MESSAGE(" Build configuration: Deprecated compilers will become unsupported from the next release")
 #endif
@@ -57,6 +56,12 @@
 #pragma JETBYTE_MESSAGE(" Build configuration: Compiler Version = " JETBYTE_MACROASSTRING(_MSC_VER) " - " JETBYTE_MACROASSTRING(JETBYTE_COMPILER_LONG_NAME_A))
 #else
 #pragma JETBYTE_MESSAGE(" Build configuration: Compiler Version = UNSET")
+#endif
+
+#ifdef _MSC_FULL_VER
+#pragma JETBYTE_MESSAGE(" Build configuration: Full Compiler Version = " JETBYTE_MACROASSTRING(_MSC_FULL_VER) " - " JETBYTE_MACROASSTRING(JETBYTE_COMPILER_LONG_NAME_A))
+#else
+#pragma JETBYTE_MESSAGE(" Build configuration: Full Compiler Version = UNSET")
 #endif
 
 #ifdef _MSVC_LANG
@@ -86,8 +91,6 @@
 #else
 #pragma JETBYTE_MESSAGE(" Build configuration: Target Platform = Unknown - (_WIN32_WINNT = " JETBYTE_MACROASSTRING(_WIN32_WINNT) ")")
 #endif
-
-
 #else
 #pragma JETBYTE_MESSAGE(" Build configuration: _WIN32_WINNT = UNSET")
 #endif
@@ -253,10 +256,16 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TODO enabled: NO")
 #endif
 
-#if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: Install a per thread error handler in CThread::Run()")
+#if (JETBYTE_ADMIN_ENABLE_ALL_LEAK_TRACKING == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_ALL_LEAK_TRACKING enabled: YES")
 #else
-#pragma JETBYTE_MESSAGE("Build configuration: do NOT install a per thread error handler in CThread::Run()")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_ALL_LEAK_TRACKING enabled: NO")
+#endif
+
+#if (JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 1)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD enabled: NO")
 #endif
 
 #if (JETBYTE_TRANSLATE_SEH_EXCEPTIONS == 1)
@@ -283,49 +292,8 @@
 
 #if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_EXCEPTION_STACK_TRACES enabled: YES")
-#if (JETBYTE_EXCEPTION_WHERE_INCLUDES_STACK_TRACE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_EXCEPTION_WHERE_INCLUDES_STACK_TRACE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_EXCEPTION_WHERE_INCLUDES_STACK_TRACE enabled: NO")
-#endif
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_EXCEPTION_STACK_TRACES enabled: NO")
-#endif
-
-#if (JETBYTE_REFERENCE_TRACKING_DISPLAY_LOADED_PDBS == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_TRACKING_DISPLAY_LOADED_PDBS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_TRACKING_DISPLAY_LOADED_PDBS enabled: NO")
-#endif
-
-#if (JETBYTE_REFERENCE_TRACKING_DISPLAY_ONLY_NON_TOOLS_LIB_CHANGES == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_TRACKING_DISPLAY_ONLY_NON_TOOLS_LIB_CHANGES enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REFERENCE_TRACKING_DISPLAY_ONLY_NON_TOOLS_LIB_CHANGES enabled: NO")
-#endif
-
-#if (JETBYTE_TRACK_IO_BUFFER_REFERENCES == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_IO_BUFFER_REFERENCES enabled: YES")
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDITIONAL_BUFFER_TRACKING_CONTEXT = " JETBYTE_MACROASSTRING(JETBYTE_ADDITIONAL_BUFFER_TRACKING_CONTEXT))
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_BUFFER_TRACKING_INSTANCES = " JETBYTE_MACROASSTRING(JETBYTE_BUFFER_TRACKING_INSTANCES))
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_IO_BUFFER_REFERENCES enabled: NO")
-#endif
-
-#if (JETBYTE_TRACK_SOCKET_REFERENCES == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_SOCKET_REFERENCES enabled: YES")
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDITIONAL_SOCKET_TRACKING_CONTEXT = " JETBYTE_MACROASSTRING(JETBYTE_ADDITIONAL_SOCKET_TRACKING_CONTEXT))
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_SOCKET_TRACKING_INSTANCES = " JETBYTE_MACROASSTRING(JETBYTE_SOCKET_TRACKING_INSTANCES))
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_SOCKET_REFERENCES enabled: NO")
-#endif
-
-#if (JETBYTE_TRACK_ADDRESS_REFERENCES == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_ADDRESS_REFERENCES enabled: YES")
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDITIONAL_ADDRESS_TRACKING_CONTEXT = " JETBYTE_MACROASSTRING(JETBYTE_ADDITIONAL_ADDRESS_TRACKING_CONTEXT))
-#pragma JETBYTE_MESSAGE("Build configuration:  JETBYTE_ADDRESS_TRACKING_INSTANCES = " JETBYTE_MACROASSTRING(JETBYTE_ADDRESS_TRACKING_INSTANCES))
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_ADDRESS_REFERENCES enabled: NO")
 #endif
 
 #if (JETBYTE_REFERENCE_COUNTED_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
@@ -366,31 +334,7 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ZLIB_1_2_3 enabled: YES (using ZLib 1.2.3) in ZLibTools")
 #endif
 
-#if (JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_STREAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO")
-#endif
 
-#if (JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO != 0)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO enabled: YES - limited to " JETBYTE_MACROASSTRING(JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO) " recursive calls")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO enabled: NO")
-#endif
-
-#if (JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
-#if (_WIN32_WINNT < 0x0600)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO - Cannot be enabled if _WIN32_WINNT < 0x0600")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: YES")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_DATAGRAM_SOCKETS_SKIP_COMPLETION_PORT_ON_SUCCESS enabled: NO")
-#endif
 
 #if (JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
 #if (_WIN32_WINNT < 0x0600)
@@ -430,13 +374,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEBUG_BREAK_ON_CONNECTIONS_ACTIVE_DURING_DESTRUCTION enabled: NO")
 #endif
 
-#if (JETBYTE_DUMP_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DUMP_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG enabled: YES")
-#elif (JETBYTE_TRACE_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACE_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DUMP_SOCKET_READ_AND_WRITE_DATA_TO_DEBUG_LOG enabled: NO")
-#endif
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_MONITORING enabled: YES")
@@ -457,12 +394,6 @@
 #endif
 
 
-#if (JETBYTE_PERF_REUSE_DATAGRAM_SOCKET_AND_BUFFER_FOR_NEXT_READ_IF_POSSIBLE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_REUSE_DATAGRAM_SOCKET_AND_BUFFER_FOR_NEXT_READ_IF_POSSIBLE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_REUSE_DATAGRAM_SOCKET_AND_BUFFER_FOR_NEXT_READ_IF_POSSIBLE enabled: NO")
-#endif
-
 #if (JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST enabled: YES")
 #else
@@ -473,18 +404,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_BUFFER_ALLOCATION_CONTENTION_MONITORING enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_BUFFER_ALLOCATION_CONTENTION_MONITORING enabled: NO")
-#endif
-
-#if (JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_AUTOMATIC_SEH_CRASH_DUMP_CREATION enabled: NO")
-#endif
-
-#if (JETBYTE_PURE_CALL_CRASH_DUMP_CREATION == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PURE_CALL_CRASH_DUMP_CREATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PURE_CALL_CRASH_DUMP_CREATION enabled: NO")
 #endif
 
 #if (JETBYTE_ILLEGAL_BUFFER_REFERENCE_COUNT_CRASH_DUMP_CREATION == 1)
@@ -513,12 +432,6 @@
 
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_REENTRANT_SINGLE_WRITER_MULTIPLE_READER_LOCK_2_MAX_THREADS set to " JETBYTE_MACROASSTRING(JETBYTE_REENTRANT_SINGLE_WRITER_MULTIPLE_READER_LOCK_2_MAX_THREADS))
 
-#if (JETBYTE_TRACK_THREAD_NAMES == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_THREAD_NAMES enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TRACK_THREAD_NAMES enabled: NO")
-#endif
-
 #ifdef _SECURE_SCL
 #if (_SECURE_SCL == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: _SECURE_SCL enabled: YES")
@@ -544,29 +457,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: _SECURE_SCL enabled: NO")
 #endif
 
-#if (JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS enabled: YES")
-#if (JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_BAD_SPACES_IN_HIXIE76_HANDSHAKE enabled: NO")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_HIXIE_WEBSOCKETS enabled: NO")
-#endif
-
-#if (JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_UPGRADE_HEADER_IN_HANDSHAKE enabled: NO")
-#endif
-
-#if (JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_WEBSOCKET_ALLOW_MISSING_CONNECTION_HEADER_IN_HANDSHAKE enabled: NO")
-#endif
-
 #if (JETBYTE_TERMINATE_CRASH_DUMP_CREATION == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TERMINATE_CRASH_DUMP_CREATION enabled: YES")
 #else
@@ -577,59 +467,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_TYPE_SAFE_TYPEDEF_CAST_TO_BASE_TYPE enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_CRITICAL_SECTION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_CRITICAL_SECTION enabled: NO")
-#endif
-
-#if JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_DEPRECATE_REGISTRY_CONFIGURATION enabled: NO")
-#endif
-
-#if JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS enabled: YES")
-#if JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 0
-#pragma JETBYTE_MESSAGE("Build configuration: WARNING - JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS forced due to JETBYTE_HAS_SRW_LOCK_TRY_ENTER == 0")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS enabled: NO")
-#endif
-
-#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE enabled: YES")
-#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_DEBUG_BREAK enabled: NO")
-#endif
-#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP enabled: NO")
-#endif
-#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION enabled: NO")
-#endif
-#if JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_OVERRIDE_EXCEPTION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: WARNING - JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION forcibly enabled due SRWL use")
-#pragma JETBYTE_MESSAGE("Build configuration: WARNING - Set JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS to 1 if you want to test for recursive")
-#pragma JETBYTE_MESSAGE("Build configuration: WARNING - behaviour without causing fatal runtime errors.")
-#endif
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE enabled: NO")
 #endif
 
 #if JETBYTE_MINI_DUMP_GENERATOR_BREAK_INTO_DEBUGGER == 1
@@ -698,34 +535,10 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: NO")
 #endif
 
-#if JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MULTIPLE_RANGE_REUSABLE_ID_MANAGER_VALIDATE_FREED_IDS enabled: NO")
-#endif
-
-#if JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES enabled: NO")
-#endif
-
-#if JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES enabled: NO")
-#endif
-
 #if JETBYTE_HAS_ATL_HEADERS_INSTALLED == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_HAS_ATL_HEADERS_INSTALLED enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_HAS_ATL_HEADERS_INSTALLED enabled: NO")
-#endif
-
-#if JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_LINK_TO_JB_NAME_FORMAT_OPENSSL_LIBS enabled: NO")
 #endif
 
 #if JETBYTE_PERFMON_CHECK_COUNTER_ALIGNMENT == 1
@@ -740,12 +553,93 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERFMON_VALIDATE_COUNTER_SIZES enabled: NO")
 #endif
 
+#if !defined(JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE) && !defined(JETBYTE_ADMIN_ENABLE_ALL_THIRD_PARTY_CODE)
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE enabled: NO")
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_ALL_THIRD_PARTY_CODE enabled: NO")
+#ifndef JETBYTE_ADMIN_DISABLE_DISABLED_THIRD_PARTY_CODE_WARNINGS
+#pragma JETBYTE_MESSAGE("Build configuration: ")
+#pragma JETBYTE_MESSAGE("Build configuration: *******************************************************")
+#pragma JETBYTE_MESSAGE("Build configuration: *                                                     *")
+#pragma JETBYTE_MESSAGE("Build configuration: * WARNING - All third-party code is disabled          *")
+#pragma JETBYTE_MESSAGE("Build configuration: * Some aspects of the framework will have reduced     *")
+#pragma JETBYTE_MESSAGE("Build configuration: * functionality.                                      *")
+#pragma JETBYTE_MESSAGE("Build configuration: *                                                     *")
+#pragma JETBYTE_MESSAGE("Build configuration: * Define JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE in     *")
+#pragma JETBYTE_MESSAGE("Build configuration: * your ThirdPartyCodeConfig.h to enable the use of    *")
+#pragma JETBYTE_MESSAGE("Build configuration: * third-party code by the framework.                  *")
+#pragma JETBYTE_MESSAGE("Build configuration: * Each piece of third-party code can be disabled      *")
+#pragma JETBYTE_MESSAGE("Build configuration: * independently, if desired.                          *")
+#pragma JETBYTE_MESSAGE("Build configuration: * See each library's Admin.h for details.             *")
+#pragma JETBYTE_MESSAGE("Build configuration: *                                                     *")
+#pragma JETBYTE_MESSAGE("Build configuration: *******************************************************")
+#pragma JETBYTE_MESSAGE("Build configuration: ")
+#endif
+
+#ifndef JETBYTE_ADMIN_DISABLING_ALL_THIRD_PARTY_CODE_IS_NON_FATAL
+#error Define JETBYTE_ADMIN_DISABLING_ALL_THIRD_PARTY_CODE_IS_NON_FATAL in config.h to accept the above warning and continue with the build
+#endif
+
+#else
+
+#ifdef JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE enabled: NO")
+#endif
+
+#ifdef JETBYTE_ADMIN_ENABLE_ALL_THIRD_PARTY_CODE
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_ALL_THIRD_PARTY_CODE enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_ENABLE_ALL_THIRD_PARTY_CODE enabled: NO")
+#endif
+#endif
+
+#ifndef JETBYTE_ADMIN_DISABLE_DISABLED_THIRD_PARTY_CODE_WARNINGS
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_DISABLE_DISABLED_THIRD_PARTY_CODE_WARNINGS enabled: NO")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_DISABLE_DISABLED_THIRD_PARTY_CODE_WARNINGS enabled: YES")
+#endif
+
+#if JETBYTE_ADMIN_SHOW_THIRD_PARTY_CODE_LICENCES == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_SHOW_THIRD_PARTY_CODE_LICENCES enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_SHOW_THIRD_PARTY_CODE_LICENCES enabled: NO")
+#endif
+
+#if JETBYTE_ADMIN_SHOW_DERIVED_THIRD_PARTY_CODE_LICENCES == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_SHOW_DERIVED_THIRD_PARTY_CODE_LICENCES enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ADMIN_SHOW_DERIVED_THIRD_PARTY_CODE_LICENCES enabled: NO")
+#endif
+
+#ifdef JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS
+#error JETBYTE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS
+#endif
+
+#ifdef JETBYTE_LOCKABLE_OBJECT_USE_STD_THREADING
+#error JETBYTE_LOCKABLE_OBJECT_USE_STD_THREADING has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_USE_STD_THREADING
+#endif
+
+#ifdef JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE
+#error JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE
+#endif
+
+#ifdef JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP
+#error JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP
+#endif
+
+#ifdef JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION
+#error JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION
+#endif
+
 #endif
 
 #pragma JETBYTE_MESSAGE("Build configuration:---------------------------------------------------------------")
 #pragma JETBYTE_MESSAGE("")
 #pragma JETBYTE_MESSAGE("")
 #pragma JETBYTE_MESSAGE("")
+
+const int JetByteToolsVersion = JETBYTE_TOOLS_VER;
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Admin.cpp

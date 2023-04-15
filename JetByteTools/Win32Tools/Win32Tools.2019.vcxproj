@@ -199,7 +199,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -208,8 +208,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -219,6 +220,7 @@
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -239,7 +241,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -253,8 +255,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -263,6 +266,7 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -280,7 +284,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -292,8 +296,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -303,6 +308,7 @@
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -323,7 +329,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -335,8 +341,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -345,6 +352,7 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -362,7 +370,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -374,8 +382,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -385,6 +394,7 @@
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -405,7 +415,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -417,8 +427,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -427,6 +438,7 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -444,7 +456,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -457,8 +469,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -468,6 +481,8 @@
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -488,7 +503,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -501,8 +516,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -511,6 +527,9 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -528,7 +547,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -541,8 +560,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -552,6 +572,11 @@
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -572,7 +597,7 @@
     <ClCompile>
       <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\;$(STLPORT_ROOT)\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -585,8 +610,9 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <WarningLevel>EnableAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -595,6 +621,11 @@
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -609,23 +640,14 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AutoResetEvent.cpp" />
-    <ClCompile Include="CallbackTimerQueueEx.cpp" />
-    <ClCompile Include="CallbackTimerWheel.cpp" />
+    <ClCompile Include="Admin.cpp" />
     <ClCompile Include="CodePage.cpp" />
-    <ClCompile Include="CompareStrings.cpp" />
-    <ClCompile Include="CriticalSection.cpp" />
     <ClCompile Include="CrtReportHook.cpp" />
-    <ClCompile Include="DebugTrace.cpp" />
     <ClCompile Include="Event.cpp" />
-    <ClCompile Include="Exception.cpp" />
-    <ClCompile Include="GlobalErrorHandler.cpp" />
-    <ClCompile Include="ICriticalSection.cpp" />
-    <ClCompile Include="IWaitable.cpp" />
-    <ClCompile Include="ManualResetEvent.cpp" />
-    <ClCompile Include="MessageLog.cpp" />
-    <ClCompile Include="PerformanceCounter.cpp" />
-    <ClCompile Include="PerThreadErrorHandler.cpp" />
+    <ClCompile Include="GetLastErrorMessage.cpp" />
+    <ClCompile Include="SEHException.cpp" />
+    <ClCompile Include="SmartHandle.cpp" />
+    <ClCompile Include="ThreadAffinity.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -633,90 +655,38 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">true</ExcludedFromBuild>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">TurnOffAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">true</ExcludedFromBuild>
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">TurnOffAllWarnings</WarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Create</PrecompiledHeader>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
-    <ClCompile Include="SEHException.cpp" />
-    <ClCompile Include="SimpleMessageLog.cpp" />
-    <ClCompile Include="SmartHandle.cpp" />
-    <ClCompile Include="StringConverter.cpp" />
-    <ClCompile Include="SystemTime.cpp" />
-    <ClCompile Include="Thread.cpp" />
-    <ClCompile Include="ThreadAffinity.cpp" />
-    <ClCompile Include="ThreadedCallbackTimerQueue.cpp" />
-    <ClCompile Include="ThreadLocalStorage.cpp" />
-    <ClCompile Include="ToString.cpp" />
-    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Win32Exception.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AutoResetEvent.h" />
-    <ClInclude Include="CallbackTimerQueueEx.h" />
-    <ClInclude Include="CallbackTimerWheel.h" />
+    <ClInclude Include="Admin.h" />
     <ClInclude Include="CodePage.h" />
-    <ClInclude Include="CompareStrings.h" />
-    <ClInclude Include="ConditionalSmartPointer.h" />
-    <ClInclude Include="CriticalSection.h" />
     <ClInclude Include="CrtReportHook.h" />
-    <ClInclude Include="DebugTrace.h" />
-    <ClInclude Include="EmptyBase.h" />
     <ClInclude Include="Event.h" />
-    <ClInclude Include="Exception.h" />
-    <ClInclude Include="ExpandableBuffer.h" />
-    <ClInclude Include="GlobalErrorHandler.h" />
-    <ClInclude Include="ICriticalSection.h" />
-    <ClInclude Include="IKernelObjectName.h" />
-    <ClInclude Include="IListenToThreadNaming.h" />
-    <ClInclude Include="ILockableObject.h" />
-    <ClInclude Include="ILogMessages.h" />
-    <ClInclude Include="IManageTimerQueue.h" />
-    <ClInclude Include="IMonitorCallbackTimerQueue.h" />
-    <ClInclude Include="IMonitorThreadedCallbackTimerQueue.h" />
-    <ClInclude Include="IntrusiveMap.h" />
-    <ClInclude Include="IntrusiveMultiMap.h" />
-    <ClInclude Include="IntrusiveMultiMapNode.h" />
-    <ClInclude Include="IntrusiveRedBlackTree.h" />
-    <ClInclude Include="IntrusiveRedBlackTreeNode.h" />
-    <ClInclude Include="IntrusiveSet.h" />
-    <ClInclude Include="IntrusiveSetNode.h" />
-    <ClInclude Include="IProvideTickCount.h" />
-    <ClInclude Include="IProvideTickCount64.h" />
-    <ClInclude Include="IQueueTimers.h" />
-    <ClInclude Include="IReentrantLockableObject.h" />
-    <ClInclude Include="IRunnable.h" />
-    <ClInclude Include="IWaitable.h" />
-    <ClInclude Include="LockableObject.h" />
-    <ClInclude Include="LockableObjectOwners.h" />
-    <ClInclude Include="ManualResetEvent.h" />
-    <ClInclude Include="MessageLog.h" />
-    <ClInclude Include="NullCallbackTimerQueueMonitor.h" />
-    <ClInclude Include="NullMessageLog.h" />
-    <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
-    <ClInclude Include="PerformanceCounter.h" />
-    <ClInclude Include="PerThreadErrorHandler.h" />
+    <ClInclude Include="GetLastErrorMessage.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="PureCallHandler.h" />
-    <ClInclude Include="ReentrantLockableObject.h" />
     <ClInclude Include="SEHException.h" />
-    <ClInclude Include="SimpleMessageLog.h" />
     <ClInclude Include="SmartHandle.h" />
-    <ClInclude Include="StringConverter.h" />
-    <ClInclude Include="StringVector.h" />
-    <ClInclude Include="SystemTime.h" />
-    <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreadAffinity.h" />
-    <ClInclude Include="ThreadedCallbackTimerQueue.h" />
-    <ClInclude Include="ThreadLocalStorage.h" />
-    <ClInclude Include="TickCount64Provider.h" />
-    <ClInclude Include="TickCountProvider.h" />
-    <ClInclude Include="ToString.h" />
-    <ClInclude Include="tstring.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="IKernelObjectName.h" />
     <ClInclude Include="Win32Exception.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Docs\C++ToolsReleaseNotes.txt" />
+    <None Include="Docs\Groups.txt" />
+    <None Include="Docs\MainPage.txt" />
+    <None Include="Docs\Overview.txt" />
+    <None Include="Docs\ReleaseNotes.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

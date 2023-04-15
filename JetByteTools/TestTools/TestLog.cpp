@@ -2,19 +2,27 @@
 // File: TestLog.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2003 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,35 +34,35 @@
 
 #include <iostream>
 
-#include "JetByteTools/Win32Tools/Utils.h"
-#include "JetByteTools/Win32Tools/DebugTrace.h"
-#include "JetByteTools/Win32Tools/StringConverter.h"
-#include "JetByteTools/Win32Tools/CompareStrings.h"
-#include "JetByteTools/Win32Tools/StringVector.h"
+#include "JetByteTools/CoreTools/StringUtils.h"
+#include "JetByteTools/CoreTools/FileUtils.h"
+#include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/StringConverter.h"
+#include "JetByteTools/CoreTools/CompareStrings.h"
+#include "JetByteTools/CoreTools/StringVector.h"
 
 #pragma hdrstop
 
 #if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#include "JetByteTools/Win32Tools/DebugTrace.h"
+#include "JetByteTools/CoreTools/DebugTrace.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-using JetByteTools::Win32::OutputEx;
-using JetByteTools::Win32::_tstring;
-using JetByteTools::Win32::CLockableObject;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::FindAndReplace;
-using JetByteTools::Win32::ToString;
-using JetByteTools::Win32::LoadFileAsString;
-using JetByteTools::Win32::SaveStringAsFile;
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::FindAndReplace;
-using JetByteTools::Win32::InPlaceFindAndReplace;
-using JetByteTools::Win32::CCompareStrings;
-using JetByteTools::Win32::StringVector;
+using JetByteTools::Core::OutputEx;
+using JetByteTools::Core::_tstring;
+using JetByteTools::Core::CLockableObject;
+using JetByteTools::Core::CStringConverter;
+using JetByteTools::Core::FindAndReplace;
+using JetByteTools::Core::ToString;
+using JetByteTools::Core::CException;
+using JetByteTools::Core::InPlaceFindAndReplace;
+using JetByteTools::Core::CCompareStrings;
+using JetByteTools::Core::StringVector;
+using JetByteTools::Core::LoadFileAsString;
+using JetByteTools::Core::SaveStringAsFile;
 
 using std::string;
 
@@ -75,7 +83,6 @@ CTestLog::CTestLog(
       m_separator(separator),
       m_pLog(nullptr)
 {
-
 }
 
 CTestLog::CTestLog()
@@ -83,7 +90,6 @@ CTestLog::CTestLog()
       m_separator(_T("|")),
       m_pLog(nullptr)
 {
-
 }
 
 CTestLog::CTestLog(
@@ -92,7 +98,6 @@ CTestLog::CTestLog(
       m_separator(_T("|")),
       m_pLog(pLinkedLog)
 {
-
 }
 
 CTestLog::CTestLog(
@@ -102,7 +107,6 @@ CTestLog::CTestLog(
       m_separator(separator),
       m_pLog(pLinkedLog)
 {
-
 }
 
 CTestLog::~CTestLog()
@@ -224,7 +228,7 @@ _tstring CTestLog::InternalRemoveMessages()
 
 void CTestLog::ResetLog()
 {
-   RemoveMessages(); //lint !e534 (Ignoring return value of function)
+   RemoveMessages();
 }
 
 void CTestLog::CheckNoResults(
@@ -258,16 +262,14 @@ void CTestLog::CheckResult(
    {
       _tstring message = _T("Log does not contain expected result\n");
 
-      for (StringVector::const_iterator it = errorMessages.begin(), end = errorMessages.end();
-         it != end;
-         ++it)
+      for (const auto &errorMessage : errorMessages)
       {
          if (displayOnFailure == DisplayOnFailure)
          {
-            OutputEx(*it);
+            OutputEx(errorMessage);
          }
 
-         message += *it + _T("\n");
+         message += errorMessage + _T("\n");
       }
 
       throw CTestException(_T("CTestLog::CheckResult()"), message);
@@ -351,4 +353,3 @@ void CTestLog::CheckResultFromFile(
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: TestLog.cpp
 ///////////////////////////////////////////////////////////////////////////////
-

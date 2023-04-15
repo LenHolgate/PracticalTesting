@@ -1,0 +1,943 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Debug No PreComp|Win32">
+      <Configuration>Unicode Debug No PreComp</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Debug No PreComp|x64">
+      <Configuration>Unicode Debug No PreComp</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Debug|Win32">
+      <Configuration>Unicode Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Debug|x64">
+      <Configuration>Unicode Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Release|Win32">
+      <Configuration>Unicode Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Unicode Release|x64">
+      <Configuration>Unicode Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ActivatableObject.h" />
+    <ClInclude Include="AddressOrderedMultiLock.h" />
+    <ClInclude Include="Admin.h" />
+    <ClInclude Include="AllFrameworkDebugLogs.h" />
+    <ClInclude Include="AllFrameworkDebugLogsConfigurationCallback.h" />
+    <ClInclude Include="Atomic.h" />
+    <ClInclude Include="AtomicBool.h" />
+    <ClInclude Include="AtomicCounter.h" />
+    <ClInclude Include="AtomicLong.h" />
+    <ClInclude Include="AutoResetEvent.h" />
+    <ClInclude Include="Base64.h" />
+    <ClInclude Include="BoolToggle.h" />
+    <ClInclude Include="BufferHistory.h" />
+    <ClInclude Include="ByteSwap.h" />
+    <ClInclude Include="CachedValueTickCountProvider.h" />
+    <ClInclude Include="CallbackTimerQueueEx.h" />
+    <ClInclude Include="CallbackTimerWheel.h" />
+    <ClInclude Include="CallStack.h" />
+    <ClInclude Include="CaptureStackBackTrace.h" />
+    <ClInclude Include="CheckedMemcpy.h" />
+    <ClInclude Include="CheckedMemset.h" />
+    <ClInclude Include="CheckedStaticCast.h" />
+    <ClInclude Include="ClassAlignment.h" />
+    <ClInclude Include="CommandLine.h" />
+    <ClInclude Include="CompareStrings.h" />
+    <ClInclude Include="ConditionalSmartPointer.h" />
+    <ClInclude Include="ContainingRecord.h" />
+    <ClInclude Include="CrashDumpGenerator.h" />
+    <ClInclude Include="CRC32.h" />
+    <ClInclude Include="CRC32C.h" />
+    <ClInclude Include="Data.h" />
+    <ClInclude Include="DebugHelpers.h" />
+    <ClInclude Include="DebugJournal.h" />
+    <ClInclude Include="DebugLog.h" />
+    <ClInclude Include="DebugLogBase.h" />
+    <ClInclude Include="DebugLogFileConfigManager.h" />
+    <ClInclude Include="DebugTrace.h" />
+    <ClInclude Include="DeclareDerivedClass.h" />
+    <ClInclude Include="DynamicObjectTracker.h" />
+    <ClInclude Include="DynamicObjectTrackerCollection.h" />
+    <ClInclude Include="EmptyBase.h" />
+    <ClInclude Include="ErrorCodeException.h" />
+    <ClInclude Include="ErrorCodeToErrorMessage.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="EventOwner.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="ExpandableBuffer.h" />
+    <ClInclude Include="FileDeleter.h" />
+    <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="FixedValueTickCountProvider.h" />
+    <ClInclude Include="FrameworkDebugLogs.h" />
+    <ClInclude Include="FrameworkDebugLogsConfigurationCallback.h" />
+    <ClInclude Include="GlobalErrorHandler.h" />
+    <ClInclude Include="HighResolutionTickCountProvider.h" />
+    <ClInclude Include="IAllocateFixedSizedMemory.h" />
+    <ClInclude Include="IAllocateMemory.h" />
+    <ClInclude Include="IAsyncWorkItem.h" />
+    <ClInclude Include="ICompressData.h" />
+    <ClInclude Include="IConfigurableDebugLog.h" />
+    <ClInclude Include="IConfiguration.h" />
+    <ClInclude Include="IDataDeflatorFactory.h" />
+    <ClInclude Include="IDebugLogConfigurationCallback.h" />
+    <ClInclude Include="IDeflateData.h" />
+    <ClInclude Include="IIndexedOpaqueUserData.h" />
+    <ClInclude Include="IInflateData.h" />
+    <ClInclude Include="IListenToThreadNaming.h" />
+    <ClInclude Include="IListenToThreadStart.h" />
+    <ClInclude Include="IListenToThreadStop.h" />
+    <ClInclude Include="ILockableObject.h" />
+    <ClInclude Include="ILockableObjectTracksLockingThread.h" />
+    <ClInclude Include="ILogMessages.h" />
+    <ClInclude Include="ILogMessagesWithFixedFileHeader.h" />
+    <ClInclude Include="ILogObjectState.h" />
+    <ClInclude Include="IManageThreadPoolThreads.h" />
+    <ClInclude Include="IManageTimerQueue.h" />
+    <ClInclude Include="IMonitorCallbackTimerQueue.h" />
+    <ClInclude Include="IMonitorThreadedCallbackTimerQueue.h" />
+    <ClInclude Include="IMonitorThreadPool.h" />
+    <ClInclude Include="IndexedOpaqueUserData.h" />
+    <ClInclude Include="InstrumentedReferenceCount.h" />
+    <ClInclude Include="IntrusiveMap.h" />
+    <ClInclude Include="IntrusiveMultiMap.h" />
+    <ClInclude Include="IntrusiveMultiMapNode.h" />
+    <ClInclude Include="IntrusiveRedBlackTree.h" />
+    <ClInclude Include="IntrusiveRedBlackTreeNode.h" />
+    <ClInclude Include="IntrusiveSet.h" />
+    <ClInclude Include="IntrusiveSetNode.h" />
+    <ClInclude Include="IProvideDiskSpace.h" />
+    <ClInclude Include="IProvideLocalTime.h" />
+    <ClInclude Include="IProvideRandomBytes.h" />
+    <ClInclude Include="IProvideRandomNumbers.h" />
+    <ClInclude Include="IProvideSystemTime.h" />
+    <ClInclude Include="IProvideTickCount.h" />
+    <ClInclude Include="IProvideTickCount64.h" />
+    <ClInclude Include="IProvideUserData.h" />
+    <ClInclude Include="IQueueTimers.h" />
+    <ClInclude Include="IReentrantLockableObject.h" />
+    <ClInclude Include="IReentrantLockableObjectTracksLockingThread.h" />
+    <ClInclude Include="IRunnable.h" />
+    <ClInclude Include="ISingleWriterMultipleReaderLock.h" />
+    <ClInclude Include="IThreadPoolWorkerThreadCallback.h" />
+    <ClInclude Include="IThreadPoolWorkerThreadFactory.h" />
+    <ClInclude Include="IUnlockableObject.h" />
+    <ClInclude Include="IVisitConfigurationElements.h" />
+    <ClInclude Include="IWaitable.h" />
+    <ClInclude Include="LargeInteger.h" />
+    <ClInclude Include="LocalTimeProvider.h" />
+    <ClInclude Include="LockableObject.h" />
+    <ClInclude Include="LockableObjectOwners.h" />
+    <ClInclude Include="LockableObjectTracksLockingThread.h" />
+    <ClInclude Include="ManualResetEvent.h" />
+    <ClInclude Include="MD5.h" />
+    <ClInclude Include="MemoryBasedMessageLog.h" />
+    <ClInclude Include="MessageLog.h" />
+    <ClInclude Include="MultipleRangeReusableIdManager.h" />
+    <ClInclude Include="MurmurHash2.h" />
+    <ClInclude Include="NamedIndex.h" />
+    <ClInclude Include="NodeList.h" />
+    <ClInclude Include="NTPTime.h" />
+    <ClInclude Include="NullCallbackTimerQueueMonitor.h" />
+    <ClInclude Include="NullConfiguration.h" />
+    <ClInclude Include="NullDebugLogConfigurationCallback.h" />
+    <ClInclude Include="NullMessageLog.h" />
+    <ClInclude Include="NullThreadedCallbackTimerQueueMonitor.h" />
+    <ClInclude Include="NullThreadPoolMonitor.h" />
+    <ClInclude Include="ObjectStateLog.h" />
+    <ClInclude Include="OneWayToggle.h" />
+    <ClInclude Include="OpaqueUserData.h" />
+    <ClInclude Include="OperationSynchronicity.h" />
+    <ClInclude Include="OptionallyOwnedPointer.h" />
+    <ClInclude Include="Overlapped.h" />
+    <ClInclude Include="PerformanceCounter.h" />
+    <ClInclude Include="PerThreadErrorHandler.h" />
+    <ClInclude Include="PositiveValue.h" />
+    <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="Printf.h" />
+    <ClInclude Include="QueueSpaceNotifier.h" />
+    <ClInclude Include="RAIIAtomicBool.h" />
+    <ClInclude Include="RAIIBool.h" />
+    <ClInclude Include="RandomByteProvider.h" />
+    <ClInclude Include="RandomNumberProvider.h" />
+    <ClInclude Include="RateLimiter.h" />
+    <ClInclude Include="ReentrantLockableObject.h" />
+    <ClInclude Include="ReentrantLockableObjectTracksLockingThread.h" />
+    <ClInclude Include="ReferenceCount.h" />
+    <ClInclude Include="ReferenceCounted.h" />
+    <ClInclude Include="ReferenceCountedSmartPointer.h" />
+    <ClInclude Include="ReleaseOnlyReferenceCountedSmartPointer.h" />
+    <ClInclude Include="ReusableIdManager.h" />
+    <ClInclude Include="RingBuffer.h" />
+    <ClInclude Include="Rounding.h" />
+    <ClInclude Include="Semaphore.h" />
+    <ClInclude Include="SHA1.h" />
+    <ClInclude Include="SimpleMessageLog.h" />
+    <ClInclude Include="SingleWriterMultipleReaderLock.h" />
+    <ClInclude Include="Sleep.h" />
+    <ClInclude Include="std\Atomic.h" />
+    <ClInclude Include="std\LockableObject.h" />
+    <ClInclude Include="std\ReentrantLockableObject.h" />
+    <ClInclude Include="std\ReentrantLockableObjectTracksLockingThread.h" />
+    <ClInclude Include="std\StdThread.h" />
+    <ClInclude Include="StringConverter.h" />
+    <ClInclude Include="StringMap.h" />
+    <ClInclude Include="StringSet.h" />
+    <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="StringVector.h" />
+    <ClInclude Include="SystemTime.h" />
+    <ClInclude Include="SystemTimeProvider.h" />
+    <ClInclude Include="Tchar.h" />
+    <ClInclude Include="TDebugLog.h" />
+    <ClInclude Include="TestAlignment.h" />
+    <ClInclude Include="TGlobalDebugLog.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="ThreadBase.h" />
+    <ClInclude Include="ThreadedCallbackTimerQueue.h" />
+    <ClInclude Include="ThreadId.h" />
+    <ClInclude Include="ThreadLocalStorage.h" />
+    <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="ThreadPoolEx.h" />
+    <ClInclude Include="ThreadSafeReusableIdManager.h" />
+    <ClInclude Include="ThreadSafeWorkQueue.h" />
+    <ClInclude Include="TickCount64Provider.h" />
+    <ClInclude Include="TickCountCompare.h" />
+    <ClInclude Include="TickCountProvider.h" />
+    <ClInclude Include="ToBool.h" />
+    <ClInclude Include="ToString.h" />
+    <ClInclude Include="TSingletonDebugLog.h" />
+    <ClInclude Include="tstring.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="TypeSafeTypedef.h" />
+    <ClInclude Include="UTF8StreamConverter.h" />
+    <ClInclude Include="WaitableCounter.h" />
+    <ClInclude Include="Windows\Atomic.h" />
+    <ClInclude Include="Windows\CaptureStackBackTrace.h" />
+    <ClInclude Include="Windows\CrashDumpGenerator.h" />
+    <ClInclude Include="Windows\DebugLogFileConfigManager.h" />
+    <ClInclude Include="Windows\Event.h" />
+    <ClInclude Include="Windows\FileDeleter.h" />
+    <ClInclude Include="Windows\FileUtils.h" />
+    <ClInclude Include="Windows\GlobalErrorHandler.h" />
+    <ClInclude Include="Windows\HighResolutionTickCountProvider.h" />
+    <ClInclude Include="Windows\IWaitable.h" />
+    <ClInclude Include="Windows\LargeInteger.h" />
+    <ClInclude Include="Windows\LockableObject.h" />
+    <ClInclude Include="Windows\LockableObjectTracksLockingThread.h" />
+    <ClInclude Include="Windows\PerformanceCounter.h" />
+    <ClInclude Include="Windows\PerThreadErrorHandler.h" />
+    <ClInclude Include="Windows\RandomByteProvider.h" />
+    <ClInclude Include="Windows\ReentrantLockableObject.h" />
+    <ClInclude Include="Windows\ReentrantLockableObjectTracksLockingThread.h" />
+    <ClInclude Include="Windows\Semaphore.h" />
+    <ClInclude Include="Windows\Sleep.h" />
+    <ClInclude Include="Windows\StringConverter.h" />
+    <ClInclude Include="Windows\SystemTime.h" />
+    <ClInclude Include="Windows\Thread.h" />
+    <ClInclude Include="Windows\ThreadLocalStorage.h" />
+    <ClInclude Include="Windows\ThreadSafeWorkQueue.h" />
+    <ClInclude Include="Windows\TickCount64Provider.h" />
+    <ClInclude Include="Windows\TickCountProvider.h" />
+    <ClInclude Include="Windows\Types.h" />
+    <ClInclude Include="Windows\UTF8StreamConverter.h" />
+    <ClInclude Include="ZeroInitialiseExpandableBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ActivatableObject.cpp" />
+    <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="AllFrameworkDebugLogsConfigurationCallback.cpp" />
+    <ClCompile Include="Base64.cpp" />
+    <ClCompile Include="BufferHistory.cpp" />
+    <ClCompile Include="CallbackTimerQueueEx.cpp" />
+    <ClCompile Include="CallbackTimerWheel.cpp" />
+    <ClCompile Include="CallStack.cpp" />
+    <ClCompile Include="CommandLine.cpp" />
+    <ClCompile Include="CompareStrings.cpp" />
+    <ClCompile Include="CRC32.cpp" />
+    <ClCompile Include="CRC32C.cpp" />
+    <ClCompile Include="DebugJournal.cpp" />
+    <ClCompile Include="DebugLog.cpp" />
+    <ClCompile Include="DebugLogBase.cpp" />
+    <ClCompile Include="DebugTrace.cpp" />
+    <ClCompile Include="DynamicObjectTrackerCollection.cpp" />
+    <ClCompile Include="ErrorCodeException.cpp" />
+    <ClCompile Include="EventOwner.cpp" />
+    <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="FrameworkDebugLogsConfigurationCallback.cpp" />
+    <ClCompile Include="IConfiguration.cpp" />
+    <ClCompile Include="ISingleWriterMultipleReaderLock.cpp" />
+    <ClCompile Include="MD5.cpp" />
+    <ClCompile Include="MemoryBasedMessageLog.cpp" />
+    <ClCompile Include="MessageLog.cpp" />
+    <ClCompile Include="MurmurHash2.cpp" />
+    <ClCompile Include="NamedIndex.cpp" />
+    <ClCompile Include="NodeList.cpp" />
+    <ClCompile Include="NTPTime.cpp" />
+    <ClCompile Include="ObjectStateLog.cpp" />
+    <ClCompile Include="OpaqueUserData.cpp" />
+    <ClCompile Include="OperationSynchronicity.cpp" />
+    <ClCompile Include="Overlapped.cpp" />
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">true</ExcludedFromBuild>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="QueueSpaceNotifier.cpp" />
+    <ClCompile Include="RateLimiter.cpp" />
+    <ClCompile Include="RingBuffer.cpp" />
+    <ClCompile Include="SHA1.cpp" />
+    <ClCompile Include="SimpleMessageLog.cpp" />
+    <ClCompile Include="SingleWriterMultipleReaderLock.cpp" />
+    <ClCompile Include="std\StdThread.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="ThreadBase.cpp" />
+    <ClCompile Include="ThreadedCallbackTimerQueue.cpp" />
+    <ClCompile Include="ThreadId.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="ThreadPoolEx.cpp" />
+    <ClCompile Include="ToString.cpp" />
+    <ClCompile Include="tstring.cpp" />
+    <ClCompile Include="WaitableCounter.cpp" />
+    <ClCompile Include="Windows\CaptureStackBackTrace.cpp" />
+    <ClCompile Include="Windows\CrashDumpGenerator.cpp" />
+    <ClCompile Include="Windows\DebugLogFileConfigManager.cpp" />
+    <ClCompile Include="Windows\ErrorCodeToErrorMessage.cpp" />
+    <ClCompile Include="Windows\Event.cpp" />
+    <ClCompile Include="Windows\FileDeleter.cpp" />
+    <ClCompile Include="Windows\FileUtils.cpp" />
+    <ClCompile Include="Windows\GlobalErrorHandler.cpp" />
+    <ClCompile Include="Windows\HighResolutionTickCountProvider.cpp" />
+    <ClCompile Include="Windows\IWaitable.cpp" />
+    <ClCompile Include="Windows\PerformanceCounter.cpp" />
+    <ClCompile Include="Windows\PerThreadErrorHandler.cpp" />
+    <ClCompile Include="Windows\RandomByteProvider.cpp" />
+    <ClCompile Include="Windows\Sleep.cpp" />
+    <ClCompile Include="Windows\StringConverter.cpp" />
+    <ClCompile Include="Windows\SystemTime.cpp" />
+    <ClCompile Include="Windows\Thread.cpp" />
+    <ClCompile Include="Windows\ThreadLocalStorage.cpp" />
+    <ClCompile Include="Windows\ThreadSafeWorkQueue.cpp" />
+    <ClCompile Include="Windows\UTF8StreamConverter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Docs\Groups.txt" />
+    <Text Include="Docs\MainPage.txt" />
+    <Text Include="Docs\Overview.txt" />
+    <Text Include="Docs\ReleaseNotes.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>CoreTools</ProjectName>
+    <ProjectGuid>{CB040802-28E6-45FE-A217-C89BAB6FF0F8}</ProjectGuid>
+    <RootNamespace>CoreTools</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Output\VS2017\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Output\VS2017\Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Output\VS2017-x64\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Output\VS2017-x64\Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Output\VS2017\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Output\VS2017\Release\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Output\VS2017-x64\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Output\VS2017-x64\Release\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Output\VS2017\UDebug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">Output\VS2017\UDebug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">Output\VS2017-x64\UDebug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">Output\VS2017-x64\UDebug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">Output\VS2017\URelease\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">Output\VS2017\URelease\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Output\VS2017-x64\URelease\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">Output\VS2017-x64\URelease\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">Output\VS2017\UDebugNoPreComp\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">Output\VS2017\UDebugNoPreComp\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">Output\VS2017-x64\UDebugNoPreComp\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">Output\VS2017-x64\UDebugNoPreComp\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_LIB;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile />
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug No PreComp|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/Wall %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;UNICODE;_LIB;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <DisableSpecificWarnings>4627;4654;4598;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ForcedIncludeFiles>%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ShowIncludes>false</ShowIncludes>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <OutputFile>$(IntDir)$(ProjectName).bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

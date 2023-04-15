@@ -2,19 +2,27 @@
 // File: TestMonitor.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2008 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2008 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -23,20 +31,14 @@
 #include "TestMonitor.h"
 #include "TestException.h"
 
-#include "JetByteTools/Win32Tools/Utils.h"
-#include "JetByteTools/Win32Tools/DebugTrace.h"
-#include "JetByteTools/Win32Tools/Exception.h"
-#include "JetByteTools/Win32Tools/Win32Exception.h"
-#include "JetByteTools/Win32Tools/SEHException.h"
-#include "JetByteTools/Win32Tools/StringConverter.h"
+#include "JetByteTools/CoreTools/DebugHelpers.h"
+#include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/Exception.h"
+#include "JetByteTools/CoreTools/StringConverter.h"
+#include "JetByteTools/CoreTools/PerThreadErrorHandler.h"
+#include "JetByteTools/CoreTools/ErrorCodeToErrorMessage.h"
 
 #pragma hdrstop
-
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1) || (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
-#include "JetByteTools/Win32Tools/DebugTrace.h"
-#endif
-
-#include "JetByteTools/Win32Tools/PerThreadErrorHandler.h"
 
 #include "JetByteTools/Admin/CompilerName.h"
 
@@ -46,19 +48,17 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-using JetByteTools::Win32::Output;
-using JetByteTools::Win32::OutputEx;
-using JetByteTools::Win32::ToString;
-using JetByteTools::Win32::ToStringA;
-using JetByteTools::Win32::_tstring;
-using JetByteTools::Win32::CStringConverter;
-using JetByteTools::Win32::CException;
-using JetByteTools::Win32::CWin32Exception;
-using JetByteTools::Win32::CSEHException;
-using JetByteTools::Win32::GetLastErrorMessageA;
-using JetByteTools::Win32::GetComputerName;
-using JetByteTools::Win32::CPerThreadErrorHandler;
-using JetByteTools::Win32::CDebugTrace;
+using JetByteTools::Core::Output;
+using JetByteTools::Core::OutputEx;
+using JetByteTools::Core::IWaitable;
+using JetByteTools::Core::ToString;
+using JetByteTools::Core::ToStringA;
+using JetByteTools::Core::_tstring;
+using JetByteTools::Core::CStringConverter;
+using JetByteTools::Core::CException;
+using JetByteTools::Core::ErrorCodeToErrorMessageA;
+using JetByteTools::Core::CPerThreadErrorHandler;
+using JetByteTools::Core::CDebugTrace;
 
 using std::string;
 
@@ -190,12 +190,8 @@ CTestMonitor::~CTestMonitor()
          (void)Report(0);
       }
 
-      for (Tests::const_iterator it = m_tests.begin(), end = m_tests.end();
-         it != end;
-         ++it)
+      for (auto *pTest : m_tests)
       {
-         TestDetails *pTest = *it;
-
          delete pTest;
       }
 
@@ -313,7 +309,7 @@ bool CTestMonitor::StartPerformanceTest(
    {
       m_pActiveTest->SkipTest(_T("Skipped - not running performance tests."));
 
-      m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
+      m_pActiveTest = nullptr;
    }
    else
    {
@@ -340,7 +336,7 @@ void CTestMonitor::TestComplete()
 
    m_pActiveTest->TestComplete(m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr;
 
    m_stopTimingEvent.Set();
 }
@@ -355,7 +351,7 @@ void CTestMonitor::SkipTest(
 
    m_pActiveTest->SkipTest(reason);
 
-   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr;
 
    m_stopTimingEvent.Set();
 }
@@ -370,7 +366,7 @@ void CTestMonitor::FailTest(
 
    m_pActiveTest->FailTest(reason, m_testTimer.GetElapsedTimeAsDWORD());
 
-   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr;
 
    m_stopTimingEvent.Set();
 
@@ -396,7 +392,7 @@ void CTestMonitor::TestException()
 
    const TestDetails::State state = m_pActiveTest->GetState();
 
-   m_pActiveTest = nullptr; //lint !e423 (Creation of memory leak in assignment to)
+   m_pActiveTest = nullptr;
 
    m_stopTimingEvent.Set();
 
@@ -471,7 +467,7 @@ bool CTestMonitor::Report(
    Results failed;
    Results skipped;
 
-   for (auto pTest : m_tests)
+   for (auto *pTest : m_tests)
    {
       const TestDetails::State state = pTest->GetState();
 
@@ -520,89 +516,104 @@ bool CTestMonitor::Report(
       }
    }
 
-   if (!IsDebuggerPresent())
+   if (m_tests.size())
    {
-      OutputEx("");
+      if (!IsDebuggerPresent())
+      {
+         OutputEx("");
+         OutputEx("--------------------------------------------------");
+         OutputEx("  Tests : " + ToStringA(m_tests.size()));
+         OutputEx(" Passed : " + ToStringA(numPassed));
+         OutputEx(" Failed : " + ToStringA(numFailed));
+         OutputEx("Skipped : " + ToStringA(numSkipped));
+
+         if (numFailed != 0)
+         {
+            OutputEx("");
+            OutputEx("**************************************************");
+            OutputEx(" Failed : " + ToStringA(numFailed));
+
+            for (const auto &it : failed)
+            {
+               OutputEx(it);
+            }
+
+            OutputEx("**************************************************");
+         }
+
+         if (numSkipped != 0)
+         {
+            OutputEx("");
+            OutputEx("**************************************************");
+            OutputEx("Skipped : " + ToStringA(numSkipped));
+
+            for (const auto &it : skipped)
+            {
+               OutputEx(it);
+            }
+
+            OutputEx("**************************************************");
+         }
+
+         OutputEx("Full test run output");
+         OutputEx("--------------------------------------------------");
+
+         for (const auto &result : results)
+         {
+            OutputEx(result);
+         }
+      }
+
       OutputEx("--------------------------------------------------");
       OutputEx("  Tests : " + ToStringA(m_tests.size()));
       OutputEx(" Passed : " + ToStringA(numPassed));
       OutputEx(" Failed : " + ToStringA(numFailed));
       OutputEx("Skipped : " + ToStringA(numSkipped));
-
-      if (numFailed != 0)
-      {
-         OutputEx("");
-         OutputEx("**************************************************");
-         OutputEx(" Failed : " + ToStringA(numFailed));
-
-         for (Results::const_iterator it = failed.begin(), end = failed.end(); it != end; ++it)
-         {
-            OutputEx(*it);
-         }
-
-         OutputEx("**************************************************");
-      }
-
-      if (numSkipped != 0)
-      {
-         OutputEx("");
-         OutputEx("**************************************************");
-         OutputEx("Skipped : " + ToStringA(numSkipped));
-
-         for (Results::const_iterator it = skipped.begin(), end = skipped.end(); it != end; ++it)
-         {
-            OutputEx(*it);
-         }
-
-         OutputEx("**************************************************");
-      }
-
-      OutputEx("Full test run output");
+      OutputEx("   Time : " + timeTaken);
       OutputEx("--------------------------------------------------");
-
-      for (Results::const_iterator it = results.begin(), end = results.end(); it != end; ++it)
-      {
-         OutputEx(*it);
-      }
    }
 
-   OutputEx("--------------------------------------------------");
-   OutputEx("  Tests : " + ToStringA(m_tests.size()));
-   OutputEx(" Passed : " + ToStringA(numPassed));
-   OutputEx(" Failed : " + ToStringA(numFailed));
-   OutputEx("Skipped : " + ToStringA(numSkipped));
-   OutputEx("   Time : " + timeTaken);
-   OutputEx("--------------------------------------------------");
-   
    const size_t actualTestsRun = m_tests.size();
 
    bool passed = (numPassed + numSkipped) == actualTestsRun;
 
-   if (expectedTests != 0)
+   if (actualTestsRun > expectedTests)
    {
-      if (actualTestsRun < expectedTests)
-      {
-         OutputEx("");
-         OutputEx("**************************************************");
-         OutputEx("Not all tests have been run: expected: " + ToStringA(expectedTests) + " only ran: " + ToStringA(actualTestsRun));
-         OutputEx("**************************************************");
+      OutputEx("");
+      OutputEx("**************************************************");
+      OutputEx("More tests than expected have been run: expected: " + ToStringA(expectedTests) + " actually ran: " + ToStringA(actualTestsRun));
+      OutputEx("Update the expectedTests value in Test.cpp!");
+      OutputEx("**************************************************");
 
-         passed = false;
-      }
-      else if (actualTestsRun > expectedTests)
-      {
-         OutputEx("");
-         OutputEx("**************************************************");
-         OutputEx("More tests than expected have been run: expected: " + ToStringA(expectedTests) + " actually ran: " + ToStringA(actualTestsRun));
-         OutputEx("Update the expectedTests value in Test.cpp!");
-         OutputEx("**************************************************");
+      passed = false;
+   }
+   else if (expectedTests == 0)
+   {
+      OutputEx("");
+      OutputEx("**************************************************");
+      OutputEx("No tests are configured");
+      OutputEx("**************************************************");
 
-         passed = false;
-      }
+      passed = false;
+   }
+   else if (actualTestsRun < expectedTests)
+   {
+      OutputEx("");
+      OutputEx("**************************************************");
+      OutputEx("Not all tests have been run: expected: " + ToStringA(expectedTests) + " only ran: " + ToStringA(actualTestsRun));
+      OutputEx("**************************************************");
+
+      passed = false;
    }
 
    if (failIfTestsSkipped && numSkipped != 0)
    {
+      OutputEx("");
+      OutputEx("**************************************************");
+      OutputEx("Some tests were skipped: " + ToStringA(numSkipped));
+      OutputEx("Fail if tests skipped is set to true, test FAILED");
+      OutputEx("**************************************************");
+
       passed = false;
    }
 
@@ -613,7 +624,7 @@ bool CTestMonitor::Report(
 
 unsigned int CTestMonitor::Run()
 {
-   #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
+   #if (JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
    CPerThreadErrorHandler errorHandler;
    #endif
 
@@ -629,7 +640,7 @@ unsigned int CTestMonitor::Run()
 
          while (!m_shutdownEvent.Wait(0))
          {
-            const DWORD shutdownAndStartWaitResult = WaitForMultipleObjects(2, shutdownAndStartHandles, false, INFINITE);
+            const DWORD shutdownAndStartWaitResult = IWaitable::WaitForMultipleHandles(2, shutdownAndStartHandles, false, INFINITE);
 
             if (shutdownAndStartWaitResult == WAIT_OBJECT_0)
             {
@@ -657,7 +668,7 @@ unsigned int CTestMonitor::Run()
                      m_stopTimingEvent.GetWaitHandle()
                   };
 
-                  const DWORD shutdownAndStopWaitResult = WaitForMultipleObjects(2, shutdownAndStopHandles, false, timeout);
+                  const DWORD shutdownAndStopWaitResult = IWaitable::WaitForMultipleHandles(2, shutdownAndStopHandles, false, timeout);
 
                   if (shutdownAndStopWaitResult == WAIT_OBJECT_0)
                   {
@@ -679,11 +690,9 @@ unsigned int CTestMonitor::Run()
                      {
                         OutputEx("Trace messages:");
 
-                        for (TraceMessages::const_iterator it = m_traceMessages.begin(), end = m_traceMessages.end();
-                             it != end;
-                             ++it)
+                        for (const auto &traceMessage : m_traceMessages)
                         {
-                           OutputEx(*it);
+                           OutputEx(traceMessage);
                         }
                      }
 
@@ -693,7 +702,7 @@ unsigned int CTestMonitor::Run()
                   {
                      const DWORD lastError = GetLastError();
 
-                     OutputEx("Unexpected result during test timeout wait for test to end" + GetLastErrorMessageA(lastError, true));
+                     OutputEx("Unexpected result during test timeout wait for test to end" + ErrorCodeToErrorMessageA(lastError));
 
                      exit(3);
                   }
@@ -707,21 +716,17 @@ unsigned int CTestMonitor::Run()
             {
                const DWORD lastError = GetLastError();
 
-               OutputEx("Unexpected result during test timeout wait for test to start" + GetLastErrorMessageA(lastError, true));
+               OutputEx("Unexpected result during test timeout wait for test to start" + ErrorCodeToErrorMessageA(lastError));
             }
          }
       }
       catch (const CException &e)
       {
-         OutputEx(_T("Exception during test timeout processing: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
-      }
-      catch (const CSEHException &e)
-      {
-         OutputEx(_T("Exception during test timeout processing: ") + e.GetWhere() + _T(" - ") + e.GetMessage());
+         OutputEx("Exception during test timeout processing: " + e.GetDetailsA());
       }
       JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
       {
-         OutputEx("Unecpected exception during test timeout processing");
+         OutputEx("Unexpected exception during test timeout processing");
       }
    }
    JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
@@ -808,47 +813,39 @@ void CTestMonitor::TestDetails::TestException(
    {
       if (!e.GetWhere().empty())
       {
-         m_message = _T("CTestException - ") + e.GetWhere() + _T(" - ") + e.GetMessage();
+         m_message = _T("CTestException - ") + e.GetDetails();
       }
       else
       {
-         m_message = _T("CTestException - ") + e.GetMessage();
+         m_message = _T("CTestException - ") + e.GetWhat();
       }
    }
    catch (CTestSkippedException &e)
    {
       if (!e.GetWhere().empty())
       {
-         m_message = e.GetWhere() + _T(" - ") + e.GetMessage();
+         m_message = e.GetDetails();
       }
       else
       {
-         m_message = e.GetMessage();
+         m_message = e.GetWhat();
       }
 
       m_state = Skipped;
    }
-   catch (CWin32Exception &e)
-   {
-      m_message = _T("CWin32Exception - ") + e.GetWhere() + _T(" - ") + e.GetMessage();
-   }
    catch (CException &e)
    {
-      m_message = _T("CException - ") + e.GetWhere() + _T(" - ") + e.GetMessage();
-   }
-   catch (CSEHException &e)
-   {
-      m_message = _T("CSEHException - ") + e.GetWhere() + _T(" - ") + e.GetMessage();
+      m_message = _T("CException - ") + e.GetDetails();
    }
    catch (std::exception &e)
    {
       m_message = _T("std::exception - ") + CStringConverter::AtoT(e.what());
    }
-   catch (const char *pE) //lint !e1752 (catch parameter is not a reference)
+   catch (const char *pE)
    {
       m_message = _T("Exception - ") + CStringConverter::AtoT(pE);
    }
-   catch (const wchar_t *pE) //lint !e1752 (catch parameter is not a reference)
+   catch (const wchar_t *pE)
    {
       m_message = _T("Exception - ") + CStringConverter::WtoT(pE);
    }

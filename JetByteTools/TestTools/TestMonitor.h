@@ -1,33 +1,39 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_TEST_TEST_MONITOR_INCLUDED__
-#define JETBYTE_TOOLS_TEST_TEST_MONITOR_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: TestMonitor.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2008 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2008 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/Admin/Admin.h"
-#include "JetByteTools/Win32Tools/tstring.h"
-#include "JetByteTools/Win32Tools/Thread.h"
-#include "JetByteTools/Win32Tools/IRunnable.h"
-#include "JetByteTools/Win32Tools/AutoResetEvent.h"
-#include "JetByteTools/Win32Tools/ManualResetEvent.h"
-#include "JetByteTools/Win32Tools/PerformanceCounter.h"
+#include "JetByteTools/CoreTools/tstring.h"
+#include "JetByteTools/CoreTools/Thread.h"
+#include "JetByteTools/CoreTools/IRunnable.h"
+#include "JetByteTools/CoreTools/AutoResetEvent.h"
+#include "JetByteTools/CoreTools/ManualResetEvent.h"
+#include "JetByteTools/CoreTools/PerformanceCounter.h"
 
 #include <list>
 
@@ -42,12 +48,12 @@ namespace Test {
 // CTestMonitor
 ///////////////////////////////////////////////////////////////////////////////
 
-class CTestMonitor : private JetByteTools::Win32::IRunnable
+class CTestMonitor : private JetByteTools::Core::IRunnable
 {
    public :
 
       explicit CTestMonitor(
-         const JetByteTools::Win32::_tstring &name,
+         const JetByteTools::Core::_tstring &name,
          bool includePerformanceTests = true,
          bool stopOnFailure = false,
          bool debugOnFailure = true);
@@ -57,7 +63,7 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
       CTestMonitor(
          const CTestMonitor &rhs) = delete;
 
-      ~CTestMonitor();
+      ~CTestMonitor() override;
 
       CTestMonitor &operator=(
          const CTestMonitor &rhs) = delete;
@@ -65,31 +71,31 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
       static bool DebugOnFailure();
 
       static void Trace(
-         const JetByteTools::Win32::_tstring &message);
+         const JetByteTools::Core::_tstring &message);
 
       void StartTest(
-         const JetByteTools::Win32::_tstring &className,
-         const JetByteTools::Win32::_tstring &functionName,
+         const JetByteTools::Core::_tstring &className,
+         const JetByteTools::Core::_tstring &functionName,
          JetByteTools::Milliseconds timeout = 0);
 
       bool StartPerformanceTest(
-         const JetByteTools::Win32::_tstring &className,
-         const JetByteTools::Win32::_tstring &functionName,
-         JetByteTools::Milliseconds timeout = 0);
+         const JetByteTools::Core::_tstring &className,
+         const JetByteTools::Core::_tstring &functionName,
+         Milliseconds timeout = 0);
 
       void TestComplete();
 
       void TestException();
 
       void SkipTest(
-         const JetByteTools::Win32::_tstring &reason);
+         const JetByteTools::Core::_tstring &reason);
 
       void FailTest(
-         const JetByteTools::Win32::_tstring &reason);
+         const JetByteTools::Core::_tstring &reason);
 
       bool Report(
-         const size_t expectedTests,
-         const bool failIfTestsSkipped = false) const;
+         size_t expectedTests,
+         bool failIfTestsSkipped = false) const;
 
       void HandlePureCall();
 
@@ -101,23 +107,23 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 
       void OutputTestDetails() const;
 
-      static JetByteTools::Milliseconds GetTimeoutForMachine();
+      static Milliseconds GetTimeoutForMachine();
 
-      JetByteTools::Win32::CThread m_testTimeoutThread;
+      JetByteTools::Core::CThread m_testTimeoutThread;
 
-      JetByteTools::Win32::CManualResetEvent m_shutdownEvent;
-      JetByteTools::Win32::CAutoResetEvent m_startTimingEvent;
-      JetByteTools::Win32::CAutoResetEvent m_timingStartedEvent;
-      JetByteTools::Win32::CAutoResetEvent m_stopTimingEvent;
+      JetByteTools::Core::CManualResetEvent m_shutdownEvent;
+      JetByteTools::Core::CAutoResetEvent m_startTimingEvent;
+      JetByteTools::Core::CAutoResetEvent m_timingStartedEvent;
+      JetByteTools::Core::CAutoResetEvent m_stopTimingEvent;
 
-      JetByteTools::Win32::CPerformanceCounter m_totalTimer;
-      JetByteTools::Win32::CPerformanceCounter m_testTimer;
+      JetByteTools::Core::CPerformanceCounter m_totalTimer;
+      JetByteTools::Core::CPerformanceCounter m_testTimer;
 
       typedef void (PureCallHandlerFnc)();
 
       PureCallHandlerFnc *m_pPreviousHandler;
 
-      const JetByteTools::Win32::_tstring m_name;
+      const JetByteTools::Core::_tstring m_name;
 
       const bool m_includePerformanceTests;
 
@@ -137,7 +143,7 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 
       Milliseconds m_testTimeout;
 
-      typedef std::list<JetByteTools::Win32::_tstring> TraceMessages;
+      typedef std::list<JetByteTools::Core::_tstring> TraceMessages;
 
       TraceMessages m_traceMessages;
 };
@@ -148,8 +154,6 @@ class CTestMonitor : private JetByteTools::Win32::IRunnable
 
 } // End of namespace Test
 } // End of namespace JetByteTools
-
-#endif // JETBYTE_TOOLS_TEST_TEST_MONITOR_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: TestMonitor.h

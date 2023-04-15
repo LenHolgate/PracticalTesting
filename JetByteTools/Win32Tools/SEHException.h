@@ -1,29 +1,36 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
-#define JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
 ///////////////////////////////////////////////////////////////////////////////
 // File: SEHException.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2004 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2004 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <wtypes.h>
 
-#include "tstring.h"
+#include "JetByteTools/CoreTools/Exception.h"
+#include "JetByteTools/CoreTools/tstring.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -36,18 +43,10 @@ namespace Win32 {
 // CSEHException
 ///////////////////////////////////////////////////////////////////////////////
 
-/// A exception class used by a structured exception translator to translate
-/// Win32 structured exceptions into C++ exceptions.
-/// Note that it's a deliberate choice not to derive from CException. Win32
-/// structured exceptions include things like "Stack Overflow" so you want to
-/// be sure you know what you're doing if you catch one... We could split the
-/// SE exception into two, ones we might be able to recover from and those that
-/// we can't recover from and derive the ones we might be able to recover from
-/// from CException, but...
 /// \ingroup Win32
 /// \ingroup Exceptions
 
-class CSEHException
+class CSEHException : public Core::CException
 {
    public :
 
@@ -61,11 +60,13 @@ class CSEHException
 
       const CONTEXT &GetContext() const;
 
-      _tstring GetWhere() const;
+      Core::_tstring GetWhere() const override;
 
-      const _tstring &GetMessage() const;
+      Core::_tstring GetWhat() const override;
 
-      std::string GetDetailsA() const;
+      Core::_tstring GetDetails() const override;
+
+      std::string GetDetailsA() const override;
 
    protected :
 
@@ -78,7 +79,6 @@ class CSEHException
       CSEHException(
          unsigned int code,
          EXCEPTION_POINTERS *pPointers);
-
 };
 
 /// A class that acts as a structured exception translator.
@@ -116,8 +116,6 @@ class CSEHException::Translator
 
 } // End of namespace Win32
 } // End of namespace JetByteTools
-
-#endif // JETBYTE_TOOLS_WIN32_SEH_EXCEPTION__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: SEHException.h

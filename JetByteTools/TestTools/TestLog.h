@@ -1,29 +1,35 @@
 #pragma once
-#ifndef JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
-#define JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
 ///////////////////////////////////////////////////////////////////////////////
 // File: TestLog.h
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2003 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 2003 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools/Win32Tools/tstring.h"
-#include "JetByteTools/Win32Tools/LockableObject.h"
-#include "JetByteTools/Win32Tools/CompareStrings.h"
+#include "JetByteTools/CoreTools/tstring.h"
+#include "JetByteTools/CoreTools/LockableObject.h"
+#include "JetByteTools/CoreTools/CompareStrings.h"
 
 #include <vector>
 #include <string>
@@ -44,7 +50,7 @@ class CTestLog
    public :
 
       explicit CTestLog(
-         const JetByteTools::Win32::_tstring &separator);
+         const JetByteTools::Core::_tstring &separator);
 
       CTestLog();
 
@@ -53,7 +59,7 @@ class CTestLog
 
       CTestLog(
          CTestLog *pLinkedLog,
-         const JetByteTools::Win32::_tstring &separator);
+         const JetByteTools::Core::_tstring &separator);
 
       CTestLog(
          const CTestLog &rhs) = delete;
@@ -70,11 +76,11 @@ class CTestLog
       void ClearLog();
 
       virtual void LogMessage(
-         const JetByteTools::Win32::_tstring &message) const;
+         const JetByteTools::Core::_tstring &message) const;
 
-      JetByteTools::Win32::_tstring GetMessages() const;
+      JetByteTools::Core::_tstring GetMessages() const;
 
-      JetByteTools::Win32::_tstring RemoveMessages();
+      JetByteTools::Core::_tstring RemoveMessages();
 
       enum DisplayOnFailureMode
       {
@@ -84,11 +90,11 @@ class CTestLog
 
       enum UseAlternativesMode
       {
-         DoNotCheckAlternatives     = JetByteTools::Win32::CCompareStrings::DoNotCheckAlternatives,
-         CheckWildcards             = JetByteTools::Win32::CCompareStrings::CheckWildcards,
-         CheckAlternatives          = JetByteTools::Win32::CCompareStrings::CheckAlternatives,
-         CheckRepeats               = JetByteTools::Win32::CCompareStrings::CheckRepeats,
-         CheckAllAlternatives       = JetByteTools::Win32::CCompareStrings::CheckAllAlternatives
+         DoNotCheckAlternatives     = JetByteTools::Core::CCompareStrings::DoNotCheckAlternatives,
+         CheckWildcards             = JetByteTools::Core::CCompareStrings::CheckWildcards,
+         CheckAlternatives          = JetByteTools::Core::CCompareStrings::CheckAlternatives,
+         CheckRepeats               = JetByteTools::Core::CCompareStrings::CheckRepeats,
+         CheckAllAlternatives       = JetByteTools::Core::CCompareStrings::CheckAllAlternatives
       };
 
       void ResetLog();
@@ -98,7 +104,7 @@ class CTestLog
          UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
       void CheckResult(
-         const JetByteTools::Win32::_tstring &expectedResult,
+         const JetByteTools::Core::_tstring &expectedResult,
          DisplayOnFailureMode displayOnFailure = DisplayOnFailure,
          UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
@@ -108,33 +114,33 @@ class CTestLog
          UseAlternativesMode useAlternatives = DoNotCheckAlternatives);
 
       void CheckResultFromFile(
-         const JetByteTools::Win32::_tstring &fileName,
+         const JetByteTools::Core::_tstring &fileName,
          bool fileContainsLineEndBars = false);
 
    protected :
 
       void CheckResult(
-         const JetByteTools::Win32::_tstring &expectedResult,
-         const JetByteTools::Win32::_tstring &actualResult,
+         const JetByteTools::Core::_tstring &expectedResult,
+         const JetByteTools::Core::_tstring &actualResult,
          DisplayOnFailureMode displayOnFailure,
          UseAlternativesMode useAlternatives) const;
 
-      JetByteTools::Win32::_tstring GetFileName(
-         const JetByteTools::Win32::_tstring &fileName);
+      JetByteTools::Core::_tstring GetFileName(
+         const JetByteTools::Core::_tstring &fileName);
 
    private :
 
-      JetByteTools::Win32::_tstring InternalGetMessages() const;
+      JetByteTools::Core::_tstring InternalGetMessages() const;
 
-      JetByteTools::Win32::_tstring InternalRemoveMessages();
+      JetByteTools::Core::_tstring InternalRemoveMessages();
 
       unsigned int m_fileNumber;
 
-      const JetByteTools::Win32::_tstring m_separator;
+      const JetByteTools::Core::_tstring m_separator;
 
-      mutable JetByteTools::Win32::CLockableObject m_lock;
+      mutable JetByteTools::Core::CLockableObject m_lock;
 
-      typedef std::vector<JetByteTools::Win32::_tstring> Log;
+      typedef std::vector<JetByteTools::Core::_tstring> Log;
 
       mutable Log m_log;
 
@@ -147,8 +153,6 @@ class CTestLog
 
 } // End of namespace Test
 } // End of namespace JetByteTools
-
-#endif // JETBYTE_TOOLS_TEST_TEST_LOG_INCLUDED__
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: CTestLog.h

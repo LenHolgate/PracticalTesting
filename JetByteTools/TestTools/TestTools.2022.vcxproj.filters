@@ -49,5 +49,8 @@
     <ClInclude Include="TestMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PrecompiledHeader.h">
+      <Filter>Precompiled Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

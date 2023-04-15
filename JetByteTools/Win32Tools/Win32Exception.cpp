@@ -2,28 +2,42 @@
 // File: Win32Exception.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1997 JetByte Limited.
+// The code in this file is released under the The MIT License (MIT)
 //
-// This software is provided "as is" without a warranty of any kind. All
-// express or implied conditions, representations and warranties, including
-// any implied warranty of merchantability, fitness for a particular purpose
-// or non-infringement, are hereby excluded. JetByte Limited and its licensors
-// shall not be liable for any damages suffered by licensee as a result of
-// using the software. In no event will JetByte Limited be liable for any
-// lost revenue, profit or data, or for direct, indirect, special,
-// consequential, incidental or punitive damages, however caused and regardless
-// of the theory of liability, arising out of the use of or inability to use
-// software, even if JetByte Limited has been advised of the possibility of
-// such damages.
+// Copyright (c) 1997 JetByte Limited.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the “Software”), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/Admin/Admin.h"
 
 #include "Win32Exception.h"
-#include "Utils.h"
+#include "GetLastErrorMessage.h"
 
 #pragma hdrstop
+
+///////////////////////////////////////////////////////////////////////////////
+// Using directives
+///////////////////////////////////////////////////////////////////////////////
+
+using JetByteTools::Core::_tstring;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Win32
@@ -39,16 +53,22 @@ namespace Win32 {
 CWin32Exception::CWin32Exception(
    const _tstring &where,
    const DWORD error)
-   :  CException(where, GetLastErrorMessage(error, true)),
-      m_error(error)
+   :  CErrorCodeException(where, GetLastErrorMessage(error, true), error)
+{
+}
+
+CWin32Exception::CWin32Exception(
+   const _tstring &where,
+   HMODULE hModule,
+   const DWORD error)
+   :  CErrorCodeException(where, GetLastErrorMessage(hModule, error, true), error)
 {
 }
 
 CWin32Exception::CWin32Exception(
    const _tstring &where,
    const _tstring &message)
-   :  CException(where, message),
-      m_error(NO_ERROR)
+   :  CErrorCodeException(where, message, NO_ERROR)
 {
 }
 
@@ -56,14 +76,17 @@ CWin32Exception::CWin32Exception(
    const _tstring &where,
    const _tstring &message,
    const DWORD error)
-   :  CException(where, message + _T(" - ") + GetLastErrorMessage(error, true)),
-      m_error(error)
+   :  CErrorCodeException(where, message + _T(" - ") + GetLastErrorMessage(error, true), error)
 {
 }
 
-DWORD CWin32Exception::GetError() const
+CWin32Exception::CWin32Exception(
+   const _tstring &where,
+   const _tstring &message,
+   HMODULE hModule,
+   const DWORD error)
+   :  CErrorCodeException(where, message + _T(" - ") + GetLastErrorMessage(hModule, error, true), error)
 {
-   return m_error;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
