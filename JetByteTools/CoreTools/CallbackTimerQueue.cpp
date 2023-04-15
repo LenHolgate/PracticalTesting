@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueEx.cpp
+// File: CallbackTimerQueue.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
@@ -29,7 +29,7 @@
 #include "JetByteTools/Admin/Admin.h"
 
 #include "ContainingRecord.h"
-#include "CallbackTimerQueueEx.h"
+#include "CallbackTimerQueue.h"
 #include "TickCount64Provider.h"
 #include "ToString.h"
 #include "Exception.h"
@@ -67,10 +67,10 @@ static const Milliseconds s_timeoutMax = s_tickCountMax - 1;
 IQueueTimers::Handle IQueueTimers::InvalidHandleValue = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx::TimerData
+// CCallbackTimerQueue::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCallbackTimerQueueEx::TimerData : private CIntrusiveRedBlackTreeNode
+class CCallbackTimerQueue::TimerData : private CIntrusiveRedBlackTreeNode
 {
    public :
 
@@ -163,10 +163,10 @@ class CCallbackTimerQueueEx::TimerData : private CIntrusiveRedBlackTreeNode
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx
+// CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-CCallbackTimerQueueEx::CCallbackTimerQueueEx()
+CCallbackTimerQueue::CCallbackTimerQueue()
    :  m_tickProvider(s_tickProvider),
       m_monitor(s_monitor),
       m_maxTimeout(s_timeoutMax),
@@ -176,7 +176,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx()
 
 }
 
-CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+CCallbackTimerQueue::CCallbackTimerQueue(
    IMonitorCallbackTimerQueue &monitor)
    :  m_tickProvider(s_tickProvider),
       m_monitor(monitor),
@@ -187,7 +187,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
 
 }
 
-CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_tickProvider(tickProvider),
       m_monitor(s_monitor),
@@ -198,7 +198,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
 
 }
 
-CCallbackTimerQueueEx::CCallbackTimerQueueEx(
+CCallbackTimerQueue::CCallbackTimerQueue(
    IMonitorCallbackTimerQueue &monitor,
    const IProvideTickCount64 &tickProvider)
    :  m_tickProvider(tickProvider),
@@ -210,7 +210,7 @@ CCallbackTimerQueueEx::CCallbackTimerQueueEx(
 
 }
 
-CCallbackTimerQueueEx::~CCallbackTimerQueueEx()
+CCallbackTimerQueue::~CCallbackTimerQueue()
 {
    try
    {
@@ -240,14 +240,14 @@ CCallbackTimerQueueEx::~CCallbackTimerQueueEx()
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
 }
 
-CCallbackTimerQueueEx::Handle CCallbackTimerQueueEx::CreateTimer()
+CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
 {
    auto *pData = new TimerData();
 
    if (!m_activeHandles.Insert(pData).second)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::CreateTimer()"),
+         _T("CCallbackTimerQueue::CreateTimer()"),
          _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map"));
    }
 
@@ -258,7 +258,7 @@ CCallbackTimerQueueEx::Handle CCallbackTimerQueueEx::CreateTimer()
    return reinterpret_cast<Handle>(pData);
 }
 
-bool CCallbackTimerQueueEx::SetTimer(
+bool CCallbackTimerQueue::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
@@ -267,7 +267,7 @@ bool CCallbackTimerQueueEx::SetTimer(
    if (timeout > m_maxTimeout)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::SetTimer()"),
+         _T("CCallbackTimerQueue::SetTimer()"),
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
@@ -286,7 +286,7 @@ bool CCallbackTimerQueueEx::SetTimer(
    return wasPending;
 }
 
-bool CCallbackTimerQueueEx::CancelTimer(
+bool CCallbackTimerQueue::CancelTimer(
    const Handle &handle)
 {
    const bool wasPending = CancelTimer(ValidateHandle(handle));
@@ -298,7 +298,7 @@ bool CCallbackTimerQueueEx::CancelTimer(
    return wasPending;
 }
 
-bool CCallbackTimerQueueEx::DestroyTimer(
+bool CCallbackTimerQueue::DestroyTimer(
    Handle &handle)
 {
    TimerData *pData = ValidateHandle(handle);
@@ -329,7 +329,7 @@ bool CCallbackTimerQueueEx::DestroyTimer(
    return wasPending;
 }
 
-bool CCallbackTimerQueueEx::DestroyTimer(
+bool CCallbackTimerQueue::DestroyTimer(
    const Handle &handle)
 {
    Handle handle_ = handle;
@@ -337,7 +337,7 @@ bool CCallbackTimerQueueEx::DestroyTimer(
    return DestroyTimer(handle_);
 }
 
-void CCallbackTimerQueueEx::SetTimer(
+void CCallbackTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData)
@@ -345,7 +345,7 @@ void CCallbackTimerQueueEx::SetTimer(
    if (timeout > m_maxTimeout)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::SetTimer()"),
+         _T("CCallbackTimerQueue::SetTimer()"),
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
@@ -355,7 +355,7 @@ void CCallbackTimerQueueEx::SetTimer(
    if (!m_activeHandles.Insert(pData).second)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::SetTimer()"),
+         _T("CCallbackTimerQueue::SetTimer()"),
          _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map"));
    }
 
@@ -370,12 +370,12 @@ void CCallbackTimerQueueEx::SetTimer(
    #endif
 }
 
-Milliseconds CCallbackTimerQueueEx::GetMaximumTimeout() const
+Milliseconds CCallbackTimerQueue::GetMaximumTimeout() const
 {
    return m_maxTimeout;
 }
 
-void CCallbackTimerQueueEx::InsertTimer(
+void CCallbackTimerQueue::InsertTimer(
    TimerData * const pData,
    const Milliseconds timeout)
 {
@@ -388,7 +388,7 @@ void CCallbackTimerQueueEx::InsertTimer(
       pData->ClearTimer();
 
       throw CException(
-         _T("CCallbackTimerQueueEx::InsertTimer()"),
+         _T("CCallbackTimerQueue::InsertTimer()"),
          _T("Timeout will extend beyond the wrap point of GetTickCount64(). ")
          _T("Well done at having your machine running for this long, ")
          _T("but this is outside of our specificiation..."));
@@ -397,7 +397,7 @@ void CCallbackTimerQueueEx::InsertTimer(
    InsertTimer(pData, absoluteTimeout);
 }
 
-void CCallbackTimerQueueEx::InsertTimer(
+void CCallbackTimerQueue::InsertTimer(
    TimerData * const pData,
    const ULONGLONG absoluteTimeout)
 {
@@ -406,7 +406,7 @@ void CCallbackTimerQueueEx::InsertTimer(
    m_queue.Insert(pData);
 }
 
-CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::ValidateHandle(
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::ValidateHandle(
    const Handle &handle) const
 {
    auto *pData = reinterpret_cast<TimerData *>(handle);
@@ -421,7 +421,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::ValidateHandle(
       #pragma warning(push, 4)
       #pragma warning(disable: 4244)
       throw CException(
-         _T("CCallbackTimerQueueEx::ValidateHandle()"),
+         _T("CCallbackTimerQueue::ValidateHandle()"),
          _T("Invalid timer handle: ") + ToString(handle));
       #pragma warning(pop)
    }
@@ -430,7 +430,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::ValidateHandle(
    return pData;
 }
 
-bool CCallbackTimerQueueEx::CancelTimer(
+bool CCallbackTimerQueue::CancelTimer(
    TimerData *pData)
 {
    bool wasPending = false;
@@ -447,7 +447,7 @@ bool CCallbackTimerQueueEx::CancelTimer(
    return wasPending;
 }
 
-Milliseconds CCallbackTimerQueueEx::GetNextTimeout()
+Milliseconds CCallbackTimerQueue::GetNextTimeout()
 {
    Milliseconds timeUntilTimeout = INFINITE;
 
@@ -474,12 +474,12 @@ Milliseconds CCallbackTimerQueueEx::GetNextTimeout()
    return timeUntilTimeout;
 }
 
-bool CCallbackTimerQueueEx::BeginTimeoutHandling()
+bool CCallbackTimerQueue::BeginTimeoutHandling()
 {
    if (m_handlingTimeouts)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::BeginTimeoutHandling()"),
+         _T("CCallbackTimerQueue::BeginTimeoutHandling()"),
          _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
    }
 
@@ -535,12 +535,12 @@ bool CCallbackTimerQueueEx::BeginTimeoutHandling()
    return m_handlingTimeouts;
 }
 
-void CCallbackTimerQueueEx::HandleTimeout()
+void CCallbackTimerQueue::HandleTimeout()
 {
    if (!m_handlingTimeouts)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::ValidateTimeoutHandle()"),
+         _T("CCallbackTimerQueue::ValidateTimeoutHandle()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
@@ -558,12 +558,12 @@ void CCallbackTimerQueueEx::HandleTimeout()
    }
 }
 
-void CCallbackTimerQueueEx::EndTimeoutHandling()
+void CCallbackTimerQueue::EndTimeoutHandling()
 {
    if (!m_handlingTimeouts)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::EndTimeoutHandling()"),
+         _T("CCallbackTimerQueue::EndTimeoutHandling()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
@@ -595,17 +595,17 @@ void CCallbackTimerQueueEx::EndTimeoutHandling()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx::TimerData
+// CCallbackTimerQueue::TimerData
 ///////////////////////////////////////////////////////////////////////////////
 
-CCallbackTimerQueueEx::TimerData::TimerData()
+CCallbackTimerQueue::TimerData::TimerData()
    :  m_deleteAfterTimeout(false),
       m_processingTimeout(false),
       m_pNext(nullptr)
 {
 }
 
-CCallbackTimerQueueEx::TimerData::TimerData(
+CCallbackTimerQueue::TimerData::TimerData(
    Timer &timer,
    const UserData userData)
    :  m_active(timer, userData),
@@ -615,25 +615,25 @@ CCallbackTimerQueueEx::TimerData::TimerData(
 {
 }
 
-void CCallbackTimerQueueEx::TimerData::PushNext(
+void CCallbackTimerQueue::TimerData::PushNext(
    TimerData *pNext)
 {
    if (m_pNext)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::TimerData::PushNext()"),
+         _T("CCallbackTimerQueue::TimerData::PushNext()"),
          _T("Internal Error: Next is already set"));
    }
 
    m_pNext = pNext;
 }
 
-CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerData::GetNext() const
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::TimerData::GetNext() const
 {
    return m_pNext;
 }
 
-CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerData::PopNext()
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::TimerData::PopNext()
 {
    TimerData *pNext = m_pNext;
 
@@ -642,14 +642,14 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerData::PopNext()
    return pNext;
 }
 
-void CCallbackTimerQueueEx::TimerData::UpdateData(
+void CCallbackTimerQueue::TimerData::UpdateData(
    Timer &timer,
    const UserData userData)
 {
    if (m_deleteAfterTimeout)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::TimerData::UpdateData()"),
+         _T("CCallbackTimerQueue::TimerData::UpdateData()"),
          _T("Internal Error: Can't update one shot timers or timers pending deletion"));
    }
 
@@ -657,28 +657,28 @@ void CCallbackTimerQueueEx::TimerData::UpdateData(
    m_active.userData = userData;
 }
 
-void CCallbackTimerQueueEx::TimerData::SetTimer(
+void CCallbackTimerQueue::TimerData::SetTimer(
    const ULONGLONG absoluteTimeout)
 {
    m_active.absoluteTimeout = absoluteTimeout;
 }
 
-ULONGLONG CCallbackTimerQueueEx::TimerData::GetTimeout() const
+ULONGLONG CCallbackTimerQueue::TimerData::GetTimeout() const
 {
    return m_active.absoluteTimeout;
 }
 
-bool CCallbackTimerQueueEx::TimerData::IsSet() const
+bool CCallbackTimerQueue::TimerData::IsSet() const
 {
    return (m_active.pTimer != nullptr);
 }
 
-void CCallbackTimerQueueEx::TimerData::ClearTimer()
+void CCallbackTimerQueue::TimerData::ClearTimer()
 {
    m_active.Clear();
 }
 
-void CCallbackTimerQueueEx::TimerData::OnTimer()
+void CCallbackTimerQueue::TimerData::OnTimer()
 {
    m_processingTimeout = true;
 
@@ -689,20 +689,20 @@ void CCallbackTimerQueueEx::TimerData::OnTimer()
    m_processingTimeout = false;
 }
 
-void CCallbackTimerQueueEx::TimerData::OnTimer(
+void CCallbackTimerQueue::TimerData::OnTimer(
    const Data &data)
 {
    if (!data.pTimer)
    {
       throw CException(
-         _T("CCallbackTimerQueueEx::TimerData::OnTimer()"),
+         _T("CCallbackTimerQueue::TimerData::OnTimer()"),
          _T("Internal Error: Timer not set"));
    }
 
    data.pTimer->OnTimer(data.userData);
 }
 
-void CCallbackTimerQueueEx::TimerData::PrepareForHandleTimeout()
+void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
 {
    m_processingTimeout = true;
 
@@ -711,38 +711,38 @@ void CCallbackTimerQueueEx::TimerData::PrepareForHandleTimeout()
    m_active.Clear();
 }
 
-void CCallbackTimerQueueEx::TimerData::HandleTimeout()
+void CCallbackTimerQueue::TimerData::HandleTimeout()
 {
    OnTimer(m_timedout);
 
    m_timedout.Clear();
 }
 
-void CCallbackTimerQueueEx::TimerData::TimeoutHandlingComplete()
+void CCallbackTimerQueue::TimerData::TimeoutHandlingComplete()
 {
    m_processingTimeout = false;
 }
 
-bool CCallbackTimerQueueEx::TimerData::DeleteAfterTimeout() const
+bool CCallbackTimerQueue::TimerData::DeleteAfterTimeout() const
 {
    return m_deleteAfterTimeout;
 }
 
-bool CCallbackTimerQueueEx::TimerData::HasTimedOut() const
+bool CCallbackTimerQueue::TimerData::HasTimedOut() const
 {
    return m_processingTimeout;
 }
 
-void CCallbackTimerQueueEx::TimerData::SetDeleteAfterTimeout()
+void CCallbackTimerQueue::TimerData::SetDeleteAfterTimeout()
 {
    m_deleteAfterTimeout = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx::TimerData::Data
+// CCallbackTimerQueue::TimerData::Data
 ///////////////////////////////////////////////////////////////////////////////
 
-CCallbackTimerQueueEx::TimerData::Data::Data()
+CCallbackTimerQueue::TimerData::Data::Data()
    :  pTimer(nullptr),
       userData(0),
       absoluteTimeout(0)
@@ -750,7 +750,7 @@ CCallbackTimerQueueEx::TimerData::Data::Data()
 
 }
 
-CCallbackTimerQueueEx::TimerData::Data::Data(
+CCallbackTimerQueue::TimerData::Data::Data(
    Timer &timer,
    const UserData userData_)
    :  pTimer(&timer),
@@ -760,7 +760,7 @@ CCallbackTimerQueueEx::TimerData::Data::Data(
 
 }
 
-void CCallbackTimerQueueEx::TimerData::Data::Clear()
+void CCallbackTimerQueue::TimerData::Data::Clear()
 {
    pTimer = nullptr;
    userData = 0;
@@ -768,20 +768,20 @@ void CCallbackTimerQueueEx::TimerData::Data::Clear()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor
+// CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeKeyAccessor
 ///////////////////////////////////////////////////////////////////////////////
 
-ULONGLONG CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeKeyAccessor::GetKeyFromT(
+ULONGLONG CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeKeyAccessor::GetKeyFromT(
    const TimerData *pNode)
 {
    return pNode->GetTimeout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor
+// CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeAccessor
 ///////////////////////////////////////////////////////////////////////////////
 
-CIntrusiveMultiMapNode *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetNodeFromT(
+CIntrusiveMultiMapNode *CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeAccessor::GetNodeFromT(
    const TimerData *pData)
 {
    CIntrusiveMultiMapNode *pNode = nullptr;
@@ -794,7 +794,7 @@ CIntrusiveMultiMapNode *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAcc
    return pNode;
 }
 
-CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
    const CIntrusiveMultiMapNode *pNode)
 {
    TimerData *pData = nullptr;
@@ -811,7 +811,7 @@ CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMulti
    return pData;
 }
 
-CCallbackTimerQueueEx::TimerData *CCallbackTimerQueueEx::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
+CCallbackTimerQueue::TimerData *CCallbackTimerQueue::TimerDataIntrusiveMultiMapNodeAccessor::GetTFromNode(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
    TimerData *pData = nullptr;

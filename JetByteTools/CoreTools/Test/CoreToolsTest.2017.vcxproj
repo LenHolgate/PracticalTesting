@@ -686,7 +686,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CallbackTimerQueueExTest.cpp" />
+    <ClCompile Include="CallbackTimerQueueTest.cpp" />
     <ClCompile Include="CallbackTimerWheelTest.cpp" />
     <ClCompile Include="IntrusiveMultiMapTest.cpp" />
     <ClCompile Include="IntrusiveRedBlackTreeTest.cpp" />
@@ -726,7 +726,7 @@
     <ClCompile Include="ThreadedCallbackTimerQueueTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CallbackTimerQueueExTest.h" />
+    <ClInclude Include="CallbackTimerQueueTest.h" />
     <ClInclude Include="CallbackTimerQueueTestBase.h" />
     <ClInclude Include="CallbackTimerWheelTest.h" />
     <ClInclude Include="IntrusiveMultiMapTest.h" />

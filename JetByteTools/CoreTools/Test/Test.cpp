@@ -35,7 +35,7 @@
 #include "JetByteTools/TestTools/TestMonitor.h"
 #include "JetByteTools/TestTools/TestException.h"
 
-#include "CallbackTimerQueueExTest.h"
+#include "CallbackTimerQueueTest.h"
 #include "CallbackTimerWheelTest.h"
 #include "IntrusiveMultiMapTest.h"
 #include "IntrusiveRedBlackTreeTest.h"
@@ -92,7 +92,7 @@ int main(int /*argc*/, char ** /*argv*/)
       CIntrusiveMultiMapTest::TestAll(monitor);
 
       CCallbackTimerWheelTest::TestAll(monitor);
-      CCallbackTimerQueueExTest::TestAll(monitor);
+      CCallbackTimerQueueTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
       size_t expectedTests = 124;

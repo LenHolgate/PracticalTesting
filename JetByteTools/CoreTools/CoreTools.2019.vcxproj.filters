@@ -34,7 +34,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CallbackTimerQueueEx.h">
+    <ClInclude Include="CallbackTimerQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CallbackTimerWheel.h">
@@ -285,7 +285,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CallbackTimerQueueEx.cpp">
+    <ClCompile Include="CallbackTimerQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CallbackTimerWheel.cpp">

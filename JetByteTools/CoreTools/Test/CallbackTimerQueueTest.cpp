@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueExTest.cpp
+// File: CallbackTimerQueueTest.cpp
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
@@ -28,7 +28,7 @@
 
 #include "JetByteTools/Admin/Admin.h"
 
-#include "CallbackTimerQueueExTest.h"
+#include "CallbackTimerQueueTest.h"
 
 #include "JetByteTools/CoreTools/Mock/MockTickCount64Provider.h"
 #include "JetByteTools/CoreTools/Mock/LoggingCallbackTimer.h"
@@ -41,7 +41,7 @@
 
 #pragma hdrstop
 
-#include "JetByteTools/CoreTools/CallbackTimerQueueEx.h"
+#include "JetByteTools/CoreTools/CallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -62,29 +62,29 @@ namespace JetByteTools {
 namespace Core {
 namespace Test {
 
-const _tstring CCallbackTimerQueueExTestTraits::shortName = _T("QEx - ");
+const _tstring CCallbackTimerQueueTestTraits::shortName = _T("QEx - ");
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueExTest
+// CCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-void CCallbackTimerQueueExTest::TestAll(
+void CCallbackTimerQueueTest::TestAll(
    CTestMonitor &monitor)
 {
-   Base::TestAll(monitor, _T("CCallbackTimerQueueEx"));
+   Base::TestAll(monitor, _T("CCallbackTimerQueue"));
 
-   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestGetMaxTimeout);
-   RUN_TEST_EX(monitor, CCallbackTimerQueueExTest, TestSetTimerPastTickCount64CountWrap);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueTest, TestGetMaxTimeout);
+   RUN_TEST_EX(monitor, CCallbackTimerQueueTest, TestSetTimerPastTickCount64CountWrap);
 }
 
-void CCallbackTimerQueueExTest::TestGetMaxTimeout()
+void CCallbackTimerQueueTest::TestGetMaxTimeout()
 {
    CMockTimerQueueMonitor monitor;
 
    CMockTickCount64Provider tickProvider;
 
    {
-      const CCallbackTimerQueueEx timerQueue(monitor, tickProvider);
+      const CCallbackTimerQueue timerQueue(monitor, tickProvider);
 
       tickProvider.CheckNoResults();
 
@@ -111,7 +111,7 @@ void CCallbackTimerQueueExTest::TestGetMaxTimeout()
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
 
-void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
+void CCallbackTimerQueueTest::TestSetTimerPastTickCount64CountWrap()
 {
    CMockTimerQueueMonitor monitor;
 
@@ -123,7 +123,7 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
    {
       CLoggingCallbackTimer timer;
 
-      CCallbackTimerQueueEx timerQueue(monitor, tickProvider);
+      CCallbackTimerQueue timerQueue(monitor, tickProvider);
 
       const _tstring resultBeforeRollOver = _T("|GetTickCount: ") + ToString(beforeRollOver) + _T("|");
 
@@ -133,11 +133,11 @@ void CCallbackTimerQueueExTest::TestSetTimerPastTickCount64CountWrap()
 
       tickProvider.CheckNoResults();
 
-      CCallbackTimerQueueEx::Handle handle = timerQueue.CreateTimer();
+      CCallbackTimerQueue::Handle handle = timerQueue.CreateTimer();
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(CCallbackTimerQueueEx::InvalidHandleValue != handle);
+      THROW_ON_FAILURE_EX(CCallbackTimerQueue::InvalidHandleValue != handle);
 
       // Set a single timer for 100ms after the tick count rolls to 0.
 

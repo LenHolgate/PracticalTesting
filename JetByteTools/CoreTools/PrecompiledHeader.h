@@ -34,7 +34,7 @@
 #include "Atomic.h"
 #include "AtomicLong.h"
 #include "AutoResetEvent.h"
-#include "CallbackTimerQueueEx.h"
+#include "CallbackTimerQueue.h"
 #include "CallbackTimerWheel.h"
 #include "CheckedStaticCast.h"
 #include "CompareStrings.h"

@@ -29,7 +29,7 @@
 #include "JetByteTools/Admin/Admin.h"
 
 #include "ThreadedCallbackTimerQueue.h"
-#include "CallbackTimerQueueEx.h"
+#include "CallbackTimerQueue.h"
 #include "StringConverter.h"
 #include "Exception.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
@@ -61,7 +61,7 @@ static CNullThreadedCallbackTimerQueueMonitor s_monitor;
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor)),
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -73,7 +73,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor)),
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -85,7 +85,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider)),
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider)),
       m_shutdown(false)
 {
    m_thread.Start();
@@ -98,7 +98,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueueEx(m_monitor, tickProvider)),
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider)),
       m_shutdown(false)
 {
    m_thread.Start();

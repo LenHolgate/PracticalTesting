@@ -58,7 +58,7 @@ class IMonitorThreadedCallbackTimerQueue;
 /// timer expires. The class uses an implementation of IManageTimerQueue to manage
 /// the timers and then manages its own timeouts using a thread to call
 /// IManageTimerQueue::BeginTimeoutHandling() every GetNextTimeout() milliseconds.
-/// You can configure it to use CCallbackTimerQueueEx or
+/// You can configure it to use CCallbackTimerQueue or
 /// supply your own implementation of IManageTimerQueue.
 /// See <a href="http://www.lenholgate.com/archives/000381.html">here</a> for
 /// more details.

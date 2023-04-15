@@ -1,6 +1,6 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueExTest.h
+// File: CallbackTimerQueueTest.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
@@ -29,7 +29,7 @@
 
 #include "CallbackTimerQueueTestBase.h"
 
-#include "JetByteTools/CoreTools/CallbackTimerQueueEx.h"
+#include "JetByteTools/CoreTools/CallbackTimerQueue.h"
 
 #include "JetByteTools/CoreTools/Mock/MockTickCount64Provider.h"
 
@@ -42,10 +42,10 @@ namespace Core {
 namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueExTest
+// CCallbackTimerQueueTest
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CCallbackTimerQueueExTestTraits
+struct CCallbackTimerQueueTestTraits
 {
    enum traits
    {
@@ -76,10 +76,10 @@ struct CCallbackTimerQueueExTestTraits
 /// \test
 /// \ingroup Win32ToolsTests
 
-class CCallbackTimerQueueExTest :
+class CCallbackTimerQueueTest :
    public TCallbackTimerQueueTestBase<
-      CCallbackTimerQueueEx,
-      CCallbackTimerQueueExTestTraits,
+      CCallbackTimerQueue,
+      CCallbackTimerQueueTestTraits,
       Mock::CMockTickCount64Provider>
 {
    public :
@@ -100,5 +100,5 @@ class CCallbackTimerQueueExTest :
 } // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueueExTest.h
+// End of file: CallbackTimerQueueTest.h
 ///////////////////////////////////////////////////////////////////////////////

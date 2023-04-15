@@ -48,7 +48,7 @@
     <ClInclude Include="AtomicBool.h" />
     <ClInclude Include="AtomicCounter.h" />
     <ClInclude Include="AtomicLong.h" />
-    <ClInclude Include="CallbackTimerQueueEx.h" />
+    <ClInclude Include="CallbackTimerQueue.h" />
     <ClInclude Include="CallbackTimerWheel.h" />
     <ClInclude Include="ContainingRecord.h" />
     <ClInclude Include="DebugTrace.h" />
@@ -128,7 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Admin.cpp" />
-    <ClCompile Include="CallbackTimerQueueEx.cpp" />
+    <ClCompile Include="CallbackTimerQueue.cpp" />
     <ClCompile Include="CallbackTimerWheel.cpp" />
     <ClCompile Include="CompareStrings.cpp" />
     <ClCompile Include="DebugTrace.cpp" />

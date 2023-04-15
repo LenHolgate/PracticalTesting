@@ -12,7 +12,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CallbackTimerQueueExTest.cpp">
+    <ClCompile Include="CallbackTimerQueueTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
     <ClCompile Include="PrecompiledHeader.cpp">
@@ -35,7 +35,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CallbackTimerQueueExTest.h">
+    <ClInclude Include="CallbackTimerQueueTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="CallbackTimerQueueTestBase.h">
@@ -48,9 +48,6 @@
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="IntrusiveMultiMapTest.h">
-      <Filter>Tests</Filter>
-    </ClInclude>
-    <ClInclude Include="SlimLockableObjectTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">

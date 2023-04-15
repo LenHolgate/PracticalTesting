@@ -1,6 +1,6 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: CallbackTimerQueueEx.h
+// File: CallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
@@ -47,7 +47,7 @@ class IProvideTickCount64;
 class IMonitorCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCallbackTimerQueueEx
+// CCallbackTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
 /// A class that manages a group of timers that implement IQueueTimers::Timer
@@ -66,41 +66,41 @@ class IMonitorCallbackTimerQueue;
 /// will always return 4294967294ms.
 /// \ingroup Timers
 
-class CCallbackTimerQueueEx : public IManageTimerQueue
+class CCallbackTimerQueue : public IManageTimerQueue
 {
    public :
 
       /// Create a timer queue.
 
-      CCallbackTimerQueueEx();
+      CCallbackTimerQueue();
 
       /// Create a timer queue and monitor it with the supplied monitor.
 
-      explicit CCallbackTimerQueueEx(
+      explicit CCallbackTimerQueue(
          IMonitorCallbackTimerQueue &monitor);
 
       /// Create a timer queue that uses the provdided instance of
       /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system.
 
-      explicit CCallbackTimerQueueEx(
+      explicit CCallbackTimerQueue(
          const IProvideTickCount64 &tickProvider);
 
       /// Create a timer queue that uses the provdided instance of
       /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system. Monitor it with the supplied monitor.
 
-      CCallbackTimerQueueEx(
+      CCallbackTimerQueue(
          IMonitorCallbackTimerQueue &monitor,
          const IProvideTickCount64 &tickProvider);
 
-      CCallbackTimerQueueEx(
-         const CCallbackTimerQueueEx &rhs) = delete;
+      CCallbackTimerQueue(
+         const CCallbackTimerQueue &rhs) = delete;
 
-      ~CCallbackTimerQueueEx() override;
+      ~CCallbackTimerQueue() override;
 
-      CCallbackTimerQueueEx &operator=(
-         const CCallbackTimerQueueEx &rhs) = delete;
+      CCallbackTimerQueue &operator=(
+         const CCallbackTimerQueue &rhs) = delete;
 
       // Implement IManageTimerQueue
 
@@ -214,5 +214,5 @@ class CCallbackTimerQueueEx : public IManageTimerQueue
 } // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: CallbackTimerQueueEx.h
+// End of file: CallbackTimerQueue.h
 ///////////////////////////////////////////////////////////////////////////////
