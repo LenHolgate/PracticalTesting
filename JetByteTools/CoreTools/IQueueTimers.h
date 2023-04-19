@@ -203,7 +203,6 @@ class IQueueTimers
       virtual bool DestroyTimer(
          Handle &handle) = 0;
 
-
       template <typename T>
       bool DestroyTimerWithRefCountedUserData(
          Handle &handle,

@@ -123,6 +123,7 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestSetTimer();
       static void TestTimerIsSetWhenTimerIsSet();
       static void TestTimerIsSetWhenTimerIsNotSet();
+      static void TestTimerIsSetDuringTimeoutHandling();
       static void TestGetNextTimeoutWithTimerSet();
       static void TestSetTimerAlreadySetSetTimerAlwaysNotSet();
       static void TestSetTimerAlreadySetSetTimerAlwaysAlreadySet();
@@ -246,6 +247,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetWhenTimerIsSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetWhenTimerIsNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetDuringTimeoutHandling);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestGetNextTimeoutWithTimerSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysAlreadySet);
@@ -544,6 +546,64 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimerIsSetWhenTimerIsNotSet()
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestTimerIsSetDuringTimeoutHandling()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.TimerIsSet(handle));
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      // The timer has now logically timed out, even though the callback hasn't been called yet, it will be called.
+      // We can set the timer again here without any issue due to the way we allow timers to be set during expiry,
+      // see TestBeginTimeoutHandlingSetTimer() 
+
+      THROW_ON_FAILURE_EX(false == timerQueue.TimerIsSet(handle));
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+
+      THROW_ON_FAILURE_EX(false == timerQueue.TimerIsSet(handle));
+
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
