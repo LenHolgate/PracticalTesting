@@ -115,11 +115,23 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       Handle CreateTimer() override;
 
+      bool TimerIsSet(
+         const Handle &handle) const override;
+
       bool SetTimer(
          const Handle &handle,
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         const SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         const Milliseconds timeout,
+         const UserData userData,
+         const UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
          const Handle &handle) override;

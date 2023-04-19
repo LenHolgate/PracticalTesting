@@ -58,6 +58,8 @@ namespace Mock {
 CMockTimerQueue::CMockTimerQueue()
    :  waitForOnTimerWaitComplete(false),
       includeHandleValuesInLogs(true),
+      logSetTimerEvenIfNotSet(true),
+      returnCorrectTimeoutSetForNextTimeout(false),
       m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE)
@@ -70,6 +72,8 @@ CMockTimerQueue::CMockTimerQueue(
    : CTestLog(pLinkedLog),
       waitForOnTimerWaitComplete(false),
       includeHandleValuesInLogs(true),
+      logSetTimerEvenIfNotSet(true),
+      returnCorrectTimeoutSetForNextTimeout(false),
       m_nextTimer(0),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE)
@@ -99,6 +103,12 @@ bool CMockTimerQueue::WaitForOnTimer(
    }
 
    return ok;
+}
+
+bool CMockTimerQueue::WaitForSetTimer(
+   const Milliseconds timeout)
+{
+   return m_onSetTimerEvent.Wait(timeout);
 }
 
 void CMockTimerQueue::OnTimer()
@@ -173,31 +183,55 @@ CMockTimerQueue::Handle CMockTimerQueue::CreateTimer()
 
    const Handle handle = m_nextTimer.Increment();
 
-   LogMessage(_T("CreateTimer: ") + ToString(handle));
+   LogMessage(_T("CreateTimer: ") + GetHandleAsString(handle));
 
    return handle;
 }
 
 #pragma warning(disable: 4100)
 
+bool CMockTimerQueue::TimerIsSet(
+   const Handle &handle) const
+{
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("TimerIsSet: ") + GetHandleAsString(handle));
+   }
+   else
+   {
+      LogMessage(_T("TimerIsSet"));
+   }
+
+   bool timerIsSet = false;
+
+   if (!m_setTimers.empty())
+   {
+      for (auto it = m_setTimers.begin(), end = m_setTimers.end();
+         !timerIsSet && it != end;
+         ++it)
+      {
+         if (it->handle == handle)
+         {
+            timerIsSet = true;
+         }
+      }
+   }
+
+   return timerIsSet;
+}
+
 bool CMockTimerQueue::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
-   CReentrantLockableObject::Owner lock(m_lock);
-
-   if (includeHandleValuesInLogs)
-   {
-      LogMessage(_T("SetTimer: ") + ToString(handle) + _T(": ") + ToString(timeout));
-   }
-   else
-   {
-      LogMessage(_T("SetTimer: ") + ToString(timeout));
-   }
-
    bool wasPending = false;
+
+   bool wasSet = false;
+
+   CReentrantLockableObject::Owner lock(m_lock);
 
    for (SetTimers::const_iterator it = m_setTimers.begin(), end = m_setTimers.end();
       it != end;
@@ -205,7 +239,10 @@ bool CMockTimerQueue::SetTimer(
    {
       if (it->handle == handle)
       {
-         m_setTimers.erase(it);
+         if (setTimerIf == SetTimerAlways)
+         {
+            m_setTimers.erase(it);
+         }
 
          wasPending = true;
 
@@ -213,13 +250,127 @@ bool CMockTimerQueue::SetTimer(
       }
    }
 
-   m_setTimers.push_back(TimerDetails(handle, timer, userData));
+   if (setTimerIf == SetTimerAlways || !wasPending)
+   {
+      m_setTimers.push_back(TimerDetails(handle, timer, timeout, userData));
 
-   m_nextTimeout = 0;
+
+      if (returnCorrectTimeoutSetForNextTimeout)
+      {
+         if (timeout < m_nextTimeout)
+         {
+
+            m_nextTimeout = timeout;
+         }
+      }
+      else
+      {
+
+         m_nextTimeout = 0;
+      }
+
+
+      wasSet = true;
+   }
+
+   if (wasSet || logSetTimerEvenIfNotSet)
+   {
+      if (setTimerIf == SetTimerAlways || logSetTimerEvenIfNotSet)
+      {
+         if (includeHandleValuesInLogs)
+         {
+            LogMessage(_T("SetTimer: ") + GetHandleAsString(handle) + _T(": ") + ToString(timeout));
+         }
+         else
+         {
+            LogMessage(_T("SetTimer: ") + ToString(timeout));
+         }
+      }
+      else
+      {
+         if (includeHandleValuesInLogs)
+         {
+            LogMessage(_T("SetTimer: ") + GetHandleAsString(handle) + _T(": ") + ToString(timeout) + _T(" Set: ") + BoolAsString(wasSet));
+         }
+         else
+         {
+            LogMessage(_T("SetTimer: ") + ToString(timeout) + _T(" Set: ") + BoolAsString(wasSet));
+         }
+      }
+   }
+
+   m_onSetTimerEvent.Set();
 
    return wasPending;
 }
 
+bool CMockTimerQueue::UpdateTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   bool updated = false;
+
+   CReentrantLockableObject::Owner lock(m_lock);
+
+   if (includeHandleValuesInLogs)
+   {
+      LogMessage(_T("UpdateTimer: ") + GetHandleAsString(handle) + _T(": ") + ToString(timeout));
+   }
+   else
+   {
+      LogMessage(_T("UpdateTimer: ") + ToString(timeout));
+   }
+
+   bool wasSet = false;
+
+   for (auto & m_setTimer : m_setTimers)
+   {
+      if (m_setTimer.handle == handle)
+      {
+         if (updateIf == UpdateAlways ||
+             updateIf == UpdateAlwaysNoTimeoutChange ||
+            (updateIf == UpdateTimerIfNewTimeIsLater && timeout > m_setTimer.timeout) ||
+            (updateIf == UpdateTimerIfNewTimeIsSooner && timeout < m_setTimer.timeout))
+         {
+            updated = true;
+
+            m_setTimer.userData = userData;
+            m_setTimer.timer = timer;
+
+            if (updateIf != UpdateAlwaysNoTimeoutChange)
+            {
+               m_setTimer.timeout = timeout;
+            }
+         }
+
+         wasSet = true;
+
+         break;
+      }
+   }
+
+   if (!wasSet)
+   {
+      // timer wasn't already pending so we will set it...
+
+      m_setTimers.push_back(TimerDetails(handle, timer, timeout, userData));
+
+      m_nextTimeout = 0;
+
+      updated = true;
+   }
+
+   if (pWasUpdated)
+   {
+      *pWasUpdated = updated;
+   }
+
+   return wasSet;
+}
 bool CMockTimerQueue::CancelTimer(
    const Handle &handle)
 {
@@ -227,7 +378,7 @@ bool CMockTimerQueue::CancelTimer(
 
    if (includeHandleValuesInLogs)
    {
-      LogMessage(_T("CancelTimer: ") + ToString(handle));
+      LogMessage(_T("CancelTimer: ") + GetHandleAsString(handle));
    }
    else
    {
@@ -260,7 +411,7 @@ bool CMockTimerQueue::DestroyTimer(
 
    if (includeHandleValuesInLogs)
    {
-      LogMessage(_T("DestroyTimer: ") + ToString(handle));
+      LogMessage(_T("DestroyTimer: ") + GetHandleAsString(handle));
    }
    else
    {
@@ -330,7 +481,7 @@ void CMockTimerQueue::SetTimer(
 
    LogMessage(_T("SetTimer: ") + ToString(timeout));
 
-   m_setTimers.push_back(TimerDetails(InvalidHandleValue, timer, userData));
+   m_setTimers.push_back(TimerDetails(InvalidHandleValue, timer, timeout, userData));
 }
 
 Milliseconds CMockTimerQueue::GetMaximumTimeout() const
@@ -338,6 +489,19 @@ Milliseconds CMockTimerQueue::GetMaximumTimeout() const
    LogMessage(_T("GetMaximumTimeout"));
 
    return m_maxTimeout;
+}
+
+_tstring CMockTimerQueue::GetHandleAsString(
+   const Handle handle) const
+{
+   const auto it = m_timerNames.find(handle);
+
+   if (it != m_timerNames.end())
+   {
+      return it->second;
+   }
+
+   return ToString(handle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

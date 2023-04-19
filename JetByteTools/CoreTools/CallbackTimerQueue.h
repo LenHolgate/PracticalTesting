@@ -118,11 +118,23 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       Handle CreateTimer() override;
 
+      bool TimerIsSet(
+         const Handle &handle) const override;
+
       bool SetTimer(
+         const IQueueTimers::Handle &handle,
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         const IQueueTimers::UserData userData,
+         const SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
          const Handle &handle,
          Timer &timer,
-         Milliseconds timeout,
-         UserData userData) override;
+         const Milliseconds timeout,
+         const UserData userData,
+         const UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
          const Handle &handle) override;
@@ -182,6 +194,10 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       bool CancelTimer(
          TimerData *pData);
+
+      ULONGLONG GetAbsoluteTimeout(
+         TimerData &data,
+         const Milliseconds timeout) const;
 
       void InsertTimer(
          TimerData *pData,

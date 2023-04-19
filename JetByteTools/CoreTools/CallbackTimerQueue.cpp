@@ -258,11 +258,20 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
    return reinterpret_cast<Handle>(pData);
 }
 
+bool CCallbackTimerQueue::TimerIsSet(
+   const Handle &handle) const
+{
+   TimerData *pData = ValidateHandle(handle);
+
+   return pData->IsSet();
+}
+
 bool CCallbackTimerQueue::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
    if (timeout > m_maxTimeout)
    {
@@ -273,15 +282,95 @@ bool CCallbackTimerQueue::SetTimer(
 
    TimerData *pData = ValidateHandle(handle);
 
-   const bool wasPending = CancelTimer(pData);
+   const bool wasPending = pData->IsSet();
 
-   pData->UpdateData(timer, userData);
+   if (setTimerIf == SetTimerAlways || !wasPending)
+   {
+      if (wasPending)
+      {
+         CancelTimer(pData);
+      }
 
-   InsertTimer(pData, timeout);
+      pData->UpdateData(timer, userData);
+
+      InsertTimer(pData, timeout);
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+      m_monitor.OnTimerSet(wasPending);
+      #endif
+   }
+
+   return wasPending;
+}
+
+bool CCallbackTimerQueue::UpdateTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   bool updated = false;
+
+   if (timeout > m_maxTimeout)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::UpdateTimer()"),
+         _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
+   }
+
+   TimerData *pData = ValidateHandle(handle);
+
+   const bool wasPending = pData->IsSet();
+
+   if (wasPending)
+   {
+      if (updateIf == UpdateAlwaysNoTimeoutChange)
+      {
+         updated = true;
+
+         pData->UpdateData(timer, userData);
+      }
+      else
+      {
+         const ULONGLONG currentAbsoluteTimeout = pData->GetTimeout();
+
+         const ULONGLONG newAbsoluteTimeout = GetAbsoluteTimeout(*pData, timeout);
+
+         if (updateIf == UpdateAlways ||
+            (updateIf == UpdateTimerIfNewTimeIsLater && newAbsoluteTimeout > currentAbsoluteTimeout) ||
+            (updateIf == UpdateTimerIfNewTimeIsSooner && newAbsoluteTimeout < currentAbsoluteTimeout))
+         {
+            updated = true;
+
+            pData->UpdateData(timer, userData);
+
+            // need to cancel and set
+
+            m_queue.Erase(pData);
+
+            InsertTimer(pData, newAbsoluteTimeout);
+         }
+      }
+   }
+   else
+   {
+      pData->UpdateData(timer, userData);
+
+      InsertTimer(pData, timeout);
+
+      updated = true;
+   }
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-   m_monitor.OnTimerSet(wasPending);
+   m_monitor.OnTimerUpdated(wasPending, updated);
    #endif
+
+   if (pWasUpdated)
+   {
+      *pWasUpdated = updated;
+   }
 
    return wasPending;
 }
@@ -375,9 +464,9 @@ Milliseconds CCallbackTimerQueue::GetMaximumTimeout() const
    return m_maxTimeout;
 }
 
-void CCallbackTimerQueue::InsertTimer(
-   TimerData * const pData,
-   const Milliseconds timeout)
+ULONGLONG CCallbackTimerQueue::GetAbsoluteTimeout(
+   TimerData &data,
+   const Milliseconds timeout) const
 {
    const ULONGLONG now = m_tickProvider.GetTickCount64();
 
@@ -385,14 +474,23 @@ void CCallbackTimerQueue::InsertTimer(
 
    if (absoluteTimeout < now)
    {
-      pData->ClearTimer();
+      data.ClearTimer();
 
       throw CException(
-         _T("CCallbackTimerQueue::InsertTimer()"),
+         _T("CCallbackTimerQueue::GetAbsoluteTimeout()"),
          _T("Timeout will extend beyond the wrap point of GetTickCount64(). ")
          _T("Well done at having your machine running for this long, ")
          _T("but this is outside of our specificiation..."));
    }
+
+   return absoluteTimeout;
+}
+
+void CCallbackTimerQueue::InsertTimer(
+   TimerData * const pData,
+   const Milliseconds timeout)
+{
+   const ULONGLONG absoluteTimeout = GetAbsoluteTimeout(*pData, timeout);
 
    InsertTimer(pData, absoluteTimeout);
 }

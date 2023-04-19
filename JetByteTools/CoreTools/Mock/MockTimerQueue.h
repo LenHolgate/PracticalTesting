@@ -103,6 +103,13 @@ class CMockTimerQueue :
 
       bool includeHandleValuesInLogs;
 
+      bool logSetTimerEvenIfNotSet;
+
+      bool returnCorrectTimeoutSetForNextTimeout;
+
+      _tstring GetHandleAsString(
+         Handle handle) const;
+
       void OnTimer();
 
       bool IsTimerSet() const;
@@ -114,6 +121,9 @@ class CMockTimerQueue :
          Milliseconds timeout) const;
 
       bool WaitForOnTimer(
+         Milliseconds timeout);
+
+      bool WaitForSetTimer(
          Milliseconds timeout);
 
       // Implement IManageTimerQueue
@@ -130,11 +140,23 @@ class CMockTimerQueue :
 
       Handle CreateTimer() override;
 
+      bool TimerIsSet(
+         const Handle &handle) const override;
+
       bool SetTimer(
          const Handle &handle,
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr) override;
 
       bool CancelTimer(
          const Handle &handle) override;
@@ -162,6 +184,8 @@ class CMockTimerQueue :
 
       CAutoResetEvent m_onTimerWaitCompleteEvent;
 
+      CAutoResetEvent m_onSetTimerEvent;
+
       CAtomicLong m_nextTimer;
 
       struct TimerDetails
@@ -169,9 +193,11 @@ class CMockTimerQueue :
          TimerDetails(
             const Handle &handle_,
             Timer &timer_,
+            Milliseconds timeout_,
             UserData userData_)
             :  handle(handle_),
                timer(timer_),
+               timeout(timeout_),
                userData(userData_)
          {
          }
@@ -179,6 +205,8 @@ class CMockTimerQueue :
          const Handle handle;
 
          Timer &timer;
+
+         Milliseconds timeout;
 
          UserData userData;
       };

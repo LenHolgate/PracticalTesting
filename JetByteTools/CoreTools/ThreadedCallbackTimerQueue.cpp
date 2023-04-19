@@ -155,6 +155,25 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
    return m_thread.Wait(timeout);
 }
 
+bool CThreadedCallbackTimerQueue::TimerIsSet(
+   const Handle &handle) const
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::IsSetTimerContention);
+
+      lock.Lock();
+   }
+   #else
+   CLockableObject::Owner lock(m_lock);
+   #endif
+
+   return m_spTimerQueue->TimerIsSet(handle);
+}
+
 CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
@@ -183,7 +202,8 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -198,9 +218,47 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData);
+   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData, setTimerIf);
 
    SignalStateChange();
+
+   return wasPending;
+}
+
+bool CThreadedCallbackTimerQueue::UpdateTimer(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::SetTimerContention);
+
+      lock.Lock();
+   }
+   #else
+   CLockableObject::Owner lock(m_lock);
+   #endif
+
+   bool wasUpdated = false;
+
+   const bool wasPending = m_spTimerQueue->UpdateTimer(handle, timer, timeout, userData, updateIf, &wasUpdated);
+
+   if (pWasUpdated)
+   {
+      *pWasUpdated = wasUpdated;
+   }
+
+   if (wasUpdated && updateIf != UpdateAlwaysNoTimeoutChange)
+   {
+      SignalStateChange();
+   }
 
    return wasPending;
 }

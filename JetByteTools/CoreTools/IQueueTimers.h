@@ -80,33 +80,95 @@ class IQueueTimers
 
       virtual Handle CreateTimer() = 0;
 
+      // TODO - potentially add a handle wrapper that can do the 'if set' and update stuff
+      // this would avoid locking for AO's
+
+      /// Returns true if the timer is currently set.
+
+      virtual bool TimerIsSet(
+         const Handle &handle) const = 0;
+
       /// Set a timer that was previously created with CreateTimer().
       /// Returns true if the timer was previously pending for another timeout and
       /// false if the timer was not already pending. Note that calling SetTimer()
       /// will cause any timers that have expired to be processed before the new
       /// timer is set.
 
+      enum SetTimerIf
+      {
+         SetTimerAlways,
+         SetTimerIfNotSet
+      };
+
       virtual bool SetTimer(
          const Handle &handle,
          Timer &timer,
-         Milliseconds timeout,
-         UserData userData) = 0;
+         const Milliseconds timeout,
+         const UserData userData,
+         const SetTimerIf setTimerIf = SetTimerAlways) = 0;
 
 
       template <typename T>
       bool SetTimerWithRefCountedUserData(
          const Handle &handle,
-         Timer &timer,
-         Milliseconds timeout,
-         T *pUserData);
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         T *pUserData,
+         const SetTimerIf setTimerIf = SetTimerAlways);
 
 
       template <typename T>
       bool SetTimerWithRefCountedTimer(
          const Handle &handle,
          T &timer,
-         Milliseconds timeout,
-         UserData userData);
+         const Milliseconds timeout,
+         const UserData userData,
+         const SetTimerIf setTimerIf = SetTimerAlways);
+
+      /// Update a timer if it is set and if the condition is true and set the timer if it is not set.
+      /// Updating a timer will set the timeout, timer and user data to the newly supplied values. If the timer
+      /// is not updated because the condition is false then nothing is changed.
+      /// UpdateAlways will always update.
+      /// UpdateAlwaysNoTimeoutChange will always update JUST timer and user data.
+      /// If you supply pWasUpdated then it is set to true if anything was changed and false if not.
+
+      enum UpdateTimerIf
+      {
+         UpdateTimerIfNewTimeIsSooner,
+         UpdateTimerIfNewTimeIsLater,
+         UpdateAlways,
+         UpdateAlwaysNoTimeoutChange,
+      };
+
+      virtual bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         const Milliseconds timeout,
+         const UserData userData,
+         const UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr) = 0;
+
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedUserData) Ignoring return value of function
+
+      template <typename T>
+      bool UpdateTimerWithRefCountedUserData(
+         const Handle &handle,
+         IQueueTimers::Timer &timer,
+         const Milliseconds timeout,
+         T *pUserData,
+         const UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr);
+
+      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedTimer) Ignoring return value of function
+
+      template <typename T>
+      bool UpdateTimerWithRefCountedTimer(
+         const Handle &handle,
+         T &timer,
+         const Milliseconds timeout,
+         const UserData userData,
+         const UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr);
 
       /// Cancel a timer that was previously set with SetTimer().
       /// Returns true if the timer was pending and false if the timer was not pending.
@@ -206,7 +268,8 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
    const Handle &handle,
    Timer &timer,
    const Milliseconds timeout,
-   T *pUserData)
+   T *pUserData,
+   const SetTimerIf setTimerIf)
 {
    pUserData->AddRef();
 
@@ -216,7 +279,8 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
          handle,
          timer,
          timeout,
-         reinterpret_cast<UserData>(pUserData));
+         reinterpret_cast<UserData>(pUserData),
+         setTimerIf);
 
       if (wasPending)
       {
@@ -238,7 +302,8 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
    const Handle &handle,
    T &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   const SetTimerIf setTimerIf)
 {
    timer.AddRef();
 
@@ -248,7 +313,80 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
          handle,
          timer,
          timeout,
-         userData);
+         userData,
+         setTimerIf);
+
+      if (wasPending)
+      {
+         timer.Release();
+      }
+
+      return wasPending;
+   }
+   catch(...)
+   {
+      timer.Release();
+
+      throw;
+   }
+}
+
+template <typename T>
+bool IQueueTimers::UpdateTimerWithRefCountedUserData(
+   const Handle &handle,
+   Timer &timer,
+   const Milliseconds timeout,
+   T *pUserData,
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   pUserData->AddRef();
+
+   try
+   {
+      const bool wasPending = UpdateTimer(
+         handle,
+         timer,
+         timeout,
+         reinterpret_cast<UserData>(pUserData),
+         updateIf,
+         pWasUpdated);
+
+      if (wasPending)
+      {
+         pUserData->Release();
+      }
+
+      return wasPending;
+   }
+   catch (...)
+   {
+      pUserData->Release();
+
+      throw;
+   }
+}
+
+template <typename T>
+bool IQueueTimers::UpdateTimerWithRefCountedTimer(
+   const IQueueTimers::Handle &handle,
+   T &timer,
+   const Milliseconds timeout,
+   const UserData userData,
+   const IQueueTimers::UpdateTimerIf updateIf,
+   bool *pWasUpdated)
+{
+   timer.AddRef();
+
+   try
+   {
+      const bool wasPending = UpdateTimer(
+         handle,
+         timer,
+         timeout,
+         userData,
+         updateIf,
+         pWasUpdated);
 
       if (wasPending)
       {

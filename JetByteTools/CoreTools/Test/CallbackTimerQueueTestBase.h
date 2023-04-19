@@ -121,13 +121,30 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestHandleTimeoutsNoTimersSetNoTimePassed();
       static void TestHandleTimeoutsNoTimersSet();
       static void TestSetTimer();
+      static void TestTimerIsSetWhenTimerIsSet();
+      static void TestTimerIsSetWhenTimerIsNotSet();
       static void TestGetNextTimeoutWithTimerSet();
-      static void TestSetTimerAlreadySet();
+      static void TestSetTimerAlreadySetSetTimerAlwaysNotSet();
+      static void TestSetTimerAlreadySetSetTimerAlwaysAlreadySet();
+      static void TestSetTimerAlreadySetSetTimerIfNotSetNotSet();
+      static void TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet();
       static void TestCancelTimerNotSet();
       static void TestCancelTimerInvalidHandle();
       static void TestCancelTimer();
+      static void TestUpdateTimer();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsSooner();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsNotSooner();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndTimerIsNotSet();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsLater();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsNotLater();
+      static void TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndTimerIsNotSet();
+      static void TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsSooner();
+      static void TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsLater();
+      static void TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndTimerIsNotSet();
       static void TestTimer();
       static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling();
+      static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularity();
+      static void TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularityMultipleTimers();
       static void TestBeginTimeoutHandlingEndTimeoutHandling();
       static void TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail();
       static void TestMultipleCallsToEndTimeoutHandlingFail();
@@ -227,13 +244,30 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutsNoTimersSetNoTimePassed);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutsNoTimersSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetWhenTimerIsSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetWhenTimerIsNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestGetNextTimeoutWithTimerSet);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysAlreadySet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerIfNotSetNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerInvalidHandle);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsSooner);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsNotSooner);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndTimerIsNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsLater);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsNotLater);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndTimerIsNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsSooner);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsLater);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndTimerIsNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandling);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularity);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularityMultipleTimers);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingEndTimeoutHandling);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMultipleCallsToEndTimeoutHandlingFail);
@@ -460,6 +494,58 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimer()
 }
 
 template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestTimerIsSetWhenTimerIsSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.TimerIsSet(handle));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestTimerIsSetWhenTimerIsNotSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(false == timerQueue.TimerIsSet(handle));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 {
    Mock::CMockTimerQueueMonitor monitor;
@@ -512,7 +598,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysNotSet()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
@@ -527,13 +613,129 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySet()
 
       const IQueueTimers::UserData userData = 1;
 
-      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
 
-      THROW_ON_FAILURE_EX(true == timerQueue.SetTimer(handle, timer, 1200, userData));
+      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+      const Milliseconds newTimeout = 1200;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, newTimeout, userData, IQueueTimers::SetTimerIf::SetTimerAlways));
 
       timer.CheckNoResults();
 
       CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysAlreadySet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      const Milliseconds newTimeout = 1200;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.SetTimer(handle, timer, newTimeout, userData, IQueueTimers::SetTimerIf::SetTimerAlways));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerIfNotSetNotSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
+
+      const Milliseconds newTimeout = 1200;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, newTimeout, userData, IQueueTimers::SetTimerIf::SetTimerIfNotSet));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      const Milliseconds newTimeoutNotUsed = 1200;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.SetTimer(handle, timer, newTimeoutNotUsed, userData, IQueueTimers::SetTimerIf::SetTimerIfNotSet));
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -621,6 +823,522 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
       timer.CheckNoResults();
 
       tickProvider.CheckNoResults();
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimer()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsSooner()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 900;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsSooner));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsNotSooner()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsSooner));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndTimerIsNotSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsSooner));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsLater()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsLater));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndNewTimeIsNotLater()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 900;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsLater));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateTimerIfNewTimeIsLaterAndTimerIsNotSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateTimerIfNewTimeIsLater));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsSooner()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 900;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateAlwaysNoTimeoutChange));
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndNewTimeIsLater()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      const Milliseconds timeout = 1000;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, timeout, userData));
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateAlwaysNoTimeoutChange));
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestUpdateTimerUpdateAlwaysNoTimeoutChangeAndTimerIsNotSet()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      IQueueTimers::Handle handle = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds newTimeout = 1200;
+
+      const IQueueTimers::UserData newUserData = 2;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.UpdateTimer(handle, timer, newTimeout, newUserData, IQueueTimers::UpdateAlwaysNoTimeoutChange));
+
+      timer.CheckNoResults();
+
+      CheckTickProviderSetTimerResults(tickProvider);
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(newTimeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount: 0|"));
+
+      tickProvider.SetTickCount(expectedTimeout);
+
+      HandleTimeouts(timerQueue);
+
+      tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTimeout) + _T("|"));
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
    }
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
@@ -765,6 +1483,282 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
    THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
 }
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularity()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 1000;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      Milliseconds now = 0;
+
+      const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      const Milliseconds expectedAbsoluteTimeout = now + expectedTimeout;
+
+      while (++now < expectedAbsoluteTimeout)
+      {
+         tickProvider.SetTickCount(now);
+
+         const Milliseconds currentTimeout = expectedAbsoluteTimeout - now;
+
+         THROW_ON_FAILURE_EX(currentTimeout == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         timer.CheckNoResults();
+      }
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeoutEndTimeoutHandlingTicksFasterThanGranularityMultipleTimers()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer1;
+
+      const Milliseconds timeout1 = 1000;
+
+      const IQueueTimers::UserData userData1 = 1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer1, timeout1, userData1);
+
+      const IQueueTimers::UserData userData2 = 2;
+
+      Mock::CLoggingCallbackTimer timer2;
+
+      const Milliseconds timeout2 = timeout1 + T::timerGranularity;
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer2, timeout2, userData2);
+
+      Milliseconds now = 0;
+
+      {
+         const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+
+         THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         const Milliseconds expectedAbsoluteTimeout = now + expectedTimeout;
+
+         while (++now < expectedAbsoluteTimeout)
+         {
+            tickProvider.SetTickCount(now);
+
+            const Milliseconds currentTimeout = expectedAbsoluteTimeout - now;
+
+            THROW_ON_FAILURE_EX(currentTimeout == timerQueue.GetNextTimeout());
+
+            tickProvider.CheckResult(_T("|GetTickCount|"));
+
+            THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+            tickProvider.CheckResult(_T("|GetTickCount|"));
+
+            timer1.CheckNoResults();
+            timer2.CheckNoResults();
+         }
+
+         tickProvider.SetTickCount(now);
+
+         THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         const Milliseconds expectedTimeout2 = CalculateExpectedTimeout(timeout2, now, 0);
+
+         THROW_ON_FAILURE_EX(expectedTimeout2 == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         timerQueue.HandleTimeout();
+
+         timer1.CheckResult(_T("|OnTimer: 1|"));
+         timer2.CheckNoResults();
+
+         tickProvider.CheckNoResults();
+
+         THROW_ON_FAILURE_EX(expectedTimeout2 == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         tickProvider.CheckNoResults();
+
+         timerQueue.EndTimeoutHandling();
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         tickProvider.CheckNoResults();
+      }
+      {
+         const Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout2, now, 0);
+
+         THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         const Milliseconds expectedAbsoluteTimeout = now + expectedTimeout;
+
+         while (++now < expectedAbsoluteTimeout)
+         {
+            tickProvider.SetTickCount(now);
+
+            const Milliseconds currentTimeout = expectedAbsoluteTimeout - now;
+
+            THROW_ON_FAILURE_EX(currentTimeout == timerQueue.GetNextTimeout());
+
+            tickProvider.CheckResult(_T("|GetTickCount|"));
+
+            THROW_ON_FAILURE_EX(false == timerQueue.BeginTimeoutHandling());
+
+            tickProvider.CheckResult(_T("|GetTickCount|"));
+
+            timer1.CheckNoResults();
+            timer2.CheckNoResults();
+         }
+
+         tickProvider.SetTickCount(now);
+
+         THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+         THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         timerQueue.HandleTimeout();
+
+         timer1.CheckNoResults();
+         timer2.CheckResult(_T("|OnTimer: 2|"));
+
+         tickProvider.CheckNoResults();
+
+         THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+         tickProvider.CheckNoResults();
+
+         timerQueue.EndTimeoutHandling();
+
+         timer1.CheckNoResults();
+         timer2.CheckNoResults();
+
+         tickProvider.CheckNoResults();
+      }
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle1));
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
+   }
+
+   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+}
+
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHandling()
