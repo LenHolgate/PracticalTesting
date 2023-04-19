@@ -125,10 +125,10 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestTimerIsSetWhenTimerIsNotSet();
       static void TestTimerIsSetDuringTimeoutHandling();
       static void TestGetNextTimeoutWithTimerSet();
-      static void TestSetTimerAlreadySetSetTimerAlwaysNotSet();
-      static void TestSetTimerAlreadySetSetTimerAlwaysAlreadySet();
-      static void TestSetTimerAlreadySetSetTimerIfNotSetNotSet();
-      static void TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet();
+      static void TestSetTimerIfSetTimerAlwaysTimerIsNotSet();
+      static void TestSetTimerIfSetTimerAlwaysTimerIsAlreadySet();
+      static void TestSetTimerIfSetTimerIfNotSetTimerIsNotSet();
+      static void TestSetTimerIfSetTimerIfNotSetTimerIsAlreadySet();
       static void TestCancelTimerNotSet();
       static void TestCancelTimerInvalidHandle();
       static void TestCancelTimer();
@@ -249,10 +249,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetWhenTimerIsNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestTimerIsSetDuringTimeoutHandling);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestGetNextTimeoutWithTimerSet);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysNotSet);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerAlwaysAlreadySet);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerIfNotSetNotSet);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerIfSetTimerAlwaysTimerIsNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerIfSetTimerAlwaysTimerIsAlreadySet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerIfSetTimerIfNotSetTimerIsNotSet);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerIfSetTimerIfNotSetTimerIsAlreadySet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerInvalidHandle);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimer);
@@ -658,7 +658,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysNotSet()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerIfSetTimerAlwaysTimerIsNotSet()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
@@ -694,7 +694,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysN
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysAlreadySet()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerIfSetTimerAlwaysTimerIsAlreadySet()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
@@ -730,7 +730,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerAlwaysA
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerIfNotSetNotSet()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerIfSetTimerIfNotSetTimerIsNotSet()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
@@ -766,7 +766,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerIfNotSe
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerAlreadySetSetTimerIfNotSetAlreadySet()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerIfSetTimerIfNotSetTimerIsAlreadySet()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
