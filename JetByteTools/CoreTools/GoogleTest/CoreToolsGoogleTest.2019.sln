@@ -1,19 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreTools", "..\CoreTools.2022.vcxproj", "{CB040802-28E6-45FE-A217-C89BAB6FF0F8}"
+# Visual Studio Version 16
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreTools", "..\CoreTools.2019.vcxproj", "{CB040802-28E6-45FE-A217-C89BAB6FF0F8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\..\Admin\Admin.2022.vcxproj", "{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Admin", "..\..\Admin\Admin.2019.vcxproj", "{F7BBF14A-A173-49C5-AF88-EBC99A2C9A8B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreToolsMock", "..\Mock\CoreToolsMock.2022.vcxproj", "{7B882663-0B39-4C00-B7F8-0BE894EA9468}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreToolsMock", "..\Mock\CoreToolsMock.2019.vcxproj", "{7B882663-0B39-4C00-B7F8-0BE894EA9468}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreToolsGoogleTest", "CoreToolsGoogleTest.2022.vcxproj", "{4502F299-BAB3-4EBF-90E4-DB52D417613B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreToolsGoogleTest", "CoreToolsGoogleTest.2019.vcxproj", "{4502F299-BAB3-4EBF-90E4-DB52D417613B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\..\TestTools\TestTools.2022.vcxproj", "{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestTools", "..\..\TestTools\TestTools.2019.vcxproj", "{8AD287CB-15B7-48DA-99C7-8FDC792B79F2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Tools", "..\..\Win32Tools\Win32Tools.2022.vcxproj", "{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Win32Tools", "..\..\Win32Tools\Win32Tools.2019.vcxproj", "{7BC9B51A-7DFA-4AEE-A49A-AD52C1208DA3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GoogleTest", "..\..\ThirdPartyCode\GoogleTest\GoogleTest.2022.vcxproj", "{017F679B-A906-4450-9C32-80BB61497C4E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GoogleTest", "..\..\ThirdPartyCode\GoogleTest\GoogleTest.2019.vcxproj", "{017F679B-A906-4450-9C32-80BB61497C4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
