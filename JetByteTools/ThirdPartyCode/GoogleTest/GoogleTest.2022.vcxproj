@@ -237,7 +237,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -289,7 +290,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -335,7 +337,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -383,7 +386,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -431,7 +435,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -482,7 +487,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -525,7 +531,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -571,7 +578,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -617,7 +625,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -665,7 +674,8 @@ if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Comm
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PreBuildEvent>
-      <Command>if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
+      <Command>if not exist googletest\CMakeLists.txt echo WARNING &amp; echo WARNING - Please initialise git submodules &amp; echo WARNING &amp; exit
+if not exist gtest\nul mklink /J gtest googletest\googletest\include\gtest
 if not exist gmock\nul mklink /J gmock googletest\googlemock\include\gmock</Command>
     </PreBuildEvent>
     <PreBuildEvent>
