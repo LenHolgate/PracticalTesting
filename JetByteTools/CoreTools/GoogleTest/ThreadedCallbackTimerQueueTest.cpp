@@ -33,10 +33,7 @@
 
 #include "JetByteTools/CoreTools/CallbackTimerQueue.h"
 
-#include "JetByteTools/CoreTools/Mock/MockTickCountProvider.h"
 #include "JetByteTools/CoreTools/Mock/MockTickCount64Provider.h"
-#include "JetByteTools/CoreTools/Mock/LoggingCallbackTimer.h"
-#include "JetByteTools/CoreTools/Mock/MockTimerQueue.h"
 #include "JetByteTools/CoreTools/Mock/MockTimerQueue.h"
 #include "JetByteTools/CoreTools/Mock/MockThreadedCallbackTimerQueueMonitor.h"
 #include "JetByteTools/CoreTools/Mock/TestThreadedCallbackTimerQueue.h"
@@ -47,10 +44,7 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
-using JetByteTools::Core::Mock::CMockTickCountProvider;
 using JetByteTools::Core::Mock::CMockTickCount64Provider;
-using JetByteTools::Core::Mock::CLoggingCallbackTimer;
-using JetByteTools::Core::Mock::CMockTimerQueue;
 using JetByteTools::Core::Mock::CMockThreadedCallbackTimerQueueMonitor;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,13 +98,28 @@ TEST(ThreadedCallbackTimerQueue, TestConstructWithGMocks)
 {
    CGMockTickCount64Provider tickProvider;
 
-   EXPECT_CALL(tickProvider, GetTickCount64()).Times(1);
+   EXPECT_CALL(tickProvider, GetTickCount64()).Times(0);
 
    {
       CThreadedCallbackTimerQueue timerQueue(tickProvider);
    }
 
    //tickProvider.CheckNoResults();
+}
+
+#ifndef SHORT_TIME_NON_ZERO
+#define SHORT_TIME_NON_ZERO 100
+#endif
+
+TEST(ThreadedCallbackTimerQueue, TestBeginShutdown)
+{
+   {
+      CThreadedCallbackTimerQueue timerQueue;
+
+      timerQueue.BeginShutdown();
+
+      EXPECT_TRUE(timerQueue.WaitForShutdownToComplete(SHORT_TIME_NON_ZERO));
+   }
 }
 
 
