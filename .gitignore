@@ -10,3 +10,7 @@ VisualStudioProjectFileCreatorFrom2022.exe
 SourceFileUpdaterMITCopyright.exe
 
 JetByteTools/CoreTools/Test/CoreToolsTest.log
+
+JetByteTools/ThirdPartyCode/GoogleTest/gmock
+
+JetByteTools/ThirdPartyCode/GoogleTest/gtest
