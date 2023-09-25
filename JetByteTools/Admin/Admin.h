@@ -93,7 +93,7 @@ extern const int JetByteToolsVersion;
 /// This is the latest compiler version that we've tested on.
 /// You might get away with later versions but we don't support them yet.
 
-#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1936
+#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1938
 
 // This is only needed when the main version number, _MSC_VER, doesn't get
 // bumped for breaking changes. As was the case with the 2019 16.9 previews
@@ -329,15 +329,15 @@ namespace JetByteTools
 #endif
 
 #ifdef JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS
-#error JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it's internal, define JETBYTE_PERF_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
+#error JETBYTE_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS should not be defined by YOU it is internal, define JETBYTE_PERF_FILE_READER_SKIP_COMPLETION_PORT_ON_SUCCESS instead
 #endif
 
 #ifdef JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO
-#error JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO should not be defined by YOU it's internal, define JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO instead
+#error JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO should not be defined by YOU it is internal, define JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO instead
 #endif
 
 #define JETBYTE_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO            JETBYTE_PERF_DATAGRAM_SOCKETS_LIMIT_IO_RECURSION_TO

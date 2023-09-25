@@ -206,6 +206,16 @@
 #define JETBYTE_COMPILER_NAME_W L"VS2022 (17.6)"
 #define JETBYTE_COMPILER_LONG_NAME_A "Visual Studio 2022 (17.6)"
 #define JETBYTE_COMPILER_LONG_NAME_W L"Visual Studio 2022 (17.6)"
+#elif (_MSC_VER == 1937)
+#define JETBYTE_COMPILER_NAME_A "VS2022 (17.7)"
+#define JETBYTE_COMPILER_NAME_W L"VS2022 (17.7)"
+#define JETBYTE_COMPILER_LONG_NAME_A "Visual Studio 2022 (17.7)"
+#define JETBYTE_COMPILER_LONG_NAME_W L"Visual Studio 2022 (17.7)"
+#elif (_MSC_VER == 1938)
+#define JETBYTE_COMPILER_NAME_A "VS2022 (17.8)"
+#define JETBYTE_COMPILER_NAME_W L"VS2022 (17.8)"
+#define JETBYTE_COMPILER_LONG_NAME_A "Visual Studio 2022 (17.8)"
+#define JETBYTE_COMPILER_LONG_NAME_W L"Visual Studio 2022 (17.8)"
 #elif (JETBYTE_ALLOW_UNTESTED_COMPILE_ENV == 0)
 #error Unsupported compiler. Define JETBYTE_ALLOW_UNTESTED_COMPILE_ENV to 1 to allow build
 // Note that you should contact JetByte Limited for code updates to allow the code to build

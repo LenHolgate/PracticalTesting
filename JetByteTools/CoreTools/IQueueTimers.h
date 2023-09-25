@@ -510,6 +510,14 @@ class IQueueTimers::Timer
 
       typedef IQueueTimers::UserData UserData;
 
+      Timer() = default;
+
+      Timer(
+         const Timer &rhs) = default;
+
+      Timer &operator=(
+         const Timer &rhs) = default;
+
       /// Called after the timer expires.
 
       virtual void OnTimer(
@@ -536,7 +544,7 @@ class IQueueTimers::RefCountedTimer : public Timer
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
-      virtual ~RefCountedTimer() = default;
+      ~RefCountedTimer() override = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

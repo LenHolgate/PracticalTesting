@@ -68,6 +68,9 @@ class CErrorCodeException : public CException
          const _tstring &where,
          DWORD errorCode);
 
+      CErrorCodeException(
+         const CErrorCodeException &rhs) = default;
+
       ~CErrorCodeException() override = default;
 
       virtual DWORD GetError() const;

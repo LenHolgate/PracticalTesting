@@ -120,6 +120,11 @@ class IWaitable
 
    protected :
 
+      IWaitable() = default;
+
+      IWaitable(
+         const IWaitable &rhs) = default;
+
       /// We never delete instances of this interface; you must manage the
       /// lifetime of the class that implements it.
 
