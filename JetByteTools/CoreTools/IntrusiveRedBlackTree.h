@@ -35,25 +35,18 @@
 
 #include "IntrusiveRedBlackTreeNode.h"
 
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1 || JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1 || JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-#include "DebugTrace.h"
-#include "tstring.h"
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1 && JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_WITH_TRACE_ENABLED == 1
-#define JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED 1
-#else
-#define JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED 0
-#endif
-
 #include "Exception.h"
+#include "ExceptionLeakPrevention.h"
 #include "ToString.h"
+#include "tstring.h"
+
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1 || JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+#include "DebugTrace.h"
+#endif
 
 #include <functional>      // for std::less<>
+#include <vector>
 
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#include "DebugTrace.h"
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
@@ -83,6 +76,18 @@ class TIntrusiveRedBlackTreeNodeIsBaseClass
          const CIntrusiveRedBlackTreeNode *pNode)
       {
          return const_cast<T*>(static_cast<const T*>(pNode));
+      }
+};
+
+template <class T, class TtoK>
+class TIntrusiveRedBlackTreeKeyIsSimpleToPrint
+{
+   public:
+
+      static _tstring GetKeyAsStringFromT(
+         const T *pT)
+      {
+         return ToString(TtoK::GetKeyFromT(pT));
       }
 };
 
@@ -118,11 +123,12 @@ class TIntrusiveRedBlackTreeNodeIsEmbeddedMember
 };
 
 template <
-   class T,                                                 // The type to store
-   class K,                                                 // The type of the key
-   class TtoK,                                              // Functions to access a key from a T
-   class Pr = std::less<K>,                                 // Predicate
-   class TtoN = TIntrusiveRedBlackTreeNodeIsBaseClass<T> >  // Functions to access the node from a T
+   class T,                                                          // The type to store
+   class K,                                                          // The type of the key
+   class TtoK,                                                       // Functions to access a key from a T
+   class Pr = std::less<K>,                                          // Predicate
+   class TtoN = TIntrusiveRedBlackTreeNodeIsBaseClass<T>,            // Functions to access the node from a T
+   class TtoKS = TIntrusiveRedBlackTreeKeyIsSimpleToPrint<T, TtoK> > // A function to convert the key into a printed version for dumping
 class TIntrusiveRedBlackTree
 {
    public :
@@ -143,6 +149,14 @@ class TIntrusiveRedBlackTree
       TIntrusiveRedBlackTree &operator=(
          const TIntrusiveRedBlackTree &rhs) = delete;
 
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+      void EnableValidation();
+      #endif
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ALLOW_UNCHECKED_ITERATORS == 1
+      void AllowUncheckedIterators();
+      #endif
+
       bool IsEmpty() const;
 
       size_t Size() const;
@@ -157,16 +171,36 @@ class TIntrusiveRedBlackTree
       Iterator Find(
          const K &key) const;
 
+      Iterator GetIteratorFromEntry(
+         const T &entry) const;
+
+      Iterator LowerBound(
+         const K &key) const;
+
+      //Iterator UpperBound(
+      //   const K &key) const;
+
       T *Remove(
          const K &key);
 
-      void Erase(
+      bool Erase(
          const Iterator &it);
 
-      void Erase(
+      bool Erase(
          const T *pDataToErase);
 
-      void Clear();
+      using ClearCallback = std::function<void(T *)>;
+
+      enum class ClearFlags : BYTE
+      {
+         Erase,
+         Fast,
+         FastAndDirty
+      };
+
+      void Clear(
+         ClearFlags flags = ClearFlags::Erase,
+         const ClearCallback &clearCallback = nullptr);
 
       static bool IsInTree(
          const CIntrusiveRedBlackTreeNode *pNode);
@@ -178,15 +212,18 @@ class TIntrusiveRedBlackTree
          const CIntrusiveRedBlackTreeNode *pSourceNode,
          CIntrusiveRedBlackTreeNode *pDestNode);
 
-      static void RemoveFromTree(
-         CIntrusiveRedBlackTreeNode *pNode);
-
       class Iterator
       {
          public :
 
+            typedef TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN, TtoKS> Tree;
+
             Iterator(
                const Iterator &rhs);
+
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+            bool IsValid() const;
+            #endif
 
             K Key() const;
 
@@ -200,6 +237,15 @@ class TIntrusiveRedBlackTree
                size_t value);
 
             Iterator operator+(
+               size_t value) const;
+
+            Iterator &operator--();    // prefix
+            Iterator operator--(int);  //postfix
+
+            Iterator &operator-=(
+               size_t value);
+
+            Iterator operator-(
                size_t value) const;
 
             bool operator==(const Iterator &rhs) const;
@@ -224,55 +270,70 @@ class TIntrusiveRedBlackTree
 
             Iterator();
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
             Iterator(
-               CIntrusiveRedBlackTreeNode *pNode,
-               const int depth);
-            #endif
-
-            explicit Iterator(
+               const Tree &tree,
                CIntrusiveRedBlackTreeNode *pNode);
 
             CIntrusiveRedBlackTreeNode *m_pNode;
 
-            enum NextMove
+            enum NextMove : BYTE
             {
                GoUp,
                GoRight
             };
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-            int m_depth;
-            #endif
-
             NextMove m_nextMove;
+
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+            const Tree *m_pTree;
+
+            size_t m_treeChangeNumber;
+            #endif
       };
 
       Iterator Begin() const;
 
+      Iterator RBegin() const;
+
       Iterator End() const;
 
-      typedef void (ValidateNodeFnc)(const T *pNode, ULONG_PTR userData);
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_VALIDATION == 1
+      using ValidateNodeFnc = void(const _tstring &callingFunction, const T *pNode, ULONG_PTR userData);
 
       void ValidateTree(
          ValidateNodeFnc *pValidateNodeFnc = nullptr,
          ULONG_PTR userData = 0) const;
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      static _tstring KeyAsString(
-         const CIntrusiveRedBlackTreeNode *pNode);
-
-      _tstring DumpTree() const;
+      void ValidateTree(
+         const _tstring &callingFunction,
+         ValidateNodeFnc *pValidateNodeFnc = nullptr,
+         ULONG_PTR userData = 0) const;
       #endif
 
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      static _tstring KeyAsString(
+         const CIntrusiveRedBlackTreeNode *pNode);
+      #endif
+
+      using DumpCallback = std::function<_tstring(const T *)>;
+
+      _tstring DumpTree(
+         bool printNodeAddresses = true,
+         bool allowIncorrectNodeCount = false,
+         const DumpCallback &dumpCallback = nullptr) const;
+
    private :
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      size_t GetCurrentChangeNumber() const;
+      #endif
 
       pairib InternalInsert(
          CIntrusiveRedBlackTreeNode *pNode,
          const K &newKey);
 
       void ReplaceNode(
-         CIntrusiveRedBlackTreeNode *pOldNode,
+         const CIntrusiveRedBlackTreeNode *pOldNode,
          CIntrusiveRedBlackTreeNode *pNewNode);
 
       void Rotate(
@@ -282,7 +343,7 @@ class TIntrusiveRedBlackTree
       void InsertRebalance(
          CIntrusiveRedBlackTreeNode *pNode);
 
-      void InternalErase(
+      bool InternalErase(
          CIntrusiveRedBlackTreeNode *pNode);
 
       void DeleteRebalance(
@@ -306,153 +367,292 @@ class TIntrusiveRedBlackTree
       typedef Pr key_compare;
       typedef TtoN node_accessor;
       typedef TtoK key_accessor;
+      typedef TtoKS key_printer;
 
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_VALIDATION == 1
       static int ValidateTree(
+         const _tstring &callingFunction,
          CIntrusiveRedBlackTreeNode *pRoot,
          ValidateNodeFnc *pValidateNodeFnc,
          ULONG_PTR userData);
+      #endif
 
       CIntrusiveRedBlackTreeNode *m_pRoot;
 
       size_t m_size;
 
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      size_t m_changeNumber;
+      #endif
+
       key_compare m_comp;
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       mutable bool m_isValid;
       #endif
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 0
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      _tstring m_previousDump;
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+      mutable std::deque<_tstring> m_previousOperations;
+      mutable _tstring m_previousDump;
+      #endif
+      bool m_validationEnabled;
+      #endif
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ALLOW_UNCHECKED_ITERATORS == 1
+      bool m_iteratorsAreChecked;
       #endif
       #endif
 };
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::TIntrusiveRedBlackTree()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::TIntrusiveRedBlackTree()
    :  m_pRoot(nullptr),
       m_size(0),
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      m_changeNumber(0),
+      #endif
       m_comp()
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       , m_isValid(true)
       #endif
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+      , m_validationEnabled(false)
+      #endif
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ALLOW_UNCHECKED_ITERATORS == 1
+      , m_iteratorsAreChecked(true)
+      #endif
+      #endif
 {
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::~TIntrusiveRedBlackTree()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::~TIntrusiveRedBlackTree()
 {
-   try
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+   if (m_isValid)
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
-      if (m_isValid)
-      {
-         Clear();
-      }
-      #else
       Clear();
-      #endif
    }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   #else
+   Clear();
+   #endif
 
    m_pRoot = nullptr;
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Clear()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Clear(
+   const ClearFlags flags,
+   const ClearCallback &clearCallback)
 {
-   Iterator it = Begin();
-
-   const Iterator end = End();
-
-   while (it != end)
+   if (flags != ClearFlags::FastAndDirty || clearCallback)        // have to iterate if callback supplied
    {
-      const Iterator next = it + 1;             // iterators are invalidated after erase
-                                                // so increment now
+      Iterator it = Begin();
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-      CIntrusiveRedBlackTreeNode *pNode = it.m_pNode;
-      #endif
+      const Iterator end = End();
 
-      Erase(it);
+      typedef std::vector<CIntrusiveRedBlackTreeNode *> Nodes;
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-      if (IsInTree(pNode))
+      Nodes nodes;
+
+      size_t i = 0;
+
+      if (flags == ClearFlags::Fast)
       {
-         throw CException(
-            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Clear()"),
-            _T("Removed node is still in the tree"));
+         nodes.resize(Size());
       }
-      #endif
 
-      it = next;
+      while (it != end)
+      {
+         CIntrusiveRedBlackTreeNode *pNode = it.m_pNode;
+
+         if (flags == ClearFlags::Erase)
+         {
+            Erase(it);
+
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+            if (IsInTree(pNode))
+            {
+               throw CException(
+                  _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Clear()"),
+                  _T("Removed node is still in the tree"));
+            }
+            #endif
+         }
+         else if (flags == ClearFlags::Fast)
+         {
+            nodes[i] = pNode;
+            ++i;
+         }
+
+         if (flags == ClearFlags::Erase)
+         {
+            it = Begin();              // iterators are invalidated after erase
+         }
+         else
+         {
+            ++it;
+         }
+
+         if (clearCallback)
+         {
+            clearCallback(node_accessor::GetTFromNode(pNode));
+         }
+      }
+
+      if (flags == ClearFlags::Fast)
+      {
+         for (auto *pNode : nodes)
+         {
+            pNode->ResetNode();
+         }
+      }
    }
+
+   if (flags != ClearFlags::Erase)
+   {
+      m_size = 0;
+
+      m_pRoot = nullptr;
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      ++m_changeNumber;
+      #endif
+   }
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+   if (m_validationEnabled)
+   {
+      m_previousOperations.emplace_back(_T("Clear"));
+   }
+   #endif
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::CreateIterator(
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+size_t TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GetCurrentChangeNumber() const
+{
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ALLOW_UNCHECKED_ITERATORS == 1
+   if (!m_iteratorsAreChecked)
+   {
+      return 0;
+   }
+   #endif
+
+   return m_changeNumber;
+}
+#endif
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::CreateIterator(
    const T *pItem) const
 {
-   return Iterator(node_accessor::GetNodeFromT(pItem));
+   return Iterator(*this, node_accessor::GetNodeFromT(pItem));
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::SwapNode(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::SwapNode(
    const CIntrusiveRedBlackTreeNode *pSourceNode,
    CIntrusiveRedBlackTreeNode *pDestNode)
 {
-   if (!pSourceNode->m_pParent)
+   CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pSourceNode);
+
+   if (!pParent)
    {
       m_pRoot = pDestNode;
    }
    else
    {
-      const int dir = (pSourceNode == pSourceNode->m_pParent->m_pLinks[1]);
+      const int dir = (pSourceNode == pParent->m_pLinks[1]);
 
-      pSourceNode->m_pParent->m_pLinks[dir] = pDestNode;
+      pParent->m_pLinks[dir] = pDestNode;
    }
 
+   // also copies red/black state in parent pointer...
    pDestNode->m_pParent = pSourceNode->m_pParent;
 
    if (pSourceNode->m_pLinks[0])
    {
-      pSourceNode->m_pLinks[0]->m_pParent = pDestNode;
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+      if (CIntrusiveRedBlackTreeNode::GetParent(pSourceNode->m_pLinks[0]) != pSourceNode)
+      {
+         throw CException(
+            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::SwapNode()"),
+            _T("Unexpected parent of child node"));
+      }
+      #endif
+
+      CIntrusiveRedBlackTreeNode::SetParent(pSourceNode->m_pLinks[0], pDestNode);
    }
 
    pDestNode->m_pLinks[0] = pSourceNode->m_pLinks[0];
 
    if (pSourceNode->m_pLinks[1])
    {
-      pSourceNode->m_pLinks[1]->m_pParent = pDestNode;
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+      if (CIntrusiveRedBlackTreeNode::GetParent(pSourceNode->m_pLinks[1]) != pSourceNode)
+      {
+         throw CException(
+            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::SwapNode()"),
+            _T("Unexpected parent of child node"));
+      }
+      #endif
+
+      CIntrusiveRedBlackTreeNode::SetParent(pSourceNode->m_pLinks[1], pDestNode);
    }
 
    pDestNode->m_pLinks[1] = pSourceNode->m_pLinks[1];
 
-   pDestNode->m_red = pSourceNode->m_red;
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+   if (m_validationEnabled)
+   {
+      m_previousOperations.emplace_back(_T("SwapNode: ") + PointerToString(pSourceNode) + _T(" -> ") + PointerToString(pDestNode));
+   }
+   #endif
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::IsEmpty() const
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::EnableValidation()
+{
+   m_validationEnabled = true;
+}
+#endif
+
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ALLOW_UNCHECKED_ITERATORS == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::AllowUncheckedIterators()
+{
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   m_iteratorsAreChecked = false;
+   #endif
+}
+#endif
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::IsEmpty() const
 {
    return m_size == 0;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-size_t TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Size() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+size_t TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Size() const
 {
    return m_size;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Find(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Find(
    const K &key) const
 {
    CIntrusiveRedBlackTreeNode *pIt = m_pRoot;
-
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   int depth = 0;
-   #endif
 
    while (pIt)
    {
@@ -466,47 +666,110 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTr
       }
 
       pIt = pIt->m_pLinks[dir];
-
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      depth++;
-      #endif
    }
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   return Iterator(pIt, depth);
-   #else
-   return Iterator(pIt);
-   #endif
+   return Iterator(*this, pIt);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ReplaceNode(
-   CIntrusiveRedBlackTreeNode *pOldNode,
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GetIteratorFromEntry(
+   const T &entry) const
+{
+   CIntrusiveRedBlackTreeNode *pNode = node_accessor::GetNodeFromT(&entry);
+
+   if (IsInTree(pNode))
+   {
+      return Iterator(*this, pNode);
+   }
+
+   return End();
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::LowerBound(
+   const K &key) const
+{
+   // Returns an iterator pointing to the first element in the container which is not considered to go before val (i.e., either it is equivalent or goes after).
+
+   CIntrusiveRedBlackTreeNode *pIt = m_pRoot;
+
+   while (pIt)
+   {
+      const K currentKey = key_accessor::GetKeyFromT(node_accessor::GetTFromNode(pIt));
+
+      //const auto keyString = key_printer::GetKeyAsStringFromT(node_accessor::GetTFromNode(pIt));
+
+      const int dir = m_comp(currentKey, key);
+
+      if (!dir && !m_comp(key, currentKey))    // !(a < b) && !(b < a) = (a==b)
+      {
+         break;
+      }
+
+      if (!pIt->m_pLinks[dir])
+      {
+         if (dir)                // (currentKey < key)
+         {
+            auto result = Iterator(*this, pIt);
+
+            ++result;
+
+            return result;
+         }
+
+         break;
+      }
+
+      pIt = pIt->m_pLinks[dir];
+   }
+
+   return Iterator(*this, pIt);
+}
+
+//template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+//typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::UpperBound(
+//   const K &key) const
+//{
+//   // Not implemented - upper bound is harder than lower bound, and we don't currently need it
+//}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ReplaceNode(
+   const CIntrusiveRedBlackTreeNode *pOldNode,
    CIntrusiveRedBlackTreeNode *pNewNode)
 {
-   if (!pOldNode->m_pParent)
+   CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pOldNode);
+
+   if (!pParent)
    {
       m_pRoot = pNewNode;
    }
    else
    {
-      const int dir = (pOldNode == pOldNode->m_pParent->m_pLinks[1]);
+      const int dir = (pOldNode == pParent->m_pLinks[1]);
 
-      pOldNode->m_pParent->m_pLinks[dir] = pNewNode;
+      pParent->m_pLinks[dir] = pNewNode;
    }
 
    if (pNewNode)
    {
-      pNewNode->m_pParent = pOldNode->m_pParent;
+      CIntrusiveRedBlackTreeNode::SetParent(pNewNode, pParent);
    }
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+   if (m_validationEnabled)
+   {
+      m_previousOperations.emplace_back(_T("ReplaceNode: ") + PointerToString(pOldNode) + _T(" -> ") + PointerToString(pNewNode));
+   }
+   #endif
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Rotate(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Rotate(
    CIntrusiveRedBlackTreeNode *pNode,
    const int dir)
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
    const _tstring direction = (!dir ? _T(" left") : _T(" right"));
    OutputEx(_T("Rotate: ") + KeyAsString(pNode) + direction);
    #endif
@@ -519,152 +782,142 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Rotate(
 
    if (pTemp->m_pLinks[dir])
    {
-      pTemp->m_pLinks[dir]->m_pParent = pNode;
+      CIntrusiveRedBlackTreeNode::SetParent(pTemp->m_pLinks[dir], pNode);
    }
 
    pTemp->m_pLinks[dir] = pNode;
-   pNode->m_pParent = pTemp;
+   CIntrusiveRedBlackTreeNode::SetParent(pNode, pTemp);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::IsInTree(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::IsInTree(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   return !pNode->m_red || pNode->m_pParent || pNode->m_pLinks[0] || pNode->m_pLinks[1];
+   //return !CIntrusiveRedBlackTreeNode::IsRed(pNode) || CIntrusiveRedBlackTreeNode::GetParent(pNode) || pNode->m_pLinks[0] || pNode->m_pLinks[1];
+   return pNode->IsActive();
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::IsBlack(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::IsBlack(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   return pNode ? !pNode->m_red : true;
+   return pNode ? !CIntrusiveRedBlackTreeNode::IsRed(pNode) : true;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::IsRed(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::IsRed(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   return pNode ? pNode->m_red : false;
+   return pNode ? CIntrusiveRedBlackTreeNode::IsRed(pNode) : false;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Sibling(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Sibling(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
    if (!pNode)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Sibling()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Sibling()"),
          _T("pNode is null"));
    }
    #endif
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-   if (!pNode->m_pParent)
+   const CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+   if (!pParent)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Sibling()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Sibling()"),
          _T("pNode->m_pParent is null"));
    }
    #endif
 
-   const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+   const int dir = (pNode == pParent->m_pLinks[1]);
 
-   return pNode->m_pParent->m_pLinks[!dir];
+   return pParent->m_pLinks[!dir];
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Uncle(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Uncle(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+   const CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
    if (!pNode)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Uncle()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Uncle()"),
          _T("pNode is null"));
    }
 
-   if (!pNode->m_pParent)
+   if (!pParent)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Uncle()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Uncle()"),
          _T("pNode->m_pParent is null"));
    }
 
-   if (!pNode->m_pParent->m_pParent)
+   if (!CIntrusiveRedBlackTreeNode::GetParent(pParent))
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Uncle()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Uncle()"),
          _T("pNode->m_pParent->m_pParent is null"));
    }
    #endif
 
-   return Sibling(pNode->m_pParent);
+   return Sibling(pParent);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::GrandParent(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+CIntrusiveRedBlackTreeNode *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GrandParent(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+   const CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
    if (!pNode)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::GrandParent()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GrandParent()"),
          _T("pNode is null"));
    }
 
-   if (!pNode->m_pParent)
+   if (!pParent)
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::GrandParent()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GrandParent()"),
          _T("pNode->m_pParent is null"));
    }
 
-   if (!pNode->m_pParent->m_pParent)
+   if (!CIntrusiveRedBlackTreeNode::GetParent(pParent))
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::GrandParent()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::GrandParent()"),
          _T("pNode->m_pParent->m_pParent is null"));
    }
    #endif
 
-   return pNode->m_pParent->m_pParent;
+   return CIntrusiveRedBlackTreeNode::GetParent(pParent);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::RemoveFromTree(
-   CIntrusiveRedBlackTreeNode *pNode)
-{
-   if (!pNode)
-   {
-      throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::RemoveFromTree()"),
-         _T("pNode is null"));
-   }
-
-   pNode->m_pParent = nullptr;
-   pNode->m_pLinks[0] = nullptr;
-   pNode->m_pLinks[1] = nullptr;
-   pNode->m_red = true;
-}
-
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert(
    const T *pItemToInsert)
 {
    if (!pItemToInsert)
    {
-      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert()"), _T("Node is null"));
+      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert()"), _T("Node is null"));
    }
 
    CIntrusiveRedBlackTreeNode *pNode = node_accessor::GetNodeFromT(pItemToInsert);
 
    if (IsInTree(pNode))
    {
-      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert()"), _T("Node is already in a tree"));
+      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert()"), _T("Node is already in a tree"));
    }
 
    K key = K();
@@ -684,41 +937,55 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
    return InternalInsert(pNode, key);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert(
    const T *pItemToInsert,
    const K &key)
 {
    if (!pItemToInsert)
    {
-      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert()"), _T("Node is null"));
+      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert()"), _T("Node is null"));
+   }
+
+   if (key != key_accessor::GetKeyFromT(pItemToInsert))
+   {
+      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert()"), _T("Supplied key is not the same as extracted key"));
    }
 
    CIntrusiveRedBlackTreeNode *pNode = node_accessor::GetNodeFromT(pItemToInsert);
 
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
    if (IsInTree(pNode))
    {
-      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Insert()"), _T("Node is already in a tree"));
+      throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Insert()"), _T("Node is already in a tree"));
    }
+   #endif
 
    return InternalInsert(pNode, key);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalInsert(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::pairib TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::InternalInsert(
    CIntrusiveRedBlackTreeNode *pNode,
    const K &newKey)
 {
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   int depth = 0;
-   #endif
-
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
    if (!IsRed(pNode))
    {
       throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalInsert()"),
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::InternalInsert()"),
          _T("Unexpected node state"));
+   }
+   #endif
+
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+   if (m_validationEnabled)
+   {
+      ValidateTree(_T("InternalInsert-pre - ") + PointerToString(pNode));
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+      m_previousDump = DumpTree();
+      #endif
    }
    #endif
 
@@ -738,7 +1005,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
    }
    else
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
       OutputEx(_T("Insert: ") + ToString(newKey));
       #endif
 
@@ -751,7 +1018,7 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
 
          const int dir = m_comp(currentKey, newKey);
 
-         if (dir == 0 && !m_comp(newKey,currentKey))
+         if (dir == 0 && !m_comp(newKey, currentKey))
          {
             // We have found the key in the tree already, return an iterator
             // to the node we found.
@@ -760,17 +1027,14 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
          }
          else
          {
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-            depth++;
-            #endif
-
             if (!pIt->m_pLinks[dir])
             {
                // Insert the new node here
 
                pIt->m_pLinks[dir] = pNode;
 
-               pNode->m_pParent = pIt;
+               CIntrusiveRedBlackTreeNode::SetParent(pNode, pIt);
+               CIntrusiveRedBlackTreeNode::MakeRed(pNode);           // stay red...
 
                pIt = pNode;
 
@@ -792,82 +1056,86 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::pairib TIntrusiveRedBlackTree
       // when tree dumping is enabled the tree walks and validations are
       // successful during rebalancing.
 
-      m_pRoot->m_red = false;
+      CIntrusiveRedBlackTreeNode::MakeBlack(m_pRoot);
+
       m_size++;
 
       if (m_size > 1)
       {
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Rebalance: ") + KeyAsString(pIt));
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
          OutputEx(DumpTree());
-         #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-         m_previousDump = DumpTree();
          #endif
          #endif
 
          InsertRebalance(pIt);
 
-         m_pRoot->m_red = false;
+         CIntrusiveRedBlackTreeNode::MakeBlack(m_pRoot);
       }
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
       OutputEx(_T("Insert done"));
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
       OutputEx(DumpTree());
-      #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_previousDump = DumpTree();
       #endif
       #endif
 
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
-      ValidateTree();
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+      if (m_validationEnabled)
+      {
+         ValidateTree(_T("InternalInsert-post - ") + PointerToString(pNode));
+
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+         m_previousDump = DumpTree();
+         #endif
+      }
+      #endif
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      ++m_changeNumber;
       #endif
    }
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   return pairib(Iterator(pNode, depth), inserted);
-   #else
-   return pairib(Iterator(pNode), inserted);
-   #endif
+   return pairib(Iterator(*this, pNode), inserted);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::InsertRebalance(
    CIntrusiveRedBlackTreeNode *pNode)
 {
    bool done = false;
 
    while (!done)
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
       OutputEx(_T("Rebalancing: ") + KeyAsString(pNode));
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
       OutputEx(DumpTree());
-      #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_previousDump = DumpTree();
       #endif
       #endif
 
-      if (!pNode->m_pParent)
+      CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+      if (!pParent)
       {
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Parent is null: ") + KeyAsString(pNode));
          #endif
 
-         pNode->m_red = false;                 // insert case 1
+         CIntrusiveRedBlackTreeNode::MakeBlack(pNode);                 // insert case 1
 
          done = true;
       }
       else
       {
-         if (IsBlack(pNode->m_pParent))
+         if (IsBlack(pParent))
          {
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-            if (pNode->m_pParent)
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            if (pParent)
             {
                OutputEx(_T("Parent is black: ") + KeyAsString(pNode) +
-                  _T(" P: ") + KeyAsString(pNode->m_pParent));
+                  _T(" P: ") + KeyAsString(pParent));
             }
             else
             {
@@ -883,35 +1151,40 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
          {
             if (IsRed(Uncle(pNode)))
             {
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                OutputEx(_T("Uncle is red: ") + KeyAsString(pNode));
                #endif
 
                // insert case 3
 
-               pNode->m_pParent->m_red = false;
-               Uncle(pNode)->m_red = false;
-               GrandParent(pNode)->m_red = true;
+               CIntrusiveRedBlackTreeNode::MakeBlack(pParent);
+               CIntrusiveRedBlackTreeNode::MakeBlack(Uncle(pNode));
 
-               pNode = GrandParent(pNode);
+               CIntrusiveRedBlackTreeNode *pGrandParent = CIntrusiveRedBlackTreeNode::GetParent(pParent);
+
+               CIntrusiveRedBlackTreeNode::MakeRed(pGrandParent);
+
+               pNode = pGrandParent;
 
                // back to case 1
             }
             else
             {
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                OutputEx(_T("Case 4: ") + KeyAsString(pNode));
                #endif
 
                // insert case 4
 
-               int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+               CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
 
-               int parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]);
+               int dir = (pNode == pParent->m_pLinks[1]);
+
+               int parentDir = (pParent == GrandParent(pNode)->m_pLinks[1]);
 
                if (dir != parentDir)
                {
-                  Rotate(pNode->m_pParent, !dir);
+                  Rotate(pParent, !dir);
 
                   pNode = pNode->m_pLinks[!dir];
                }
@@ -919,22 +1192,27 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
                // fall through to case 5
                // insert case 5
 
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+               CIntrusiveRedBlackTreeNode *pGrandParent = CIntrusiveRedBlackTreeNode::GetParent(pParent);
+
+               #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                OutputEx(_T("Case 5: ") + KeyAsString(pNode));
                #endif
 
-               pNode->m_pParent->m_red = false;
-               GrandParent(pNode)->m_red = true;
+               CIntrusiveRedBlackTreeNode::MakeBlack(pParent);
+
+               CIntrusiveRedBlackTreeNode::MakeRed(pGrandParent);
 
                // These two may have changed if we moved pNode in case 4...
 
-               dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+               dir = (pNode == pParent->m_pLinks[1]);
 
-               parentDir = (pNode->m_pParent == GrandParent(pNode)->m_pLinks[1]);
+               parentDir = (pParent == pGrandParent->m_pLinks[1]);
 
                if (dir == parentDir)
                {
-                  Rotate(GrandParent(pNode), !dir);
+                  Rotate(pGrandParent, !dir);
                }
 
                done = true;
@@ -944,8 +1222,8 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InsertRebalance(
    }
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-T *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Remove(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+T *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Remove(
    const K &key)
 {
    T *pData = nullptr;
@@ -962,38 +1240,45 @@ T *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Remove(
    return pData;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Erase(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Erase(
    const Iterator &it)
 {
-   InternalErase(it.m_pNode);
+   return InternalErase(it.m_pNode);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Erase(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Erase(
    const T *pDataToErase)
 {
-   InternalErase(node_accessor::GetNodeFromT(pDataToErase));
+   return InternalErase(node_accessor::GetNodeFromT(pDataToErase));
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::InternalErase(
    CIntrusiveRedBlackTreeNode *pNode)
 {
+   bool erased = false;
+
    if (pNode && IsInTree(pNode))
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+      if (m_validationEnabled)
+      {
+         m_previousOperations.emplace_back(_T("InternalErase-pre - ") + PointerToString(pNode));
+      }
+      #endif
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
       OutputEx(_T("Erase: ") + KeyAsString(pNode));
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
       OutputEx(DumpTree());
-      #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_previousDump = DumpTree();
       #endif
       #endif
 
       if (pNode->m_pLinks[0] && pNode->m_pLinks[1])
       {
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Two children: ") + KeyAsString(pNode));
          #endif
 
@@ -1012,28 +1297,29 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
             pPrev = pPrev->m_pLinks[1];
          }
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Prev: ") + KeyAsString(pPrev));
          #endif
 
-         const bool prevIsRed = pPrev->m_red;
+         const bool prevIsRed = CIntrusiveRedBlackTreeNode::IsRed(pPrev);
 
-         pPrev->m_red = pNode->m_red;
-         pNode->m_red = prevIsRed;
+         CIntrusiveRedBlackTreeNode::CopyColour(pPrev, pNode);
 
-         // splice our right sub-tree (which must exist as we have two children)
-         // on to the prev node (which can't have a right sub-tree of its own as
+         CIntrusiveRedBlackTreeNode::SetColourAs(pNode, prevIsRed);
+
+         // splice our right subtree (which must exist as we have two children)
+         // on to the prev node (which can't have a right subtree of its own as
          // we are the node which would appear on its right)
 
          pPrev->m_pLinks[1] = pNode->m_pLinks[1];
-         pPrev->m_pLinks[1]->m_pParent = pPrev;
+         CIntrusiveRedBlackTreeNode::SetParent(pPrev->m_pLinks[1], pPrev);
          pNode->m_pLinks[1] = nullptr;
 
          // swap our parent with our prev node's parent
 
-         CIntrusiveRedBlackTreeNode *pPrevParent = pPrev->m_pParent;
+         CIntrusiveRedBlackTreeNode *pPrevParent = CIntrusiveRedBlackTreeNode::GetParent(pPrev);
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Prev Parent: ") + KeyAsString(pPrevParent));
          #endif
 
@@ -1041,31 +1327,33 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
          // might be us. We might not have a parent as we might
          // be the root of the tree.
 
-         if (pNode->m_pParent)
-         {
-            const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+         CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
 
-            pNode->m_pParent->m_pLinks[dir] = pPrev;
+         if (pParent)
+         {
+            const int dir = (pNode == pParent->m_pLinks[1]);
+
+            pParent->m_pLinks[dir] = pPrev;
          }
          else
          {
             m_pRoot = pPrev;
          }
 
-         pPrev->m_pParent = pNode->m_pParent;
+         CIntrusiveRedBlackTreeNode::SetParent(pPrev, pParent);
 
          if (pPrevParent == pNode)
          {
             // we are the prev node's parent...
             // it can only be our left node
 
-            pNode->m_pParent = pPrev;
+            CIntrusiveRedBlackTreeNode::SetParent(pNode, pPrev);
 
             pNode->m_pLinks[0] = pPrev->m_pLinks[0];
 
             if (pNode->m_pLinks[0])
             {
-               pNode->m_pLinks[0]->m_pParent = pNode;
+               CIntrusiveRedBlackTreeNode::SetParent(pNode->m_pLinks[0], pNode);
             }
 
             pPrev->m_pLinks[0] = pNode;
@@ -1074,21 +1362,21 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
          {
             const int dir = (pPrev == pPrevParent->m_pLinks[1]);
 
-            pNode->m_pParent = pPrevParent;
+            CIntrusiveRedBlackTreeNode::SetParent(pNode, pPrevParent);
             pPrevParent->m_pLinks[dir] = pNode;
 
-            // swap our left sub-tree with our prev node
+            // swap our left subtree with our prev node
 
             CIntrusiveRedBlackTreeNode *pPrevLeft = pPrev->m_pLinks[0];
 
             pPrev->m_pLinks[0] = pNode->m_pLinks[0];
-            pPrev->m_pLinks[0]->m_pParent = pPrev;
+            CIntrusiveRedBlackTreeNode::SetParent(pPrev->m_pLinks[0], pPrev);
 
             pNode->m_pLinks[0] = pPrevLeft;
 
             if (pNode->m_pLinks[0])
             {
-               pNode->m_pLinks[0]->m_pParent = pNode;
+               CIntrusiveRedBlackTreeNode::SetParent(pNode->m_pLinks[0], pNode);
             }
          }
       }
@@ -1099,7 +1387,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
 
       if (IsBlack(pNode))
       {
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          if (pChild)
          {
             OutputEx(_T("Rebalance: ") + KeyAsString(pNode) + _T(" Child: ") + KeyAsString(pChild));
@@ -1108,21 +1396,19 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
          {
             OutputEx(_T("Rebalance: ") + KeyAsString(pNode));
          }
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
          OutputEx(DumpTree());
-         #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-         m_previousDump = DumpTree();
          #endif
          #endif
 
-         pNode->m_red = IsRed(pChild);
+         CIntrusiveRedBlackTreeNode::SetColourAs(pNode, IsRed(pChild));
 
          DeleteRebalance(pNode);
       }
 
       ReplaceNode(pNode, pChild);
 
-      RemoveFromTree(pNode);
+      pNode->ResetNode();
 
       m_size--;
 
@@ -1130,24 +1416,47 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::InternalErase(
 
       if (m_pRoot)
       {
-         m_pRoot->m_red = false;
+         CIntrusiveRedBlackTreeNode::MakeBlack(m_pRoot);
       }
+
+      erased = true;
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      ++m_changeNumber;
+      #endif
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+      if (IsInTree(pNode))
+      {
+         throw CException(
+            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::InternalErase()"),
+            _T("Node is still in tree after erase"));
+      }
+      #endif
    }
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
    OutputEx(_T("Remove complete:"));
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
    OutputEx(DumpTree());
    #endif
    #endif
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
-   ValidateTree();
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
+   if (m_validationEnabled)
+   {
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION_GENERATE_OPERATION_TRACE == 1
+      m_previousOperations.emplace_back(_T("InternalErase-post - ") + PointerToString(pNode));
+      #endif
+      ValidateTree();
+   }
    #endif
+
+   return erased;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::DeleteRebalance(
    CIntrusiveRedBlackTreeNode *pNode)
 {
    try
@@ -1158,20 +1467,20 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
       {
          done = true;
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Rebalancing: ") + KeyAsString(pNode));
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 1
          OutputEx(DumpTree());
-         #elif JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-         m_previousDump = DumpTree();
          #endif
          #endif
 
-         if (!pNode->m_pParent)
+         CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+         if (!pParent)
          {
             // delete case 1
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(_T("Parent is null: ") + KeyAsString(pNode));
             #endif
 
@@ -1180,79 +1489,82 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
 
          CIntrusiveRedBlackTreeNode *pSibling = Sibling(pNode);
 
-         if (IsRed(pSibling))
+         if (pSibling && IsRed(pSibling))
          {
             // delete case 2
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(_T("Case 2: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
             #endif
 
-            pNode->m_pParent->m_red = true;
-            pSibling->m_red = false;
+            CIntrusiveRedBlackTreeNode::MakeRed(pParent);
+            CIntrusiveRedBlackTreeNode::MakeBlack(pSibling);
 
-            const int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+            const int dir = (pNode == pParent->m_pLinks[1]);
 
-            Rotate(pNode->m_pParent, dir);
+            Rotate(pParent, dir);
 
             pSibling = Sibling(pNode);
          }
 
-         if (IsBlack(pNode->m_pParent) &&
+         pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+         if (pSibling &&
+             IsBlack(pParent) &&
              IsBlack(pSibling) &&
              IsBlack(pSibling->m_pLinks[0]) &&
              IsBlack(pSibling->m_pLinks[1]))
          {
             // delete case 3
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(_T("Case 3: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
             #endif
 
-            pSibling->m_red = true;
+            CIntrusiveRedBlackTreeNode::MakeRed(pSibling);
 
             // back to case 1
 
-            pNode = pNode->m_pParent;
+            pNode = pParent;
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(_T("Back to case 1: ") + KeyAsString(pNode));
             #endif
 
             done = false;
          }
-         else
+         else if (pSibling)
          {
-            if (IsRed(pNode->m_pParent) &&
+            if (IsRed(pParent) &&
                 IsBlack(pSibling) &&
                 IsBlack(pSibling->m_pLinks[0]) &&
                 IsBlack(pSibling->m_pLinks[1]))
             {
                // delete case 4
 
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+               #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                OutputEx(_T("Case 4: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
                #endif
 
-               pSibling->m_red = true;
-               pNode->m_pParent->m_red = false;
+               CIntrusiveRedBlackTreeNode::MakeRed(pSibling);
+               CIntrusiveRedBlackTreeNode::MakeBlack(pParent);
             }
             else
             {
                // delete case 5
 
-               int dir = (pNode == pNode->m_pParent->m_pLinks[1]);
+               int dir = (pNode == pParent->m_pLinks[1]);
 
                if (IsBlack(pSibling) &&
                    IsRed(pSibling->m_pLinks[dir]) &&
                    IsBlack(pSibling->m_pLinks[!dir]))
                {
-                  #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+                  #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
                   OutputEx(_T("Case 5: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
                   #endif
 
-                  pSibling->m_red = true;
-                  pSibling->m_pLinks[dir]->m_red = false;
+                  CIntrusiveRedBlackTreeNode::MakeRed(pSibling);
+                  CIntrusiveRedBlackTreeNode::MakeBlack(pSibling->m_pLinks[dir]);
                   Rotate(pSibling, !dir);
 
                   pSibling = Sibling(pNode);
@@ -1260,36 +1572,41 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
 
                // fall through to case 6
 
-               // delete case 6
-
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-               OutputEx(_T("Case 6: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
-               #endif
-
-               pSibling->m_red = pNode->m_pParent->m_red;
-               pNode->m_pParent->m_red = false;
-
-               dir = (pNode == pNode->m_pParent->m_pLinks[1]);
-
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-               if (!IsRed(pSibling->m_pLinks[!dir]))
+               if (pSibling)
                {
-                  throw CException(
-                     _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance()"),
-                     _T("Unexpected tree state"));
+                  // delete case 6
+
+                  #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+                  OutputEx(_T("Case 6: ") + KeyAsString(pNode) + _T(" Sibling: ") + KeyAsString(pSibling));
+                  #endif
+
+                  pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+                  CIntrusiveRedBlackTreeNode::CopyColour(pSibling, pParent);
+                  CIntrusiveRedBlackTreeNode::MakeBlack(pParent);
+
+                  dir = (pNode == pParent->m_pLinks[1]);
+
+                  #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
+                  if (!IsRed(pSibling->m_pLinks[!dir]))
+                  {
+                     throw CException(
+                        _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::DeleteRebalance()"),
+                        _T("Unexpected tree state"));
+                  }
+                  #endif
+
+                  CIntrusiveRedBlackTreeNode::MakeBlack(pSibling->m_pLinks[!dir]);
+
+                  Rotate(pParent, dir);
                }
-               #endif
-
-               pSibling->m_pLinks[!dir]->m_red = false;
-
-               Rotate(pNode->m_pParent, dir);
             }
          }
       }
    }
    catch (...)
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       m_isValid = false;
       #endif
 
@@ -1297,86 +1614,208 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DeleteRebalance(
    }
 }
 
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-
-template <class T, class K, class TtoK, class Pr, class TtoN>
-_tstring TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::KeyAsString(
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+_tstring TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::KeyAsString(
    const CIntrusiveRedBlackTreeNode *pNode)
 {
    return ToString(key_accessor::GetKeyFromT(node_accessor::GetTFromNode(pNode)));
 }
+#endif
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-_tstring TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DumpTree() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+_tstring TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::DumpTree(
+   const bool printNodeAddresses,
+   const bool allowIncorrectNodeCount,
+   const DumpCallback &dumpCallback) const
 {
    _tstring result;
 
-   size_t i = 0;
+   size_t numNodes = 0;
 
-   for (Iterator it = Begin(), end = End(); it != end; ++it, ++i)
+   size_t depth = 0;
+
+   // We can't use iterators here as we need to track the depth in the tree and this means that
+   // all iterators are invalid after an erase, and we don't want that.
+   // So, instead, we're doing a manual walk of the tree...
+
+   CIntrusiveRedBlackTreeNode *pNode = m_pRoot;
+
+   // 1) go as far left as possible
+
+   while (pNode)
    {
-      const _tstring colour = it.m_pNode ? (it.m_pNode->m_red ? _T("r") : _T("b")) : _T("*");
-
-      const K key = key_accessor::GetKeyFromT(*it);
-
-      // actually need a 'toString' on the key accessor
-
-      result += ToString(key) + _T("(") + ToString(it.m_depth) + _T(", ") + colour + _T("), ");
-
-      if (i > m_size)
+      if (pNode->m_pLinks[0])
       {
-         const _tstring message = _T("Dump of tree does not contain the right number of nodes: expected: ") + ToString(m_size) + _T(" got at least: ") + ToString(i);
+         pNode = pNode->m_pLinks[0];
+         ++depth;
+      }
+      else
+      {
+         break;
+      }
+   }
 
+   // now iterate
+
+   typename Iterator::NextMove nextMove = Iterator::NextMove::GoRight;
+
+   while (pNode)
+   {
+      // process this node...
+
+      const _tstring colour = pNode ? (IsRed(pNode) ? _T("r") : _T("b")) : _T("*");
+
+      const T *pT = node_accessor::GetTFromNode(pNode);
+
+      _tstring nodeDetails;
+
+      if (dumpCallback)
+      {
+         nodeDetails = dumpCallback(pT);
+      }
+
+      if (printNodeAddresses)
+      {
+         result += PointerToString(pNode) + _T(" - ");
+      }
+
+      result += _T("K[") + key_printer::GetKeyAsStringFromT(pT) + _T("]") + nodeDetails + _T("(") + ToString(depth) + _T(", ") + colour + _T("), ");
+
+      ++numNodes;
+
+      if (numNodes > m_size)
+      {
+         const _tstring message = _T("Dump of tree does not contain the right number of nodes: expected: ") + ToString(m_size) + _T(" got at least: ") + ToString(numNodes);
+
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(message);
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 0
-         OutputEx(_T("Tree before last operation"));
-         OutputEx(m_previousDump);
-         OutputEx(_T("Tree now"));
+         OutputEx(result);
          #endif
 
-         OutputEx(result);
+         if (!allowIncorrectNodeCount)
+         {
+            throw CException(
+               _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::DumpTree()"),
+               message);
+         }
+      }
 
+      // step to next node
+
+      if (nextMove == Iterator::NextMove::GoRight)
+      {
+         if (pNode->m_pLinks[1])
+         {
+            // If we can go right, do so
+
+            pNode = pNode->m_pLinks[1];
+            ++depth;
+
+            //  and then go as far left as we can
+
+            if (pNode->m_pLinks[0])
+            {
+               while (pNode->m_pLinks[0])
+               {
+                  pNode = pNode->m_pLinks[0];
+                  ++depth;
+               }
+            }
+
+            continue;
+         }
+
+         nextMove = Iterator::NextMove::GoUp;
+      }
+
+      if (nextMove == Iterator::NextMove::GoUp)
+      {
+         if (CIntrusiveRedBlackTreeNode::GetParent(pNode))
+         {
+            while (pNode &&
+                   CIntrusiveRedBlackTreeNode::GetParent(pNode) &&
+                   nextMove == Iterator::NextMove::GoUp)
+            {
+               auto *pParent = CIntrusiveRedBlackTreeNode::GetParent(pNode);
+
+               if (pNode == pParent->m_pLinks[0])
+               {
+                  // coming up from left
+
+                  nextMove = Iterator::NextMove::GoRight;
+               }
+
+               pNode = pParent;
+               --depth;
+            }
+
+            if (pNode && nextMove == Iterator::NextMove::GoUp)
+            {
+               pNode = nullptr;
+            }
+
+            continue;
+         }
+      }
+
+      pNode = nullptr;
+   }
+
+   if (numNodes != m_size)
+   {
+      const _tstring message = _T("Dump of tree does not contain the right number of nodes: expected: ") + ToString(m_size) + _T(" got: ") + ToString(numNodes);
+
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+      OutputEx(message);
+
+      OutputEx(result);
+      #endif
+
+      if (!allowIncorrectNodeCount)
+      {
          throw CException(
-            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DumpTree()"),
+            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::DumpTree()"),
             message);
       }
    }
 
-   if (i != m_size)
-   {
-      const _tstring message = _T("Dump of tree does not contain the right number of nodes: expected: ") + ToString(m_size) + _T(" got at least: ") + ToString(i);
-
-      OutputEx(message);
-
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 0
-      OutputEx(_T("Tree before last operation"));
-      OutputEx(m_previousDump);
-      OutputEx(_T("Tree now"));
-      #endif
-
-      OutputEx(result);
-
-      throw CException(
-         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::DumpTree()"),
-         message);
-   }
-
    return result;
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // ValidateTree
 ///////////////////////////////////////////////////////////////////////////////
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_VALIDATION == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree(
+   ValidateNodeFnc *pValidateNodeFnc,
+   const ULONG_PTR userData) const
+{
+   ValidateTree(_T("ValidateTree()"), pValidateNodeFnc, userData);
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree(
+   const _tstring &callingFunction,
    ValidateNodeFnc *pValidateNodeFnc,
    const ULONG_PTR userData) const
 {
    try
    {
+      if (!IsBlack(m_pRoot))
+      {
+         const _tstring message = callingFunction + _T(" - Root must be black");
+
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         OutputEx(message);
+         #endif
+
+         throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"), message);
+      }
+
       // First walk the tree in order and make sure we dont get any loops
 
       size_t i = 0;
@@ -1385,45 +1824,39 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
       {
          if (i > m_size)
          {
-            const _tstring message = _T("A walk of the tree does not contain the right number of nodes: expected:") + ToString(m_size) + _T(" got at least: ") + ToString(i);
+            const _tstring message = callingFunction + _T(" - A walk of the tree does not contain the right number of nodes: expected:") + ToString(m_size) + _T(" got at least: ") + ToString(i);
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(message);
             #endif
 
             throw CException(
-               _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"),
+               _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"),
                message);
          }
       }
 
       if (i != m_size)
       {
-         const _tstring message = _T("A walk of the tree does not contain the right number of nodes: expected:") + ToString(m_size) + _T(" got: ") + ToString(i);
+         const _tstring message = callingFunction + _T(" - A walk of the tree does not contain the right number of nodes: expected:") + ToString(m_size) + _T(" got: ") + ToString(i);
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(message);
          #endif
 
          throw CException(
-            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"),
+            _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"),
             message);
       }
 
       try
       {
-         (void)ValidateTree(m_pRoot, pValidateNodeFnc, userData);
+         (void)ValidateTree(callingFunction, m_pRoot, pValidateNodeFnc, userData);
       }
       catch (...)
       {
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
+         #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
          OutputEx(_T("Exception during tree validation"));
-
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ON_TRACE_ENABLED == 0
-         OutputEx(_T("Tree before last operation"));
-         OutputEx(m_previousDump);
-         OutputEx(_T("Tree now"));
-         #endif
          OutputEx(DumpTree());
          #endif
 
@@ -1432,7 +1865,7 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
    }
    catch (...)
    {
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
       m_isValid = false;
       #endif
 
@@ -1440,8 +1873,9 @@ void TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
    }
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree(
+   const _tstring &callingFunction,
    CIntrusiveRedBlackTreeNode *pRoot,
    ValidateNodeFnc *pValidateNodeFnc,
    ULONG_PTR userData)
@@ -1463,24 +1897,24 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
          if (IsRed(pLeftNode) ||
              IsRed(pRightNode))
          {
-            const _tstring message = _T("Red violation");
+            const _tstring message = callingFunction + _T(" - Red violation");
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(message);
             #endif
 
-            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"), message);
+            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"), message);
          }
       }
 
       if (pValidateNodeFnc)
       {
-         pValidateNodeFnc(node_accessor::GetTFromNode(pRoot), userData);
+         pValidateNodeFnc(callingFunction, node_accessor::GetTFromNode(pRoot), userData);
       }
 
-      const int leftHeight = ValidateTree(pLeftNode, pValidateNodeFnc, userData);
+      const int leftHeight = ValidateTree(callingFunction, pLeftNode, pValidateNodeFnc, userData);
 
-      const int rightHeight = ValidateTree(pRightNode, pValidateNodeFnc, userData);
+      const int rightHeight = ValidateTree(callingFunction, pRightNode, pValidateNodeFnc, userData);
 
       // Invalid binary search tree
 
@@ -1492,13 +1926,13 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
          if (comp(rootKey, leftKey))
          {
-            const _tstring message = _T("Binary tree violation");
+            const _tstring message = callingFunction + _T(" - Binary tree violation");
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(message);
             #endif
 
-            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"), message);
+            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"), message);
          }
       }
 
@@ -1508,13 +1942,13 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
          if (comp(rightKey, rootKey))
          {
-            const _tstring message = _T("Binary tree violation");
+            const _tstring message = callingFunction + _T(" - Binary tree violation");
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(message);
             #endif
 
-            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"), message);
+            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"), message);
          }
       }
 
@@ -1522,13 +1956,13 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
       if (leftHeight != 0 && rightHeight != 0 && leftHeight != rightHeight)
       {
-            const _tstring message = _T("Black violation");
+            const _tstring message = callingFunction + _T(" - Black violation");
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
+            #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
             OutputEx(message);
             #endif
 
-            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree()"), message);
+            throw CException(_T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::ValidateTree()"), message);
       }
 
       // Only count black links
@@ -1541,25 +1975,18 @@ int TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::ValidateTree(
 
    return 0;
 }
+#endif
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Begin() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Begin() const
 {
    CIntrusiveRedBlackTreeNode *pNode = m_pRoot;
-
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   int depth = 0;
-   #endif
 
    while (pNode)
    {
       if (pNode->m_pLinks[0])
       {
          pNode = pNode->m_pLinks[0];
-
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-         depth++;
-         #endif
       }
       else
       {
@@ -1567,89 +1994,118 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTr
       }
    }
 
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   return Iterator(pNode, depth);
-   #else
-   return Iterator(pNode);
-   #endif
+   return Iterator(*this, pNode);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::End() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::RBegin() const
+{
+   CIntrusiveRedBlackTreeNode *pNode = m_pRoot;
+
+   while (pNode)
+   {
+      if (pNode->m_pLinks[1])
+      {
+         pNode = pNode->m_pLinks[1];
+      }
+      else
+      {
+         break;
+      }
+   }
+
+   return Iterator(*this, pNode);
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::End() const
 {
    return Iterator();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator
+// TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator
 ///////////////////////////////////////////////////////////////////////////////
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::Iterator()
    :  m_pNode(nullptr),
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_depth(0),
-      #endif
       m_nextMove(GoRight)
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      , m_pTree(nullptr),
+      m_treeChangeNumber(0)
+      #endif
 {
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-K TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Key() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+K TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::Key() const
 {
    return key_accessor::GetKeyFromT(node_accessor::GetTFromNode(m_pNode));
 }
 
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator(
-   CIntrusiveRedBlackTreeNode *pNode,
-   const int depth)
-   :  m_pNode(pNode),
-      m_depth(pNode ? depth : 0),
-      m_nextMove(GoRight)
-{
-}
-#endif
-
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::Iterator(
+   const Tree &tree,
    CIntrusiveRedBlackTreeNode *pNode)
    :  m_pNode(pNode),
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_depth(0),
-#endif
       m_nextMove(GoRight)
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      , m_pTree(&tree),
+      m_treeChangeNumber(tree.GetCurrentChangeNumber())
+      #endif
 {
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION != 1
+   (void)tree;
+   #endif
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::Iterator(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::Iterator(
    const Iterator &rhs)
    :  m_pNode(rhs.m_pNode),
-      #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-      m_depth(rhs.m_depth),
-      #endif
       m_nextMove(rhs.m_nextMove)
+      #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+      , m_pTree(rhs.m_pTree),
+      m_treeChangeNumber(rhs.m_treeChangeNumber)
+      #endif
 {
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator=(
+#if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::IsValid() const
+{
+   return m_pTree && m_pTree->GetCurrentChangeNumber() == m_treeChangeNumber;
+}
+#endif
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator=(
    const Iterator &rhs)
 {
    m_pNode = rhs.m_pNode;
-   #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-   m_depth = rhs.m_depth;
-   #endif
    m_nextMove = rhs.m_nextMove;
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   m_pTree = rhs.m_pTree;
+   m_treeChangeNumber = rhs.m_treeChangeNumber;
+   #endif
 
    return *this;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator++()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator++()
 {
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator++()"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
    if (!m_pNode)
    {
       return *this;
@@ -1657,27 +2113,19 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
 
    if (m_nextMove == GoRight)
    {
-      if (m_pNode->m_pLinks[1])
+      if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[1])
       {
          // If we can go right, do so
 
          m_pNode = m_pNode->m_pLinks[1];
 
-         #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-         m_depth++;
-         #endif
-
          //  and then go as far left as we can
 
-         if (m_pNode->m_pLinks[0])
+         if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[0])
          {
-            while (m_pNode->m_pLinks[0])
+            while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[0])
             {
                m_pNode = m_pNode->m_pLinks[0];
-
-               #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-               m_depth++;
-               #endif
             }
          }
 
@@ -1689,34 +2137,25 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
 
    if (m_nextMove == GoUp)
    {
-      if (m_pNode->m_pParent)
+      if (CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(m_pNode))
       {
-         while (m_pNode &&
-                m_pNode->m_pParent &&
+         while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) &&
+                pParent &&
                 m_nextMove == GoUp)
          {
-            if (m_pNode == m_pNode->m_pParent->m_pLinks[0])
+            if (m_pNode == pParent->m_pLinks[0])
             {
                // coming up from left
 
                m_nextMove = GoRight;
             }
 
-            m_pNode = m_pNode->m_pParent;
+            m_pNode = pParent;
 
-            #if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-            m_depth--;
-
-            if (m_depth < 0)
-            {
-               throw CException(
-                  _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator++()"),
-                  _T("Invalid tree, depth has gone negative"));
-            }
-            #endif
+            pParent = CIntrusiveRedBlackTreeNode::GetParent(m_pNode);
          }
 
-         if (m_pNode && m_nextMove == GoUp)
+         if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) && m_nextMove == GoUp)
          {
             m_pNode = nullptr;
             m_nextMove = GoRight;
@@ -1732,9 +2171,18 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
    return *this;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator++(int)
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator++(int)
 {
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator++(int)"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
    Iterator result(*this);
 
    this->operator++();
@@ -1742,13 +2190,13 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTr
    return result;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator+=(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator &TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator+=(
    const size_t value)
 {
    size_t added = 0;
 
-   while (m_pNode && added != value)
+   while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) && added != value)
    {
       operator++();
 
@@ -1758,10 +2206,19 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator &TIntrusiveRedBlackT
    return *this;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator+(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator+(
    const size_t value) const
 {
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator+()"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
    Iterator result = *this;
 
    result += value;
@@ -1769,40 +2226,172 @@ typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator TIntrusiveRedBlackTr
    return result;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator==(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator &TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator::operator--()
+{
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator--()"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
+   if (!CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode))
+   {
+      return *this;
+   }
+
+   if (m_nextMove == GoRight)             // This is inverted in here....
+   {
+      if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[0])
+      {
+         // If we can go left, do so
+
+         m_pNode = CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[0];
+
+         //  and then go as far right as we can
+
+         if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[1])
+         {
+            while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[1])
+            {
+               m_pNode = CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode)->m_pLinks[1];
+            }
+         }
+
+         return *this;
+      }
+
+      m_nextMove = GoUp;
+   }
+
+   if (m_nextMove == GoUp)
+   {
+      if (CIntrusiveRedBlackTreeNode *pParent = CIntrusiveRedBlackTreeNode::GetParent(m_pNode))
+      {
+         while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) &&
+            pParent &&
+            m_nextMove == GoUp)
+         {
+            if (m_pNode == pParent->m_pLinks[1])
+            {
+               // coming up from right
+
+               m_nextMove = GoRight;
+            }
+
+            m_pNode = pParent;
+
+            pParent = CIntrusiveRedBlackTreeNode::GetParent(m_pNode);
+         }
+
+         if (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) && m_nextMove == GoUp)
+         {
+            m_pNode = nullptr;
+            m_nextMove = GoRight;
+         }
+
+         return *this;
+      }
+   }
+
+   m_pNode = nullptr;
+   m_nextMove = GoRight;
+
+   return *this;
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator::operator--(int)
+{
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator--()"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
+   Iterator result(*this);
+
+   this->operator--();
+
+   return result;
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator &TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator::operator-=(
+   const size_t value)
+{
+   size_t subtracted = 0;
+
+   while (CIntrusiveRedBlackTreeNode::GetCleanNode(m_pNode) && subtracted != value)
+   {
+      operator--();
+
+      subtracted++;
+   }
+
+   return *this;
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN,TtoKS>::Iterator::operator-(
+   const size_t value) const
+{
+   #if JETBYTE_CORE_INTRUSIVE_RED_BLACK_TREE_ENABLE_ITERATOR_VALIDATION == 1
+   if (!IsValid())
+   {
+      throw CException(
+         _T("TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator-()"),
+         _T("Iterator is not valid"));
+   }
+   #endif
+
+   Iterator result = *this;
+
+   result -= value;
+
+   return result;
+}
+
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator==(
    const Iterator &rhs) const
 {
    return m_pNode == rhs.m_pNode && m_nextMove == rhs.m_nextMove;
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator!=(
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+bool TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator!=(
    const Iterator &rhs) const
 {
    return !(*this == rhs);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator *()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator *()
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator *() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator *() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator ->()
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator ->()
 {
    return node_accessor::GetTFromNode(m_pNode);
 }
 
-template <class T, class K, class TtoK, class Pr, class TtoN>
-const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN>::Iterator::operator ->() const
+template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS>
+const typename TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::value_type *TIntrusiveRedBlackTree<T,K,TtoK,Pr,TtoN,TtoKS>::Iterator::operator ->() const
 {
    return node_accessor::GetTFromNode(m_pNode);
 }

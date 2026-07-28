@@ -46,31 +46,31 @@ namespace Win32 {
 /// A simple exception class to replace Win32 error returns.
 /// \ingroup Exceptions
 
-class CWin32Exception : public Core::CErrorCodeException
+class CWin32Exception : public JetByteTools::Core::CErrorCodeException
 {
    public :
 
       CWin32Exception(
-         const Core::_tstring &where,
+         const JetByteTools::Core::_tstring &where,
          DWORD error);
 
       CWin32Exception(
-         const Core::_tstring &where,
+         const JetByteTools::Core::_tstring &where,
          HMODULE hModule,
          DWORD error);
 
       CWin32Exception(
-         const Core::_tstring &where,
-         const Core::_tstring &message);
+         const JetByteTools::Core::_tstring &where,
+         const JetByteTools::Core::_tstring &message);
 
       CWin32Exception(
-         const Core::_tstring &where,
-         const Core::_tstring &message,
+         const JetByteTools::Core::_tstring &where,
+         const JetByteTools::Core::_tstring &message,
          DWORD error);
 
       CWin32Exception(
-         const Core::_tstring &where,
-         const Core::_tstring &message,
+         const JetByteTools::Core::_tstring &where,
+         const JetByteTools::Core::_tstring &message,
          HMODULE hModule,
          DWORD error);
 };

@@ -34,9 +34,11 @@
 #include "IListenToThreadNaming.h"
 #include "IListenToThreadStart.h"
 #include "IListenToThreadStop.h"
-#include "Exception.h"
 #include "LockableObject.h"
 #include "ToString.h"
+#include "ErrorCodeToErrorMessage.h"
+#include "ThreadLocalStorage.h"
+#include "DebugTrace.h"
 
 #pragma hdrstop
 
@@ -74,9 +76,32 @@ typedef std::deque<IListenToThreadStop *> ThreadStopListeners;
 
 static ThreadStopListeners s_threadStopListeners;
 
+static bool s_threadPrimaryProcessorGroupIsSet = false;
+
+static WORD s_threadPrimaryProcessorGroup = 0;
+
+static DWORD_PTR s_threadAffinityMask = 0;
+
+static CThreadLocalStorage s_tls;
+
 ///////////////////////////////////////////////////////////////////////////////
-// CThread
+// CThreadBase
 ///////////////////////////////////////////////////////////////////////////////
+
+void CThreadBase::SetAsFrameworkThread()
+{
+   s_tls.SetValue(1);
+}
+
+void CThreadBase::SetAsNonFrameworkThread()
+{
+   s_tls.SetValue(static_cast<DWORD>(0));
+}
+
+bool CThreadBase::IsFrameworkThread()
+{
+   return s_tls.GetValueAsDWORD() == 1;
+}
 
 void CThreadBase::SetThreadName(
    const _tstring &threadID,
@@ -180,10 +205,17 @@ void CThreadBase::RemoveThreadStopListener(
    }
 }
 
-void CThreadBase::NotifyThreadStartListeners()
+void CThreadBase::NotifyThreadStartListeners(
+   const _tstring &threadID)
 {
+   (void)threadID;
+
    try
    {
+      SetThreadAfinityMaskForThisThreadIfNecessary();
+
+      SetAsFrameworkThread();
+
       CLockableObject::Owner lock(s_lock);
 
       for (auto *pListener : s_threadStartListeners)
@@ -216,6 +248,84 @@ void CThreadBase::NotifyThreadStopListeners()
    catch(...)
    {
    }
+}
+
+void CThreadBase::SetPrimaryProcessorGroupForAllThreads(
+   WORD group)
+{
+   s_threadPrimaryProcessorGroup = group;
+
+   s_threadPrimaryProcessorGroupIsSet = true;
+}
+
+void CThreadBase::SetThreadAfinityMaskForAllThreads(
+   const DWORD_PTR affinityMask)
+{
+   s_threadAffinityMask = affinityMask;
+
+   SetThreadAfinityMaskForThisThreadIfNecessary();
+}
+
+DWORD_PTR CThreadBase::GetThreadAfinityMaskForAllThreads()
+{
+   return s_threadAffinityMask;
+}
+
+bool CThreadBase::ThreadAfinityMaskHasBeenSetForAllThreads()
+{
+   return s_threadAffinityMask != 0;
+}
+
+void CThreadBase::SetThreadAfinityMaskForThisThreadIfNecessary()
+{
+#ifdef JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM
+#if (_WIN32_WINNT < 0x0601)
+#error _WIN32_WINNT >= 0x0601 required for SetThreadGroupAffinity
+#endif
+   if (s_threadAffinityMask)
+   {
+      if (s_threadPrimaryProcessorGroupIsSet)
+      {
+         GROUP_AFFINITY affinity{};
+
+         affinity.Group = s_threadPrimaryProcessorGroup;
+
+         affinity.Mask = s_threadAffinityMask;
+
+         GROUP_AFFINITY previousAffinity{};
+
+         if (SetThreadGroupAffinity(GetCurrentThread(), &affinity, &previousAffinity))
+         {
+            OutputEx(_T("SetThreadGroupAffinity to: Group: ") + 
+               ToString(s_threadPrimaryProcessorGroup) + _T(" Mask: ") + PointerToString(reinterpret_cast<void*>(s_threadAffinityMask)) +
+               _T(" from Group: ") + ToString(previousAffinity.Group) + _T(" Mask: ") + PointerToString(reinterpret_cast<void*>(previousAffinity.Mask)));
+         }
+         else
+         {
+            const DWORD lastError = GetLastError();
+
+            OutputEx(_T("Failed to SetThreadGroupAffinity to: Group: ") + 
+               ToString(s_threadPrimaryProcessorGroup) + _T(" Mask: ") + PointerToString(reinterpret_cast<void*>(s_threadAffinityMask)) +
+               _T(" - ") + ErrorCodeToErrorMessage(lastError));
+         }
+      }
+      else
+      {
+         const DWORD_PTR previousAffinity = SetThreadAffinityMask(GetCurrentThread(), s_threadAffinityMask);
+
+         if (previousAffinity)
+         {
+            OutputEx(_T("SetThreadAffinityMask to: ") + PointerToString(reinterpret_cast<void*>(s_threadAffinityMask)) + _T(" from: ") + PointerToString(reinterpret_cast<void*>(previousAffinity)));
+         }
+         else
+         {
+            const DWORD lastError = GetLastError();
+
+            OutputEx(_T("Failed to SetThreadAffinityMask to: ") + PointerToString(reinterpret_cast<void*>(s_threadAffinityMask)) + _T(" - ") + ErrorCodeToErrorMessage(lastError));
+         }
+      }
+   }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

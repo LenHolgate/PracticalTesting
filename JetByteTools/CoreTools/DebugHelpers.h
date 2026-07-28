@@ -27,8 +27,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Windows.h>
-#include <debugapi.h>
+#include "JetByteTools/Admin/Platform.h"
+
+#ifdef JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM
+#include "JetByteTools/CoreTools/Windows/DebugHelpers.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: DebugHelpers.h

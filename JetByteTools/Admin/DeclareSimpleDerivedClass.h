@@ -27,10 +27,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Platform.h"
-
-#include "Alignment.h"
-
 #ifdef DECLARE_DERIVED_CLASS
 #undef DECLARE_DERIVED_CLASS
 #endif
@@ -71,6 +67,55 @@ class _Derived : public _Base       \
          _ArgType arg)              \
          :  _Base(                  \
                arg)                 \
+      {                             \
+      }                             \
+}
+
+#ifdef DECLARE_DERIVED_CLASS_TWO_ARG_AND_DEFAULT_CTOR
+#undef DECLARE_DERIVED_CLASS_TWO_ARG_AND_DEFAULT_CTOR
+#endif
+
+#define DECLARE_DERIVED_CLASS_TWO_ARG_AND_DEFAULT_CTOR(_Derived, _Arg1of1Type, _Arg2of1Type, _Base) \
+class _Derived : public _Base       \
+{                                   \
+   public :                         \
+                                    \
+      _Derived() = default;         \
+                                    \
+      explicit _Derived(            \
+         _Arg1of1Type arg1,         \
+         _Arg2of1Type arg2)         \
+         :  _Base(                  \
+               arg1,                \
+               arg2)                \
+      {                             \
+      }                             \
+}
+
+#ifdef DECLARE_DERIVED_CLASS_ONE_ARG_TWO_ARG_AND_DEFAULT_CTOR
+#undef DECLARE_DERIVED_CLASS_ONE_ARG_TWO_ARG_AND_DEFAULT_CTOR
+#endif
+
+#define DECLARE_DERIVED_CLASS_ONE_ARG_TWO_ARG_AND_DEFAULT_CTOR(_Derived, _ArgType1of1Type, _ArgType1of2Type, _ArgType2of2Type, _Base) \
+class _Derived : public _Base       \
+{                                   \
+   public :                         \
+                                    \
+      _Derived() = default;         \
+                                    \
+      explicit _Derived(            \
+         _ArgType1of1Type arg1)     \
+         :  _Base(                  \
+               arg1)                \
+      {                             \
+      }                             \
+                                    \
+      _Derived(                     \
+         _ArgType1of1Type arg1,     \
+         _ArgType2of2Type arg2)     \
+         :  _Base(                  \
+               arg1,                \
+               arg2)                \
       {                             \
       }                             \
 }

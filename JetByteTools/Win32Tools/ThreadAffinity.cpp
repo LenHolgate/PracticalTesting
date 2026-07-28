@@ -32,7 +32,7 @@
 #include "Win32Exception.h"
 
 #include "JetByteTools/CoreTools/ToString.h"
-#include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -88,16 +88,16 @@ CThreadAffinity::CThreadAffinity(
 
 CThreadAffinity::~CThreadAffinity()
 {
-   try
-   {
-      if (m_previousThreadAffinity != 0)
-      {
-         const DWORD_PTR previousMask = SetThreadAffinity(m_hThread, UseAffinityMask, m_previousThreadAffinity);
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
-         (void)previousMask;
-      }
+   if (m_previousThreadAffinity != 0)
+   {
+      const DWORD_PTR previousMask = SetThreadAffinity(m_hThread, UseAffinityMask, m_previousThreadAffinity);
+
+      (void)previousMask;
    }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 ///////////////////////////////////////////////////////////////////////////////

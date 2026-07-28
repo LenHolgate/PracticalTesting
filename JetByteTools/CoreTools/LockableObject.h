@@ -37,7 +37,9 @@
 #if defined(JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM)
 DECLARE_CORE_DERIVED_TEMPLATE_CLASS_1(TLockableObject, Base, Windows);
 DECLARE_CORE_DERIVED_CLASS(CLockableObject, Windows);
+#if (JETBYTE_CORE_DEPRECATE_SLIM_LOCKABLE_OBJECT == 0)
 DECLARE_CORE_DERIVED_CLASS(CSlimLockableObject, Windows);
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

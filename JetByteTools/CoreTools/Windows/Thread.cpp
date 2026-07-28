@@ -27,18 +27,36 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/Admin/Admin.h"
+#include "JetByteTools/Admin/StdCall.h"
 
 #include "Thread.h"
 
+#include "JetByteTools/CoreTools/Types.h"
 #include "JetByteTools/CoreTools/IRunnable.h"
 #include "JetByteTools/CoreTools/StringConverter.h"
 #include "JetByteTools/CoreTools/PerThreadErrorHandler.h"
 #include "JetByteTools/CoreTools/ToString.h"
 #include "JetByteTools/CoreTools/ErrorCodeException.h"
 
+#include "JetByteTools/Win32Tools/LibraryLoader.h"
+
 #pragma hdrstop
 
 #include <process.h>
+
+///////////////////////////////////////////////////////////////////////////////
+// Typedefs
+///////////////////////////////////////////////////////////////////////////////
+
+using SetThreadDescriptionFnc = HRESULT STDCALL(HANDLE, PCWSTR);
+
+///////////////////////////////////////////////////////////////////////////////
+// File level statics
+///////////////////////////////////////////////////////////////////////////////
+
+static JetByteTools::Win32::CLibraryLoader s_libraryLoader(_T("KernelBase.dll"), false);
+
+static SetThreadDescriptionFnc *s_pSetThreadDescription = reinterpret_cast<SetThreadDescriptionFnc *>(s_libraryLoader.GetOptionalProcAddress(_T("SetThreadDescription")));
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core::Windows
@@ -96,14 +114,14 @@ bool CThread::IsRunning() const
 
 void CThread::Start()
 {
-   CLockableObject::Owner lock(m_lock);
-
-   InternalStart(false);
+   Start(EmptyString);
 }
 
-void CThread::InternalStart(
-   const bool startSuspended)
+void CThread::Start(
+   const _tstring &threadName)
 {
+   CLockableObject::Owner lock(m_lock);
+
    if (!IsRunning())
    {
       const uintptr_t result = _beginthreadex(
@@ -111,7 +129,7 @@ void CThread::InternalStart(
          0,
          ThreadFunction,
          reinterpret_cast<void*>(this),
-         startSuspended,
+         CREATE_SUSPENDED,
          reinterpret_cast<unsigned int*>(&m_threadID));
 
       if (result == 0)
@@ -120,6 +138,16 @@ void CThread::InternalStart(
       }
 
       m_hThread = reinterpret_cast<HANDLE>(result);
+
+      if (!threadName.empty())
+      {
+         SetThreadName(m_hThread, m_threadID, threadName);
+      }
+
+      if (static_cast<DWORD>(-1) == ResumeThread(m_hThread))
+      {
+         throw CErrorCodeException(_T("CThread::Start() - ResumeThread"), GetLastError());
+      }
    }
    else
    {
@@ -148,7 +176,7 @@ unsigned int __stdcall CThread::ThreadFunction(
 {
    unsigned int result = 0;
 
-   auto* pThis = static_cast<CThread*>(pV);
+   const auto* pThis = static_cast<CThread*>(pV);
 
    if (pThis)
    {
@@ -158,16 +186,16 @@ unsigned int __stdcall CThread::ThreadFunction(
 
       try
       {
-         pThis->NotifyThreadStartListeners();
+         CThreadBase::NotifyThreadStartListeners(ToString(GetCurrentThreadId()));
 
          result = pThis->m_runnable.Run();
       }
-      JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
+      catch (...)
       {
          result = 666;
       }
 
-      pThis->NotifyThreadStopListeners();
+      CThreadBase::NotifyThreadStopListeners();
    }
 
    return result;
@@ -182,7 +210,7 @@ void CThread::SetThreadName(
 
    if (IsRunning())
    {
-      SetThreadName(m_threadID, threadName);
+      SetThreadName(m_hThread, m_threadID, threadName);
    }
    else
    {
@@ -193,16 +221,37 @@ void CThread::SetThreadName(
 void CThread::SetCurrentThreadName(
    const _tstring &threadName)
 {
-   SetThreadName(CThreadNameInfo::CurrentThreadID, threadName);
+   SetThreadName(INVALID_HANDLE_VALUE, CThreadNameInfo::CurrentThreadID, threadName);
 }
 
 void CThread::SetThreadName(
+   HANDLE hThread,
    ThreadId threadID,
    const _tstring &threadName)
 {
-   const std::string narrowString = CStringConverter::TtoA(threadName);
+   bool hasBeenSet = false;
 
-   CThreadNameInfo::SetThreadName(threadID, narrowString);
+   if (s_pSetThreadDescription)
+   {
+      if (hThread == INVALID_HANDLE_VALUE)
+      {
+         hThread = GetCurrentThread();
+      }
+
+      const HRESULT hr = s_pSetThreadDescription(hThread, CStringConverter::TtoW(threadName).c_str());
+
+      if (SUCCEEDED(hr))
+      {
+         hasBeenSet = true;
+      }
+   }
+
+   if (!hasBeenSet)
+   {
+      const std::string narrowString = CStringConverter::TtoA(threadName);
+
+      CThreadNameInfo::SetThreadName(threadID, narrowString);
+   }
 
    if (threadID == CThreadNameInfo::CurrentThreadID)
    {
@@ -222,6 +271,11 @@ bool CThread::IsThisThread() const
    }
 
    return isThisThread;
+}
+
+ThreadId CThread::GetThreadId() const
+{
+   return m_threadID;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

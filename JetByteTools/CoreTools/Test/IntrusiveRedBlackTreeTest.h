@@ -67,13 +67,23 @@ class CIntrusiveRedBlackTreeTest
       static void TestInsertWithIncorrectExplicitKey();
       static void TestInsertDuplicate();
       static void TestFind();
+      static void TestLowerBound();
+      static void TestLowerBoundAgain();
+      static void TestUpperBound();
       static void TestBigInsertInOrder();
       static void TestBigInsertReverseOrder();
       static void TestDestructDoesNotHarmNodes();
       static void TestRemove();
       static void TestRemoveNodeNotPresent();
       static void TestForwardIterate();
+      static void TestRBegin();
       static void TestReverseIterate();
+      static void TestClear();
+      static void TestClearWithCallback();
+      static void TestFastClear();
+      static void TestFastClearWithCallback();
+      static void TestFastAndDirtyClear();
+      static void TestFastAndDirtyClearWithCallback();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

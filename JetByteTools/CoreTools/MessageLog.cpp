@@ -30,6 +30,8 @@
 
 #include "MessageLog.h"
 #include "NullMessageLog.h"
+#include "DebugTrace.h"
+#include "ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -70,7 +72,17 @@ CMessageLog::CMessageLog(
 
 CMessageLog::~CMessageLog()
 {
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
    m_pLog = nullptr;
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
+}
+
+bool CMessageLog::IsThisLog(
+   const ILogMessages &log) const
+{
+   return m_pLog == &log;
 }
 
 ILogMessages *CMessageLog::SetLog(

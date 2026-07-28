@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/GlobalErrorHandler.h"
 #endif
 
-DECLARE_DERIVED_CLASS_FOR_WINDOWS(CGlobalErrorHandler);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS_SINGLE_ARG_AND_DEFAULT_CTOR(CGlobalErrorHandler, CGlobalErrorHandler::OperatingSystemErrorReporting);
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: GlobalErrorHandler.h

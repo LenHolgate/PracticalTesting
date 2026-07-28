@@ -140,11 +140,10 @@ static HANDLE Create(
    SECURITY_ATTRIBUTES *pEventAttributes,
    const LPCTSTR lpName)
 {
-   static const bool notUsedWhenConnecting = false;
+   static constexpr bool notUsedWhenConnecting = false;
 
    return Create(pEventAttributes, notUsedWhenConnecting, notUsedWhenConnecting, lpName, CEvent::ConnectToExisting);
 }
-
 
 static HANDLE Create(
    SECURITY_ATTRIBUTES *pEventAttributes,

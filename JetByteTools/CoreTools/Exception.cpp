@@ -29,8 +29,14 @@
 #include "JetByteTools/Admin/Admin.h"
 
 #include "Exception.h"
-
+#include "ExceptionLeakPrevention.h"
 #include "StringConverter.h"
+
+#if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+#include "NullExceptionCreationMonitor.h"
+#include "ThreadLocalBoolToggle.h"
+#include "DebugTrace.h"
+#endif
 
 #pragma hdrstop
 
@@ -41,21 +47,95 @@
 namespace JetByteTools {
 namespace Core {
 
+#if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+
+///////////////////////////////////////////////////////////////////////////////
+// CRAIIToggle
+///////////////////////////////////////////////////////////////////////////////
+
+class CRAIIToggle
+{
+   public :
+
+      explicit CRAIIToggle(
+         CThreadLocalBoolToggle &value)
+         :  m_value(value),
+            m_toggled(false)
+      {
+      }
+
+      CRAIIToggle(
+         const CRAIIToggle &rhs) = delete;
+
+      ~CRAIIToggle()
+      {
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+         if (m_toggled)
+         {
+            m_value = false;
+         }
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
+      }
+
+      bool ToggleIfFalse()
+      {
+         if (!m_toggled)
+         {
+            m_toggled = m_value.ToggleIfFalse();
+
+            return m_toggled;
+         }
+
+         return false;
+      }
+
+      CRAIIToggle &operator=(
+         const CRAIIToggle &rhs) = delete;
+
+   private :
+
+      CThreadLocalBoolToggle &m_value;
+
+      bool m_toggled;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// File level statics
+///////////////////////////////////////////////////////////////////////////////
+
+static CNullExceptionCreationMonitor s_nullExceptionMonitor;
+
+static IMonitorExceptionCreation *s_pExceptionMonitor = &s_nullExceptionMonitor;
+
+static CThreadLocalBoolToggle s_callingMonitor(false);
+
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // CException
 ///////////////////////////////////////////////////////////////////////////////
+
+#if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+void CException::SetExceptionMonitor(
+   IMonitorExceptionCreation &monitor)
+{
+   s_pExceptionMonitor = &monitor;
+}
+
+void CException::ClearExceptionMonitor()
+{
+   s_pExceptionMonitor = &s_nullExceptionMonitor;
+}
+#endif
 
 #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
 CException::CException(
    const std::string &where,
    const std::string &message)
-   :  m_where(CStringConverter::AtoT(where)),
-      m_message(CStringConverter::AtoT(message)),
-      m_details(m_where + _T(" - ") + m_message)
+   :  CException(CStringConverter::AtoT(where), CStringConverter::AtoT(message))
 {
-#if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
-   CaptureStackBackTrace(m_stack);
-#endif
 }
 #endif
 
@@ -66,6 +146,19 @@ CException::CException(
       m_message(message),
       m_details(m_where + _T(" - ") + m_message)
 {
+   #if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+
+   CRAIIToggle toggle(s_callingMonitor);
+
+   if (toggle.ToggleIfFalse())
+   {
+      s_pExceptionMonitor->OnExceptionCreated();
+   }
+   #endif
+
+   #if (JETBYTE_EXCEPTION_STACK_TRACES == 1)
+   CaptureStackBackTrace(m_stack);
+   #endif
 }
 
 _tstring CException::GetWhere() const

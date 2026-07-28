@@ -28,6 +28,7 @@
 
 #include "JetByteTools/Admin/Admin.h"
 
+#include "Types.h"
 #include "ToString.h"
 #include "Exception.h"
 #include "Printf.h"
@@ -54,7 +55,7 @@ namespace Core {
 // Static helper functions
 ///////////////////////////////////////////////////////////////////////////////
 
-enum DumpType
+enum DumpType : BYTE
 {
    HexDump     = 0x01,
    Printable   = 0x10,
@@ -196,7 +197,7 @@ wstring ToStringW(
 
 
 template <typename T>
-constexpr size_t SpaceRequiredForType(
+static constexpr size_t SpaceRequiredForType(
    const T & /*notUsed*/)
 {
 #if _MSC_VER < 1910
@@ -219,7 +220,7 @@ constexpr size_t SpaceRequiredForType(
 string ToStringA(
    const unsigned int val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -234,7 +235,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned int val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -249,7 +250,7 @@ wstring ToStringW(
 string ToStringA(
    const signed int val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -264,7 +265,7 @@ string ToStringA(
 wstring ToStringW(
    const signed int val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -279,7 +280,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned short val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -294,7 +295,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned short val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -309,7 +310,7 @@ wstring ToStringW(
 string ToStringA(
    const signed short val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -324,7 +325,7 @@ string ToStringA(
 wstring ToStringW(
    const signed short val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -339,7 +340,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -354,7 +355,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -369,7 +370,7 @@ wstring ToStringW(
 string ToStringA(
    const signed long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -384,7 +385,7 @@ string ToStringA(
 wstring ToStringW(
    const signed long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -399,7 +400,7 @@ wstring ToStringW(
 string ToStringA(
    const unsigned long long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -414,7 +415,7 @@ string ToStringA(
 wstring ToStringW(
    const unsigned long long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -429,7 +430,7 @@ wstring ToStringW(
 string ToStringA(
    const signed long long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    char buffer[bufferSize];
 
@@ -444,7 +445,7 @@ string ToStringA(
 wstring ToStringW(
    const signed long long val)
 {
-   const size_t bufferSize = SpaceRequiredForType(val);
+   constexpr size_t bufferSize = SpaceRequiredForType(val);
 
    wchar_t buffer[bufferSize];
 
@@ -468,7 +469,7 @@ wstring ToStringW(
    return ToStringW(static_cast<const double>(val));
 }
 
-inline unsigned short ValidatePrecision(
+static unsigned short ValidatePrecision(
    unsigned short precision)
 {
    if (precision == 0)
@@ -497,9 +498,9 @@ string ToStringA(
    const double val,
    unsigned short precision)
 {
-   const size_t bufferSize = 256 + 1 + 1;
+   constexpr size_t bufferSize = 256 + 1 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    precision = ValidatePrecision(precision);
 
@@ -515,9 +516,9 @@ wstring ToStringW(
    const double val,
    unsigned short precision)
 {
-   const size_t bufferSize = 256 + 1 + 1;
+   constexpr size_t bufferSize = 256 + 1 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    precision = ValidatePrecision(precision);
 
@@ -533,9 +534,9 @@ string ToStringA(
    const long double val,
    unsigned short precision)
 {
-   const size_t bufferSize = 256 + 1 + 1;
+   constexpr size_t bufferSize = 256 + 1 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    precision = ValidatePrecision(precision);
 
@@ -551,9 +552,9 @@ wstring ToStringW(
    const long double val,
    unsigned short precision)
 {
-   const size_t bufferSize = 256 + 1 + 1;
+   constexpr size_t bufferSize = 256 + 1 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    precision = ValidatePrecision(precision);
 
@@ -568,9 +569,9 @@ wstring ToStringW(
 string ToStringA(
    const void *val)
 {
-   const size_t bufferSize = 2 + 16 + 1;
+   constexpr size_t bufferSize = 2 + 16 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    if (-1 == sprintf_s(buffer, bufferSize, "%p", val))
    {
@@ -583,9 +584,9 @@ string ToStringA(
 wstring ToStringW(
    const void *val)
 {
-   const size_t bufferSize = 2 + 16 + 1;
+   constexpr size_t bufferSize = 2 + 16 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    if (-1 == swprintf_s(buffer, bufferSize, L"%p", val))
    {
@@ -595,25 +596,25 @@ wstring ToStringW(
    return buffer;
 }
 
-inline bool IsUpperCaseRepresentation(
+static bool IsUpperCaseRepresentation(
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
    return (hexDigitRepresentation & HexDigitsUpperCase) == HexDigitsUpperCase;
 }
 
-inline bool IncludePrefix(
+static bool IncludePrefix(
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
    return (hexDigitRepresentation & HexDigitsWithPrefix) == HexDigitsWithPrefix;
 }
 
-inline bool IncludePrefixEveryByte(
+static bool IncludePrefixEveryByte(
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
    return (hexDigitRepresentation & HexDigitsPrefixEveryByte) == HexDigitsPrefixEveryByte;
 }
 
-inline bool IncludePadding(
+static bool IncludePadding(
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
    return (hexDigitRepresentation & HexDigitsWithPadding) == HexDigitsWithPadding;
@@ -643,18 +644,23 @@ string PointerToStringA(
    const void *val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
+
+   #pragma warning(push)
+   #pragma warning(disable: 4826) // Conversion from 'x' to 'y' is sign-extended. This may cause unexpected runtime behavior
 
    const auto value = reinterpret_cast<PointerValueType>(val);
+
+   #pragma warning(pop)
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, value))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("PointerToString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -665,18 +671,23 @@ wstring PointerToStringW(
    const void *val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
+
+   #pragma warning(push)
+   #pragma warning(disable: 4826) // Conversion from 'x' to 'y' is sign-extended. This may cause unexpected runtime behavior
 
    const auto value = reinterpret_cast<PointerValueType>(val);
+
+   #pragma warning(pop)
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, value))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("PointerToString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -687,16 +698,16 @@ string ToHexStringA(
    const unsigned char val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 2 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 2 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "2.2", "X", "x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -707,16 +718,16 @@ wstring ToHexStringW(
    const unsigned char val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 2 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 2 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"2.2", L"X", L"x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -741,16 +752,16 @@ string ToHexStringA(
    const unsigned int val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 8 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 8 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "X", "x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -761,16 +772,16 @@ wstring ToHexStringW(
    const unsigned int val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 8 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 8 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"X", L"x");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -795,16 +806,16 @@ string ToHexStringA(
    const unsigned short val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 4 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 4 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "4.4", "hX", "hx");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -815,16 +826,16 @@ wstring ToHexStringW(
    const unsigned short val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 4 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 4 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"4.4", L"hX", L"hx");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -849,16 +860,16 @@ string ToHexStringA(
    const unsigned long val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 8 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 8 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "8.8", "lX", "lx");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == sprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -869,16 +880,16 @@ wstring ToHexStringW(
    const unsigned long val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 8 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 8 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"8.8", L"lX", L"lx");
 
    JETBYTE_WARNING_SUPPRESS_NOT_A_STRING_LITERAL
    if (-1 == swprintf_s(buffer, bufferSize, pFormat, val))
    {
-      throw CException(_T("ToString"), _T("sprintf_s failed"));
+      throw CException(_T("ToHexString"), _T("sprintf_s failed"));
    }
    JETBYTE_WARNING_SUPPRESS_POP
 
@@ -903,9 +914,9 @@ string ToHexStringA(
    const unsigned long long val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "llX", "llx");
 
@@ -923,9 +934,9 @@ wstring ToHexStringW(
    const unsigned long long val,
    const ToHexStringHexDigitRepresentation hexDigitRepresentation)
 {
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"llX", L"llx");
 
@@ -962,11 +973,11 @@ string ToHexStringA(
 {
 #if defined(_WIN64)
 
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   char buffer[bufferSize];
+   char buffer[bufferSize]{};
 
-   const __int64 value = reinterpret_cast<__int64>(val);
+   const auto value = reinterpret_cast<__int64>(val);
 
    const char *pFormat = DETERMINE_FORMAT_STRING_A(hexDigitRepresentation, "16.16", "I64X", "I64x");
 
@@ -1007,11 +1018,11 @@ wstring ToHexStringW(
 {
 #if defined(_WIN64)
 
-   static const size_t bufferSize = 200 + 2 + 16 + 1;
+   static constexpr size_t bufferSize = 200 + 2 + 16 + 1;
 
-   wchar_t buffer[bufferSize];
+   wchar_t buffer[bufferSize]{};
 
-   const ULONG_PTR value = reinterpret_cast<ULONG_PTR>(val);
+   const auto value = reinterpret_cast<ULONG_PTR>(val);
 
    const wchar_t *pFormat = DETERMINE_FORMAT_STRING_W(hexDigitRepresentation, L"16.16", L"I64X", L"I64x");
 
@@ -1079,7 +1090,7 @@ string ToHexStringA(
          }
       }
 
-      BYTE c;
+      BYTE c = 0;
 
       auto b = static_cast<BYTE>(pBytes[i] >> 4);
 
@@ -1144,7 +1155,7 @@ wstring ToHexStringW(
          }
       }
 
-      BYTE c;
+      BYTE c = 0;
 
       auto b = static_cast<BYTE>(pBytes[i] >> 4);
 
@@ -1191,9 +1202,9 @@ string BoolAsStringA(
 string ToHexA(
    const BYTE val)
 {
-   static const size_t bufferSize = 2 + 1;
+   static constexpr size_t bufferSize = 2 + 1;
 
-   char buffer[3];
+   char buffer[3]{};
 
    const unsigned int i = val;
 
@@ -1208,9 +1219,9 @@ string ToHexA(
 wstring ToHexW(
    const BYTE val)
 {
-   static const size_t bufferSize = 2 + 1;
+   static constexpr size_t bufferSize = 2 + 1;
 
-   wchar_t buffer[3];
+   wchar_t buffer[3]{};
 
    const int i = val;
 
@@ -1222,16 +1233,13 @@ wstring ToHexW(
    return buffer;
 }
 
-static const string s_emptyStringLinePrefixA;
-static const wstring s_emptyStringLinePrefixW;
-
 string MakePrintableA(
    const BYTE * const pData,
    const size_t dataLength,
    const size_t lineLength,
    const bool useCR)
 {
-   return InternalDumpDataA(s_emptyStringLinePrefixA, pData, dataLength, lineLength, DumpType::Printable, useCR, true, true);
+   return InternalDumpDataA(EmptyStdString, pData, dataLength, lineLength, DumpType::Printable, useCR, true, true);
 }
 
 wstring MakePrintableW(
@@ -1240,7 +1248,7 @@ wstring MakePrintableW(
    const size_t lineLength,
    const bool useCR)
 {
-   return InternalDumpDataW(s_emptyStringLinePrefixW, pData, dataLength, lineLength, DumpType::Printable, useCR, true, true);
+   return InternalDumpDataW(EmptyStdWString, pData, dataLength, lineLength, DumpType::Printable, useCR, true, true);
 }
 
 string DumpDataA(
@@ -1249,7 +1257,7 @@ string DumpDataA(
    const size_t lineLength,
    const bool useCR)
 {
-   return InternalDumpDataA(s_emptyStringLinePrefixA, pData, dataLength, lineLength, DumpType::Both, useCR, true, true);
+   return InternalDumpDataA(EmptyStdString, pData, dataLength, lineLength, DumpType::Both, useCR, true, true);
 }
 
 wstring DumpDataW(
@@ -1258,7 +1266,7 @@ wstring DumpDataW(
    const size_t lineLength,
    const bool useCR)
 {
-   return InternalDumpDataW(s_emptyStringLinePrefixW, pData, dataLength, lineLength, DumpType::Both, useCR, true, true);
+   return InternalDumpDataW(EmptyStdWString, pData, dataLength, lineLength, DumpType::Both, useCR, true, true);
 }
 
 string DumpDataA(
@@ -1289,14 +1297,14 @@ string DumpDataAsHexA(
    const BYTE * const pData,
    const size_t dataLength)
 {
-   return InternalDumpDataA(s_emptyStringLinePrefixA, pData, dataLength, 0, DumpType::HexDump, false, false, false);
+   return InternalDumpDataA(EmptyStdString, pData, dataLength, 0, DumpType::HexDump, false, false, false);
 }
 
 wstring DumpDataAsHexW(
    const BYTE * const pData,
    const size_t dataLength)
 {
-   return InternalDumpDataW(s_emptyStringLinePrefixW, pData, dataLength, 0, DumpType::HexDump, false, false, false);
+   return InternalDumpDataW(EmptyStdWString, pData, dataLength, 0, DumpType::HexDump, false, false, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -31,6 +31,8 @@
 #include "FileUtils.h"
 
 #include "JetByteTools/Win32Tools/SmartHandle.h"
+#include "JetByteTools/Win32Tools/DirectorySearch.h"
+#include "JetByteTools/Win32Tools/SystemUtils.h"
 
 #include "JetByteTools/CoreTools/ErrorCodeException.h"
 #include "JetByteTools/CoreTools/ToString.h"
@@ -55,6 +57,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using JetByteTools::Win32::CSmartHandle;
+using JetByteTools::Win32::GetModulePathName;
+using JetByteTools::Win32::GetModuleFileName;
 
 using std::string;
 using std::wstring;
@@ -76,6 +80,16 @@ static bool StringIsAllANSI(
 ///////////////////////////////////////////////////////////////////////////////
 // 
 ///////////////////////////////////////////////////////////////////////////////
+
+_tstring GetExePath()
+{
+   return GetModulePathName();
+}
+
+_tstring GetExeFileName()
+{
+   return GetModuleFileName();
+}
 
 void WriteResourceToFile(
    HANDLE hFile,
@@ -101,7 +115,7 @@ void WriteResourceToFile(
       throw CErrorCodeException(_T("WriteResourceToFile() - LoadResource"), lastError);
    }
 
-   void *pData = LockResource(hGlobal);
+   const void *pData = LockResource(hGlobal);
 
    if (!pData)
    {
@@ -138,14 +152,14 @@ void CreateDirectory(
    }
 }
 
-bool CreateDirectoryIfRequired(
+bool CreateDirectoryIfRequiredX(
    const _tstring &directory)
 {
-   bool created = false;
+   bool created = true;
 
    if (!::CreateDirectory(directory.c_str(), nullptr))
    {
-      created = true;
+      created = false;
 
       const DWORD lastError = GetLastError();
 
@@ -156,6 +170,12 @@ bool CreateDirectoryIfRequired(
    }
 
    return created;
+}
+
+void CreateDirectoryIfRequired(
+   const _tstring &directory)
+{
+   CreateDirectoryIfRequiredX(directory);
 }
 
 size_t CreateDirectoriesIfRequired(
@@ -181,7 +201,7 @@ size_t CreateDirectoriesIfRequired(
             // trailing \ which means we will try and create "lastDirectory" and then
             // "lastDirectory\"...
 
-            if (CreateDirectoryIfRequired(directory))
+            if (CreateDirectoryIfRequiredX(directory))
             {
                numCreated++;
             }
@@ -195,6 +215,10 @@ size_t CreateDirectoriesIfRequired(
       {
          throw CErrorCodeException(_T("CreateDirectoriesIfRequired()"), lastError);
       }
+   }
+   else
+   {
+      numCreated++;
    }
 
    return numCreated;
@@ -217,6 +241,26 @@ _tstring GetCurrentDirectory()
 
    return result;
 }
+
+#ifndef JETBYTE_TOOLS_ADMIN_NARROW_STRING_PLATFORM
+string GetCurrentDirectoryA()
+{
+   const DWORD size = ::GetCurrentDirectoryA(0, nullptr);
+
+   string result;
+
+   result.resize(size);
+
+   if (0 == ::GetCurrentDirectoryA(size, const_cast<char *>(result.c_str())))
+   {
+      throw CException(_T("GetCurrentDirectoryA()"), _T("Failed to get current directory"));
+   }
+
+   result.resize(size - 1);
+
+   return result;
+}
+#endif
 
 void SetCurrentDirectory(
    const _tstring &directory)
@@ -304,6 +348,22 @@ _tstring CombinePath(
    return combinedPath;
 }
 
+string CombinePathA(
+   const string &path1,
+   const string &path2)
+{
+   string combinedPath;
+
+   if (!TryCombinePathA(combinedPath, path1, path2))
+   {
+      const DWORD lastError = GetLastError();
+
+      throw CErrorCodeException(_T("CombinePath() failed for \"") + CStringConverter::AtoT(path1) + _T("\", \"") + CStringConverter::AtoT(path2) + _T("\""), lastError);
+   }
+
+   return combinedPath;
+}
+
 bool TryCombinePath(
    _tstring &combinedPath,
    const _tstring &path1,
@@ -323,11 +383,37 @@ bool TryCombinePath(
    return ok;
 }
 
+bool TryCombinePathA(
+   string &combinedPath,
+   const string &path1,
+   const string &path2)
+{
+   bool ok = false;
+
+   char outBuffer[MAX_PATH];
+
+   if (nullptr != ::PathCombineA(outBuffer, path1.c_str(), path2.c_str()))
+   {
+      combinedPath = outBuffer;
+
+      ok = true;
+   }
+
+   return ok;
+}
+
 _tstring BuildPath(
    const _tstring &path1,
    const _tstring &path2)
 {
    return path1 + _T("\\") + path2;
+}
+
+string BuildPathA(
+   const string &path1,
+   const string &path2)
+{
+   return path1 + "\\" + path2;
 }
 
 bool PathHasRelativeRoot(
@@ -363,6 +449,70 @@ bool PathHasRelativeRoot(
       return true;
    }
 
+   pos = path.find(_T(".."));
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find(_T("."));
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   return false;
+}
+
+bool PathHasRelativeRootA(
+   const string &path)
+{
+   // could probably just look for a single "."
+
+   _tstring::size_type pos = path.find(".\\");
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find("..\\");
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find("./");
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find("../");
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find("..");
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
+   pos = path.find('.');
+
+   if (pos == 0)
+   {
+      return true;
+   }
+
    return false;
 }
 
@@ -370,6 +520,12 @@ _tstring ResolveRelativePath(
    const _tstring &path)
 {
    return ResolveRelativePath(path, GetCurrentDirectory());
+}
+
+string ResolveRelativePathA(
+   const string &path)
+{
+   return ResolveRelativePathA(path, GetCurrentDirectoryA());
 }
 
 _tstring ResolveRelativePath(
@@ -384,10 +540,28 @@ _tstring ResolveRelativePath(
    return path;
 }
 
+string ResolveRelativePathA(
+   const string &path,
+   const string &root)
+{
+   if (PathHasRelativeRootA(path))
+   {
+      return BuildPathA(root, path);
+   }
+
+   return path;
+}
+
 _tstring MakePathAbsolute(
    const _tstring &path)
 {
    return MakePathAbsolute(path, GetCurrentDirectory());
+}
+
+string MakePathAbsoluteA(
+   const string &path)
+{
+   return MakePathAbsoluteA(path, GetCurrentDirectoryA());
 }
 
 _tstring MakePathAbsolute(
@@ -399,6 +573,10 @@ _tstring MakePathAbsolute(
 
    _tstring absolutePath(ResolveRelativePath(path, root));
 
+   // lets stick with just standard windows path separators...
+
+   InPlaceFindAndReplace(absolutePath, _T("/"), _T("\\"));
+
    // now combine the path with the current directory to process any relative path
    // constructs within the path and create a "clean" absolute path.
 
@@ -407,6 +585,32 @@ _tstring MakePathAbsolute(
       const DWORD lastError = GetLastError();
 
       throw CErrorCodeException(_T("MakePathAbsolute() failed for \"") + path + _T("\""), lastError);
+   }
+
+   return absolutePath;
+}
+
+string MakePathAbsoluteA(
+   const string &path,
+   const string &root)
+{
+   // If the path starts with a relative path indicator, .\ ..\ etc
+   // then build the path so that it refers to the supplied root...
+
+   string absolutePath(ResolveRelativePathA(path, root));
+
+   // lets stick with just standard windows path separators...
+
+   InPlaceFindAndReplaceA(absolutePath, "/", "\\");
+
+   // now combine the path with the current directory to process any relative path
+   // constructs within the path and create a "clean" absolute path.
+
+   if (!TryCombinePathA(absolutePath, absolutePath, "."))
+   {
+      const DWORD lastError = GetLastError();
+
+      throw CErrorCodeException(_T("MakePathAbsoluteA() failed for \"") + CStringConverter::AtoT(path) + _T("\""), lastError);
    }
 
    return absolutePath;
@@ -486,6 +690,18 @@ _tstring GetFileExtension(
    return _T("");
 }
 
+string GetFileExtensionA(
+   const string &filename)
+{
+   const string::size_type pos = filename.find_last_of('.');
+
+   if (pos != _tstring::npos)
+   {
+      return filename.substr(pos);
+   }
+
+   return EmptyStdString;
+}
 
 _tstring StripFileExtension(
    const _tstring &filename)
@@ -501,6 +717,26 @@ string StripFileExtensionA(
    const string::size_type pos = filename.find_last_of('.');
 
    return filename.substr(0, pos);
+}
+
+_tstring GetRootDirectoryFromPath(
+   const _tstring &path)
+{
+   // see -- https://docs.microsoft.com/en-us/dotnet/standard/io/file-path-formats
+   // for how broken this stuff is
+
+   static const _tstring s_separators(_T("\\/"));
+
+   _tstring root;
+
+   const _tstring::size_type pos = path.find_first_of(s_separators);
+
+   if (pos != _tstring::npos)
+   {
+      root = path.substr(0, pos);
+   }
+
+   return root;
 }
 
 _tstring GetFileNameFromPathName(
@@ -520,6 +756,10 @@ _tstring GetFileNameFromPathName(
    if (pos != _tstring::npos)
    {
       fileName = pathName.substr(pos + 1);
+   }
+   else
+   {
+      fileName = pathName;
    }
 
    return fileName;
@@ -590,6 +830,12 @@ string StripFileNameFromPathNameA(
    return strippedPathName;
 }
 
+bool TryDeleteFile(
+   const _tstring &fileName)
+{
+   return ::DeleteFile(fileName.c_str());
+}
+
 void DeleteFile(
    const _tstring &fileName)
 {
@@ -608,23 +854,109 @@ void DeleteFileIfExists(
    {
       const DWORD lastError = GetLastError();
 
-      if (lastError != ERROR_FILE_NOT_FOUND)
+      if (lastError != ERROR_FILE_NOT_FOUND &&
+          lastError != ERROR_PATH_NOT_FOUND &&
+          lastError != ERROR_DIRECTORY)
       {
-         throw CErrorCodeException(_T("DeleteFile() - \"") + fileName + _T("\""), lastError);
+         throw CErrorCodeException(_T("DeleteFileIfExists() - \"") + fileName + _T("\""), lastError);
       }
    }
+}
+
+void RemoveDirectoryAndContents(
+   const _tstring &directory)
+{
+   if (::PathFileExists(directory.c_str()))
+   {
+      RemoveDirectoryContents(directory);
+
+      if (!::RemoveDirectory(directory.c_str()))
+      {
+         const DWORD lastError = GetLastError();
+
+         throw CErrorCodeException(_T("RemoveDirectoryAndContents() - RemoveDirectory() failed"), lastError);
+      }
+   }
+}
+
+void RemoveDirectoryContents(
+   const _tstring &directory)
+{
+   if (::PathFileExists(directory.c_str()))
+   {
+      std::list<_tstring> failedFiles;
+
+      JetByteTools::Win32::CDirectorySearch search(CombinePath(directory, _T("*.*")));
+
+      while (search.NextFile())
+      {
+         if (!(search.GetAttributes() & FILE_ATTRIBUTE_DIRECTORY))
+         {
+            const _tstring fileName = CombinePath(directory, search.GetFileName());
+
+            if (!::DeleteFile(fileName.c_str()))
+            {
+               //const DWORD lastError = ::GetLastError();
+
+               // could save the last error for the failure?
+
+               failedFiles.push_back(fileName);
+            }
+         }
+         else
+         {
+            const _tstring subDirectory = search.GetFileName();
+
+            if (subDirectory != _T(".."))
+            {
+               const _tstring subDirectoryPath = CombinePath(directory, subDirectory);
+
+               RemoveDirectoryContents(subDirectoryPath);
+
+               if (!::RemoveDirectory(subDirectoryPath.c_str()))
+               {
+                  const DWORD lastError = GetLastError();
+
+                  throw CErrorCodeException(_T("RemoveDirectoryContents() - RemoveDirectory() failed"), lastError);
+               }
+            }
+         }
+      }
+
+      if (!failedFiles.empty())
+      {
+         // could report on the failed files
+
+         throw CException(_T("RemoveDirectoryContents()"), _T("Not all files could be deleted"));
+      }
+   }
+}
+
+bool TryMoveFile(
+   const _tstring &filenameFrom,
+   const _tstring &filenameTo)
+{
+   return ToBool(::MoveFile(filenameFrom.c_str(), filenameTo.c_str()));
 }
 
 void MoveFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo)
 {
-   if (!::MoveFile(filenameFrom.c_str(), filenameTo.c_str()))
+   if (!TryMoveFile(filenameFrom, filenameTo))
    {
       const DWORD lastError = GetLastError();
 
       throw CErrorCodeException(_T("MoveFile"), lastError);
    }
+}
+
+bool TryCopyFile(
+   const _tstring &filenameFrom,
+   const _tstring &filenameTo,
+   const bool failIfExists)
+{
+   return ToBool(::CopyFile(filenameFrom.c_str(), filenameTo.c_str(), failIfExists));
 }
 
 void CopyFile(
@@ -747,7 +1079,7 @@ __int64 GetFileSize(
    large.HighPart = info.nFileSizeHigh;
    large.LowPart = info.nFileSizeLow;
 
-   return large.QuadPart;
+   return static_cast<__int64>(large.QuadPart);
 }
 
 wstring LoadFileAsUnicodeString(
@@ -787,7 +1119,7 @@ wstring LoadFileAsUnicodeString(
 
    DWORD totalBytesRead = 0;
 
-   BYTE buffer[2];
+   BYTE buffer[2]{};
 
    while (ReadFile(hFile, buffer + totalBytesRead, sizeof(buffer) - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
    {
@@ -865,7 +1197,7 @@ wstring LoadFileAsUnicodeString(
 
    fileAsString.resize(bufferSize);
 
-   while (ReadFile(hFile, reinterpret_cast<void*>(const_cast<char *>(fileAsString.c_str()) + totalBytesRead), bufferSize - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
+   while (ReadFile(hFile, const_cast<char *>(fileAsString.c_str()) + totalBytesRead, bufferSize - totalBytesRead, &bytesRead, nullptr) && bytesRead > 0)
    {
       totalBytesRead += bytesRead;
    }
@@ -916,7 +1248,7 @@ void SaveUnicodeStringAsFile(
 
    DWORD bytesWritten = 0;
 
-   const BYTE header[] = { 0xFF, 0xFE };
+   constexpr BYTE header[] = { 0xFF, 0xFE };
 
    if (!WriteFile(hFile, header, sizeof(header), &bytesWritten, nullptr))
    {
@@ -974,11 +1306,11 @@ void LoadFileAsBinaryData(
    LARGE_INTEGER fileSize;
 
    fileSize.LowPart = info.nFileSizeLow;
-   fileSize.HighPart = info.nFileSizeHigh;
+   fileSize.HighPart = static_cast<LONG>(info.nFileSizeHigh);
 
    const auto bufferSize = static_cast<size_t>(fileSize.QuadPart);
 
-   buffer.Resize(bufferSize);
+   buffer.Resize(bufferSize, TExpandableBuffer<BYTE>::SizeChangeDataRetentionPolicy::DoNotRetainData);
 
    DWORD bytesRead = 0;
 

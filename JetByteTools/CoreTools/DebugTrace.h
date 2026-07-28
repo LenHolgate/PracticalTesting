@@ -61,6 +61,8 @@ class CDebugTrace : public CMessageLog
 {
    public :
 
+      static ILogMessages &DefaultLog();
+
       static bool IsValid();
 
       static CDebugTrace &Instance();
@@ -107,8 +109,6 @@ class CDebugTrace : public CMessageLog
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/// \ingroup DebugTrace
-
 inline void SetLogFileName(
    const std::string &s)
 {
@@ -117,8 +117,6 @@ inline void SetLogFileName(
       CDebugTrace::Instance().SetLogName(s);
    }
 }
-
-/// \ingroup DebugTrace
 
 inline void SetLogFileName(
    const std::wstring &s)
@@ -129,8 +127,6 @@ inline void SetLogFileName(
    }
 }
 
-/// \ingroup DebugTrace
-
 inline void OutputEx(
    const ILogMessages::VectorOfLines &s)
 {
@@ -140,8 +136,6 @@ inline void OutputEx(
    }
 }
 
-/// \ingroup DebugTrace
-
 inline void OutputEx(
    const ILogMessages::DequeOfLines &s)
 {
@@ -150,8 +144,6 @@ inline void OutputEx(
       CDebugTrace::Instance().LogMessage(s);
    }
 }
-
-/// \ingroup DebugTrace
 
 inline void OutputEx(
    const std::string &s)
@@ -164,8 +156,6 @@ inline void OutputEx(
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
 
-/// \ingroup DebugTrace
-
 inline void OutputEx(
    const std::wstring &s)
 {
@@ -176,8 +166,6 @@ inline void OutputEx(
 }
 
 #endif
-
-/// \ingroup DebugTrace
 
 inline void OutputEx(
    const char * const pString)
@@ -190,8 +178,6 @@ inline void OutputEx(
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
 
-/// \ingroup DebugTrace
-
 inline void OutputEx(
    const wchar_t * const pString)
 {
@@ -202,8 +188,6 @@ inline void OutputEx(
 }
 
 #endif
-
-/// \ingroup DebugTrace
 
 inline void OutputEx(
    const char * const pString,
@@ -216,8 +200,6 @@ inline void OutputEx(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-
-/// \ingroup DebugTrace
 
 inline void OutputEx(
    const wchar_t * const pString,
@@ -233,8 +215,6 @@ inline void OutputEx(
 
 #ifdef _DEBUG
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const std::string &s)
 {
@@ -242,8 +222,6 @@ inline void Output(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-
-/// \ingroup DebugTrace
 
 inline void Output(
    const std::wstring &s)
@@ -253,8 +231,6 @@ inline void Output(
 
 #endif
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const char * const pString)
 {
@@ -262,8 +238,6 @@ inline void Output(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-
-/// \ingroup DebugTrace
 
 inline void Output(
    const wchar_t * const pString)
@@ -273,8 +247,6 @@ inline void Output(
 
 #endif
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const char * const pString,
    const ILogMessages::DataLength stringLength)
@@ -283,8 +255,6 @@ inline void Output(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-
-/// \ingroup DebugTrace
 
 inline void Output(
    const wchar_t * const pString,
@@ -297,8 +267,6 @@ inline void Output(
 
 #else
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const std::string &s)
 {
@@ -310,8 +278,6 @@ inline void Output(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-
-/// \ingroup DebugTrace
 
 inline void Output(
    const std::wstring &s)
@@ -325,8 +291,6 @@ inline void Output(
 
 #endif
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const char * const pString)
 {
@@ -339,8 +303,6 @@ inline void Output(
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
 
-/// \ingroup DebugTrace
-
 inline void Output(
    const wchar_t * const pString)
 {
@@ -352,8 +314,6 @@ inline void Output(
 }
 
 #endif
-
-/// \ingroup DebugTrace
 
 inline void Output(
    const char * const pString,
@@ -368,7 +328,6 @@ inline void Output(
 }
 
 #ifndef JETBYTE_DISABLE_WIDE_DEBUG_TRACE
-/// \ingroup DebugTrace
 
 inline void Output(
    const wchar_t * const pString,
@@ -385,6 +344,12 @@ inline void Output(
 #endif
 
 #endif
+
+#define JETBYTE_DEBUG_OUTPUT_LINE_STRINGIZE(L) #L
+#define JETBYTE_DEBUG_OUTPUT_LINE_MAKESTRING(M,L) M(L)
+#define JETBYTE_DEBUG_OUTPUT_LINE JETBYTE_DEBUG_OUTPUT_LINE_MAKESTRING( JETBYTE_DEBUG_OUTPUT_LINE_STRINGIZE, __LINE__)
+
+#define DEBUG_OUTPUT_LINE JetByteTools::Core::OutputEx(__FILE__ " - " JETBYTE_DEBUG_OUTPUT_LINE);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core

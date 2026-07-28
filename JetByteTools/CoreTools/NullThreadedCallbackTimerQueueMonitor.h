@@ -37,7 +37,7 @@ namespace JetByteTools {
 namespace Core {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CNullCallbackTimerQueueMonitor
+// CNullThreadedCallbackTimerQueueMonitor
 ///////////////////////////////////////////////////////////////////////////////
 
 /// An object that implements IMonitorCallbackTimerQueue and does nothing.
@@ -47,6 +47,8 @@ namespace Core {
 class CNullThreadedCallbackTimerQueueMonitor : public IMonitorThreadedCallbackTimerQueue
 {
    public :
+
+      ~CNullThreadedCallbackTimerQueueMonitor() override = default;
 
       void OnTimerProcessingContention(
          const ContentionLocation /*location*/) override {}

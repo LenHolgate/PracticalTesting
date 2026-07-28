@@ -83,11 +83,11 @@ enum ToHexStringHexDigitRepresentation
 // this requires the acquisition of a process wide lock (for accessing locales and facets)
 // in some versions of STL which is less than ideal for multi-threaded use.
 // From version 6.0 we default to using a custom sprintf based system to convert from
-// numbers to strings. We also decided to change how 0 is represened in ToHexString(),
+// numbers to strings. We also decided to change how 0 is represented in ToHexString(),
 // it's converted to 0x0 in the new code whereas it was converted to 0 in the old.
 // ToHexString() was also enhanced to allow for the user to decide if they want upper
 // or lower case hex digits and we added PointerToString() which gives a consistent
-// represenation of pointers across 32bit and 64bit operating systems (always
+// representation of pointers across 32bit and 64bit operating systems (always
 // representing pointers as 64bit hex values). To finish all of these things were moved
 // out of Utils.h and into this header file.
 
@@ -683,6 +683,38 @@ inline _tstring DumpData(
 #endif
 }
 
+inline std::string DumpDataA(
+   const std::string &data,
+   size_t lineLength = 0,
+   bool useCR = false)
+{
+   return DumpDataA(reinterpret_cast<const BYTE *>(data.c_str()), data.length(), lineLength, useCR);
+}
+
+inline std::string DumpDataA(
+   const std::wstring &data,
+   size_t lineLength = 0,
+   bool useCR = false)
+{
+   return DumpDataA(reinterpret_cast<const BYTE *>(data.c_str()), data.length(), lineLength, useCR);
+}
+
+inline std::wstring DumpDataW(
+   const std::string &data,
+   size_t lineLength = 0,
+   bool useCR = false)
+{
+   return DumpDataW(reinterpret_cast<const BYTE *>(data.c_str()), data.length(), lineLength, useCR);
+}
+
+inline std::wstring DumpDataW(
+   const std::wstring &data,
+   size_t lineLength = 0,
+   bool useCR = false)
+{
+   return DumpDataW(reinterpret_cast<const BYTE *>(data.c_str()), data.length(), lineLength, useCR);
+}
+
 std::string DumpDataAsHexA(
    const BYTE *pData,
    size_t dataLength);
@@ -710,7 +742,7 @@ std::string BoolAsStringA(
 
 bool IsAllPrintable(
    const BYTE *pData,
-   const size_t length);
+   size_t length);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core

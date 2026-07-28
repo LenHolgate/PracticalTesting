@@ -52,6 +52,15 @@ class CGlobalErrorHandler : private CPerThreadErrorHandler
 {
    public :
 
+      enum class OperatingSystemErrorReporting
+      {
+         Disable,
+         Enable
+      };
+
+      explicit CGlobalErrorHandler(
+         OperatingSystemErrorReporting errorReporting);
+
       CGlobalErrorHandler();
 
       CGlobalErrorHandler(
@@ -62,13 +71,16 @@ class CGlobalErrorHandler : private CPerThreadErrorHandler
       CGlobalErrorHandler &operator=(
          const CGlobalErrorHandler &rhs) = delete;
 
+      void SetOperatingSystemErrorReportingMode(
+         OperatingSystemErrorReporting errorReporting);
+
    private :
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
       static void NewHandler();
       #endif
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
       static void SigAbortHandler(int);
       #endif
 
@@ -78,12 +90,12 @@ class CGlobalErrorHandler : private CPerThreadErrorHandler
 
       Win32::CCrtReportHook m_crtReportHook;
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
       std::new_handler m_oldNewHandler;
       #endif
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
-      typedef void(SignalHandlerFnc)(int);
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
+      using SignalHandlerFnc = void(int);
 
       SignalHandlerFnc *m_pOldSigAbrtHandler;
       #endif

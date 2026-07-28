@@ -46,7 +46,7 @@ namespace Win32 {
 /// \ingroup Win32
 /// \ingroup Exceptions
 
-class CSEHException : public Core::CException
+class CSEHException : public JetByteTools::Core::CException
 {
    public :
 
@@ -60,11 +60,11 @@ class CSEHException : public Core::CException
 
       const CONTEXT &GetContext() const;
 
-      Core::_tstring GetWhere() const override;
+      JetByteTools::Core::_tstring GetWhere() const override;
 
-      Core::_tstring GetWhat() const override;
+      JetByteTools::Core::_tstring GetWhat() const override;
 
-      Core::_tstring GetDetails() const override;
+      JetByteTools::Core::_tstring GetDetails() const override;
 
       std::string GetDetailsA() const override;
 

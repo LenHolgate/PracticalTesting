@@ -31,6 +31,7 @@
 
 #include "JetByteTools/CoreTools/IReentrantLockableObject.h"
 #include "JetByteTools/CoreTools/EmptyBase.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #include <Windows.h>
 
@@ -76,7 +77,11 @@ class TReentrantLockableObject : public Base
 
       virtual ~TReentrantLockableObject()
       {
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
          DeleteCriticalSection(&m_lock);
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
 
       TReentrantLockableObject &operator=(

@@ -29,6 +29,8 @@
 
 #include "Event.h"
 
+#include "JetByteTools/CoreTools/IManualResetEvent.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,7 @@ namespace Core {
 // CManualResetEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-class CManualResetEvent : public IWaitable
+class CManualResetEvent : public IManualResetEvent
 {
    public :
 
@@ -59,14 +61,14 @@ class CManualResetEvent : public IWaitable
 
       /// Set the event to the signalled state.
 
-      void Set()
+      void Set() override
       {
          m_event.Set();
       }
 
       /// Resets the event to the unsignalled state.
 
-      void Reset()
+      void Reset() override
       {
          m_event.Reset();
       }

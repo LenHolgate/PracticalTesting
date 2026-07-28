@@ -31,10 +31,12 @@
 #include "SimpleMessageLog.h"
 #include "StringConverter.h"
 #include "ToString.h"
-#include "SystemTime.h"
 #include "ThreadId.h"
 #include "Thread.h"
 #include "AtomicLong.h"
+#include "LocalTime.h"
+#include "Printf.h"
+#include "DebugHelpers.h"
 
 #pragma hdrstop
 
@@ -62,44 +64,36 @@ namespace Core {
 
 static CAtomicULong s_nextSequentialThreadId(0);
 
-static const string s_emptyString;
-
-static const DWORD s_includeThreadIdMask = CSimpleMessageLog::IncludeThreadName | CSimpleMessageLog::IncludeThreadId | CSimpleMessageLog::IncludeSequentialThreadId;
+static constexpr DWORD s_includeThreadIdMask = CSimpleMessageLog::IncludeThreadName | CSimpleMessageLog::IncludeThreadId | CSimpleMessageLog::IncludeSequentialThreadId;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CSimpleMessageLog
 ///////////////////////////////////////////////////////////////////////////////
 
 CSimpleMessageLog::CSimpleMessageLog()
-   :  m_fileName("JetByteTools.log"),
+   :  CThreadNamingListener(false),
+      m_fileName("JetByteTools.log"),
       m_logToCOUT(true),
       m_logToOutputDebugString(true),
       m_logToFile(true),
       m_logToMemory(false),
       m_logEntryFormat(IncludeThreadId)
 {
-   if (m_logEntryFormat & IncludeThreadName)
-   {
-      CThread::AddThreadNameListener(*this);
-   }
 }
 
 CSimpleMessageLog::CSimpleMessageLog(
    const _tstring &fileName,
    const DWORD targets,
    const DWORD logEntryFormat)
-   :  m_fileName(CStringConverter::TtoA(fileName)),
+   :  CThreadNamingListener(
+         static_cast<LogEntryFormat>(logEntryFormat) & IncludeThreadName),
+      m_fileName(CStringConverter::TtoA(fileName)),
       m_logToCOUT((targets & LogToCOUT) == LogToCOUT),
       m_logToOutputDebugString((targets & LogToOutputDebugString) == LogToOutputDebugString),
       m_logToFile((targets & LogToFile) == LogToFile),
       m_logToMemory((targets & LogToMemoryBuffer) == LogToMemoryBuffer),
       m_logEntryFormat(static_cast<LogEntryFormat>(logEntryFormat))
-
 {
-   if (m_logEntryFormat & IncludeThreadName)
-   {
-      CThread::AddThreadNameListener(*this);
-   }
 }
 
 _tstring CSimpleMessageLog::MapThreadIdToLogThreadId(
@@ -123,7 +117,6 @@ string CSimpleMessageLog::MapThreadIdToLogThreadIdA(
    return threadId;
 }
 
-
 void CSimpleMessageLog::OnThreadNaming(
    const _tstring &threadId,
    const _tstring &threadName)
@@ -145,7 +138,7 @@ void CSimpleMessageLog::OnThreadNaming(
 
       if (m_logEntryFormat & IncludeSequentialThreadId)
       {
-         if (m_threadIdMap.end() == m_threadIdMap.find(id))
+         if (!m_threadIdMap.contains(id))
          {
             const string seqId = ToStringA(s_nextSequentialThreadId.Increment());
 
@@ -225,20 +218,20 @@ _tstring CSimpleMessageLog::GetLogMessages() const
 
 string CSimpleMessageLog::GetTimestamp() const
 {
-   CSystemTime localtime;
+   const CLocalTime now(CLocalTime::InitialSetting::Now);
 
-   localtime.GetLocalTime();
+   constexpr  size_t bufferSize = 16;
 
-   char timestamp[16];
+   char timestamp[bufferSize];
 
-   sprintf_s(
+   (void)sprintf_s(
       timestamp,
-      sizeof(timestamp),
+      bufferSize,
       "%02d:%02d:%02d.%03d - ",
-      static_cast<int>(localtime.wHour),
-      static_cast<int>(localtime.wMinute),
-      static_cast<int>(localtime.wSecond),
-      static_cast<int>(localtime.wMilliseconds));
+      now.hour,
+      now.minute,
+      now.second,
+      now.milliseconds);
 
    return timestamp;
 }
@@ -291,8 +284,8 @@ void CSimpleMessageLog::LogMessageInternal(
    {
       // cout displays \n as a line break, we don't log it as such...
 
-      cout << ((m_logEntryFormat & s_includeThreadIdMask) ? threadId : s_emptyString) <<
-               ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
+      cout << ((m_logEntryFormat & s_includeThreadIdMask) ? threadId : EmptyStdString) <<
+               ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : EmptyStdString) <<
                message << endl;
    }
 
@@ -315,15 +308,15 @@ void CSimpleMessageLog::LogMessageInternal(
          }
       }
 
-      m_output << ((m_logEntryFormat & s_includeThreadIdMask) ? threadId : s_emptyString) <<
-                  ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) <<
+      m_output << ((m_logEntryFormat & s_includeThreadIdMask) ? threadId : EmptyStdString) <<
+                  ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : EmptyStdString) <<
                      message << endl;
    }
 
    if (m_logToMemory)
    {
-      m_messages.push_back(((m_logEntryFormat & s_includeThreadIdMask) ? threadId : s_emptyString) +
-                           ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : s_emptyString) +
+      m_messages.push_back(((m_logEntryFormat & s_includeThreadIdMask) ? threadId : EmptyStdString) +
+                           ((m_logEntryFormat & IncludeTimestamp) ? GetTimestamp() : EmptyStdString) +
                               message);
    }
 }

@@ -61,6 +61,13 @@ CMockTickCountProvider::CMockTickCountProvider(
 {
 }
 
+Milliseconds CMockTickCountProvider::CurrentTickCount() const
+{
+   const Milliseconds value = m_tickCount.AccessValue();
+
+   return value;
+}
+
 void CMockTickCountProvider::SetTickCount(
    const Milliseconds tickCount)
 {

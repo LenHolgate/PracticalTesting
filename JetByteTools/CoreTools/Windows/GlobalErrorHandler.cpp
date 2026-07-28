@@ -32,6 +32,7 @@
 
 #include "JetByteTools/CoreTools/ManualResetEvent.h"
 #include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -58,42 +59,53 @@ namespace Windows {
 // Namespace: CGlobalErrorHandler
 ///////////////////////////////////////////////////////////////////////////////
 
-CGlobalErrorHandler::CGlobalErrorHandler()
-   :  m_oldErrorMode(SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX)),
+CGlobalErrorHandler::CGlobalErrorHandler(
+   const OperatingSystemErrorReporting errorReporting)
+   :  m_oldErrorMode(SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX | (errorReporting == OperatingSystemErrorReporting::Enable ? 0 : SEM_NOGPFAULTERRORBOX))),
       m_oldPureCallHandler(_set_purecall_handler(PureCallHandler))
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
       , m_oldNewHandler(std::set_new_handler(NewHandler))
       #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
       , m_pOldSigAbrtHandler(signal(SIGABRT, SigAbortHandler))
       #endif
 {
+}
 
+CGlobalErrorHandler::CGlobalErrorHandler()
+   :  CGlobalErrorHandler(OperatingSystemErrorReporting::Disable)
+{
 }
 
 CGlobalErrorHandler::~CGlobalErrorHandler()
 {
-   try
-   {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
-      signal(SIGABRT, m_pOldSigAbrtHandler);
-      #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
-      std::set_new_handler(m_oldNewHandler);
-      #endif
-      _set_purecall_handler(m_oldPureCallHandler);
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
-      SetErrorMode(m_oldErrorMode);
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
+   (void)signal(SIGABRT, m_pOldSigAbrtHandler);
+   #endif
+   #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
+   std::set_new_handler(m_oldNewHandler);
+   #endif
+   _set_purecall_handler(m_oldPureCallHandler);
+
+   SetErrorMode(m_oldErrorMode);
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
-#if (JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
+void CGlobalErrorHandler::SetOperatingSystemErrorReportingMode(
+   const OperatingSystemErrorReporting errorReporting)
+{
+   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX | (errorReporting == OperatingSystemErrorReporting::Enable ? 0 : SEM_NOGPFAULTERRORBOX));
+}
+
+#if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1)
 void CGlobalErrorHandler::NewHandler()
 {
    if (!ProcessIsExiting())
    {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (IsDebuggerPresent())
       {
          MessageBox(nullptr, _T("Memory allocation failure"), _T("Memory allocation failure!"), MB_OK);
@@ -116,13 +128,13 @@ void CGlobalErrorHandler::NewHandler()
 }
 #endif
 
-#if (JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
+#if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1)
 void CGlobalErrorHandler::SigAbortHandler(
    int sig)
 {
    (void)sig;
 
-   #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
+   #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
    if (::IsDebuggerPresent())
    {
       MessageBox(nullptr, _T("SIGABRT!"), _T("SIGABRT!"), MB_OK);

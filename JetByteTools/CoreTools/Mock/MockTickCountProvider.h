@@ -80,6 +80,8 @@ class CMockTickCountProvider :
       void SetTickCount(
          Milliseconds tickCount);
 
+      Milliseconds CurrentTickCount() const;
+
       // Implement IProvideTickCount
 
       Milliseconds GetTickCount() const override;

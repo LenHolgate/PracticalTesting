@@ -61,6 +61,9 @@ class CMessageLog : public ILogMessages
       CMessageLog &operator=(
          const CMessageLog &rhs) = delete;
 
+      bool IsThisLog(
+         const ILogMessages &log) const;
+
       ILogMessages *SetLog(
          ILogMessages &log);
 

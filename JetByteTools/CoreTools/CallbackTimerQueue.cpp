@@ -33,6 +33,7 @@
 #include "TickCount64Provider.h"
 #include "ToString.h"
 #include "Exception.h"
+#include "ExceptionLeakPrevention.h"
 #include "NullCallbackTimerQueueMonitor.h"
 
 #pragma hdrstop
@@ -212,32 +213,22 @@ CCallbackTimerQueue::CCallbackTimerQueue(
 
 CCallbackTimerQueue::~CCallbackTimerQueue()
 {
-   try
-   {
-      m_queue.Clear();
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
-      ActiveHandles::Iterator it = m_activeHandles.Begin();
+   m_queue.Clear(TimerQueue::ClearFlags::FastAndDirty);
 
-      const ActiveHandles::Iterator end = m_activeHandles.End();
+   // MUST use Erase as we delete the node and Fast/FastAndDirty both require the nodes
+   // to continue to exist so that the iteration can continue.
 
-      while (it != end)
-      {
-         const ActiveHandles::Iterator next = it + 1;
+   m_activeHandles.Clear(ActiveHandles::ClearFlags::Erase, [&](const TimerData *pData) -> void {
+      delete pData;
 
-         TimerData *pData = *it;
-
-         m_activeHandles.Erase(it);
-
-         delete pData;
-
-         #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-         m_monitor.OnTimerDeleted();
-         #endif
-
-         it = next;
-      }
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+      #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+      m_monitor.OnTimerDeleted();
+      #endif
+      });
+   
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()

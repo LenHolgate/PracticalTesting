@@ -58,7 +58,10 @@ void WriteResourceToFile(
 void CreateDirectory(
    const _tstring &directory);
 
-bool CreateDirectoryIfRequired(
+void CreateDirectoryIfRequired(
+   const _tstring &directory);
+
+bool CreateDirectoryIfRequiredX(
    const _tstring &directory);
 
 size_t CreateDirectoriesIfRequired(
@@ -68,6 +71,10 @@ bool DirectoryExists(
    const _tstring &directory);
 
 _tstring GetCurrentDirectory();
+
+#ifndef JETBYTE_TOOLS_ADMIN_NARROW_STRING_PLATFORM
+std::string GetCurrentDirectoryA();
+#endif
 
 void SetCurrentDirectory(
    const _tstring &directory);
@@ -80,30 +87,60 @@ bool TryCombinePath(
    const _tstring &path1,
    const _tstring &path2);
 
+bool TryCombinePathA(
+   std::string &combinedPath,
+   const std::string &path1,
+   const std::string &path2);
+
 _tstring CombinePath(
    const _tstring &path1,
    const _tstring &path2);
 
+std::string CombinePathA(
+   const std::string &path1,
+   const std::string &path2);
+
 bool PathHasRelativeRoot(
    const _tstring &path);
 
+bool PathHasRelativeRootA(
+   const std::string &path);
+
 _tstring ResolveRelativePath(
    const _tstring &path);
+
+std::string ResolveRelativePathA(
+   const std::string &path);
 
 _tstring ResolveRelativePath(
    const _tstring &path,
    const _tstring &root);
 
+std::string ResolveRelativePathA(
+   const std::string &path,
+   const std::string &root);
+
 _tstring MakePathAbsolute(
    const _tstring &path);
+
+std::string MakePathAbsoluteA(
+   const std::string &path);
 
 _tstring MakePathAbsolute(
    const _tstring &path,
    const _tstring &root);
+
+std::string MakePathAbsoluteA(
+   const std::string &path,
+   const std::string &root);
 
 _tstring BuildPath(
    const _tstring &path1,
    const _tstring &path2);
+
+std::string BuildPathA(
+   const std::string &path1,
+   const std::string &path2);
 
 _tstring GetTempPath();
 
@@ -119,11 +156,17 @@ _tstring GetTempFileName(
 _tstring GetFileExtension(
    const _tstring &filename);
 
+std::string GetFileExtensionA(
+   const std::string &filename);
+
 _tstring StripFileExtension(
    const _tstring &filename);
 
 std::string StripFileExtensionA(
    const std::string &filename);
+
+_tstring GetRootDirectoryFromPath(
+   const _tstring &path);
 
 _tstring GetFileNameFromPathName(
    const _tstring &pathName);
@@ -159,15 +202,33 @@ inline _tstring StripLastDirectoryFromPathName(
    return StripFileNameFromPathName(pathName);
 }
 
+bool TryDeleteFile(
+   const _tstring &fileName);
+
 void DeleteFile(
    const _tstring &fileName);
 
 void DeleteFileIfExists(
    const _tstring &fileName);
 
+void RemoveDirectoryAndContents(
+   const _tstring &directory);
+
+void RemoveDirectoryContents(
+   const _tstring &directory);
+
+bool TryMoveFile(
+   const _tstring &filenameFrom,
+   const _tstring &filenameTo);
+
 void MoveFile(
    const _tstring &filenameFrom,
    const _tstring &filenameTo);
+
+bool TryCopyFile(
+   const _tstring &filenameFrom,
+   const _tstring &filenameTo,
+   bool failIfExists);
 
 void CopyFile(
    const _tstring &filenameFrom,

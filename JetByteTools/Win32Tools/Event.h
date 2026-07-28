@@ -57,7 +57,7 @@ class IKernelObjectName;
 /// \ingroup Synchronization
 /// \ingroup KernelObjects
 
-class CEvent : public Core::IWaitable
+class CEvent : public JetByteTools::Core::IWaitable
 {
    public :
 

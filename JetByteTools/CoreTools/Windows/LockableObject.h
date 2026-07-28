@@ -32,6 +32,7 @@
 #include "JetByteTools/CoreTools/EmptyBase.h"
 #include "JetByteTools/CoreTools/ILockableObject.h"
 #include "JetByteTools/CoreTools/Exception.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #if (JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_GENERATE_CRASH_DUMP == 1)
 #include "JetByteTools/CoreTools/DebugTrace.h"
@@ -81,7 +82,11 @@ class TLockableObject : public Base
       #if (JETBYTE_CORE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 1)
       ~TLockableObject()
       {
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
          ::DeleteCriticalSection(&m_lock);
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
       #else
       ~TLockableObject() = default;
@@ -93,20 +98,20 @@ class TLockableObject : public Base
       bool TryLock()
       {
          #if (JETBYTE_CORE_LOCKABLE_OBJECT_USE_CRITICAL_SECTIONS == 0)
-            const bool locked = (0 != TryAcquireSRWLockExclusive(&m_lock));
+         const bool locked = (0 != TryAcquireSRWLockExclusive(&m_lock));
          #else
-            const bool locked = (0 != ::TryEnterCriticalSection(&m_lock));
+         const bool locked = (0 != ::TryEnterCriticalSection(&m_lock));
 
-            #if (JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
-            if (locked)
-            {
-               m_owningThreadId = GetCurrentThreadId();
-            }
-            else
-            {
-               CheckForReentrantUse();
-            }
-            #endif
+         #if (JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE == 1)
+         if (locked)
+         {
+            m_owningThreadId = GetCurrentThreadId();
+         }
+         else
+         {
+            CheckForReentrantUse();
+         }
+         #endif
          #endif
 
          return locked;
@@ -181,9 +186,11 @@ class CLockableObject : public TLockableObject<ILockableObject>
 {
 };
 
+#if (JETBYTE_CORE_DEPRECATE_SLIM_LOCKABLE_OBJECT == 0)
 class CSlimLockableObject : public TLockableObject<CEmptyBase>
 {
 };
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core::Windows

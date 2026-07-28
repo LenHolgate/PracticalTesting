@@ -55,12 +55,12 @@ class CTickCount64Provider: public IProvideTickCount64
 
       CTickCount64Provider() = default;
 
-      static ULONGLONG TickCount64()
+      static Ticks TickCount64()
       {
          return ::GetTickCount64();
       }
 
-      ULONGLONG GetTickCount64() const override
+      Ticks GetTickCount64() const override
       {
          return ::GetTickCount64();
       }

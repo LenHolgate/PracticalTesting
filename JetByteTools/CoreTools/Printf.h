@@ -29,10 +29,10 @@
 
 #include "JetByteTools/Admin/Platform.h"
 
-#if defined(JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM)
-#include <tchar.h>      // for _stprintf_s
+#ifdef JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM
+#include "JetByteTools/CoreTools/Windows/Printf.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file:  Printf.h
+// End of file: Printf.h
 ///////////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/PerThreadErrorHandler.h"
 #endif
 
-DECLARE_DERIVED_CLASS_FOR_WINDOWS(CPerThreadErrorHandler);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS(CPerThreadErrorHandler);
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: PerThreadErrorHandler.h

@@ -31,11 +31,12 @@
 #include "StringUtils.h"
 #include "ToBool.h"
 #include "Tchar.h"
+#include "ErrorCodeException.h"
+#include "CheckedAtoL.h"
 
 #pragma hdrstop
 
 #include <algorithm>
-#include <list>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -50,13 +51,6 @@ using std::wstring;
 
 namespace JetByteTools {
 namespace Core {
-
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static bool StringIsAllANSI(
-   const std::wstring &data);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -119,11 +113,11 @@ bool ContainsDigits(
 {
    bool ok = false;
 
-   for (_tstring::const_iterator it = source.begin(); it != source.end(); ++it)
+   for (auto c : source)
    {
       if (!ok)
       {
-         ok = ToBool(_istdigit(*it));
+         ok = ToBool(_istdigit(c));
       }
    }
 
@@ -133,7 +127,7 @@ bool ContainsDigits(
 bool IsAllDigits(
    const _tstring &numeric)
 {
-   bool ok = (numeric.length() != 0);
+   bool ok = (!numeric.empty());
 
    for (_tstring::const_iterator it = numeric.begin(); ok && it != numeric.end(); ++it)
    {
@@ -146,7 +140,7 @@ bool IsAllDigits(
 bool IsAllDigitsA(
    const string &numeric)
 {
-   bool ok = (numeric.length() != 0);
+   bool ok = (!numeric.empty());
 
    for (string::const_iterator it = numeric.begin(); ok && it != numeric.end(); ++it)
    {
@@ -160,7 +154,7 @@ bool IsAllDigitsOr(
    const _tstring &numeric,
    const TCHAR orThis)
 {
-   bool ok = (numeric.length() != 0);
+   bool ok = (!numeric.empty());
 
    for (_tstring::const_iterator it = numeric.begin(); ok && it != numeric.end(); ++it)
    {
@@ -174,7 +168,7 @@ bool IsAllDigitsOrA(
    const string &numeric,
    const char orThis)
 {
-   bool ok = (numeric.length() != 0);
+   bool ok = (!numeric.empty());
 
    for (string::const_iterator it = numeric.begin(); ok && it != numeric.end(); ++it)
    {
@@ -187,7 +181,7 @@ bool IsAllDigitsOrA(
 bool IsAllHexDigits(
    const _tstring &hex)
 {
-   bool ok = (hex.length() != 0);
+   bool ok = (!hex.empty());
 
    for (_tstring::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
    {
@@ -200,7 +194,7 @@ bool IsAllHexDigits(
 bool IsAllHexDigitsA(
    const string &hex)
 {
-   bool ok = (hex.length() != 0);
+   bool ok = (!hex.empty());
 
    for (string::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
    {
@@ -214,7 +208,7 @@ bool IsAllHexDigitsOr(
    const _tstring &hex,
    const TCHAR orThis)
 {
-   bool ok = (hex.length() != 0);
+   bool ok = (!hex.empty());
 
    for (_tstring::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
    {
@@ -228,7 +222,7 @@ bool IsAllHexDigitsOrA(
    const string &hex,
    const char orThis)
 {
-   bool ok = (hex.length() != 0);
+   bool ok = (!hex.empty());
 
    for (string::const_iterator it = hex.begin(); ok && it != hex.end(); ++it)
    {
@@ -241,7 +235,7 @@ bool IsAllHexDigitsOrA(
 bool IsAllAphaNum(
    const _tstring &alphaNum)
 {
-   bool ok = (alphaNum.length() != 0);
+   bool ok = (!alphaNum.empty());
 
    for (auto it = alphaNum.begin(); ok && it != alphaNum.end(); ++it)
    {
@@ -254,7 +248,7 @@ bool IsAllAphaNum(
 bool IsAllAphaNumA(
    const string &alphaNum)
 {
-   bool ok = (alphaNum.length() != 0);
+   bool ok = (!alphaNum.empty());
 
    for (auto it = alphaNum.begin(); ok && it != alphaNum.end(); ++it)
    {
@@ -268,7 +262,7 @@ bool IsAllAphaNumOr(
    const _tstring &alphaNum,
    const TCHAR orThis)
 {
-   bool ok = (alphaNum.length() != 0);
+   bool ok = (!alphaNum.empty());
 
    for (auto it = alphaNum.begin(); ok && it != alphaNum.end(); ++it)
    {
@@ -282,7 +276,7 @@ bool IsAllAphaNumOrA(
    const string &alphaNum,
    const char orThis)
 {
-   bool ok = (alphaNum.length() != 0);
+   bool ok = (!alphaNum.empty());
 
    for (auto it = alphaNum.begin(); ok && it != alphaNum.end(); ++it)
    {
@@ -443,9 +437,11 @@ _tstring StripLeading(
    const _tstring &source,
    const char toStrip)
 {
+   const TCHAR _ttoStrip = toStrip;
+
    const TCHAR *pSrc = source.c_str();
 
-   while (pSrc && *pSrc == toStrip)
+   while (pSrc && *pSrc == _ttoStrip)
    {
       ++pSrc;
    }
@@ -457,12 +453,14 @@ _tstring StripTrailing(
    const _tstring &source,
    const char toStrip)
 {
+   const TCHAR _ttoStrip = toStrip;
+
    size_t i = source.length();
    const _TCHAR *pSrc = source.c_str() + i;
 
    --pSrc;
 
-   while (i && *pSrc == toStrip)
+   while (i && *pSrc == _ttoStrip)
    {
       --pSrc;
       --i;
@@ -564,6 +562,21 @@ _tstring ToLower(
 }
 
 string ToLowerA(
+   const char *pData)
+{
+   string dataOut(pData);
+
+   const size_t length = dataOut.length();
+
+   for (size_t i = 0; i < length; ++i)
+   {
+      dataOut[i] = static_cast<char>(tolower(dataOut[i]));
+   }
+
+   return dataOut;
+}
+
+string ToLowerA(
    const string &data)
 {
    string dataOut = data;
@@ -614,6 +627,8 @@ bool InPlaceFindAndReplace(
 {
    bool replaced = false;
 
+   const _tstring::size_type replacedLength = replaceString.length();
+
    _tstring::size_type pos = phrase.find(findString);
 
    while (pos != _tstring::npos && numReplacements > 0)
@@ -622,7 +637,7 @@ bool InPlaceFindAndReplace(
 
       replaced = true;
 
-      pos = phrase.find(findString, pos + 1);
+      pos = phrase.find(findString, pos + replacedLength);
 
       if (numReplacements != INFINITE)
       {
@@ -654,6 +669,8 @@ bool InPlaceFindAndReplaceA(
 {
    bool replaced = false;
 
+   const string::size_type replacedLength = replaceString.length();
+
    string::size_type pos = phrase.find(findString);
 
    while (pos != _tstring::npos && numReplacements > 0)
@@ -662,7 +679,7 @@ bool InPlaceFindAndReplaceA(
 
       replaced = true;
 
-      pos = phrase.find(findString, pos + 1);
+      pos = phrase.find(findString, pos + replacedLength);
 
       if (numReplacements != INFINITE)
       {
@@ -671,6 +688,138 @@ bool InPlaceFindAndReplaceA(
    }
 
    return replaced;
+}
+
+_tstring CaseInsensitiveFindAndReplace(
+   const _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString,
+   const size_t numReplacements)
+{
+   _tstring result = phrase;
+
+   CaseInsensitiveInPlaceFindAndReplace(result, findString, replaceString, numReplacements);
+
+   return result;
+}
+
+bool CaseInsensitiveInPlaceFindAndReplace(
+   _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString,
+   size_t numReplacements)
+{
+   bool replaced = false;
+
+   const _tstring::size_type replacedLength = replaceString.length();
+
+   _tstring upperCasePhrase = ToUpper(phrase);
+
+   const _tstring upperCaseFindString = ToUpper(findString);
+
+   _tstring::size_type pos = upperCasePhrase.find(upperCaseFindString);
+
+   while (pos != _tstring::npos && numReplacements > 0)
+   {
+      // we have to replace in both to keep the lengths and offsets the same...
+
+      upperCasePhrase.replace(pos, upperCaseFindString.length(), replaceString);
+
+      phrase.replace(pos, upperCaseFindString.length(), replaceString);
+
+      replaced = true;
+
+      pos = upperCasePhrase.find(upperCaseFindString, pos + replacedLength);
+
+      if (numReplacements != INFINITE)
+      {
+         --numReplacements;
+      }
+   }
+
+   return replaced;
+}
+
+string CaseInsensitiveFindAndReplaceA(
+   const string &phrase,
+   const string &findString,
+   const string &replaceString,
+   const size_t numReplacements)
+{
+   string result = phrase;
+
+   CaseInsensitiveInPlaceFindAndReplaceA(result, findString, replaceString, numReplacements);
+
+   return result;
+}
+
+bool CaseInsensitiveInPlaceFindAndReplaceA(
+   string &phrase,
+   const string &findString,
+   const string &replaceString,
+   size_t numReplacements)
+{
+   bool replaced = false;
+
+   const string::size_type replacedLength = replaceString.length();
+
+   string upperCasePhrase = ToUpperA(phrase);
+
+   const string upperCaseFindString = ToUpperA(findString);
+
+   string::size_type pos = upperCasePhrase.find(upperCaseFindString);
+
+   while (pos != _tstring::npos && numReplacements > 0)
+   {
+      // we have to replace in both to keep the lengths and offsets the same...
+
+      upperCasePhrase.replace(pos, upperCaseFindString.length(), replaceString);
+
+      phrase.replace(pos, upperCaseFindString.length(), replaceString);
+
+      replaced = true;
+
+      pos = upperCasePhrase.find(upperCaseFindString, pos + replacedLength);
+
+      if (numReplacements != INFINITE)
+      {
+         --numReplacements;
+      }
+   }
+
+   return replaced;
+}
+
+bool FindAndRemoveString(
+   _tstring &source,
+   const _tstring &target)
+{
+   const _tstring tag = _T("|") + target + _T("|");
+
+   if (source == tag)
+   {
+      source.clear();
+
+      return true;
+   }
+
+   bool found = false;
+
+   _tstring::size_type pos = source.find(tag);
+
+   if (pos != _tstring::npos)
+   {
+      found = true;
+
+      source = FindAndReplace(source, target, _T(""));
+   }
+
+   if (_tstring::npos == source.find_first_not_of('|'))
+   {
+      source.clear();
+   }
+
+   return found;
 }
 
 unsigned long GetLongFromString(
@@ -706,7 +855,7 @@ unsigned long GetLongFromStringA(
          _T("Invalid offset (") + ToString(startOffset) + _T(") or length (") + ToString(length) + _T(") string is only ") + ToString(numeric.length()) + _T(" long"));
    }
 
-   return atol(numeric.substr(startOffset, length).c_str());
+   return CheckedAtoL(numeric.substr(startOffset, length));
 }
 
 unsigned short GetShortFromStringA(
@@ -717,29 +866,111 @@ unsigned short GetShortFromStringA(
    return static_cast<unsigned short>(GetLongFromStringA(numeric, startOffset, length));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Static helper functions
-///////////////////////////////////////////////////////////////////////////////
-
-static bool StringIsAllANSI(
-   const std::wstring &data)
+_tstring BuildMultiString(
+   const _tstring &target,
+   const _tstring &newString)
 {
-   const auto *pData = reinterpret_cast<const BYTE *>(data.c_str());
+   _tstring result = target;
 
-   const size_t dataLength = data.length() * sizeof(wchar_t);
+   const _tstring::size_type length = result.length();
 
-   bool allANSI = true;
+   result += _T(" ") + newString;
 
-   for (size_t i = 1; allANSI && i < dataLength; i += 2)
+   result[length] = '\0';
+
+   return result;
+}
+
+string BuildMultiStringA(
+   const string &target,
+   const string &newString)
+{
+   string result = target;
+
+   const string::size_type length = result.length();
+
+   result += " " + newString;
+
+   result[length] = '\0';
+
+   return result;
+}
+
+_tstring GetStringFromMultiString(
+   _tstring &source)
+{
+   const _tstring::size_type pos = source.find(_T('\0'));
+
+   if (pos != _tstring::npos)
    {
-      if (pData[i] != 0x00)
+      const _tstring result = source.substr(0, pos);
+
+      source = source.substr(pos + 1);
+
+      return result;
+   }
+
+   const _tstring result = source;
+
+   source.clear();
+
+   return result;
+}
+
+string GetStringFromMultiStringA(
+   string &source)
+{
+   const string::size_type pos = source.find('\0');
+
+   if (pos != string::npos)
+   {
+      const string result = source.substr(0, pos);
+
+      source = source.substr(pos + 1);
+
+      return result;
+   }
+
+   const string result = source;
+
+   source.clear();
+
+   return result;
+}
+
+#if _MSC_VER < 1920 || (JETBYTE_CORE_STRING_UTILS_CONVERT_TO_BYTES_IS_CONSTEXPR != 1)
+
+string ConvertToBytes(
+   const _tstring &input,
+   const bool hasSpaces)
+{
+   std::string output;
+
+   const size_t length = input.length();
+
+   size_t i = 0;
+
+   while (i < length)
+   {
+      const TCHAR c1 = input[i++];
+      const TCHAR c2 = input[i++];
+
+      const BYTE n1 = static_cast<BYTE>((c1 >= 'A') ? c1 - 'A' + 10 : c1 - '0');
+      const BYTE n2 = static_cast<BYTE>((c2 >= 'A') ? c2 - 'A' + 10 : c2 - '0');
+
+      const BYTE b = (n1 << 4) | n2;
+
+      output.push_back(b);
+
+      if (hasSpaces)
       {
-         allANSI = !(i != 1 || pData[i] != 0xFE);
+         i++;
       }
    }
 
-   return allANSI;
+   return output;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core

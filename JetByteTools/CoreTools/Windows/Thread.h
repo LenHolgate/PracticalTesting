@@ -76,9 +76,17 @@ class CThread : public IWaitable, public CThreadBase
       CThread &operator=(
          const CThread &rhs) = delete;
 
-      /// Start the thread running.
+      /// Start the thread running. If 'threadName' is supplied name and is not
+      /// an empty string then sets the name before it the thread is allowed to
+      /// run.
+      /// This approach to thread naming means that there is no race condition
+      /// between starting a thread, the thread doing something that a thread naming
+      /// listener may be interested in and the thread being named...
 
       void Start();
+
+      void Start(
+         const _tstring &threadName);
 
       /// Returns true if the thread is running.
 
@@ -94,6 +102,8 @@ class CThread : public IWaitable, public CThreadBase
 
       bool IsThisThread() const;
 
+      ThreadId GetThreadId() const;
+
       /// Sets the current threads name so that it can be queried in a debugger.
 
       static void SetCurrentThreadName(
@@ -102,6 +112,7 @@ class CThread : public IWaitable, public CThreadBase
       /// Sets the supplied threads name so that it can be queried in a debugger.
 
       static void SetThreadName(
+         HANDLE hThread,
          ThreadId threadID,
          const _tstring &threadName);
 
@@ -115,9 +126,6 @@ class CThread : public IWaitable, public CThreadBase
          Milliseconds timeout) const override;
 
    private :
-
-      void InternalStart(
-         bool startSuspended);
 
       mutable CLockableObject m_lock;
 

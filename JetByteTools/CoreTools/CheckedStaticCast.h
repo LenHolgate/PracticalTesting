@@ -32,6 +32,7 @@
 #include <limits>
 
 #include "Exception.h"
+#include "ToString.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
@@ -47,9 +48,14 @@ resultType checked_static_cast(const sourceType &value)
 #pragma warning(disable: 4388)      // signed/unsigned mismatch
 #pragma warning(disable: 4018)      // signed/unsigned mismatch
 
-   if (value > std::numeric_limits<resultType>::max())
+   constexpr auto max = std::numeric_limits<resultType>::max();
+
+   if (value > max)
    {
-      throw CException(_T("checked_static_cast()"), _T("value > std::numeric_limits<resultType>::max()"));
+      throw CException(
+         _T("checked_static_cast()"),
+         _T("value > std::numeric_limits<resultType>::max() - (") +
+         ToString(value) + _T(" > ") + ToString(max) + _T(")"));
    }
 
    return static_cast<resultType>(value);

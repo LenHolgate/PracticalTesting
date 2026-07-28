@@ -205,19 +205,38 @@ class TAtomic
          return CompareExchange(&m_value, exchangeValue, compareValue);
       }
 
-      T AccessValue() const 
+      T AccessValueSlow() const 
       {
          // Use InterlockedCompareExchange to exchange an unlikely
          // value for itself as it is unlikely to cause the exchange
-         // to happen and if it does it doesn't change the value.
+         // to happen and if it does, it doesn't change the value.
          // Avoiding the exchange means we can avoid dirtying the cache line.
-         // Of course we could access the value directly as that would
+         // Of course, we could access the value directly as that would
          // be atomic in terms of accessing the value but imposes no
          // synchronisation or memory ordering semantics - which we may want...
 
          static const T unlikelyValue = std::numeric_limits<T>::max();
 
          return const_cast<TAtomic<T> *>(this)->CompareExchange(unlikelyValue,unlikelyValue);
+      }
+
+      T AccessValue() const 
+      {
+         // Use InterlockedCompareExchange to exchange an unlikely
+         // value for itself as it is unlikely to cause the exchange
+         // to happen and if it does, it doesn't change the value.
+         // Avoiding the exchange means we can avoid dirtying the cache line.
+         // Of course, we could access the value directly as that would
+         // be atomic in terms of accessing the value but imposes no
+         // synchronisation or memory ordering semantics - which we may want...
+
+         #if (JETBYTE_CORE_ACCESS_VALUE_USES_COMPARE_EXCHANGE == 1)
+         static const T unlikelyValue = std::numeric_limits<T>::max();
+
+         return const_cast<TAtomic<T> *>(this)->CompareExchange(unlikelyValue,unlikelyValue);
+         #else
+         return m_value;
+         #endif
       }
 
    private :

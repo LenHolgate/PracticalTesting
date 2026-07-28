@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/PerformanceCounter.h"
 #endif
 
-DECLARE_DERIVED_CLASS_SINGLE_ARG_AND_DEFAULT_CTOR_FOR_WINDOWS(CPerformanceCounter, ThreadAffinity);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS_SINGLE_ARG_AND_DEFAULT_CTOR(CPerformanceCounter, ThreadAffinity);
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: PerformanceCounter.h

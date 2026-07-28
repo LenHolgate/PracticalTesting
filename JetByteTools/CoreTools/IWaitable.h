@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/IWaitable.h"
 #endif
 
-DECLARE_DERIVED_CLASS_FOR_WINDOWS(IWaitable);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS(IWaitable)
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: IWaitable.h

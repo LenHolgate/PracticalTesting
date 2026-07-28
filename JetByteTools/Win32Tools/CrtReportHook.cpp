@@ -32,6 +32,7 @@
 
 #include "JetByteTools/CoreTools/DebugTrace.h"
 #include "JetByteTools/CoreTools/StringConverter.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -73,30 +74,40 @@ static bool s_processIsExiting = false;
 CCrtReportHook::CCrtReportHook()
    :  m_oldHook(_CrtSetReportHook(ReportHook))
 {
-   atexit(CrtReportHookAtExitDetector);
+   (void)atexit(CrtReportHookAtExitDetector);
 }
 
 CCrtReportHook::~CCrtReportHook()
 {
-   // The lint suppression is needed because the _CrtSetReportHook() is nothing but
-   // a cast to nothing in release builds...
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
    _CrtSetReportHook(m_oldHook);
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 int CCrtReportHook::ReportHook(
-   const int reportType,
+   int reportType,
    char *pMessage,
    int *pReturnValue)
 {
+   #if (JETBYTE_WIN32_CRT_REPORT_HOOK_TREAT_ASSERT_AS_WARN == 1)
+   if (reportType == _CRT_ASSERT)
+   {
+      reportType == _CRT_WARN;
+   }
+   #endif
+
    if (s_processIsExiting)
    {
-      ExitProcess(666);
+      // We call terminate process because that kills us dead immediately and doesn't continue to try and
+      // fiddle with the heap...
+
+      TerminateProcess(GetCurrentProcess(), 666);
    }
 
-   OutputEx(_T("CRT Debug: ") + CStringConverter::AtoT(pMessage));
-
-   cout << "CRT Debug: " << pMessage << endl;
+   // if this is a heap corruption then doing stuff which allocates or releases memory will just make things
+   // far worse - so try other stuff first...
 
    if (reportType == _CRT_ASSERT ||
        reportType == _CRT_ERROR)
@@ -112,8 +123,12 @@ int CCrtReportHook::ReportHook(
 
          OutputEx(_T("CRT Debug: Terminating process"));
 
-         ExitProcess(254);
+         TerminateProcess(GetCurrentProcess(), 254);
       }
+   }
+   else
+   {
+      OutputEx(_T("CRT Debug: ") + CStringConverter::AtoT(pMessage));
    }
 
    if (pReturnValue)

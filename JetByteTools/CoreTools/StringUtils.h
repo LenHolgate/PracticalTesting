@@ -212,6 +212,9 @@ _tstring ToLower(
    const _tstring &data);
 
 std::string ToLowerA(
+   const char *pData);
+
+std::string ToLowerA(
    const std::string &data);
 
 std::wstring ToLowerW(
@@ -268,6 +271,89 @@ bool InPlaceFindAndReplaceA(
    const std::string &findString,
    const std::string &replaceString,
    size_t numReplacements = INFINITE);
+
+_tstring CaseInsensitiveFindAndReplace(
+   const _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString,
+   size_t numReplacements = INFINITE);
+
+bool CaseInsensitiveInPlaceFindAndReplace(
+   _tstring &phrase,
+   const _tstring &findString,
+   const _tstring &replaceString,
+   size_t numReplacements = INFINITE);
+
+std::string CaseInsensitiveFindAndReplaceA(
+   const std::string &phrase,
+   const std::string &findString,
+   const std::string &replaceString,
+   size_t numReplacements = INFINITE);
+
+bool CaseInsensitiveInPlaceFindAndReplaceA(
+   std::string &phrase,
+   const std::string &findString,
+   const std::string &replaceString,
+   size_t numReplacements = INFINITE);
+
+bool FindAndRemoveString(
+   JetByteTools::Core::_tstring &source,
+   const JetByteTools::Core::_tstring &target);
+
+// Builds "multi-strings" that is null terminated strings within
+// a string, so "FOO\0BAR\0BLAH\0"
+
+_tstring BuildMultiString(
+   const _tstring &target,
+   const _tstring &newString);
+
+std::string BuildMultiStringA(
+   const std::string &target,
+   const std::string &newString);
+
+_tstring GetStringFromMultiString(
+   _tstring &source);
+
+std::string GetStringFromMultiStringA(
+   std::string &source);
+
+#if _MSC_VER >= 1920 && (JETBYTE_CORE_STRING_UTILS_CONVERT_TO_BYTES_IS_CONSTEXPR == 1)
+
+constexpr std::string ConvertToBytes(
+   const JetByteTools::Core::_tstring &input,
+   const bool hasSpaces = true)
+{
+   std::string output;
+
+   const size_t length = input.length();
+
+   size_t i = 0;
+
+   while (i < length)
+   {
+      const TCHAR c1 = input[i++];
+      const TCHAR c2 = input[i++];
+
+      const BYTE n1 = static_cast<BYTE>((c1 >= 'A') ? c1 - 'A' + 10 : c1 - '0');
+      const BYTE n2 = static_cast<BYTE>((c2 >= 'A') ? c2 - 'A' + 10 : c2 - '0');
+
+      const BYTE b = static_cast<BYTE>((n1 << 4) | n2);
+
+      output.push_back(b);
+
+      if (hasSpaces)
+      {
+         i++;
+      }
+   }
+
+   return output;
+}
+#else
+std::string ConvertToBytes(
+   const JetByteTools::Core::_tstring &input,
+   bool hasSpaces = true);
+#endif
 
 #ifdef JETBYTE_UTILS_PUSHED_MIN
 #pragma pop_macro("min")

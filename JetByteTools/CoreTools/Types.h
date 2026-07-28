@@ -28,13 +28,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/Admin/Platform.h"
+#include "JetByteTools/Admin/Warnings.h"
 
 #if defined(JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM)
 #include "JetByteTools/CoreTools/Windows/Types.h"
 #endif
 
-#include <stdint.h>
-struct _OVERLAPPED;
+#include <cstdint>
+#include <limits>
 
 typedef _OVERLAPPED OVERLAPPED, *LPOVERLAPPED;
 
@@ -75,6 +76,46 @@ inline uint32_t low32(uint64_t value)
 #define HIWORD(l)           ((WORD)((((DWORD_PTR)(l)) >> 16) & 0xffff))
 #define LOBYTE(w)           ((BYTE)(((DWORD_PTR)(w)) & 0xff))
 #define HIBYTE(w)           ((BYTE)((((DWORD_PTR)(w)) >> 8) & 0xff))
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Core {
+
+// Clang on ARM gives a warning for char c < 0 as signedness may default differently....
+
+inline bool is_usascii(
+   const unsigned char c)
+{
+   return c < 128;
+}
+
+inline  bool is_usascii(
+   const signed char c)
+{
+   return c >= 0;
+}
+
+inline  bool is_usascii(
+   const char c)
+{
+   JETBYTE_WARNING_SUPPRESS_TYPE_QUALIFIERS_IGNORED
+   #if CHAR_MIN == 0
+   return is_usascii(static_cast<const signed char>(c));
+   #else
+   return is_usascii(static_cast<const unsigned char>(c));
+   #endif
+   JETBYTE_WARNING_SUPPRESS_POP
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Core
+} // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Types.h

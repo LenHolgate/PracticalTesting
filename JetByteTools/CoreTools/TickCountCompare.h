@@ -44,9 +44,9 @@ class CTickCountCompare
 {
    public:
 
-      static const DWORD s_defaultOverflowValue = 86400000;
+      static constexpr DWORD s_defaultOverflowValue = 86400000;
 
-      static DWORD TickCountDifference(
+      static DWORD Difference(
          const DWORD a,
          const DWORD b,
          const DWORD overflow = s_defaultOverflowValue)
@@ -54,7 +54,7 @@ class CTickCountCompare
          return a - b >= overflow ? b - a : a - b;
       }
 
-      static DWORD TickCountLess(
+      static bool FirstLessThanSecond(
          const DWORD a,
          const DWORD b,
          const DWORD overflow = s_defaultOverflowValue)
@@ -62,15 +62,15 @@ class CTickCountCompare
          return a - b >= overflow;
       }
 
-      static DWORD TickCountLessOrEqual(
+      static bool FirstLessOrEqualToSecond(
          const DWORD a,
          const DWORD b,
          const DWORD overflow = s_defaultOverflowValue)
       {
-         return !TickCountGreater(a, b, overflow);
+         return !FirstGreaterThanSecond(a, b, overflow);
       }
 
-      static DWORD TickCountGreater(
+      static bool FirstGreaterThanSecond(
          const DWORD a,
          const DWORD b,
          const DWORD overflow = s_defaultOverflowValue)
@@ -78,13 +78,56 @@ class CTickCountCompare
          return b - a >= overflow;
       }
 
-      static DWORD TickCountGreaterOrEqual(
+      static bool FirstGreaterOrEqualToSecond(
          const DWORD a,
          const DWORD b,
          const DWORD overflow = s_defaultOverflowValue)
       {
-         return a == b || TickCountGreater(a, b, overflow);
+         return a == b || FirstGreaterThanSecond(a, b, overflow);
       }
+
+
+      #if (JETBYTE_CORE_DEPRECATE_OLD_AND_VAGUE_TICK_COUNT_COMPARE_METHODS == 0)
+      static DWORD TickCountDifference(
+         const DWORD a,
+         const DWORD b,
+         const DWORD overflow = s_defaultOverflowValue)
+      {
+         return Difference(a, b, overflow);
+      }
+
+      static bool TickCountLess(
+         const DWORD a,
+         const DWORD b,
+         const DWORD overflow = s_defaultOverflowValue)
+      {
+         return FirstLessThanSecond(a, b, overflow);
+      }
+
+      static bool TickCountLessOrEqual(
+         const DWORD a,
+         const DWORD b,
+         const DWORD overflow = s_defaultOverflowValue)
+      {
+         return FirstLessOrEqualToSecond(a, b, overflow);
+      }
+
+      static bool TickCountGreater(
+         const DWORD a,
+         const DWORD b,
+         const DWORD overflow = s_defaultOverflowValue)
+      {
+         return FirstGreaterThanSecond(a, b, overflow);
+      }
+
+      static bool TickCountGreaterOrEqual(
+         const DWORD a,
+         const DWORD b,
+         const DWORD overflow = s_defaultOverflowValue)
+      {
+         return FirstGreaterOrEqualToSecond(a, b, overflow);
+      }
+      #endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

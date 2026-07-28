@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/TickCount64Provider.h"
 #endif
 
-DECLARE_DERIVED_CLASS_FOR_WINDOWS(CTickCount64Provider);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS(CTickCount64Provider);
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: TickCount64Provider.h

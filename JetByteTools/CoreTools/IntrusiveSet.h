@@ -61,14 +61,15 @@ template <
    class K = ULONG_PTR,
    class TtoK = TIntrusiveSetNodeKeyAccessorKeyIsAddress<T>,
    class Pr = std::less<K>,
-   class TtoN = TIntrusiveRedBlackTreeNodeIsBaseClass<T> >
-class TIntrusiveSet : public TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN>
+   class TtoN = TIntrusiveRedBlackTreeNodeIsBaseClass<T>,
+   class TtoKS = TIntrusiveRedBlackTreeKeyIsSimpleToPrint<T, TtoK> >
+class TIntrusiveSet : public TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN, TtoKS>
 {
    public :
 
       typedef TtoK key_accessor;
 
-      typedef TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN> Base;
+      typedef TIntrusiveRedBlackTree<T, K, TtoK, Pr, TtoN, TtoKS> Base;
 
       typename Base::Iterator Find(
          const T *pData) const

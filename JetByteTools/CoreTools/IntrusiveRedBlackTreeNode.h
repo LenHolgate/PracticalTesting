@@ -27,6 +27,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "Types.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,13 +40,12 @@ namespace Core {
 // Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
-template <class T, class K, class TtoN, class Pr, class TtoK>
+template <class T, class K, class TtoN, class Pr, class TtoK, class TtoKS>
 class TIntrusiveRedBlackTree;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CIntrusiveRedBlackTreeNode
 ///////////////////////////////////////////////////////////////////////////////
-
 
 class CIntrusiveRedBlackTreeNode
 {
@@ -56,11 +57,8 @@ class CIntrusiveRedBlackTreeNode
       CIntrusiveRedBlackTreeNode &operator=(
          const CIntrusiveRedBlackTreeNode &rhs) = delete;
 
-   protected :
-
       CIntrusiveRedBlackTreeNode()
-         :  m_red(true),
-            m_pParent(nullptr),
+         :  m_pParent(nullptr),
             m_pLinks{}
       {
          // Note that by using an array of 2 links rather than explicit left and right
@@ -72,20 +70,101 @@ class CIntrusiveRedBlackTreeNode
 
       ~CIntrusiveRedBlackTreeNode() = default;
 
+      bool IsActive() const
+      {
+         return m_pParent || m_pLinks[0] || m_pLinks[1] || !IsRed(this);
+      }
+
+      void ResetNode()
+      {
+         m_pParent = nullptr;
+         m_pLinks[0] = nullptr;
+         m_pLinks[1] = nullptr;
+      }
+
    private :
 
-      template <class T, class K, class TtoK, class Pr, class TtoN> friend class TIntrusiveRedBlackTree;
+      template <class T, class K, class TtoK, class Pr, class TtoN, class TtoKS> friend class TIntrusiveRedBlackTree;
 
-      // We could optimise away m_red and store it in the parent pointer but then we'd
-      // need to manipulate the parent pointer before each use. Need to profile and see
-      // if this is worth doing to save a little space per node.
+      // First cut at optimising away the bool value "m_red" which added 8 bytes to the size of the
+      // node. We now store it in the parent pointer and need to manipulate the parent pointer before
+      // use.
 
-      bool m_red;
+      static constexpr ULONG_PTR s_blackShift = ((sizeof(void *) * 8) - 1);
+
+      static constexpr ULONG_PTR s_blackFlag = static_cast<ULONG_PTR>(1) << s_blackShift;
+
+      static constexpr ULONG_PTR s_pointerMask = ~s_blackFlag;
+
+      static bool IsRed(
+         const CIntrusiveRedBlackTreeNode *pNode)
+      {
+         return !(reinterpret_cast<ULONG_PTR>(pNode->m_pParent) & s_blackFlag);
+      }
+
+      static void MakeRed(
+         CIntrusiveRedBlackTreeNode *pNode)
+      {
+         pNode->m_pParent = reinterpret_cast<CIntrusiveRedBlackTreeNode *>(reinterpret_cast<ULONG_PTR>(pNode->m_pParent) & ~s_blackFlag);
+      }
+
+      static void MakeBlack(
+         CIntrusiveRedBlackTreeNode *pNode)
+      {
+         pNode->m_pParent = reinterpret_cast<CIntrusiveRedBlackTreeNode *>(reinterpret_cast<ULONG_PTR>(pNode->m_pParent) | s_blackFlag);
+      }
+
+      static void SetColourAs(
+         CIntrusiveRedBlackTreeNode *pNode,
+         const bool setAsRed)
+      {
+         if (setAsRed)
+         {
+            MakeRed(pNode);
+         }
+         else
+         {
+            MakeBlack(pNode);
+         }
+      }
+
+      static void CopyColour(
+         CIntrusiveRedBlackTreeNode *pCopyTo,
+         const CIntrusiveRedBlackTreeNode *pCopyFrom)
+      {
+         SetColourAs(pCopyTo, !(reinterpret_cast<ULONG_PTR>(pCopyFrom->m_pParent) & s_blackFlag));
+      }
+
+      static CIntrusiveRedBlackTreeNode *GetParent(
+         const CIntrusiveRedBlackTreeNode *pNode)
+      {
+         return const_cast<CIntrusiveRedBlackTreeNode * >(reinterpret_cast<const CIntrusiveRedBlackTreeNode *>(reinterpret_cast<ULONG_PTR>(pNode->m_pParent) & s_pointerMask));
+      }
+
+      static CIntrusiveRedBlackTreeNode *GetCleanNode(
+         const CIntrusiveRedBlackTreeNode *pNode)
+      {
+         return reinterpret_cast<CIntrusiveRedBlackTreeNode *>(reinterpret_cast<const ULONG_PTR>(pNode) & s_pointerMask);
+      }
+
+      static void SetParent(
+         CIntrusiveRedBlackTreeNode *pNode,
+         CIntrusiveRedBlackTreeNode *pNewParent)
+      {
+         if (IsRed(pNode))
+         {
+            pNode->m_pParent = pNewParent;
+         }
+         else
+         {
+            pNode->m_pParent = pNewParent;
+            MakeBlack(pNode);
+         }
+      }
 
       CIntrusiveRedBlackTreeNode *m_pParent;
       CIntrusiveRedBlackTreeNode *m_pLinks[2];
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core

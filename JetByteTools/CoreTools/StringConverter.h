@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/StringConverter.h"
 #endif
 
-DECLARE_DERIVED_CLASS_FOR_WINDOWS(CStringConverter);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS(CStringConverter)
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: StringConverter.h

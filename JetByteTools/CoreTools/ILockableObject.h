@@ -27,6 +27,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "IUnlockableObject.h"
 #include "LockableObjectOwners.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ namespace Core {
 /// \ingroup Synchronization
 /// \ingroup Interfaces
 
-class ILockableObject
+class ILockableObject : public IUnlockableObject
 {
    public :
 
@@ -65,11 +66,11 @@ class ILockableObject
 
       /// Unlock the lockable object.
 
-      virtual void Unlock() = 0;
+      void Unlock() override = 0;
 
       /// Instances of this interface can be deleted by their users.
 
-      virtual ~ILockableObject() = default;
+      ~ILockableObject() override = default;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

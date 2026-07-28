@@ -47,7 +47,7 @@ namespace Win32 {
 /// in \ref RAII "scope based" designs.
 /// \ingroup SmartPointer
 
-class CSmartHandle : public Core::IWaitable
+class CSmartHandle : public JetByteTools::Core::IWaitable
 {
    public :
 
@@ -101,7 +101,7 @@ class CSmartHandle : public Core::IWaitable
 
       /// Close any handle that is managed by this CSmartHandle.
 
-      void Close();
+      virtual void Close();
 
       /// Returns true if the CSmartHandle currently has ownership of a HANDLE.
 
@@ -116,7 +116,7 @@ class CSmartHandle : public Core::IWaitable
       bool Wait(
          Milliseconds timeoutMillis) const override;
 
-   private :
+   protected :
 
       HANDLE m_handle;
 };

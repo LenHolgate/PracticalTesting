@@ -44,9 +44,11 @@ class IProvideTickCount64
 {
    public :
 
+      typedef ULONGLONG Ticks;
+
       /// Returns the current tick count.
 
-      virtual ULONGLONG GetTickCount64() const = 0;
+      virtual Ticks GetTickCount64() const = 0;
 
    protected :
 

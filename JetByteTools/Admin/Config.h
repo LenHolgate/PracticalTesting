@@ -41,6 +41,9 @@
 
 #define JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE 1
 
+#define JETBYTE_CORE_DUMP_ON_CHECKED_MEMCPY_FAILURES 0
+#define JETBYTE_CORE_DUMP_ON_CHECKED_MEMSET_FAILURES 0
+
 #include "JetByteTools/CoreTools/Admin.h"
 #include "JetByteTools/Win32Tools/Admin.h"
 

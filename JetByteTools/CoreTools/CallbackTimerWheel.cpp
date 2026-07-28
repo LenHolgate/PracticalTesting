@@ -32,6 +32,7 @@
 #include "TickCountProvider.h"
 #include "TickCountCompare.h"
 #include "Exception.h"
+#include "ExceptionLeakPrevention.h"
 #include "ToString.h"
 #include "NullCallbackTimerQueueMonitor.h"
 #include "IntrusiveSetNode.h"
@@ -250,32 +251,21 @@ CCallbackTimerWheel::CCallbackTimerWheel(
 
 CCallbackTimerWheel::~CCallbackTimerWheel()
 {
-   try
-   {
-      ActiveHandles::Iterator it = m_activeHandles.Begin();
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
-      const ActiveHandles::Iterator end = m_activeHandles.End();
+   // MUST use Erase as we delete the node and Fast/FastAndDirty both require the nodes
+   // to continue to exist so that the iteration can continue.
 
-      while (it != end)
-      {
-         const ActiveHandles::Iterator next = it + 1;
+   m_activeHandles.Clear(ActiveHandles::ClearFlags::Erase, [&](TimerData *pData) -> void {
+      delete pData;
 
-         TimerData *pData = *it;
+      #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+      m_monitor.OnTimerDeleted();
+      #endif
+      });
+   delete [] m_pTimersStart;
 
-         m_activeHandles.Erase(it);
-
-         delete pData;
-
-         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-         m_monitor.OnTimerDeleted();
-         #endif
-
-         it = next;
-      }
-
-      delete [] m_pTimersStart;
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 Milliseconds CCallbackTimerWheel::GetNextTimeout()
@@ -769,7 +759,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetAllTimersToProcess(
    // forward in wheel granularity sized steps, otherwise the timeouts in the wheel will
    // change.
 
-   const DWORD difference = CTickCountCompare::TickCountDifference(m_currentTime, now);
+   const DWORD difference = CTickCountCompare::Difference(m_currentTime, now);
 
    const DWORD differenceInGranularity = (difference / m_timerGranularity) * m_timerGranularity;
 
@@ -850,7 +840,7 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::GetTimersToProcess(
    // forward in wheel granularity sized steps, otherwise the timeouts in the wheel will
    // change.
 
-   const DWORD difference = CTickCountCompare::TickCountDifference(m_currentTime, now);
+   const DWORD difference = CTickCountCompare::Difference(m_currentTime, now);
 
    const DWORD differenceInGranularity = (difference / m_timerGranularity) * m_timerGranularity;
 

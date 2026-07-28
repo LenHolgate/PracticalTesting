@@ -33,6 +33,7 @@
 #include "JetByteTools/CoreTools/DebugTrace.h"
 #include "JetByteTools/CoreTools/ErrorCodeException.h"
 #include "JetByteTools/CoreTools/ErrorCodeToErrorMessage.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -67,19 +68,17 @@ CThreadLocalStorage::CThreadLocalStorage(
 
 CThreadLocalStorage::~CThreadLocalStorage()
 {
-   try
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   if (m_owner)
    {
-      if (m_owner)
+      if (0 == TlsFree(m_index))
       {
-         if (0 == TlsFree(m_index))
-         {
-            DEBUG_ONLY(Output(_T("~CThreadLocalStorage() - error:") + ErrorCodeToErrorMessage(::GetLastError())));
-         }
+         DEBUG_ONLY(Output(_T("~CThreadLocalStorage() - error:") + ErrorCodeToErrorMessage(::GetLastError())));
       }
    }
-   JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED
-   {
-   }
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 DWORD CThreadLocalStorage::GetIndex() const

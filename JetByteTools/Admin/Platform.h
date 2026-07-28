@@ -28,12 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define JETBYTE_TOOLS_ADMIN_WINDOWS_PLATFORM
-
 #if defined(_UNICODE)
 #define JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
 #endif
 
 #if defined(_WIN64)
+#define JETBYTE_TOOLS_ADMIN_WINDOWS_X64_PLATFORM
 #define JETBYTE_TOOLS_ADMIN_64BIT_PLATFORM
 #endif
 

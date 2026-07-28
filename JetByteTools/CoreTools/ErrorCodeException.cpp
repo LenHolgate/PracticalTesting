@@ -31,8 +31,6 @@
 #include "ErrorCodeException.h"
 #include "ErrorCodeToErrorMessage.h"
 
-#include "StringConverter.h"
-
 #pragma hdrstop
 
 ///////////////////////////////////////////////////////////////////////////////

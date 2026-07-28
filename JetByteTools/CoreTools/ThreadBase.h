@@ -27,7 +27,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "ThreadId.h"
+#include "Types.h"
 #include "tstring.h"
 
 #if (JETBYTE_CORE_TRACK_THREAD_NAMES == 1)
@@ -57,32 +57,49 @@ class CThreadBase
 {
    public :
 
-   static void AddThreadNameListener(
-      IListenToThreadNaming &listener);
+      static void SetAsFrameworkThread();
 
-   static void RemoveThreadNameListener(
-      IListenToThreadNaming &listener);
+      static void SetAsNonFrameworkThread();
 
-   static void AddThreadStartListener(
-      IListenToThreadStart &listener);
+      static bool IsFrameworkThread();
 
-   static void RemoveThreadStartListener(
-      IListenToThreadStart &listener);
+      static void AddThreadNameListener(
+         IListenToThreadNaming &listener);
 
-   static void AddThreadStopListener(
-      IListenToThreadStop &listener);
+      static void RemoveThreadNameListener(
+         IListenToThreadNaming &listener);
 
-   static void RemoveThreadStopListener(
-      IListenToThreadStop &listener);
+      static void AddThreadStartListener(
+         IListenToThreadStart &listener);
 
+      static void RemoveThreadStartListener(
+         IListenToThreadStart &listener);
 
-#if (JETBYTE_CORE_TRACK_THREAD_NAMES == 1)
+      static void AddThreadStopListener(
+         IListenToThreadStop &listener);
 
-   typedef std::map<_tstring, _tstring> ThreadNames;
+      static void RemoveThreadStopListener(
+         IListenToThreadStop &listener);
 
-   static ThreadNames GetThreadNames();
+      static void SetPrimaryProcessorGroupForAllThreads(
+         WORD group);
 
-#endif
+      static void SetThreadAfinityMaskForAllThreads(
+         DWORD_PTR affinityMask);
+
+      static DWORD_PTR GetThreadAfinityMaskForAllThreads();
+
+      static bool ThreadAfinityMaskHasBeenSetForAllThreads();
+
+      static void SetThreadAfinityMaskForThisThreadIfNecessary();
+
+      #if (JETBYTE_CORE_TRACK_THREAD_NAMES == 1)
+
+      typedef std::map<_tstring, _tstring> ThreadNames;
+
+      static ThreadNames GetThreadNames();
+
+      #endif
 
    protected :
 
@@ -90,9 +107,10 @@ class CThreadBase
          const _tstring &threadID,
          const _tstring &threadName);
 
-      void NotifyThreadStartListeners();
+      static void NotifyThreadStartListeners(
+         const _tstring &threadID);
 
-      void NotifyThreadStopListeners();
+      static void NotifyThreadStopListeners();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

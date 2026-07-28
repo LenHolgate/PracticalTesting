@@ -636,9 +636,12 @@
     <ClInclude Include="FunctionName.h" />
     <ClInclude Include="EnableIf.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="PlatformAdmin.h" />
     <ClInclude Include="Platform\Windows\CompilerName.h" />
+    <ClInclude Include="Platform\Windows\PlatformAdmin.h" />
     <ClInclude Include="Platform\Windows\Warnings.h" />
     <ClInclude Include="StaticAssert.h" />
+    <ClInclude Include="StdCall.h" />
     <ClInclude Include="TargetWindowsVersion.h" />
     <ClInclude Include="Todo.h" />
     <ClInclude Include="Warnings.h" />

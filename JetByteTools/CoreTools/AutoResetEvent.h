@@ -29,6 +29,8 @@
 
 #include "Event.h"
 
+#include "JetByteTools/CoreTools/IEvent.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,7 @@ namespace Core {
 // CAutoResetEvent
 ///////////////////////////////////////////////////////////////////////////////
 
-class CAutoResetEvent : public IWaitable
+class CAutoResetEvent : public IEvent
 {
    public :
 
@@ -48,7 +50,6 @@ class CAutoResetEvent : public IWaitable
          const CEvent::InitialState initialState = CEvent::NonSignaled)
          :  m_event(CEvent::AutoReset, initialState)
       {
-      
       }
 
       CAutoResetEvent(
@@ -59,7 +60,7 @@ class CAutoResetEvent : public IWaitable
 
       /// Set the event to the signalled state.
 
-      void Set()
+      void Set() override
       {
          m_event.Set();
       }

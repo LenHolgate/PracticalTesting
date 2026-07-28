@@ -33,7 +33,7 @@
 #include "JetByteTools/CoreTools/Windows/ThreadLocalStorage.h"
 #endif
 
-DECLARE_DERIVED_CLASS_SINGLE_ARG_AND_DEFAULT_CTOR_FOR_WINDOWS(CThreadLocalStorage, TLSIndex);
+DECLARE_PLATFORM_SPECIFIC_CORE_DERIVED_CLASS_SINGLE_ARG_AND_DEFAULT_CTOR(CThreadLocalStorage, TLSIndex);
 
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: ThreadLocalStorage.h

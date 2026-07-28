@@ -37,6 +37,14 @@ namespace JetByteTools {
 namespace Core {
 
 ///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+#if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+class IMonitorExceptionCreation;
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
 // CException
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +54,13 @@ namespace Core {
 class CException
 {
    public :
+
+      #if JETBYTE_CORE_MONITOR_EXCEPTION_CREATION == 1
+      static void SetExceptionMonitor(
+         IMonitorExceptionCreation &monitor);
+
+      static void ClearExceptionMonitor();
+      #endif
 
       #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
       CException(

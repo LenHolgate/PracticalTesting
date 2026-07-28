@@ -69,19 +69,15 @@ bool IWaitable::WaitForHandle(
       throw CException(_T("IWaitable::WaitForHandle()"), _T("Handle is invalid"));
    }
 
-   bool ok;
+   bool ok = true;
 
-   const DWORD result = WaitForMultipleHandles(1, const_cast<HANDLE *>(&handle), true, timeout);
+   const DWORD result = WaitForMultipleHandles(1, &handle, true, timeout);
 
    if (result == WAIT_TIMEOUT)
    {
       ok = false;
    }
-   else if (result == WAIT_OBJECT_0)
-   {
-      ok = true;
-   }
-   else
+   else if (result != WAIT_OBJECT_0)
    {
       throw CErrorCodeException(_T("IWaitable::Wait() - WaitForSingleObject"), GetLastError());
    }

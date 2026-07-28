@@ -62,15 +62,20 @@ class TAtomicLong
       TAtomicLong &operator=(
          const TAtomicLong &rhs) = delete;
 
+      operator T() const
+      {
+         return m_value.AccessValue();
+      }
+
       T Value() const
       {
          return m_value.AccessValue();
       }
 
-      void Set(
+      T Set(
          const T value)
       {
-         m_value.Set(value);
+         return m_value.Exchange(value);
       }
 
       T Increment()

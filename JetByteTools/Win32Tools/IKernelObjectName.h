@@ -50,7 +50,7 @@ class IKernelObjectName
 {
    public :
 
-      virtual Core::_tstring GetName() const = 0;
+      virtual JetByteTools::Core::_tstring GetName() const = 0;
 
       virtual bool IsGlobalName() const = 0;
 

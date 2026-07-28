@@ -33,12 +33,15 @@
 
 #include "CodePage.h"
 #include "CrtReportHook.h"
+#include "DirectorySearch.h"
 #include "Event.h"
 #include "GetLastErrorMessage.h"
 #include "IKernelObjectName.h"
+#include "LibraryLoader.h"
 #include "PureCallHandler.h"
 #include "SEHException.h"
 #include "SmartHandle.h"
+#include "SystemUtils.h"
 #include "ThreadAffinity.h"
 #include "Win32Exception.h"
 

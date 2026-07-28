@@ -31,7 +31,7 @@
 #include "SmartHandle.h"
 #include "Win32Exception.h"
 
-#include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -70,17 +70,17 @@ CSmartHandle::CSmartHandle(
 
 CSmartHandle::~CSmartHandle()
 {
-   try
-   {
-      Close();
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   CSmartHandle::Close();
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 CSmartHandle CSmartHandle::DuplicateHandle(
    HANDLE hInput)
 {
-   HANDLE hOutput;
+   HANDLE hOutput = INVALID_HANDLE_VALUE;
 
    if (!::DuplicateHandle(
       GetCurrentProcess(),

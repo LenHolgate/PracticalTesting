@@ -32,6 +32,7 @@
 
 #include "JetByteTools/CoreTools/DebugTrace.h"
 #include "JetByteTools/CoreTools/tstring.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -64,36 +65,36 @@ CPerThreadErrorHandler::CPerThreadErrorHandler()
       #if (JETBYTE_BREAK_SEH_EXCEPTION_TRANSLATOR_COMPATABILITY == 1)
       m_sehTranslator(0),
       #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
       m_oldTerminateHandler(std::set_terminate(TerminateHandler))
       #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
       ,m_oldUnexpectedHandler(std::set_unexpected(UnexpectedHandler))
       #endif
 {
-   atexit(PerThreadHandlerAtExitDetector);
+   (void)atexit(PerThreadHandlerAtExitDetector);
 }
 
 CPerThreadErrorHandler::~CPerThreadErrorHandler()
 {
-   try
-   {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
-      std::set_unexpected(m_oldUnexpectedHandler);
-      #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
-      std::set_terminate(m_oldTerminateHandler);
-      #endif
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+   std::set_unexpected(m_oldUnexpectedHandler);
+   #endif
+   #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
+   std::set_terminate(m_oldTerminateHandler);
+   #endif
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
-#if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
+#if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
 void CPerThreadErrorHandler::TerminateHandler()
 {
    if (!s_processIsExiting)
    {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (::IsDebuggerPresent())
       {
          MessageBox(0, _T("std::terminate!"), _T("std::terminate!"), MB_OK);
@@ -106,7 +107,7 @@ void CPerThreadErrorHandler::TerminateHandler()
    }
    else
    {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (IsDebuggerPresent())
       {
          MessageBox(nullptr, _T("std::terminate!"), _T("std::terminate!"), MB_OK);
@@ -118,12 +119,12 @@ void CPerThreadErrorHandler::TerminateHandler()
 }
 #endif
 
-#if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+#if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
 void CPerThreadErrorHandler::UnexpectedHandler()
 {
    if (!s_processIsExiting)
    {
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_BREAK_IF_DEBUGGER_PRESENT == 1)
       if (::IsDebuggerPresent())
       {
          MessageBox(nullptr, _T("std::unexpected!"), _T("std::unexpected!"), MB_OK);

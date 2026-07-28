@@ -99,6 +99,12 @@ typedef unsigned char BYTE;
 #define INFINITE            0xFFFFFFFF  // Infinite timeout
 #endif
 
+#ifndef ERROR_SUCCESS
+#define ERROR_SUCCESS                    0L
+#endif
+
+struct _OVERLAPPED;
+
 ///////////////////////////////////////////////////////////////////////////////
 // End of file: Types.h
 ///////////////////////////////////////////////////////////////////////////////

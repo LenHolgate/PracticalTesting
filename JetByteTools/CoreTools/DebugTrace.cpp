@@ -30,6 +30,11 @@
 
 #include "DebugTrace.h"
 #include "SimpleMessageLog.h"
+#include "ExceptionLeakPrevention.h"
+
+#if (JETBYTE_CORE_DISABLE_JETBYTE_TOOLS_DEFAULT_LOG_FILE == 1)
+#include "NullMessageLog.h"
+#endif
 
 #pragma hdrstop
 
@@ -52,22 +57,39 @@ static void DebugTraceAtExitDetector();
 
 static CSimpleMessageLog s_simpleMessageLog;
 
+#if (JETBYTE_CORE_DISABLE_JETBYTE_TOOLS_DEFAULT_LOG_FILE == 1)
+static CNullMessageLog s_nullMessageLog;
+#endif
+
 static bool s_processIsExiting = false;
 
 // This reference is here purely to force the function scoped static to be
 // initialised when all other 'file scope' statics are initialised - i.e. at
 // program start up and in a thread-safe manner...
 
-static CDebugTrace &s_notUsed = CDebugTrace::Instance();
+[[maybe_unused]] static CDebugTrace &s_notUsed = CDebugTrace::Instance();
 
 ///////////////////////////////////////////////////////////////////////////////
 // CDebugTrace
 ///////////////////////////////////////////////////////////////////////////////
 
+#if (JETBYTE_CORE_DISABLE_JETBYTE_TOOLS_DEFAULT_LOG_FILE == 1)
+CDebugTrace::CDebugTrace()
+   :  CMessageLog(s_nullMessageLog)
+{
+   atexit(DebugTraceAtExitDetector);
+}
+#else
 CDebugTrace::CDebugTrace()
    :  CMessageLog(s_simpleMessageLog)
 {
    atexit(DebugTraceAtExitDetector);
+}
+#endif
+
+ILogMessages &CDebugTrace::DefaultLog()
+{
+   return s_simpleMessageLog;
 }
 
 bool CDebugTrace::IsValid()
@@ -108,18 +130,18 @@ CDebugTrace::LogInstaller::LogInstaller(
 
 CDebugTrace::LogInstaller::~LogInstaller()
 {
-   try
-   {
-      Uninstall();
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   Uninstall();
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 void CDebugTrace::LogInstaller::Uninstall()
 {
    if (m_pOldLog)
    {
-      ILogMessages *pPreviousLog = Instance().SetLog(*m_pOldLog);
+      const ILogMessages *pPreviousLog = Instance().SetLog(*m_pOldLog);
 
       (void)pPreviousLog;
 

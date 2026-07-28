@@ -27,16 +27,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "ExceptionLeakPrevention.h"
+
 #if (JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE == 1)
 #include "Tchar.h"
 #include "Exception.h"
 #if (JETBYTE_SMART_POINTER_DUMP_ON_NULL_REFERENCE == 1)
 #include "CrashDumpGenerator.h"
 #endif
-#endif
-
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#include "DebugTrace.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +53,7 @@ namespace Core {
 /// goes out of scope to aid in \ref RAII "scope based" designs. Note that the
 /// TConditionalSmartPointer can be told that it does NOT own the memory that
 /// it is given; this is useful if sometimes it holds dynamically allocated
-/// memory that it should own and delete and sometimes it holds a pointer to,
+/// memory that it should own and delete, and sometimes it holds a pointer to,
 /// for example, a static null object implementation.
 /// \ingroup SmartPointer
 
@@ -140,14 +138,14 @@ TConditionalSmartPointer<T>::TConditionalSmartPointer(
 template <class T>
 TConditionalSmartPointer<T>::~TConditionalSmartPointer()
 {
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
    if (m_weOwnMemory)
    {
-      try
-      {
-         delete m_pMemoryThatWasAllocatedWithNew;
-      }
-      JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+      delete m_pMemoryThatWasAllocatedWithNew;
    }
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 template <class T>

@@ -64,7 +64,7 @@ _tstring GetLastErrorMessageIfPossible(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   TCHAR errmsg[512];
+   TCHAR errmsg[512]{};
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
       nullptr,
@@ -100,7 +100,7 @@ _tstring GetLastErrorMessageIfPossible(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   TCHAR errmsg[512];
+   TCHAR errmsg[512]{};
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
       hModule,
@@ -135,7 +135,7 @@ _tstring GetLastErrorMessage(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   TCHAR errmsg[512];
+   TCHAR errmsg[512]{};
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
       nullptr,
@@ -187,7 +187,7 @@ _tstring GetLastErrorMessage(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   TCHAR errmsg[512];
+   TCHAR errmsg[512]{};
 
    if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
       hModule,
@@ -238,7 +238,7 @@ string GetLastErrorMessageA(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   CHAR errmsg[512];
+   CHAR errmsg[512]{};
 
    if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
       nullptr,
@@ -289,7 +289,7 @@ wstring GetLastErrorMessageW(
    const DWORD last_error,
    const bool stripTrailingLineFeed)
 {
-   wchar_t errmsg[512];
+   wchar_t errmsg[512]{};
 
    if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
       nullptr,

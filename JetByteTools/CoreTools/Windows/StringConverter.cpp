@@ -30,9 +30,12 @@
 
 #include "StringConverter.h"
 
-#include "JetByteTools/CoreTools/CheckedStaticCast.h"
+#include "JetByteTools/CoreTools/CheckedMemcpy.h"
 #include "JetByteTools/CoreTools/StringUtils.h"
 #include "JetByteTools/CoreTools/ErrorCodeException.h"
+#if (JETBYTE_TOOLS_CORE_STRING_CONVERTER_RANGE_CHECK_STATIC_CASTS == 1)
+#include "JetByteTools/CoreTools/CheckedStaticCast.h"
+#endif
 
 #pragma hdrstop
 
@@ -64,6 +67,21 @@ namespace Windows {
 const CCodePage CStringConverter::s_CP_ACP(CP_ACP);
 
 ///////////////////////////////////////////////////////////////////////////////
+// Static helper functions
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename T>
+static inline T GetBytesForWideStringLength(
+   const T inputLength)
+{
+   #if (JETBYTE_TOOLS_CORE_STRING_CONVERTER_RANGE_CHECK_STATIC_CASTS == 1)
+   return checked_static_cast<T>(inputLength * sizeof(wchar_t));
+   #else
+   return static_cast<T>(inputLength * sizeof(wchar_t));
+   #endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CStringConverter
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -73,24 +91,24 @@ int CStringConverter::GetSpaceRequiredForAtoT(
    const string &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return GetSpaceRequiredForAtoW(input, codePage);
-#else
+   #else
    (void)codePage;
    return GetStringLength<int>(input, true);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForAtoT(
    const char *pInput,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return GetSpaceRequiredForAtoW(pInput, codePage);
-#else
+   #else
    (void)codePage;
    return GetStringLength<int>(pInput, true);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForAtoT(
@@ -98,25 +116,25 @@ int CStringConverter::GetSpaceRequiredForAtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return GetSpaceRequiredForAtoW(pInput, inputLength, codePage);
-#else
+   #else
    (void)codePage;
    (void)pInput;
    return inputLength;
-#endif
+   #endif
 }
 
 _tstring CStringConverter::AtoT(
    const string &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return AtoW(input.c_str(), GetStringLength<int>(input), codePage);
-#else
+   #else
    (void)codePage;
    return input;
-#endif
+   #endif
 }
 
 _tstring CStringConverter::AtoT(
@@ -125,7 +143,7 @@ _tstring CStringConverter::AtoT(
 {
    if (!pInput)
    {
-      return _T("");
+      return EmptyString;
    }
 
    return AtoT(pInput, GetStringLength<int>(pInput), codePage);
@@ -150,12 +168,12 @@ _tstring CStringConverter::AtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return AtoW(pInput, inputLength, codePage);
-#else
+   #else
    (void)codePage;
    return _tstring(pInput, inputLength);
-#endif
+   #endif
 }
 
 size_t CStringConverter::AtoT(
@@ -165,9 +183,9 @@ size_t CStringConverter::AtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return AtoW(pBuffer, size, pInput, inputLength, codePage);
-#else
+   #else
    (void)codePage;
 
    if (static_cast<size_t>(inputLength) > size)
@@ -175,10 +193,10 @@ size_t CStringConverter::AtoT(
       throw "TODO";  // what about terminating null???
    }
 
-   memcpy(pBuffer, pInput, inputLength);
+   CheckedByteCopy(pBuffer, size, pInput, inputLength);
 
    return inputLength;
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForAtoW(
@@ -189,7 +207,7 @@ int CStringConverter::GetSpaceRequiredForAtoW(
 
    if (codePage.isSingleByteCharacterSet())
    {
-      return length * sizeof(wchar_t);
+      return GetBytesForWideStringLength(length);
    }
 
    return GetSpaceRequiredForAtoW(input.c_str(), length, codePage);
@@ -203,7 +221,7 @@ int CStringConverter::GetSpaceRequiredForAtoW(
 
    if (codePage.isSingleByteCharacterSet())
    {
-      return length * sizeof(wchar_t);
+      return GetBytesForWideStringLength(length);
    }
 
    return GetSpaceRequiredForAtoW(pInput, length, codePage);
@@ -216,7 +234,7 @@ int CStringConverter::GetSpaceRequiredForAtoW(
 {
    if (codePage.isSingleByteCharacterSet())
    {
-      return inputLength * sizeof(wchar_t);
+      return GetBytesForWideStringLength(inputLength);
    }
 
    const int bytesRequired = MultiByteToWideChar(
@@ -250,7 +268,7 @@ wstring CStringConverter::AtoW(
 {
    if (!pInput)
    {
-      return L"";
+      return EmptyStdWString;
    }
 
    return AtoW(pInput, GetStringLength<int>(pInput), codePage);
@@ -340,7 +358,7 @@ size_t CStringConverter::AtoW(
          throw CErrorCodeException(_T("CStringConverter::AtoW()"), GetLastError());
       }
 
-      return charsRequired * sizeof(wchar_t);
+      return GetBytesForWideStringLength(charsRequired);
    }
  
    return 0;
@@ -425,24 +443,24 @@ int CStringConverter::GetSpaceRequiredForWtoT(
    const wstring &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return GetStringLength<int>(input, true) * sizeof(wchar_t);
-#else
+   #else
    return GetSpaceRequiredForWtoA(input, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForWtoT(
    const wchar_t *pInput,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return GetStringLength<int>(pInput, true) * sizeof(wchar_t);
-#else
+   #else
    return GetSpaceRequiredForWtoA(pInput, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForWtoT(
@@ -450,25 +468,25 @@ int CStringConverter::GetSpaceRequiredForWtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    (void)pInput;
-   return inputLength * sizeof(wchar_t);
-#else
+   return GetBytesForWideStringLength(inputLength);
+   #else
    return GetSpaceRequiredForWtoA(pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 _tstring CStringConverter::WtoT(
    const wstring &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return input;
-#else
+   #else
    return WtoA(input.c_str(), GetStringLength<int>(input), codePage);
-#endif
+   #endif
 }
 
 _tstring CStringConverter::WtoT(
@@ -477,7 +495,7 @@ _tstring CStringConverter::WtoT(
 {
    if (!pInput)
    {
-      return _T("");
+      return EmptyString;
    }
 
    return WtoT(pInput, GetStringLength<int>(pInput), codePage);
@@ -502,12 +520,12 @@ _tstring CStringConverter::WtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return _tstring(pInput, inputLength);
-#else
+   #else
    return WtoA(pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 size_t CStringConverter::WtoT(
@@ -517,22 +535,22 @@ size_t CStringConverter::WtoT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
 
-   const size_t byteLength = inputLength * sizeof(wchar_t);
+   const size_t byteLength = GetBytesForWideStringLength<size_t>(inputLength);
 
    if (byteLength > size)
    {
       throw CException(_T("CStringConverter::WtoT()"), _T("byteLength > size; what about terminating null?"));
    }
 
-   memcpy(pBuffer, pInput, byteLength);
+   CheckedByteCopy(pBuffer, size, pInput, byteLength);
 
    return byteLength;
-#else
+   #else
    return WtoA(pBuffer, size, pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForWtoA(
@@ -543,7 +561,7 @@ int CStringConverter::GetSpaceRequiredForWtoA(
 
    if (codePage.isSingleByteCharacterSet())
    {
-      return length * sizeof(wchar_t);
+      return GetBytesForWideStringLength(length);
    }
 
    return GetSpaceRequiredForWtoA(input.c_str(), length, codePage);
@@ -557,7 +575,7 @@ int CStringConverter::GetSpaceRequiredForWtoA(
 
    if (codePage.isSingleByteCharacterSet())
    {
-      return length * sizeof(wchar_t);
+      return GetBytesForWideStringLength(length);
    }
 
    return GetSpaceRequiredForWtoA(pInput, length, codePage);
@@ -570,7 +588,7 @@ int CStringConverter::GetSpaceRequiredForWtoA(
 {
    if (codePage.isSingleByteCharacterSet())
    {
-      return inputLength * sizeof(wchar_t);
+      return GetBytesForWideStringLength(inputLength);
    }
 
    const int bytesRequired = WideCharToMultiByte(
@@ -606,7 +624,7 @@ string CStringConverter::WtoA(
 {
    if (!pInput)
    {
-      return "";
+      return EmptyStdString;
    }
 
    return WtoA(pInput, GetStringLength<int>(pInput), codePage);
@@ -810,7 +828,7 @@ string CStringConverter::TtoA(
 
    if (!pInput)
    {
-      return "";
+      return EmptyStdString;
    }
 
    return WtoA(pInput, GetStringLength<int>(pInput), codePage);
@@ -825,42 +843,42 @@ string CStringConverter::TtoA(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    return WtoA(pInput, inputLength, codePage);
-#else
+   #else
    (void)codePage;
    return string(pInput, inputLength);
-#endif
+   #endif
 }
 
 wstring CStringConverter::TtoW(
    const _tstring &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return input;
-#else
+   #else
    return AtoW(input.c_str(), GetStringLength<int>(input), codePage);
-#endif
+   #endif
 }
 
 wstring CStringConverter::TtoW(
    const TCHAR *pInput,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return pInput;
-#else
+   #else
 
    if (!pInput)
    {
-      return L"";
+      return EmptyStdWString;
    }
 
    return AtoW(pInput, GetStringLength<int>(pInput), codePage);
-#endif
+   #endif
 }
 
 wstring CStringConverter::TtoW(
@@ -868,12 +886,12 @@ wstring CStringConverter::TtoW(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return wstring(pInput, inputLength);
-#else
+   #else
    return AtoW(pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 BSTR CStringConverter::TtoBSTR(
@@ -891,12 +909,12 @@ int CStringConverter::TtoUTF8(
    const int bufferSize,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return WtoUTF8(input, pBuffer, bufferSize);
-#else
+   #else
    return AtoUTF8(input, pBuffer, bufferSize, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::TtoUTF8(
@@ -906,24 +924,24 @@ int CStringConverter::TtoUTF8(
    const int bufferSize,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return WtoUTF8(pInput, inputLength, pBuffer, bufferSize);
-#else
+   #else
    return AtoUTF8(pInput, inputLength, pBuffer, bufferSize, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForTtoUTF8(
    const _tstring &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return GetSpaceRequiredForWtoUTF8(input);
-#else
+   #else
    return GetSpaceRequiredForAtoUTF8(input, codePage);
-#endif
+   #endif
 }
 
 int CStringConverter::GetSpaceRequiredForTtoUTF8(
@@ -931,12 +949,12 @@ int CStringConverter::GetSpaceRequiredForTtoUTF8(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return GetSpaceRequiredForWtoUTF8(pInput, inputLength);
-#else
+   #else
    return GetSpaceRequiredForAtoUTF8(pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 // BSTRto
@@ -947,7 +965,7 @@ string CStringConverter::BSTRtoA(
 {
    if (SysStringLen(bstr) == 0)
    {
-      return "";
+      return EmptyStdString;
    }
 
    return WtoA(bstr, SysStringLen(bstr), codePage);
@@ -959,15 +977,15 @@ _tstring CStringConverter::BSTRtoT(
 {
    if (SysStringLen(bstr) == 0)
    {
-      return _T("");
+      return EmptyString;
    }
 
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return bstr;
-#else
+   #else
    return WtoA(bstr, ::SysStringLen(bstr), codePage);
-#endif
+   #endif
 }
 
 wstring CStringConverter::BSTRtoW(
@@ -975,7 +993,7 @@ wstring CStringConverter::BSTRtoW(
 {
    if (SysStringLen(bstr) == 0)
    {
-      return L"";
+      return EmptyStdWString;
    }
 
    return bstr;
@@ -1028,12 +1046,12 @@ _tstring CStringConverter::UTF8toT(
    const string &input,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return UTF8toW(reinterpret_cast<const BYTE *>(input.c_str()), GetStringLength<int>(input));
-#else
+   #else
    return UTF8toA(reinterpret_cast<const BYTE *>(input.c_str()), GetStringLength<int>(input), codePage);
-#endif
+   #endif
 }
 
 _tstring CStringConverter::UTF8toT(
@@ -1041,12 +1059,12 @@ _tstring CStringConverter::UTF8toT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return UTF8toW(pInput, inputLength);
-#else
+   #else
    return UTF8toA(pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 _tstring CStringConverter::UTF8toT(
@@ -1056,12 +1074,12 @@ _tstring CStringConverter::UTF8toT(
    const int inputLength,
    const CCodePage &codePage)
 {
-#ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
+   #ifdef JETBYTE_TOOLS_ADMIN_WIDE_STRING_PLATFORM
    (void)codePage;
    return UTF8toW(pPartialCharacter, partialLength, pInput, inputLength);
-#else
+   #else
    return UTF8toA(pPartialCharacter, partialLength, pInput, inputLength, codePage);
-#endif
+   #endif
 }
 
 string CStringConverter::UTF8toA(
@@ -1138,7 +1156,7 @@ wstring CStringConverter::UTF8toW(
 
       const int partialLengthInOutput = (containsPartialLength ? 1 : 0);
 
-      const size_t resultLength = inputLength + partialLengthInOutput;
+      const size_t resultLength = static_cast<size_t>(inputLength) + partialLengthInOutput;
 
       result.resize(resultLength);
 
@@ -1159,11 +1177,11 @@ wstring CStringConverter::UTF8toW(
       {
          BYTE splitCharacter[4];
 
-         memcpy(splitCharacter, pPartialCharacter, partialLength);
+         CheckedByteCopy(splitCharacter, sizeof(splitCharacter), pPartialCharacter, partialLength);
 
          if (remainingLength)
          {
-            memcpy(splitCharacter + partialLength, pInput, remainingLength);
+            CheckedByteCopy(splitCharacter + partialLength, sizeof(splitCharacter) - partialLength, pInput, remainingLength);
          }
 
          const int numCharsThisTime = MultiByteToWideChar(

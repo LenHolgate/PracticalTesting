@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "ILogMessages.h"
-#include "IListenToThreadNaming.h"
+#include "ThreadNamingListener.h"
 
 #include "tstring.h"
 #include "LockableObject.h"
@@ -52,11 +52,11 @@ namespace Core {
 /// An object that implements ILogMessages and
 /// \ingroup Logging
 
-class CSimpleMessageLog : public ILogMessages, private IListenToThreadNaming
+class CSimpleMessageLog : public ILogMessages, private CThreadNamingListener
 {
    public :
 
-      enum LogTargets
+      enum LogTargets : WORD
       {
          LogToCOUT               = 0x0001,
          LogToOutputDebugString  = 0x0010,
@@ -66,7 +66,7 @@ class CSimpleMessageLog : public ILogMessages, private IListenToThreadNaming
          LogToAllAndMemory       = 0x1111
       };
 
-      enum LogEntryFormat
+      enum LogEntryFormat : WORD
       {
          JustMessage                = 0x000,
          IncludeThreadId            = 0x001,

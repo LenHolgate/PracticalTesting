@@ -63,20 +63,20 @@ class CPerThreadErrorHandler
 
    private :
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
       static void TerminateHandler();
       #endif
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
       static void UnexpectedHandler();
       #endif
 
       Win32::CSEHException::Translator m_sehTranslator;
 
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1)
       std::terminate_handler m_oldTerminateHandler;
       #endif
-      #if (JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
+      #if (JETBYTE_CORE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1)
       // deprecated in c++ 11, removed in c++ 17
       std::unexpected_handler m_oldUnexpectedHandler;
       #endif

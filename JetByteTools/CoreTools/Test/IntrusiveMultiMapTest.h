@@ -65,6 +65,7 @@ class CIntrusiveMultiMapTest
       static void TestInsert();
       static void TestInsertWithExplicitKey();
       static void TestInsertWithIncorrectExplicitKey();
+      static void TestInsertSameNodeTwice();
       static void TestInsertDuplicate();
       static void TestFind();
       static void TestBigInsertInOrder();
@@ -72,8 +73,16 @@ class CIntrusiveMultiMapTest
       static void TestDestructDoesNotHarmNodes();
       static void TestRemove();
       static void TestRemoveNodeNotPresent();
+      static void TestRemoveOneMultipleNodesAtKey();
+      static void TestRemoveAllMultipleNodesAtKey();
       static void TestForwardIterate();
       static void TestReverseIterate();
+      static void TestClear();
+      static void TestClearWithCallback();
+      static void TestFastClear();
+      static void TestFastClearWithCallback();
+      static void TestFastAndDirtyClear();
+      static void TestFastAndDirtyClearWithCallback();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

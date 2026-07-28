@@ -46,7 +46,7 @@ namespace Windows {
 // Static helper functions
 ///////////////////////////////////////////////////////////////////////////////
 
-inline JetByteTools::Win32::CEvent::ResetType MapResetType(
+static JetByteTools::Win32::CEvent::ResetType MapResetType(
    const CEvent::ResetType resetType)
 {
    if (resetType == CEvent::ResetType::ManualReset)
@@ -64,7 +64,7 @@ inline JetByteTools::Win32::CEvent::ResetType MapResetType(
       _T("Unexpected reset type"));
 }
 
-inline JetByteTools::Win32::CEvent::InitialState MapInitialState(
+static JetByteTools::Win32::CEvent::InitialState MapInitialState(
    const CEvent::InitialState initialState)
 {
    if (initialState == CEvent::InitialState::Signaled)

@@ -27,6 +27,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "Types.h"
 #include "IMonitorCallbackTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ class IMonitorThreadedCallbackTimerQueue : public IMonitorCallbackTimerQueue
 {
    public :
 
-      enum ContentionLocation
+      enum ContentionLocation : BYTE
       {
          CreateTimerContention,
          SetTimerContention,

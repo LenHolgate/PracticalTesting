@@ -29,11 +29,10 @@
 
 #include "JetByteTools/Admin/Admin.h"
 
+#include "Types.h"
 #include "Exception.h"
-
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
-#include "DebugTrace.h"
-#endif
+#include "ExceptionLeakPrevention.h"
+#include "IUnlockableObject.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
@@ -70,11 +69,11 @@ class TLockableObjectOwner
 
       ~TLockableObjectOwner()
       {
-         try
-         {
-            m_lock.Unlock();
-         }
-         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+         m_lock.Unlock();
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
 
       TLockableObjectOwner &operator=(
@@ -94,7 +93,7 @@ class TLockableObjectOwner
 /// \ingroup RAII
 
 template <typename T>
-class TLockableObjectConditionalOwner
+class TLockableObjectConditionalOwner : public IUnlockableObject
 {
    public:
 
@@ -113,22 +112,22 @@ class TLockableObjectConditionalOwner
       TLockableObjectConditionalOwner(
          const TLockableObjectConditionalOwner &rhs) = delete;
 
-      ~TLockableObjectConditionalOwner()
+      ~TLockableObjectConditionalOwner() override
       {
-         try
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+         if (m_locked)
          {
-            if (m_locked)
-            {
-               m_lock.Unlock();
-            }
+            m_lock.Unlock();
          }
-         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
 
       TLockableObjectConditionalOwner &operator=(
          const TLockableObjectConditionalOwner &rhs) = delete;
 
-      void Unlock()
+      void Unlock() override
       {
          if (m_locked)
          {
@@ -155,7 +154,7 @@ class TLockableObjectConditionalOwner
 /// \ingroup RAII
 
 template <typename T>
-class TLockableObjectPotentialOwner
+class TLockableObjectPotentialOwner : public IUnlockableObject
 {
    public:
 
@@ -174,50 +173,62 @@ class TLockableObjectPotentialOwner
       TLockableObjectPotentialOwner(
          const TLockableObjectPotentialOwner &rhs) = delete;
 
-      ~TLockableObjectPotentialOwner()
+      ~TLockableObjectPotentialOwner() override
       {
-         try
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+         if (m_locked)
          {
-            if (m_locked)
-            {
-               m_lock.Unlock();
-            }
+            m_lock.Unlock();
          }
-         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
 
       TLockableObjectPotentialOwner &operator=(
          const TLockableObjectPotentialOwner &rhs) = delete;
 
-      void Lock()
+      enum class CurrentLockState : BYTE
       {
-         if (m_locked)
+         MustBeUnlocked,
+         CanBeLocked
+      };
+
+      void Lock(
+         const CurrentLockState currentState = CurrentLockState::MustBeUnlocked)
+      {
+         if (!m_locked)
+         {
+            m_lock.Lock();
+
+            m_locked = true;
+         }
+         else if (currentState == CurrentLockState::MustBeUnlocked)
          {
             throw CException(
                _T("TLockableObjectPotentialOwner<>::Lock()"),
                _T("Already locked"));
          }
-
-         m_lock.Lock();
-
-         m_locked = true;
       }
 
-      bool TryLock()
+      bool TryLock(
+         const CurrentLockState currentState = CurrentLockState::MustBeUnlocked)
       {
-         if (m_locked)
+         if (!m_locked)
+         {
+            m_locked = m_lock.TryLock();
+         }
+         else if (currentState == CurrentLockState::MustBeUnlocked)
          {
             throw CException(
-               _T("TLockableObjectPotentialOwner<>::Lock()"),
+               _T("TLockableObjectPotentialOwner<>::TryLock()"),
                _T("Already locked"));
          }
-
-         m_locked = m_lock.TryLock();
 
          return m_locked;
       }
 
-      void Unlock()
+      void Unlock() override
       {
          if (m_locked)
          {
@@ -235,7 +246,7 @@ class TLockableObjectPotentialOwner
 };
 
 template <typename T>
-class TReentrantLockableObjectPotentialOwner
+class TReentrantLockableObjectPotentialOwner : public IUnlockableObject
 {
    public:
 
@@ -250,16 +261,16 @@ class TReentrantLockableObjectPotentialOwner
       TReentrantLockableObjectPotentialOwner(
          const TReentrantLockableObjectPotentialOwner &rhs) = delete;
 
-      ~TReentrantLockableObjectPotentialOwner()
+      ~TReentrantLockableObjectPotentialOwner() override
       {
-         try
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+         if (m_locked)
          {
-            if (m_locked)
-            {
-               m_lock.Unlock();
-            }
+            m_lock.Unlock();
          }
-         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+         JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
       }
 
       TReentrantLockableObjectPotentialOwner &operator=(
@@ -298,7 +309,7 @@ class TReentrantLockableObjectPotentialOwner
          return locked;
       }
 
-      void Unlock()
+      void Unlock() override
       {
          if (m_locked)
          {

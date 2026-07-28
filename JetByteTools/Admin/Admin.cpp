@@ -97,9 +97,9 @@
 
 #ifdef NTDDI_VERSION
 #if (NTDDI_VERSION < JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION)
-#pragma JETBYTE_MESSAGE(" **** Build configuration UNSUPPORTED ****")
+#pragma JETBYTE_MESSAGE("**** Build configuration UNSUPPORTED ****")
 #elif (NTDDI_VERSION == 0x06000000)
-#pragma JETBYTE_MESSAGE(" Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista)")
+#pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista)")
 #elif (NTDDI_VERSION == 0x06000100)
 #pragma JETBYTE_MESSAGE("Build configuration: NTDDI_VERSION = " JETBYTE_MACROASSTRING(NTDDI_VERSION) " (Windows Vista SP1/Windows Server 2008)")
 #elif (NTDDI_VERSION == 0x06000200)
@@ -318,23 +318,11 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_SMART_POINTER_THROW_ON_NULL_REFERENCE enabled: NO")
 #endif
 
-#if defined(JETBYTE_TINY_XML_2_6_2) && (JETBYTE_TINY_XML_2_6_2 == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TINY_XML_2_6_2 enabled: YES (using TinyXML 2.6.2) in XMLTools")
-#elif defined(JETBYTE_TINY_XML_2_6_1) && (JETBYTE_TINY_XML_2_6_1 == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TINY_XML_2_6_1 enabled: YES (using TinyXML 2.6.1) in XMLTools")
-#elif defined(JETBYTE_TINY_XML_2_5_3) && (JETBYTE_TINY_XML_2_5_3 == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TINY_XML_2_5_3 enabled: YES (using TinyXML 2.5.3) in XMLTools")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TINY_XML_2_5_2 enabled: YES (using TinyXML 2.5.2) in XMLTools")
-#endif
-
 #if defined(JETBYTE_ZLIB_1_2_5) && (JETBYTE_ZLIB_1_2_5 == 1)
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ZLIB_1_2_5 enabled: YES (using ZLib 1.2.5) in ZLibTools")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ZLIB_1_2_3 enabled: YES (using ZLib 1.2.3) in ZLibTools")
 #endif
-
-
 
 #if (JETBYTE_PERF_FILE_WRITER_SKIP_COMPLETION_PORT_ON_SUCCESS == 1)
 #if (_WIN32_WINNT < 0x0600)
@@ -391,13 +379,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_CONTENTION_MONITORING enabled: YES")
 #else
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_TIMER_CONTENTION_MONITORING enabled: NO")
-#endif
-
-
-#if (JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_PERF_NO_ACTIVE_BUFFER_LIST enabled: NO")
 #endif
 
 #if (JETBYTE_PERF_BUFFER_ALLOCATION_CONTENTION_MONITORING == 1)
@@ -457,84 +438,6 @@
 #pragma JETBYTE_MESSAGE("Build configuration: _SECURE_SCL enabled: NO")
 #endif
 
-#if (JETBYTE_TERMINATE_CRASH_DUMP_CREATION == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TERMINATE_CRASH_DUMP_CREATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_TERMINATE_CRASH_DUMP_CREATION enabled: NO")
-#endif
-
-#if (JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION == 1)
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_UNEXPECTED_CRASH_DUMP_CREATION enabled: NO")
-#endif
-
-#if JETBYTE_MINI_DUMP_GENERATOR_BREAK_INTO_DEBUGGER == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MINI_DUMP_GENERATOR_BREAK_INTO_DEBUGGER enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_MINI_DUMP_GENERATOR_BREAK_INTO_DEBUGGER enabled: NO")
-#endif
-
-#if JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_TERMINATE_HANDLER_ENABLED enabled: NO")
-#endif
-
-#if JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_UNEXPECTED_HANDLER_ENABLED enabled: NO")
-#endif
-
-#if JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_NEW_HANDLER_ENABLED enabled: NO")
-#endif
-
-#if JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_GLOBAL_ERROR_HANDLER_SIBABRT_HANDLER_ENABLED enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DEBUG_TRACE enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_VALIDATE_ON_EVERY_OPERATION enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DUMP_TREE_ENABLED enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_RED_BLACK_TREE_DO_NOT_CLEANUP_ON_FAILED_VALIDATION enabled: NO")
-#endif
-
-#if JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS == 1
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: YES")
-#else
-#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_INTRUSIVE_MULTI_MAP_INTERNAL_STATE_FAILURE_EXCEPTIONS enabled: NO")
-#endif
-
 #if JETBYTE_HAS_ATL_HEADERS_INSTALLED == 1
 #pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_HAS_ATL_HEADERS_INSTALLED enabled: YES")
 #else
@@ -562,7 +465,7 @@
 #pragma JETBYTE_MESSAGE("Build configuration: *                                                     *")
 #pragma JETBYTE_MESSAGE("Build configuration: * WARNING - All third-party code is disabled          *")
 #pragma JETBYTE_MESSAGE("Build configuration: * Some aspects of the framework will have reduced     *")
-#pragma JETBYTE_MESSAGE("Build configuration: * functionality.                                      *")
+#pragma JETBYTE_MESSAGE("Build configuration: * functionality or may fail to build.                 *")
 #pragma JETBYTE_MESSAGE("Build configuration: *                                                     *")
 #pragma JETBYTE_MESSAGE("Build configuration: * Define JETBYTE_ADMIN_ENABLE_THIRD_PARTY_CODE in     *")
 #pragma JETBYTE_MESSAGE("Build configuration: * your ThirdPartyCodeConfig.h to enable the use of    *")
@@ -630,6 +533,19 @@
 
 #ifdef JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION
 #error JETBYTE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION has been replaced with JETBYTE_CORE_LOCKABLE_OBJECT_CHECK_FOR_REENTRANT_USE_EXCEPTION
+#endif
+
+#if JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS enabled: YES")
+#if _MSC_VER >= 1937
+#if JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS == 1
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS enabled: YES")
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS enabled: NO")
+#endif
+#endif
+#else
+#pragma JETBYTE_MESSAGE("Build configuration: JETBYTE_ENABLE_MSVC_LIFETIME_SAFETY_CHECKS enabled: NO")
 #endif
 
 #endif

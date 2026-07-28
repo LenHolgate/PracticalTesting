@@ -40,108 +40,27 @@
 
 // think about including dll runtime projects
 
-#define JETBYTE_TOOLS_VERSION 7.5
+#define JETBYTE_TOOLS_VERSION 7.6
 
 // This is the new version define that can be used for conditional compilation.
 
-#define JETBYTE_TOOLS_VER 0x0750
+#define JETBYTE_TOOLS_VER 0x0760
 
 extern const int JetByteToolsVersion;
 
-// VS 2010 and later want to warn us about this "problem" and we suppress it in Warnings.h
-// but we need to suppress it here as we use the construct in this header file and
-// in Config.h
-// Note that the cause of the warning is
-// #ifdef XXX
-// if XXX is defined as 0...
+// Not supported yet, set to 1 when working on adding annotations to suppress warnings and
+// fix lifetime issues...
+// Note that this CANNOT be set in config.h as we need it set before we include Warnings.h
+// and that happens BEFORE config.h is included...
 
-#pragma warning(disable: 4574)   // 'x' is defined to be '0': did you mean to use '#if x'?
+#define JETBYTE_ENABLE_LIFETIME_SAFETY_CHECKS 0
 
-#include "Platform.h"
-
-/// This is the minimum Windows version that we support
-/// You might get away with earlier versions but we don't support it.
-
-#define JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION  0x0600      // _WIN32_WINNT_VISTA
-#define JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION    0x06000000  // NTDDI_VISTA
-
-/// This is the latest Windows version that we've tested on.
-/// You might get away with later versions but we don't support them yet.
-
-#define JETBYTE_LATEST_TESTED_WINDOWS_VERSION      0x0A00      // WIN10
-#define JETBYTE_LATEST_TESTED_NTDDI_VERSION        0x0A000000  // WIN10
-
-/// This is the minimum compiler version that we support.
-/// You might get away with earlier versions but we don't support them.
-/// Note that 5.2.3 was the last version to support Visual Studio 6.
-/// Note that 6.5.9 was the last version to support Visual Studio .NET (2002).
-/// Note that 6.5.9 was the last version to support Visual Studio .NET (2003).
-/// Note that 6.6.5 was the last version to support Visual Studio 2005.
-/// Note that 6.6.5 was the last version to support Visual Studio 2008.
-/// Note that 6.7.x was the last version to support Visual Studio 2010.
-/// Note that 6.8.x was the last version to support Visual Studio 2012.
-/// Note that 6.9.2 was the last version to support Visual Studio 2013.
-/// Note that 7.3 was the last version to support Visual Studio 2015.
-
-#define JETBYTE_MINIMUM_SUPPORTED_COMPILER_VERSION 1910
-
-/// This is the latest version of the compiler we will support from the
-/// next major release
-
-#define JETBYTE_MINIMUM_NON_DEPRECATED_COMPILER_VERSION 1910
-
-/// This is the latest compiler version that we've tested on.
-/// You might get away with later versions but we don't support them yet.
-
-#define JETBYTE_LATEST_TESTED_COMPILER_VERSION 1938
-
-// This is only needed when the main version number, _MSC_VER, doesn't get
-// bumped for breaking changes. As was the case with the 2019 16.9 previews
-// which still reported as _MSCV_VER 1928 
-//#define JETBYTE_LATEST_TESTED_FULL_COMPILER_VERSION 192929917
-
-/// Don't let Windows.h define macros for min and max. Force the use of the stl
-/// template versions
-
-#define NOMINMAX
-
-// You need to create a TargetWindowsVersion.h file in the JetByteTools\Admin directory
-// before you can compile the code. Example TargetWindowsVersion.h files can be found
-// in the ExampleConfigHeaders directory.
-
-#include "TargetWindowsVersion.h"
-
-// Fix up optional defines from TargetWindowsVersion.h
-
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT JETBYTE_MINIMUM_SUPPORTED_WINDOWS_VERSION
-#endif
-
-#ifndef NTDDI_VERSION
-#define NTDDI_VERSION JETBYTE_MINIMUM_SUPPORTED_NTDDI_VERSION
-#endif
+#include "JetByteTools/Admin/PlatformAdmin.h"
 
 // You need to create a Config.h file in the JetByteTools\Admin directory before you
 // can compile the code. Example Config.h files can be found in the ExampleConfigHeaders
 // directory. The header file is used to collect together user and environment specific
 // configuration options.
-
-// Defines that can be set in Config.h
-
-// JETBYTE_ALLOW_UNTESTED_COMPILE_ENV
-// Define as 1 to suppress the errors for building with a later compile environment than
-// we have tested with.
-
-// Try and do the right thing in case nobody bothers to manually configure these.
-// They can be set either in TargetWindowsVersion.h or in Config.h...
-
-#ifndef JETBYTE_HAS_SRW_LOCK_TRY_ENTER
-#if (_WIN32_WINNT >= 0x0601)
-#define JETBYTE_HAS_SRW_LOCK_TRY_ENTER 1
-#else
-#define JETBYTE_HAS_SRW_LOCK_TRY_ENTER 0
-#endif
-#endif
 
 // this can fail on some versions of VS where it is supported but broken for paths
 // that include a drive letter, so S:\blah.txt will fail but \blah.txt will work
@@ -149,11 +68,9 @@ extern const int JetByteToolsVersion;
 // work out which ones! fails on 2019 16.6.5
 #define JETBYTE_HAS_INCLUDE(_x) __has_include(_x)
 
-#ifndef JETBYTE_NO_SUPPRESS_WINSOCK_HEADERS
-#define _WINSOCKAPI_          // NEVER include winsock 1.0 header
-#endif
-
 #include "ThirdPartyCodeConfig.h"
+
+#include "Warnings.h"
 
 #include "Config.h"
 
@@ -215,6 +132,14 @@ extern const int JetByteToolsVersion;
 #define JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY 1
 #endif
 
+#ifndef JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_ON_TIMER
+#define JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_ON_TIMER 1
+#endif
+
+#ifndef JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_ON_TIMER
+#define JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_ON_TIMER 1
+#endif
+
 #ifndef JETBYTE_CATCH_UNHANDLED_EXCEPTIONS
 #define JETBYTE_CATCH_UNHANDLED_EXCEPTIONS 1
 #endif
@@ -223,7 +148,34 @@ extern const int JetByteToolsVersion;
 #define JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS 1
 #endif
 
-#if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 0) || (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 0) || (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS == 0)
+
+#ifndef JETBYTE_DEPRECATE_LEGACY_CATCH_ALL
+#define JETBYTE_DEPRECATE_LEGACY_CATCH_ALL 0
+#endif
+
+#if (JETBYTE_DEPRECATE_LEGACY_CATCH_ALL == 0)
+
+#ifndef JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS
+#define JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS 1
+#endif
+
+#ifndef JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS
+#define JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS 1
+#endif
+
+#ifndef JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY
+#define JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY 1
+#endif
+
+#ifndef JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY
+#define JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY 1
+#endif
+
+#ifndef JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS
+#define JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS 1
+#endif
+
+#if (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 0) || (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 0) || (JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS == 0)
 #ifdef __cplusplus
 namespace JetByteTools
 {
@@ -244,37 +196,37 @@ namespace JetByteTools
 #define JETBYTE_T_FUNCTION __FUNCTION__
 #endif
 
-#if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#if (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
 #define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...)
 #else
 #define JETBYTE_CATCH_ALL_IN_DESTRUCTORS_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &)
 #endif
 
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#if (JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...) { try{JetByteTools::Core::OutputEx("Unexpected exception in destructor: " __FUNCTION__ );}catch (...){} }
-#elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
+#elif (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_IN_DESTRUCTORS == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (...) {}
 #else
 #define JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
 #endif
 
-#if (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
+#if (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
 #define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...)
 #else
 #define JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &)
 #endif
 
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
+#if (JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...) { try{JetByteTools::Core::OutputEx("Unexpected exception at thread boundary: " __FUNCTION__ );}catch (...){} }
-#elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
+#elif (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS_AT_THREAD_BOUNDARY == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...) {}
 #else
 #define JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
 #endif
 
-#if (JETBYTE_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS == 1)
+#if (JETBYTE_LEGACY_CATCH_AND_LOG_UNHANDLED_EXCEPTIONS == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (...) { try{JetByteTools::Core::OutputEx("Unexpected exception: " __FUNCTION__ );}catch (...){} }
-#elif (JETBYTE_CATCH_UNHANDLED_EXCEPTIONS == 1)
+#elif (JETBYTE_LEGACY_CATCH_UNHANDLED_EXCEPTIONS == 1)
 #define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (...) {}
 #else
 #define JETBYTE_CATCH_AND_LOG_ALL_IF_ENABLED catch (const JetByteTools::Admin::CDummyCatchAllException &) {}
@@ -283,6 +235,8 @@ namespace JetByteTools
 #define JETBYTE_TESTS_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED catch (...)
 
 #define JETBYTE_TESTS_CATCH_ALL_IF_ENABLED catch (...)
+
+#endif
 
 #ifndef JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD
 #define JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD 1
@@ -449,7 +403,6 @@ namespace JetByteTools
 #define JETBYTE_BUFFER_HANDLE_ALLOCATOR_LSP_FAILURE_CRASH_DUMP_CREATION 1
 #endif
 
-#include "Warnings.h"
 #include "Todo.h"
 
 ///////////////////////////////////////////////////////////////////////////////

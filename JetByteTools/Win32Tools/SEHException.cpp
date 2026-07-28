@@ -31,7 +31,7 @@
 #include "SEHException.h"
 
 #include "JetByteTools/CoreTools/StringConverter.h"
-#include "JetByteTools/CoreTools/DebugTrace.h"
+#include "JetByteTools/CoreTools/ExceptionLeakPrevention.h"
 
 #pragma hdrstop
 
@@ -70,7 +70,7 @@ static const _tstring &Message(
 CSEHException::CSEHException(
    const unsigned int code,
    EXCEPTION_POINTERS *pPointers)
-   :  Core::CException(_T(""), _T("")),
+   :  JetByteTools::Core::CException(_T(""), _T("")),
       m_code(code),
       m_pPointers(pPointers)
 {
@@ -130,14 +130,14 @@ CSEHException::Translator::Translator(
 
 CSEHException::Translator::~Translator()
 {
-   try
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   if (m_prev)
    {
-      if (m_prev)
-      {
-         _set_se_translator(m_prev);
-      }
+      _set_se_translator(m_prev);
    }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 _se_translator_function CSEHException::Translator::ConstructionHelper()
