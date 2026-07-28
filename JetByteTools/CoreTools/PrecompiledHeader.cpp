@@ -32,6 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/Admin/Admin.h"
+#include "JetByteTools/Admin/StdCall.h"
 
 #include "PrecompiledHeader.h"
 
