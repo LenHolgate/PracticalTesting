@@ -105,7 +105,7 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       bool BeginTimeoutHandling() override;
 
-      void HandleTimeout() override;
+      size_t HandleTimeout() override;
 
       void EndTimeoutHandling() override;
 
@@ -123,29 +123,33 @@ class CCallbackTimerWheel : public IManageTimerQueue
          Timer &timer,
          Milliseconds timeout,
          UserData userData,
-         const SetTimerIf setTimerIf = SetTimerAlways) override;
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool UpdateTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const UpdateTimerIf updateIf = UpdateAlways,
-         bool *pWasUpdated = nullptr) override;
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool CancelTimer(
-         const Handle &handle) override;
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool DestroyTimer(
-         Handle &handle) override;
+         Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
-      bool DestroyTimer(
-         const Handle &handle) override;
+      using IQueueTimers::DestroyTimer;
 
       void SetTimer(
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -162,7 +166,9 @@ class CCallbackTimerWheel : public IManageTimerQueue
       void InsertTimer(
          Milliseconds timeout,
          TimerData &data,
-         bool wasPending = false);
+         bool wasPending,
+         size_t previousOffset,
+         bool *pOptionalFirstToExpireHasChanged);
 
       static TimerData **CreateTimerWheel(
          size_t numTimers);
@@ -208,9 +214,11 @@ class CCallbackTimerWheel : public IManageTimerQueue
 
       size_t m_numTimersSet;
 
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
       typedef TIntrusiveSet<TimerData> ActiveHandles;
 
       ActiveHandles m_activeHandles;
+      #endif
 
       bool m_handlingTimeouts;
 

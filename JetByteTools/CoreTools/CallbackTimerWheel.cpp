@@ -37,11 +37,15 @@
 #include "NullCallbackTimerQueueMonitor.h"
 #include "IntrusiveSetNode.h"
 #include "DebugTrace.h"
+#include "CheckedMemset.h"
+
+#if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+#include "CrashDumpGenerator.h"
+#endif
 
 #pragma hdrstop
 
 #include <algorithm>          // for min
-#include <cstring>            // for memset
 
 ///////////////////////////////////////////////////////////////////////////////
 // Using directives
@@ -60,7 +64,7 @@ namespace Core {
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const Milliseconds s_defaultTimerGranularity = 15;
+static constexpr Milliseconds s_defaultTimerGranularity = 15;
 
 ///////////////////////////////////////////////////////////////////////////////
 // File level statics
@@ -253,6 +257,7 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
 {
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
+   #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
    // MUST use Erase as we delete the node and Fast/FastAndDirty both require the nodes
    // to continue to exist so that the iteration can continue.
 
@@ -263,6 +268,8 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
       m_monitor.OnTimerDeleted();
       #endif
       });
+   #endif
+
    delete [] m_pTimersStart;
 
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
@@ -363,14 +370,26 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
          _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
    }
 
-   m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
+   if (m_numTimersSet)
+   {
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_HANDLE_ALL_TIMERS_IN_BEGIN_TIMEOUT_HANDLING == 1)
+
+      m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
+
+      #else
+
+      m_pTimeoutsToBeHandled = GetTimersToProcess(m_tickCountProvider.GetTickCount());
+
+      #endif
+   }
 
    m_handlingTimeouts = (m_pTimeoutsToBeHandled != nullptr);
 
    return m_handlingTimeouts;
 }
 
-void CCallbackTimerWheel::HandleTimeout()
+size_t CCallbackTimerWheel::HandleTimeout()
 {
    if (!m_handlingTimeouts)
    {
@@ -378,6 +397,8 @@ void CCallbackTimerWheel::HandleTimeout()
          _T("CCallbackTimerWheel::HandleTimeout()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
+
+   size_t timersHandled = 0;
 
    TimerData *pTimers = m_pTimeoutsToBeHandled;
 
@@ -388,7 +409,11 @@ void CCallbackTimerWheel::HandleTimeout()
       #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
       m_monitor.OnTimer();
       #endif
+
+      timersHandled++;
    }
+
+   return timersHandled;
 }
 
 void CCallbackTimerWheel::EndTimeoutHandling()
@@ -406,7 +431,7 @@ void CCallbackTimerWheel::EndTimeoutHandling()
 
    m_pTimeoutsToBeHandled = nullptr;
 
-   TimerData *pDeadTimer = nullptr;
+   const TimerData *pDeadTimer = nullptr;
 
    while (pTimers)
    {
@@ -419,7 +444,22 @@ void CCallbackTimerWheel::EndTimeoutHandling()
 
       if (pDeadTimer)
       {
-         m_activeHandles.Erase(pDeadTimer);
+         #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
+         if (!m_activeHandles.Erase(pDeadTimer))
+         {
+            #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+            OutputEx(_T("CCallbackTimerWheel::EndTimeoutHandling() - Invalid handle"));
+            #endif
+
+            #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+            CCrashDumpGenerator::GenerateDumpHere(_T("TimerWheelDeleteInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+            #endif
+
+            throw CException(
+               _T("CCallbackTimerWheel::EndTimeoutHandling()"),
+               _T("Invalid handle"));
+         }
+         #endif
 
          delete pDeadTimer;
 
@@ -435,7 +475,7 @@ void CCallbackTimerWheel::EndTimeoutHandling()
 CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 {
 #pragma warning(suppress: 28197) // Possibly leaking memory. No, we're not.
-   auto *pData = new TimerData();
+   const auto *pData = new TimerData();
 
    return OnTimerCreated(pData);
 }
@@ -443,7 +483,24 @@ CCallbackTimerWheel::Handle CCallbackTimerWheel::CreateTimer()
 CCallbackTimerWheel::Handle CCallbackTimerWheel::OnTimerCreated(
    const TimerData *pData)
 {
-   m_activeHandles.Insert(pData);
+   #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
+   if (!m_activeHandles.Insert(pData).second)
+   {
+      const _tstring errorMessage = _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map");
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+      OutputEx(_T("CCallbackTimerWheel::OnTimerCreated() - ") + errorMessage);
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+      CCrashDumpGenerator::GenerateDumpHere(_T("TimerWheelDuplicateHandleInsert"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
+      throw CException(
+         _T("CCallbackTimerWheel::OnTimerCreated()"),
+         errorMessage);
+   }
+   #endif
 
    #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnTimerCreated();
@@ -483,9 +540,14 @@ Milliseconds CCallbackTimerWheel::CalculateTimeout(
 bool CCallbackTimerWheel::TimerIsSet(
    const Handle &handle) const
 {
-   TimerData &data = ValidateHandle(handle);
+   if (handle != IQueueTimers::InvalidHandleValue)
+   {
+      const TimerData &data = ValidateHandle(handle);
 
-   return data.TimerIsSet();
+      return data.TimerIsSet();
+   }
+
+   return false;
 }
 
 bool CCallbackTimerWheel::SetTimer(
@@ -493,7 +555,8 @@ bool CCallbackTimerWheel::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    TimerData &data = ValidateHandle(handle);
 
@@ -501,42 +564,50 @@ bool CCallbackTimerWheel::SetTimer(
 
    if (setTimerIf == SetTimerAlways || !wasPending)
    {
-      // Note that we need to calculate the new actual timeout NOW
-      // before we cancel the existing timer in case the new timeout
-      // is out of range and we're about to throw an exception and not
-      // change anything...
-
       const Milliseconds actualTimeout = CalculateTimeout(timeout);
 
+      size_t previousOffset = 0;
+   
       if (wasPending)
       {
+         if (pOptionalFirstToExpireHasChanged)
+         {
+            previousOffset = data.GetAbsoluteTimeout() / m_timerGranularity;
+         }
+
          data.CancelTimer();
       }
 
       data.UpdateData(timer, userData);
 
-      InsertTimer(actualTimeout, data, wasPending);
+      InsertTimer(actualTimeout, data, wasPending, previousOffset, pOptionalFirstToExpireHasChanged);
 
       #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
       m_monitor.OnTimerSet(wasPending);
       #endif
+   }
+   else if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = false;
    }
 
    return wasPending;
 }
 
 void CCallbackTimerWheel::SetTimer(
-   IQueueTimers::Timer &timer,
+   Timer &timer,
    const Milliseconds timeout,
-   const IQueueTimers::UserData userData)
+   const UserData userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    const Milliseconds actualTimeout = CalculateTimeout(timeout);
 
+   #pragma warning(suppress: 28197) // Possibly leaking memory. No, we're not.
    auto *pData = new TimerData(actualTimeout, timer, userData);
 
    OnTimerCreated(pData);
 
-   InsertTimer(actualTimeout, *pData);
+   InsertTimer(actualTimeout, *pData, false, 0, pOptionalFirstToExpireHasChanged);
 
    #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
    m_monitor.OnOneOffTimerSet();
@@ -549,7 +620,8 @@ bool CCallbackTimerWheel::UpdateTimer(
    const Milliseconds timeout,
    const UserData userData,
    const UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    bool updated = false;
 
@@ -577,11 +649,13 @@ bool CCallbackTimerWheel::UpdateTimer(
          {
             updated = true;
 
+            const size_t previousOffset = data.GetAbsoluteTimeout() / m_timerGranularity;
+
             data.CancelTimer();
 
             data.UpdateData(timer, userData);
 
-            InsertTimer(actualTimeout, data, wasPending);
+            InsertTimer(actualTimeout, data, wasPending, previousOffset, pOptionalFirstToExpireHasChanged);
          }
       }
    }
@@ -591,7 +665,7 @@ bool CCallbackTimerWheel::UpdateTimer(
 
       data.UpdateData(timer, userData);
 
-      InsertTimer(actualTimeout, data, wasPending);
+      InsertTimer(actualTimeout, data, false, 0, pOptionalFirstToExpireHasChanged);
 
       updated = true;
    }
@@ -611,15 +685,17 @@ bool CCallbackTimerWheel::UpdateTimer(
 void CCallbackTimerWheel::InsertTimer(
    const Milliseconds timeout,
    TimerData &data,
-   const bool wasPending)
+   const bool wasPending,
+   const size_t previousOffset,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    const size_t timerOffset = timeout / m_timerGranularity;
 
    TimerData **ppTimer = GetTimerAtOffset(timerOffset);
 
-   data.SetTimer(timeout, ppTimer, *ppTimer);
+   const bool timerWasSetAtThisOffset = pOptionalFirstToExpireHasChanged ? (wasPending && (previousOffset == timerOffset)) || (*ppTimer != nullptr) : false;
 
-   m_pFirstTimerSetHint = nullptr;
+   data.SetTimer(timeout, ppTimer, *ppTimer);
 
    if (!wasPending)
    {
@@ -630,18 +706,61 @@ void CCallbackTimerWheel::InsertTimer(
          throw CException(_T("CCallbackTimerWheel::InsertTimer()"), _T("Too many timers set!"));
       }
    }
+
+   m_pFirstTimerSetHint = nullptr;
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      m_pFirstTimerSetHint = GetFirstTimerSet();
+
+      *pOptionalFirstToExpireHasChanged = (m_pFirstTimerSetHint == ppTimer) && !timerWasSetAtThisOffset;
+   }
 }
 
 bool CCallbackTimerWheel::CancelTimer(
-   const Handle &handle)
+   const Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    TimerData &data = ValidateHandle(handle);
+
+   bool wasSetAtThisOffset = false;
+
+   TimerData **pPreviouslyFirstSetTimer = nullptr;
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      const size_t ourOffset = data.GetAbsoluteTimeout() / m_timerGranularity;
+
+      pPreviouslyFirstSetTimer = m_pFirstTimerSetHint ? m_pFirstTimerSetHint : GetFirstTimerSet();
+
+      if (pPreviouslyFirstSetTimer)
+      {
+         const size_t firstSetOffset = ((*pPreviouslyFirstSetTimer)->GetAbsoluteTimeout() / m_timerGranularity);
+
+         wasSetAtThisOffset = (ourOffset == firstSetOffset);
+      }
+   }
 
    const bool wasPending = data.CancelTimer();
 
    if (wasPending)
    {
       OnTimerCancelled();
+   }
+
+   if (m_numTimersSet != 0)
+   {
+      if (pOptionalFirstToExpireHasChanged)
+      {
+         // this may cost too much
+
+         m_pFirstTimerSetHint = GetFirstTimerSet();
+      }
+   }
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = wasPending && wasSetAtThisOffset && (m_pFirstTimerSetHint != pPreviouslyFirstSetTimer);
    }
 
    #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
@@ -659,13 +778,33 @@ void CCallbackTimerWheel::OnTimerCancelled()
 }
 
 bool CCallbackTimerWheel::DestroyTimer(
-   Handle &handle)
+   Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    TimerData &data = ValidateHandle(handle);
 
+   const TimerData * const *pPreviouslyFirstSetTimer = m_pFirstTimerSetHint;
+
+   bool wasSetAtThisOffset = false;
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      const size_t ourOffset = data.GetAbsoluteTimeout() / m_timerGranularity;
+
+      if (m_pFirstTimerSetHint)
+      {
+         const size_t firstSetOffset = ((*m_pFirstTimerSetHint)->GetAbsoluteTimeout() / m_timerGranularity);
+
+         wasSetAtThisOffset = (ourOffset == firstSetOffset);
+      }
+   }
+
    const bool wasPending = data.CancelTimer();
 
-   m_activeHandles.Erase(&data);
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = wasPending && wasSetAtThisOffset && (m_pFirstTimerSetHint != pPreviouslyFirstSetTimer);
+   }
 
    handle = InvalidHandleValue;
 
@@ -679,12 +818,24 @@ bool CCallbackTimerWheel::DestroyTimer(
    }
    else
    {
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
+      if (!m_activeHandles.Erase(&data))
+      {
+         #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+         OutputEx(_T("CCallbackTimerWheel::DestroyTimer()- Invalid handle"));
+         #endif
+
+         #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+         CCrashDumpGenerator::GenerateDumpHere(_T("TimerWheelDeleteInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+         #endif
+      }
+      #endif
+
       delete &data;
 
-   #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-   m_monitor.OnTimerDeleted();
-   #endif
-
+      #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+      m_monitor.OnTimerDeleted();
+      #endif
    }
 
    if (wasPending)
@@ -695,14 +846,6 @@ bool CCallbackTimerWheel::DestroyTimer(
    return wasPending;
 }
 
-bool CCallbackTimerWheel::DestroyTimer(
-   const Handle &handle)
-{
-   Handle handle_ = handle;
-
-   return DestroyTimer(handle_);
-}
-
 Milliseconds CCallbackTimerWheel::GetMaximumTimeout() const
 {
    return m_maximumTimeout;
@@ -711,6 +854,13 @@ Milliseconds CCallbackTimerWheel::GetMaximumTimeout() const
 CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
    const Handle &handle) const
 {
+   if (!handle)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::ValidateHandle()"),
+         _T("Invalid timer handle: handle is null"));
+   }
+
    auto *pData = reinterpret_cast<TimerData *>(handle);
 
    #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
@@ -722,10 +872,20 @@ CCallbackTimerWheel::TimerData &CCallbackTimerWheel::ValidateHandle(
       // it's due to some confusion, and even if it isn't then it's not that crucial...
       #pragma warning(push, 4)
       #pragma warning(disable: 4244)
+      const _tstring errorMessage = _T("Invalid timer handle: ") + ToString(handle);
+      #pragma warning(pop)
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+      OutputEx(_T("CCallbackTimerWheel::ValidateHandle() - ") + errorMessage);
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+      CCrashDumpGenerator::GenerateDumpHere(_T("TimerWheelInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(
          _T("CCallbackTimerWheel::ValidateHandle()"),
-         _T("Invalid timer handle: ") + ToString(handle));
-      #pragma warning(pop)
+         errorMessage);
    }
    #endif
 
@@ -895,7 +1055,7 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::CreateTimerWheel(
 {
    auto **ppTimers = new TimerData*[numTimers];
 
-   memset(ppTimers, 0, sizeof(TimerData*) * numTimers);
+   CheckedByteSet(ppTimers, sizeof(TimerData*) * numTimers, 0);
 
    return ppTimers;
 }
@@ -1124,7 +1284,6 @@ CCallbackTimerWheel::TimerData::Data::Data(
       pTimer(&timer),
       userData(userData_)
 {
-
 }
 
 void CCallbackTimerWheel::TimerData::Data::Clear()
@@ -1142,7 +1301,7 @@ static size_t CalculateNumberOfTimers(
    const Milliseconds maximumTimeout,
    const Milliseconds timerGranularity)
 {
-   return (maximumTimeout / timerGranularity) + 1;
+   return (static_cast<size_t>(maximumTimeout) / timerGranularity) + 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

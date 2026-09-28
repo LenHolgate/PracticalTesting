@@ -35,6 +35,11 @@
 #include "Exception.h"
 #include "ExceptionLeakPrevention.h"
 #include "NullCallbackTimerQueueMonitor.h"
+#include "DebugTrace.h"
+
+#if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+#include "CrashDumpGenerator.h"
+#endif
 
 #pragma hdrstop
 
@@ -57,9 +62,9 @@ static const CTickCount64Provider s_tickProvider;
 // Constants
 ///////////////////////////////////////////////////////////////////////////////
 
-static const Milliseconds s_tickCountMax = 0xFFFFFFFF;
+static constexpr Milliseconds s_tickCountMax = 0xFFFFFFFF;
 
-static const Milliseconds s_timeoutMax = s_tickCountMax - 1;
+static constexpr Milliseconds s_timeoutMax = s_tickCountMax - 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Static members
@@ -174,7 +179,6 @@ CCallbackTimerQueue::CCallbackTimerQueue()
       m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(nullptr)
 {
-
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
@@ -185,7 +189,6 @@ CCallbackTimerQueue::CCallbackTimerQueue(
       m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(nullptr)
 {
-
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
@@ -196,7 +199,6 @@ CCallbackTimerQueue::CCallbackTimerQueue(
       m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(nullptr)
 {
-
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
@@ -208,7 +210,6 @@ CCallbackTimerQueue::CCallbackTimerQueue(
       m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(nullptr)
 {
-
 }
 
 CCallbackTimerQueue::~CCallbackTimerQueue()
@@ -217,6 +218,7 @@ CCallbackTimerQueue::~CCallbackTimerQueue()
 
    m_queue.Clear(TimerQueue::ClearFlags::FastAndDirty);
 
+   #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
    // MUST use Erase as we delete the node and Fast/FastAndDirty both require the nodes
    // to continue to exist so that the iteration can continue.
 
@@ -227,7 +229,8 @@ CCallbackTimerQueue::~CCallbackTimerQueue()
       m_monitor.OnTimerDeleted();
       #endif
       });
-   
+   #endif
+
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
@@ -235,12 +238,24 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
 {
    auto *pData = new TimerData();
 
+   #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
    if (!m_activeHandles.Insert(pData).second)
    {
+      const _tstring errorMessage = _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map");
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+      OutputEx(_T("CCallbackTimerQueue::CreateTimer() - ") + errorMessage);
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+      CCrashDumpGenerator::GenerateDumpHere(_T("TimerQueueDuplicateHandleInsert"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(
          _T("CCallbackTimerQueue::CreateTimer()"),
-         _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map"));
+         errorMessage);
    }
+   #endif
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
    m_monitor.OnTimerCreated();
@@ -252,9 +267,14 @@ CCallbackTimerQueue::Handle CCallbackTimerQueue::CreateTimer()
 bool CCallbackTimerQueue::TimerIsSet(
    const Handle &handle) const
 {
-   TimerData *pData = ValidateHandle(handle);
+   if (handle != IQueueTimers::InvalidHandleValue)
+   {
+      const TimerData *pData = ValidateHandle(handle);
 
-   return pData->IsSet();
+      return pData->IsSet();
+   }
+
+   return false;
 }
 
 bool CCallbackTimerQueue::SetTimer(
@@ -262,7 +282,8 @@ bool CCallbackTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    if (timeout > m_maxTimeout)
    {
@@ -275,8 +296,14 @@ bool CCallbackTimerQueue::SetTimer(
 
    const bool wasPending = pData->IsSet();
 
+   bool firstToExpireHasChanged = false;
+
    if (setTimerIf == SetTimerAlways || !wasPending)
    {
+      const bool atLeastOneTimerWasSet = pOptionalFirstToExpireHasChanged ? !m_queue.IsEmpty() : false;
+
+      const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
+
       if (wasPending)
       {
          CancelTimer(pData);
@@ -286,9 +313,29 @@ bool CCallbackTimerQueue::SetTimer(
 
       InsertTimer(pData, timeout);
 
+      if (pOptionalFirstToExpireHasChanged)
+      {
+         firstToExpireHasChanged = true;
+
+         if (atLeastOneTimerWasSet)
+         {
+            const ULONGLONG firstTimeoutNow = m_queue.Begin()->GetTimeout();
+
+            if (firstTimeoutNow == firstTimeoutBeforeChange)
+            {
+               firstToExpireHasChanged = false;
+            }
+         }
+      }
+
       #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
       m_monitor.OnTimerSet(wasPending);
       #endif
+   }
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
    }
 
    return wasPending;
@@ -300,7 +347,8 @@ bool CCallbackTimerQueue::UpdateTimer(
    const Milliseconds timeout,
    const UserData userData,
    const UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    bool updated = false;
 
@@ -314,6 +362,10 @@ bool CCallbackTimerQueue::UpdateTimer(
    TimerData *pData = ValidateHandle(handle);
 
    const bool wasPending = pData->IsSet();
+
+   const bool atLeastOneTimerWasSet = (m_queue.Size() != 0);
+
+   const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
 
    if (wasPending)
    {
@@ -363,29 +415,77 @@ bool CCallbackTimerQueue::UpdateTimer(
       *pWasUpdated = updated;
    }
 
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      bool firstToExpireHasChanged = updated;
+
+      if (updated)
+      {
+         if (atLeastOneTimerWasSet)
+         {
+            const ULONGLONG firstTimeoutNow = m_queue.Begin()->GetTimeout();
+
+            if (firstTimeoutNow == firstTimeoutBeforeChange)
+            {
+               firstToExpireHasChanged = false;
+            }
+         }
+      }
+
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
+
    return wasPending;
 }
 
 bool CCallbackTimerQueue::CancelTimer(
-   const Handle &handle)
+   const Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
+   const bool atLeastOneTimerWasSet = pOptionalFirstToExpireHasChanged ? !m_queue.IsEmpty() : false;
+
+   const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
+
    const bool wasPending = CancelTimer(ValidateHandle(handle));
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
    m_monitor.OnTimerCancelled(wasPending);
    #endif
 
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      bool firstToExpireHasChanged = wasPending;
+
+      if (wasPending)
+      {
+         if (atLeastOneTimerWasSet && !m_queue.IsEmpty())
+         {
+            const ULONGLONG firstTimeoutNow = m_queue.Begin()->GetTimeout();
+
+            if (firstTimeoutNow == firstTimeoutBeforeChange)
+            {
+               firstToExpireHasChanged = false;
+            }
+         }
+      }
+
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
+
    return wasPending;
 }
 
 bool CCallbackTimerQueue::DestroyTimer(
-   Handle &handle)
+   Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    TimerData *pData = ValidateHandle(handle);
 
-   const bool wasPending = CancelTimer(pData);
+   const bool atLeastOneTimerWasSet = pOptionalFirstToExpireHasChanged ? !m_queue.IsEmpty() : false;
 
-   m_activeHandles.Erase(pData);
+   const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
+
+   const bool wasPending = CancelTimer(pData);
 
    handle = InvalidHandleValue;
 
@@ -399,6 +499,19 @@ bool CCallbackTimerQueue::DestroyTimer(
    }
    else
    {
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
+      if (!m_activeHandles.Erase(pData))
+      {
+         #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+         OutputEx(_T("CCallbackTimerQueue::DestroyTimer() - Invalid handle"));
+         #endif
+
+         #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+         CCrashDumpGenerator::GenerateDumpHere(_T("TimerQueueDeleteInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+         #endif
+      }
+      #endif
+
       delete pData;
 
       #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
@@ -406,21 +519,34 @@ bool CCallbackTimerQueue::DestroyTimer(
       #endif
    }
 
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      bool firstToExpireHasChanged = wasPending;
+
+      if (wasPending)
+      {
+         if (atLeastOneTimerWasSet && !m_queue.IsEmpty())
+         {
+            const ULONGLONG firstTimeoutNow = m_queue.Begin()->GetTimeout();
+
+            if (firstTimeoutNow == firstTimeoutBeforeChange)
+            {
+               firstToExpireHasChanged = false;
+            }
+         }
+      }
+
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
+
    return wasPending;
-}
-
-bool CCallbackTimerQueue::DestroyTimer(
-   const Handle &handle)
-{
-   Handle handle_ = handle;
-
-   return DestroyTimer(handle_);
 }
 
 void CCallbackTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    if (timeout > m_maxTimeout)
    {
@@ -429,15 +555,31 @@ void CCallbackTimerQueue::SetTimer(
          _T("Timeout value is too large, max = ") + ToString(m_maxTimeout));
    }
 
+   const bool atLeastOneTimerWasSet = pOptionalFirstToExpireHasChanged ? !m_queue.IsEmpty() : false;
+
+   const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
+
 #pragma warning(suppress: 28197) // Possibly leaking memory - No, we're not.
    auto *pData = new TimerData(timer, userData);
 
+   #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
    if (!m_activeHandles.Insert(pData).second)
    {
+      const _tstring errorMessage = _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map");
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+      OutputEx(_T("CCallbackTimerQueue::SetTimer() - ") + errorMessage);
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+      CCrashDumpGenerator::GenerateDumpHere(_T("TimerQueueDuplicateHandleInsert"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
       throw CException(
          _T("CCallbackTimerQueue::SetTimer()"),
-         _T("Timer handle: ") + ToString(reinterpret_cast<Handle>(pData)) + _T(" is already in the handle map"));
+         errorMessage);
    }
+   #endif
 
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
    m_monitor.OnTimerCreated();
@@ -448,6 +590,23 @@ void CCallbackTimerQueue::SetTimer(
    #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
    m_monitor.OnOneOffTimerSet();
    #endif
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      bool firstToExpireHasChanged = true;
+
+      if (atLeastOneTimerWasSet)
+      {
+         const ULONGLONG firstTimeoutNow = m_queue.Begin()->GetTimeout();
+
+         if (firstTimeoutNow == firstTimeoutBeforeChange)
+         {
+            firstToExpireHasChanged = false;
+         }
+      }
+
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
 }
 
 Milliseconds CCallbackTimerQueue::GetMaximumTimeout() const
@@ -498,6 +657,13 @@ void CCallbackTimerQueue::InsertTimer(
 CCallbackTimerQueue::TimerData *CCallbackTimerQueue::ValidateHandle(
    const Handle &handle) const
 {
+   if (!handle)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::ValidateHandle()"),
+         _T("Invalid timer handle: handle is null"));
+   }
+
    auto *pData = reinterpret_cast<TimerData *>(handle);
 
    #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
@@ -505,7 +671,30 @@ CCallbackTimerQueue::TimerData *CCallbackTimerQueue::ValidateHandle(
 
    if (it == m_activeHandles.End())
    {
-      // The following warning is generated when /Wp64 is set in a 32bit build. At present I think
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present, I think
+      // it's due to some confusion, and even if it isn't then it's not that crucial...
+      #pragma warning(push, 4)
+      #pragma warning(disable: 4244)
+      const _tstring errorMessage = _T("Invalid timer handle: ") + ToString(handle);
+      #pragma warning(pop)
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+      OutputEx(_T("CCallbackTimerQueue::ValidateHandle() - ") + errorMessage);
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+      CCrashDumpGenerator::GenerateDumpHere(_T("TimerQueueInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+      #endif
+
+      throw CException(
+         _T("CCallbackTimerQueue::ValidateHandle()"),
+         errorMessage);
+   }
+   #endif
+
+   if (pData->DeleteAfterTimeout())
+   {
+      // The following warning is generated when /Wp64 is set in a 32bit build. At present, I think
       // it's due to some confusion, and even if it isn't then it's not that crucial...
       #pragma warning(push, 4)
       #pragma warning(disable: 4244)
@@ -514,7 +703,6 @@ CCallbackTimerQueue::TimerData *CCallbackTimerQueue::ValidateHandle(
          _T("Invalid timer handle: ") + ToString(handle));
       #pragma warning(pop)
    }
-   #endif
 
    return pData;
 }
@@ -594,13 +782,6 @@ bool CCallbackTimerQueue::BeginTimeoutHandling()
       {
          pTimer->PrepareForHandleTimeout();
 
-         if (pTimer->DeleteAfterTimeout())
-         {
-            m_activeHandles.Erase(pTimer);
-
-            // pData will be cleaned up after we've processed the timeout
-         }
-
          // Store the timeouts that we need to handle in an invasive singly
          // linked list of timers...
 
@@ -624,7 +805,7 @@ bool CCallbackTimerQueue::BeginTimeoutHandling()
    return m_handlingTimeouts;
 }
 
-void CCallbackTimerQueue::HandleTimeout()
+size_t CCallbackTimerQueue::HandleTimeout()
 {
    if (!m_handlingTimeouts)
    {
@@ -632,6 +813,8 @@ void CCallbackTimerQueue::HandleTimeout()
          _T("CCallbackTimerQueue::ValidateTimeoutHandle()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
+
+   size_t timersHandled = 0;
 
    TimerData *pTimer = m_pTimeoutsToBeHandled;
 
@@ -643,8 +826,12 @@ void CCallbackTimerQueue::HandleTimeout()
       m_monitor.OnTimer();
       #endif
 
+      timersHandled++;
+
       pTimer = pTimer->GetNext();
    }
+
+   return timersHandled;
 }
 
 void CCallbackTimerQueue::EndTimeoutHandling()
@@ -668,6 +855,22 @@ void CCallbackTimerQueue::EndTimeoutHandling()
 
       if (pTimer->DeleteAfterTimeout())
       {
+         #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
+         if (pTimer->DeleteAfterTimeout())
+         {
+            if (!m_activeHandles.Erase(pTimer))
+            {
+               #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_NOISY_FAILURE == 1)
+               OutputEx(_T("CCallbackTimerQueue::EndTimeoutHandling() - Invalid handle"));
+               #endif
+
+               #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES_DUMP_ON_FAILURE == 1)
+               CCrashDumpGenerator::GenerateDumpHere(_T("TimerQueueDeleteInvalidHandle"), CCrashDumpGenerator::PerDumpTypeMaxDumpLimits);
+               #endif
+            }
+         }
+         #endif
+
          delete pTimer;
 
          #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)

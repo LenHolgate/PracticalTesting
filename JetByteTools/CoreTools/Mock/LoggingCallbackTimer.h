@@ -80,6 +80,13 @@ class CLoggingCallbackTimer :
          Milliseconds timeout,
          UserData userData /* = 0*/);
 
+      void SetTimerTwiceInOnTimer(
+         IQueueTimers &timerQueue,
+         IQueueTimers::Handle &handle,
+         Milliseconds timeout1,
+         Milliseconds timeout2,
+         UserData userData /* = 0*/);
+
       bool WaitForTimer(
          Milliseconds timeout) const;
 
@@ -100,7 +107,9 @@ class CLoggingCallbackTimer :
 
       IQueueTimers::Handle m_handle;
 
-      Milliseconds m_timeout;
+      Milliseconds m_timeout1;
+
+      Milliseconds m_timeout2;
 
       UserData m_userData;
 };

@@ -71,6 +71,8 @@ class CCallbackTimerWheelTest :
       static void TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
       static void TestGetNextTimeoutWhenWheelWraps();
 
+      static void TestSetTimerFirstTimerNotChangedMultipleTimersAtSameSlot();
+      static void TestSetTimerFirstTimerNotChangedSetWithinSameSlot();
       // Test traits...
       enum traits
       {
@@ -81,18 +83,26 @@ class CCallbackTimerWheelTest :
          setQueriesTicks = true,
          failedSetQueriesTicks = true,
          handleTimeoutQueriesTicksPerTimer = false,
+         #if (JETBYTE_PERF_TIMER_WHEEL_HANDLE_ALL_TIMERS_IN_BEGIN_TIMEOUT_HANDLING == 1)
+         beginTimeoutHandlesAllInOneCall = true,
+         #else
+         beginTimeoutHandlesAllInOneCall = false,
+         #endif
          timersAtSameTimeAreExpiredInOrderSet = false,
-         #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
-         handleValidationEnabled = true,
-         #else
-         handleValidationEnabled = false,
-         #endif
-         #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
-         monitoringEnabled = true
-         #else
-         monitoringEnabled = false
-         #endif
+         supportsStateChangeOptimisation = true,
       };
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
+      static constexpr bool handleValidationEnabled = true;
+      #else
+      static constexpr bool handleValidationEnabled = false;
+      #endif
+
+      #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
+      static constexpr bool monitoringEnabled = true;
+      #else
+      static constexpr bool monitoringEnabled = false;
+      #endif
 
       static const _tstring shortName;
 };

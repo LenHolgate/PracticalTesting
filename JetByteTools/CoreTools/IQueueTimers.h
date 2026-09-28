@@ -41,8 +41,8 @@ namespace Core {
 ///////////////////////////////////////////////////////////////////////////////
 
 /// An interface representing a class that manages timers that implement the
-/// IQueueTimers::Timer interface and and which have their
-/// IQueueTimers::Timer::OnTimer() method called when the the timer expires.
+/// IQueueTimers::Timer interface and which have their
+/// IQueueTimers::Timer::OnTimer() method called when the timer expires.
 /// See <a href="http://www.lenholgate.com/archives/000389.html">here</a>
 /// for more details.
 /// \ingroup Timers
@@ -94,7 +94,7 @@ class IQueueTimers
       /// will cause any timers that have expired to be processed before the new
       /// timer is set.
 
-      enum SetTimerIf
+      enum SetTimerIf : BYTE
       {
          SetTimerAlways,
          SetTimerIfNotSet
@@ -103,27 +103,28 @@ class IQueueTimers
       virtual bool SetTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const SetTimerIf setTimerIf = SetTimerAlways) = 0;
-
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) = 0;
 
       template <typename T>
       bool SetTimerWithRefCountedUserData(
          const Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
+         Timer &timer,
+         Milliseconds timeout,
          T *pUserData,
-         const SetTimerIf setTimerIf = SetTimerAlways);
-
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       template <typename T>
       bool SetTimerWithRefCountedTimer(
          const Handle &handle,
          T &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const SetTimerIf setTimerIf = SetTimerAlways);
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       /// Update a timer if it is set and if the condition is true and set the timer if it is not set.
       /// Updating a timer will set the timeout, timer and user data to the newly supplied values. If the timer
@@ -132,7 +133,7 @@ class IQueueTimers
       /// UpdateAlwaysNoTimeoutChange will always update JUST timer and user data.
       /// If you supply pWasUpdated then it is set to true if anything was changed and false if not.
 
-      enum UpdateTimerIf
+      enum UpdateTimerIf : BYTE
       {
          UpdateTimerIfNewTimeIsSooner,
          UpdateTimerIfNewTimeIsLater,
@@ -143,55 +144,56 @@ class IQueueTimers
       virtual bool UpdateTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const UpdateTimerIf updateIf = UpdateAlways,
-         bool *pWasUpdated = nullptr) = 0;
-
-      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedUserData) Ignoring return value of function
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) = 0;
 
       template <typename T>
       bool UpdateTimerWithRefCountedUserData(
          const Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
+         Timer &timer,
+         Milliseconds timeout,
          T *pUserData,
-         const UpdateTimerIf updateIf = UpdateAlways,
-         bool *pWasUpdated = nullptr);
-
-      //lint -esym(534, JetByteTools::Win32::IQueueTimers::SetTimerWithRefCountedTimer) Ignoring return value of function
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       template <typename T>
       bool UpdateTimerWithRefCountedTimer(
          const Handle &handle,
          T &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const UpdateTimerIf updateIf = UpdateAlways,
-         bool *pWasUpdated = nullptr);
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       /// Cancel a timer that was previously set with SetTimer().
       /// Returns true if the timer was pending and false if the timer was not pending.
 
       virtual bool CancelTimer(
-         const Handle &handle) = 0;
-
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) = 0;
 
       template <typename T>
       bool CancelTimerWithRefCountedUserData(
          const Handle &handle,
-         T &userData);
+         T &userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       template <typename T>
       bool CancelTimerWithRefCountedUserData(
          const Handle &handle,
-         T *pUserData);
-
+         T *pUserData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       template <typename T>
       bool CancelTimerWithRefCountedTimer(
          const Handle &handle,
-         T &timer);
+         T &timer,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       /// Destroy a timer that was previously created with CreateTimer()
       /// and update the variable passed in to contain InvalidHandleValue.
@@ -201,44 +203,38 @@ class IQueueTimers
       /// false if the timer was not pending.
 
       virtual bool DestroyTimer(
-         Handle &handle) = 0;
-
-      template <typename T>
-      bool DestroyTimerWithRefCountedUserData(
          Handle &handle,
-         T &userData);
+         bool *pOptionalFirstToExpireHasChanged = nullptr) = 0;
 
-      template <typename T>
+      template <typename T, typename H>
       bool DestroyTimerWithRefCountedUserData(
-         Handle &handle,
-         T *pUserData);
+         H &handle,
+         T &userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
+      template <typename T, typename H>
+      bool DestroyTimerWithRefCountedUserData(
+         H &handle,
+         T *pUserData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
-      template <typename T>
+      template <typename T, typename H>
       bool DestroyTimerWithRefCountedTimer(
-         Handle &handle,
-         T &timer);
+         H &handle,
+         T &timer,
+         bool *pOptionalFirstToExpireHasChanged = nullptr);
 
       /// Destroy a timer that was previously created with CreateTimer().
       /// Returns true if the timer was pending and false if the timer was not pending.
 
       virtual bool DestroyTimer(
-         const Handle &handle) = 0;
-
-      template <typename T>
-      bool DestroyTimerWithRefCountedUserData(
          const Handle &handle,
-         T &userData);
+         bool *pOptionalFirstToExpireHasChanged = nullptr)
+      {
+         Handle _handle = handle;
 
-      template <typename T>
-      bool DestroyTimerWithRefCountedUserData(
-         const Handle &handle,
-         T *pUserData);
-
-      template <typename T>
-      bool DestroyTimerWithRefCountedTimer(
-         const Handle &handle,
-         T &timer);
+         return DestroyTimer(_handle, pOptionalFirstToExpireHasChanged);
+      }
 
       /// Create and set a single use timer.
       /// Note that calling SetTimer() will cause any timers that have expired to be
@@ -247,7 +243,8 @@ class IQueueTimers
       virtual void SetTimer(
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) = 0;
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) = 0;
 
       /// Returns the maximum timeout value that can be set. Note that this may differ
       /// between instances of the objects that implement this interface.
@@ -268,7 +265,8 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
    Timer &timer,
    const Milliseconds timeout,
    T *pUserData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    pUserData->AddRef();
 
@@ -279,7 +277,8 @@ bool IQueueTimers::SetTimerWithRefCountedUserData(
          timer,
          timeout,
          reinterpret_cast<UserData>(pUserData),
-         setTimerIf);
+         setTimerIf,
+         pOptionalFirstToExpireHasChanged);
 
       if (wasPending)
       {
@@ -302,7 +301,8 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
    T &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    timer.AddRef();
 
@@ -313,7 +313,8 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
          timer,
          timeout,
          userData,
-         setTimerIf);
+         setTimerIf,
+         pOptionalFirstToExpireHasChanged);
 
       if (wasPending)
       {
@@ -322,7 +323,7 @@ bool IQueueTimers::SetTimerWithRefCountedTimer(
 
       return wasPending;
    }
-   catch(...)
+   catch (...)
    {
       timer.Release();
 
@@ -337,7 +338,8 @@ bool IQueueTimers::UpdateTimerWithRefCountedUserData(
    const Milliseconds timeout,
    T *pUserData,
    const UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    pUserData->AddRef();
 
@@ -349,7 +351,8 @@ bool IQueueTimers::UpdateTimerWithRefCountedUserData(
          timeout,
          reinterpret_cast<UserData>(pUserData),
          updateIf,
-         pWasUpdated);
+         pWasUpdated,
+         pOptionalFirstToExpireHasChanged);
 
       if (wasPending)
       {
@@ -368,12 +371,13 @@ bool IQueueTimers::UpdateTimerWithRefCountedUserData(
 
 template <typename T>
 bool IQueueTimers::UpdateTimerWithRefCountedTimer(
-   const IQueueTimers::Handle &handle,
+   const Handle &handle,
    T &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const IQueueTimers::UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   const UpdateTimerIf updateIf,
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    timer.AddRef();
 
@@ -385,7 +389,8 @@ bool IQueueTimers::UpdateTimerWithRefCountedTimer(
          timeout,
          userData,
          updateIf,
-         pWasUpdated);
+         pWasUpdated,
+         pOptionalFirstToExpireHasChanged);
 
       if (wasPending)
       {
@@ -405,9 +410,10 @@ bool IQueueTimers::UpdateTimerWithRefCountedTimer(
 template <typename T>
 bool IQueueTimers::CancelTimerWithRefCountedUserData(
    const Handle &handle,
-   T *pUserData)
+   T *pUserData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   const bool wasPending = CancelTimer(handle);
+   const bool wasPending = CancelTimer(handle, pOptionalFirstToExpireHasChanged);
 
    if (wasPending)
    {
@@ -420,25 +426,28 @@ bool IQueueTimers::CancelTimerWithRefCountedUserData(
 template <typename T>
 bool IQueueTimers::CancelTimerWithRefCountedUserData(
    const Handle &handle,
-   T &userData)
+   T &userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   return CancelTimerWithRefCountedUserData(handle, &userData);
+   return CancelTimerWithRefCountedUserData(handle, &userData, pOptionalFirstToExpireHasChanged);
 }
 
 template <typename T>
 bool IQueueTimers::CancelTimerWithRefCountedTimer(
    const Handle &handle,
-   T &timer)
+   T &timer,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   return CancelTimerWithRefCountedUserData(handle, &timer);
+   return CancelTimerWithRefCountedUserData(handle, &timer, pOptionalFirstToExpireHasChanged);
 }
 
-template <typename T>
+template <typename T, typename H>
 bool IQueueTimers::DestroyTimerWithRefCountedUserData(
-   Handle &handle,
-   T *pUserData)
+   H &handle,
+   T *pUserData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   const bool wasPending = DestroyTimer(handle);
+   const bool wasPending = DestroyTimer(handle, pOptionalFirstToExpireHasChanged);
 
    if (wasPending)
    {
@@ -448,51 +457,22 @@ bool IQueueTimers::DestroyTimerWithRefCountedUserData(
    return wasPending;
 }
 
-template <typename T>
+template <typename T, typename H>
 bool IQueueTimers::DestroyTimerWithRefCountedUserData(
-   Handle &handle,
-   T &userData)
+   H &handle,
+   T &userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   return DestroyTimerWithRefCountedUserData(handle, &userData);
+   return DestroyTimerWithRefCountedUserData(handle, &userData, pOptionalFirstToExpireHasChanged);
 }
 
-template <typename T>
+template <typename T, typename H>
 bool IQueueTimers::DestroyTimerWithRefCountedTimer(
-   Handle &handle,
-   T &timer)
+   H &handle,
+   T &timer,
+   bool *pOptionalFirstToExpireHasChanged)
 {
-   return DestroyTimerWithRefCountedUserData(handle, &timer);
-}
-
-template <typename T>
-bool IQueueTimers::DestroyTimerWithRefCountedUserData(
-   const Handle &handle,
-   T *pUserData)
-{
-   const bool wasPending = DestroyTimer(handle);
-
-   if (wasPending)
-   {
-      pUserData->Release();
-   }
-
-   return wasPending;
-}
-
-template <typename T>
-bool IQueueTimers::DestroyTimerWithRefCountedUserData(
-   const Handle &handle,
-   T &userData)
-{
-   return DestroyTimerWithRefCountedUserData(handle, &userData);
-}
-
-template <typename T>
-bool IQueueTimers::DestroyTimerWithRefCountedTimer(
-   const Handle &handle,
-   T &timer)
-{
-   return DestroyTimerWithRefCountedUserData(handle, &timer);
+   return DestroyTimerWithRefCountedUserData(handle, &timer, pOptionalFirstToExpireHasChanged);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -509,6 +489,8 @@ class IQueueTimers::Timer
       /// the timeout expires.
 
       typedef IQueueTimers::UserData UserData;
+
+      typedef IQueueTimers::Handle Handle;
 
       Timer() = default;
 

@@ -44,6 +44,12 @@ namespace Mock {
 // CMockThreadedCallbackTimerQueueMonitor
 ///////////////////////////////////////////////////////////////////////////////
 
+CMockThreadedCallbackTimerQueueMonitor::CMockThreadedCallbackTimerQueueMonitor(
+   CTestLog *pLinkedLog)
+   :  CTestLog(pLinkedLog)
+{
+}
+
 void CMockThreadedCallbackTimerQueueMonitor::OnTimerProcessingContention(
    const ContentionLocation /*location*/)
 {

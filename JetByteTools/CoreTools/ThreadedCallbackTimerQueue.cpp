@@ -32,10 +32,11 @@
 #include "CallbackTimerQueue.h"
 #include "StringConverter.h"
 #include "Exception.h"
+#include "ExceptionLeakPrevention.h"
 #include "NullThreadedCallbackTimerQueueMonitor.h"
 #include "DebugTrace.h"
 
-#if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
+#if (JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
 #include "PerThreadErrorHandler.h"
 #endif
 
@@ -61,36 +62,27 @@ static CNullThreadedCallbackTimerQueueMonitor s_monitor;
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue()
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor)),
-      m_shutdown(false)
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor))
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor)),
-      m_shutdown(false)
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor))
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider)),
-      m_shutdown(false)
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider))
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
@@ -98,24 +90,18 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider)),
-      m_shutdown(false)
+      m_spTimerQueue(new CCallbackTimerQueue(m_monitor, tickProvider))
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    IManageTimerQueue &impl)
    :  m_monitor(s_monitor),
       m_thread(*this),
-      m_spTimerQueue(&impl, false),
-      m_shutdown(false)
+      m_spTimerQueue(&impl, false)
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
@@ -123,28 +109,23 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
-      m_spTimerQueue(&impl, false),
-      m_shutdown(false)
+      m_spTimerQueue(&impl, false)
 {
-   m_thread.Start();
-
-   m_thread.SetThreadName(_T("TimerQueue"));
+   m_thread.Start(_T("TimerQueue"));
 }
 
 CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
 {
-   try
-   {
-      WaitForShutdownToComplete();
-   }
-   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   WaitForShutdownToComplete();
+
+   JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
 void CThreadedCallbackTimerQueue::BeginShutdown()
 {
-   m_shutdown = true;
-
-   SignalStateChange();
+   m_shutdownEvent.Set();
 }
 
 bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
@@ -152,7 +133,112 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
 {
    BeginShutdown();
 
-   return m_thread.Wait(timeout);
+   const bool complete = m_thread.Wait(timeout);
+
+   return complete;
+}
+
+void CThreadedCallbackTimerQueue::DumpStats(
+   const _tstring &message) const
+{
+   OutputEx(_T("Timer queue stats: ") + message);
+
+   if (m_thread.IsRunning())
+   {
+      OutputEx(_T("Stats are not available when the timer queue is running"));
+   }
+   else
+   {
+      #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+      if (m_stats.stateChanges + m_stats.timeoutsProcessed)
+      {
+         OutputEx(_T("             Wake ups: ") + ToString(m_stats.stateChanges + m_stats.timeoutsProcessed));
+         OutputEx(_T("        State changes: ") + ToString(m_stats.stateChanges));
+
+         if (m_stats.timeoutsProcessed)
+         {
+            OutputEx(_T("             Timeouts: ") + ToString(m_stats.timeoutsProcessed));
+            OutputEx(_T("     Timers processed: ") + ToString(m_stats.totalTimersProcessed));
+            OutputEx(_T(" Max timers processed: ") + ToString(m_stats.maxTimersProcessed));
+            OutputEx(_T(" Ave timers processed: ") + ToString(m_stats.totalTimersProcessed / m_stats.timeoutsProcessed));
+            OutputEx(_T("     Processing loops: ") + ToString(m_stats.totalProcessingLoops));
+            OutputEx(_T(" Max processing loops: ") + ToString(m_stats.maxLoopIterations));
+            OutputEx(_T("Ave loops per timeout: ") + ToString(m_stats.timeoutsProcessed / m_stats.totalProcessingLoops));
+
+            if (m_stats.totalTimersProcessed > m_stats.totalProcessingLoops)
+            {
+               OutputEx(_T("  Ave timers per loop: ") + ToString(m_stats.totalTimersProcessed / m_stats.totalProcessingLoops));
+            }
+            else
+            {
+               OutputEx(_T("   Ave loop per timer: ") + ToString(m_stats.totalProcessingLoops / m_stats.totalTimersProcessed));
+            }
+         }
+ 
+         OutputEx(_T("               Create: ") + ToString(m_stats.createTimer));
+         OutputEx(_T("                IsSet: ") + ToString(m_stats.timerIsSet));
+         OutputEx(_T("                  Set: ") + ToString(m_stats.setTimer1 + m_stats.setTimer2 + m_stats.setTimer3 + m_stats.setTimer4));
+
+         if (m_stats.setTimer1)
+         {
+            OutputEx(_T("              Set (1): ") + ToString(m_stats.setTimer1));
+         }
+
+         if (m_stats.setTimer2)
+         {
+            OutputEx(_T("              Set (2): ") + ToString(m_stats.setTimer2));
+         }
+
+         if (m_stats.setTimer3)
+         {
+            OutputEx(_T("              Set (3): ") + ToString(m_stats.setTimer3));
+         }
+
+         if (m_stats.setTimer4)
+         {
+            OutputEx(_T("              Set (4): ") + ToString(m_stats.setTimer4));
+         }
+
+         OutputEx(_T("               Update: ") + ToString(m_stats.updateTimer1 + m_stats.updateTimer2));
+
+         if (m_stats.updateTimer1)
+         {
+            OutputEx(_T("           Update (1): ") + ToString(m_stats.updateTimer1));
+         }
+
+         if (m_stats.updateTimer2)
+         {
+            OutputEx(_T("           Update (2): ") + ToString(m_stats.updateTimer2));
+         }
+
+         OutputEx(_T("               Cancel: ") + ToString(m_stats.cancelTimer1 + m_stats.cancelTimer2));
+
+         if (m_stats.cancelTimer1)
+         {
+            OutputEx(_T("           Cancel (1): ") + ToString(m_stats.cancelTimer1));
+         }
+
+         if (m_stats.cancelTimer2)
+         {
+            OutputEx(_T("           Cancel (2): ") + ToString(m_stats.cancelTimer2));
+         }
+
+         OutputEx(_T("              Destroy: ") + ToString(m_stats.destroyTimer1 + m_stats.destroyTimer2));
+
+         if (m_stats.destroyTimer1)
+         {
+            OutputEx(_T("          Destroy (1): ") + ToString(m_stats.destroyTimer1));
+         }
+
+         if (m_stats.destroyTimer2)
+         {
+            OutputEx(_T("          Destroy (2): ") + ToString(m_stats.destroyTimer2));
+         }
+      }
+      #else
+      OutputEx(_T("Stats are not available"));
+      #endif
+   }
 }
 
 bool CThreadedCallbackTimerQueue::TimerIsSet(
@@ -169,6 +255,10 @@ bool CThreadedCallbackTimerQueue::TimerIsSet(
    }
    #else
    CLockableObject::Owner lock(m_lock);
+   #endif
+
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   m_stats.timerIsSet++;
    #endif
 
    return m_spTimerQueue->TimerIsSet(handle);
@@ -189,6 +279,10 @@ CThreadedCallbackTimerQueue::Handle CThreadedCallbackTimerQueue::CreateTimer()
    CLockableObject::Owner lock(m_lock);
    #endif
 
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   m_stats.createTimer++;
+   #endif
+
    return m_spTimerQueue->CreateTimer();
 }
 
@@ -203,7 +297,8 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -218,9 +313,34 @@ bool CThreadedCallbackTimerQueue::SetTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData, setTimerIf);
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      m_stats.setTimer1++;
+   }
+   else
+   {
+      m_stats.setTimer2++;
+   }
+   #endif
 
+   bool firstToExpireHasChanged = false;
+
+   const bool wasPending = m_spTimerQueue->SetTimer(handle, timer, timeout, userData, setTimerIf, &firstToExpireHasChanged);
+
+   #if (JETBYTE_PERF_TIMER_OPTIMISE_STATE_CHANGE_SET_TIMER == 1)
+   if (firstToExpireHasChanged)
+   {
+      SignalStateChange();
+   }
+   #else
    SignalStateChange();
+   #endif
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
 
    return wasPending;
 }
@@ -231,7 +351,8 @@ bool CThreadedCallbackTimerQueue::UpdateTimer(
    const Milliseconds timeout,
    const UserData userData,
    const UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -246,25 +367,51 @@ bool CThreadedCallbackTimerQueue::UpdateTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      m_stats.updateTimer1++;
+   }
+   else
+   {
+      m_stats.updateTimer2++;
+   }
+   #endif
+
    bool wasUpdated = false;
 
-   const bool wasPending = m_spTimerQueue->UpdateTimer(handle, timer, timeout, userData, updateIf, &wasUpdated);
+   bool firstToExpireHasChanged = false;
+
+   const bool wasPending = m_spTimerQueue->UpdateTimer(handle, timer, timeout, userData, updateIf, &wasUpdated, &firstToExpireHasChanged);
 
    if (pWasUpdated)
    {
       *pWasUpdated = wasUpdated;
    }
 
-   if (wasUpdated && updateIf != UpdateAlwaysNoTimeoutChange)
+   #if (JETBYTE_PERF_TIMER_OPTIMISE_STATE_CHANGE_UPDATE_TIMER == 1)
+   if (firstToExpireHasChanged)
    {
       SignalStateChange();
+   }
+   #else
+   if (wasUpdated)
+   {
+      SignalStateChange();
+   }
+   #endif
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
    }
 
    return wasPending;
 }
 
 bool CThreadedCallbackTimerQueue::CancelTimer(
-   const Handle &handle)
+   const Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -279,15 +426,44 @@ bool CThreadedCallbackTimerQueue::CancelTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   const bool wasPending = m_spTimerQueue->CancelTimer(handle);
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      m_stats.cancelTimer1++;
+   }
+   else
+   {
+      m_stats.cancelTimer2++;
+   }
+   #endif
 
-   SignalStateChange();
+   bool firstToExpireHasChanged = false;
+
+   const bool wasPending = m_spTimerQueue->CancelTimer(handle, &firstToExpireHasChanged);
+
+   #if (JETBYTE_PERF_TIMER_OPTIMISE_STATE_CHANGE_CANCEL_TIMER == 1)
+   if (firstToExpireHasChanged)
+   {
+      SignalStateChange();
+   }
+   #else
+   if (wasPending)
+   {
+      SignalStateChange();
+   }
+   #endif
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
 
    return wasPending;
 }
 
 bool CThreadedCallbackTimerQueue::DestroyTimer(
-   Handle &handle)
+   Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -302,33 +478,46 @@ bool CThreadedCallbackTimerQueue::DestroyTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   return m_spTimerQueue->DestroyTimer(handle);
-}
-
-bool CThreadedCallbackTimerQueue::DestroyTimer(
-   const Handle &handle)
-{
-   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-   CLockableObject::PotentialOwner lock(m_lock);
-
-   if (!lock.TryLock())
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   if (pOptionalFirstToExpireHasChanged)
    {
-      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::DestroyTimerContention);
-
-      lock.Lock();
+      m_stats.destroyTimer1++;
    }
-
-   #else
-   CLockableObject::Owner lock(m_lock);
+   else
+   {
+      m_stats.destroyTimer2++;
+   }
    #endif
 
-   return m_spTimerQueue->DestroyTimer(handle);
+   bool firstToExpireHasChanged = false;
+
+   const bool wasPending = m_spTimerQueue->DestroyTimer(handle, &firstToExpireHasChanged);
+
+   #if (JETBYTE_PERF_TIMER_OPTIMISE_STATE_CHANGE_DESTROY_TIMER == 1)
+   if (firstToExpireHasChanged)
+   {
+      SignalStateChange();
+   }
+   #else
+   if (wasPending)
+   {
+      SignalStateChange();
+   }
+   #endif
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
+
+   return wasPending;
 }
 
 void CThreadedCallbackTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
    CLockableObject::PotentialOwner lock(m_lock);
@@ -343,9 +532,34 @@ void CThreadedCallbackTimerQueue::SetTimer(
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   m_spTimerQueue->SetTimer(timer, timeout, userData);
+   #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      m_stats.setTimer3++;
+   }
+   else
+   {
+      m_stats.setTimer4++;
+   }
+   #endif
 
+   bool firstToExpireHasChanged = false;
+
+   m_spTimerQueue->SetTimer(timer, timeout, userData, &firstToExpireHasChanged);
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+   }
+
+   #if (JETBYTE_PERF_TIMER_OPTIMISE_STATE_CHANGE_SET_TIMER == 1)
+   if (firstToExpireHasChanged)
+   {
+      SignalStateChange();
+   }
+   #else
    SignalStateChange();
+   #endif
 }
 
 Milliseconds CThreadedCallbackTimerQueue::GetMaximumTimeout() const
@@ -355,70 +569,115 @@ Milliseconds CThreadedCallbackTimerQueue::GetMaximumTimeout() const
 
 unsigned int CThreadedCallbackTimerQueue::Run()
 {
-   #if (JETBYTE_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
+   #if (JETBYTE_ADMIN_INSTALL_PER_THREAD_ERROR_HANDLER_IN_CTHREAD == 0)
    CPerThreadErrorHandler errorHandler;
    #endif
 
+   JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED_START
+
    try
    {
-      try
+      if (OnThreadInitialised())
       {
-         if (OnThreadInitialised())
+         HANDLE handles[2] =
          {
-            while (!m_shutdown)
+            m_shutdownEvent.GetWaitHandle(),
+            m_stateChangeEvent.GetWaitHandle()
+         };
+
+         bool done = m_shutdownEvent.Wait(0);
+
+         while (!done)
+         {
+            const Milliseconds timeout = GetNextTimeout();
+
+            if (timeout == 0)
             {
-               const Milliseconds timeout = GetNextTimeout();
+               #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+               m_monitor.OnTimerProcessingStarted();
+               #endif
 
-               if (timeout == 0)
+               #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+               m_stats.timeoutsProcessed++;
+
+               size_t processingLoops = 0;
+               #endif
+
+               if (BeginTimeoutHandling())
                {
-                     if (BeginTimeoutHandling())
-                  {
-                        m_spTimerQueue->HandleTimeout();
-
-                     #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
-                     CLockableObject::PotentialOwner lock(m_lock);
-
-                     if (!lock.TryLock())
-                     {
-                        m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
-
-                        lock.Lock();
-                     }
-                     #else
-                     CLockableObject::Owner lock(m_lock);
-                     #endif
-
-                     m_spTimerQueue->EndTimeoutHandling();
-                  }
-
-                  #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-                  m_monitor.OnTimerProcessingStopped();
+                  #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+                  processingLoops++;
                   #endif
 
+                  do
+                  {
+                     const size_t timersProcessed = m_spTimerQueue->HandleTimeout();
+
+                     #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+                     m_stats.totalTimersProcessed += timersProcessed;
+
+                     if (timersProcessed > m_stats.maxTimersProcessed)
+                     {
+                        m_stats.maxTimersProcessed = timersProcessed;
+                     }
+                     #else
+                     (void)timersProcessed;
+                     #endif
+
+                     EndTimeoutHandling();
+                  }
+                  while (BeginTimeoutHandling());
                }
-               else
+
+               #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+               m_stats.totalProcessingLoops += processingLoops;
+
+               if (processingLoops > m_stats.maxLoopIterations)
                {
-                  m_stateChangeEvent.Wait(timeout);
+                  m_stats.maxLoopIterations = processingLoops;
+               }
+               #endif
+
+               #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
+               m_monitor.OnTimerProcessingStopped();
+               #endif
+            }
+            else
+            {
+               const DWORD result = IWaitable::WaitForMultipleHandles(2, handles, FALSE, timeout);
+
+               if (result == WAIT_OBJECT_0)
+               {
+                  done = true;
+               }
+               else if (result == (WAIT_OBJECT_0 + 1))
+               {
+                  #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+                  m_stats.stateChanges++;
+                  #endif
+               }
+               else if (result != WAIT_TIMEOUT)
+               {
+                  throw CException(
+                     _T("CThreadedCallbackTimerQueue::Run()"),
+                     _T("Unexpected return value from WaitForMultipleObjects - ") + ToString(result));
                }
             }
-
-            OnThreadShutdown();
          }
-      }
-      catch (const CException &e)
-      {
-         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetDetails());
-      }
-      catch (const std::exception &e)
-      {
-         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
-      }
-      JETBYTE_CATCH_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
-      {
-         OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Unexpected exception"));
+
+         OnThreadShutdown();
       }
    }
-   JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED
+   catch (const CException &e)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - Exception: ") + e.GetDetails());
+   }
+   catch (const std::exception &e)
+   {
+      OnThreadTerminationException(_T("CThreadedCallbackTimerQueue::Run() - STD Exception: ") + CStringConverter::AtoT(e.what()));
+   }
+
+   JETBYTE_CATCH_AND_LOG_ALL_AT_THREAD_BOUNDARY_IF_ENABLED_END
 
    return 0;
 }
@@ -438,11 +697,25 @@ bool CThreadedCallbackTimerQueue::BeginTimeoutHandling()
    CLockableObject::Owner lock(m_lock);
    #endif
 
-   #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
-   m_monitor.OnTimerProcessingStarted();
-   #endif
-
    return m_spTimerQueue->BeginTimeoutHandling();
+}
+
+void CThreadedCallbackTimerQueue::EndTimeoutHandling()
+{
+   #if (JETBYTE_PERF_TIMER_CONTENTION_MONITORING == 1)
+   CLockableObject::PotentialOwner lock(m_lock);
+
+   if (!lock.TryLock())
+   {
+      m_monitor.OnTimerProcessingContention(IMonitorThreadedCallbackTimerQueue::TimerProcessingContention);
+
+      lock.Lock();
+   }
+   #else
+   CLockableObject::Owner lock(m_lock);
+   #endif
+   
+   m_spTimerQueue->EndTimeoutHandling();
 }
 
 Milliseconds CThreadedCallbackTimerQueue::GetNextTimeout()

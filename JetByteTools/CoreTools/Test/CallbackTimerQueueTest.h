@@ -56,7 +56,9 @@ struct CCallbackTimerQueueTestTraits
       setQueriesTicks = true,
       failedSetQueriesTicks = false,
       handleTimeoutQueriesTicksPerTimer = true,
+      beginTimeoutHandlesAllInOneCall = false,
       timersAtSameTimeAreExpiredInOrderSet = true,
+      supportsStateChangeOptimisation = true,
       #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
       handleValidationEnabled = true,
       #else

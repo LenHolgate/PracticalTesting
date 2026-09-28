@@ -69,7 +69,7 @@ CMockTimerQueue::CMockTimerQueue()
 
 CMockTimerQueue::CMockTimerQueue(
    CTestLog *pLinkedLog)
-   : CTestLog(pLinkedLog),
+   :  CTestLog(pLinkedLog),
       waitForOnTimerWaitComplete(false),
       includeHandleValuesInLogs(true),
       logSetTimerEvenIfNotSet(true),
@@ -161,7 +161,7 @@ bool CMockTimerQueue::BeginTimeoutHandling()
    return !m_setTimers.empty();
 }
 
-void CMockTimerQueue::HandleTimeout()
+size_t CMockTimerQueue::HandleTimeout()
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
@@ -170,6 +170,8 @@ void CMockTimerQueue::HandleTimeout()
    m_nextTimeout = INFINITE;
 
    OnTimer();
+
+   return 1;
 }
 
 void CMockTimerQueue::EndTimeoutHandling()
@@ -225,7 +227,8 @@ bool CMockTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
    const UserData userData,
-   const SetTimerIf setTimerIf)
+   const SetTimerIf setTimerIf,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    bool wasPending = false;
 
@@ -254,21 +257,32 @@ bool CMockTimerQueue::SetTimer(
    {
       m_setTimers.push_back(TimerDetails(handle, timer, timeout, userData));
 
+      bool firstToExpireHasChanged = false;
 
       if (returnCorrectTimeoutSetForNextTimeout)
       {
          if (timeout < m_nextTimeout)
          {
+            firstToExpireHasChanged = true;
 
             m_nextTimeout = timeout;
          }
       }
       else
       {
+         firstToExpireHasChanged = true;
 
          m_nextTimeout = 0;
       }
 
+      if (pOptionalFirstToExpireHasChanged)
+      {
+         // not currently supported...
+         // a timer may be set or updated and may not have affected
+         // the first timer set...
+
+         *pOptionalFirstToExpireHasChanged = firstToExpireHasChanged;
+      }
 
       wasSet = true;
    }
@@ -310,7 +324,8 @@ bool CMockTimerQueue::UpdateTimer(
    const Milliseconds timeout,
    const UserData userData,
    const UpdateTimerIf updateIf,
-   bool *pWasUpdated)
+   bool *pWasUpdated,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    bool updated = false;
 
@@ -325,7 +340,7 @@ bool CMockTimerQueue::UpdateTimer(
       LogMessage(_T("UpdateTimer: ") + ToString(timeout));
    }
 
-   bool wasSet = false;
+   bool wasPending = false;
 
    for (auto & m_setTimer : m_setTimers)
    {
@@ -347,13 +362,13 @@ bool CMockTimerQueue::UpdateTimer(
             }
          }
 
-         wasSet = true;
+         wasPending = true;
 
          break;
       }
    }
 
-   if (!wasSet)
+   if (!wasPending)
    {
       // timer wasn't already pending so we will set it...
 
@@ -369,10 +384,21 @@ bool CMockTimerQueue::UpdateTimer(
       *pWasUpdated = updated;
    }
 
-   return wasSet;
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      // not currently supported...
+      // a timer may be updated and may not have affected
+      // the first timer set...
+
+      *pOptionalFirstToExpireHasChanged = updated;;
+   }
+
+   return wasPending;
 }
+
 bool CMockTimerQueue::CancelTimer(
-   const Handle &handle)
+   const Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
@@ -385,7 +411,7 @@ bool CMockTimerQueue::CancelTimer(
       LogMessage(_T("CancelTimer"));
    }
 
-   bool wasSet = false;
+   bool wasPending = false;
 
    for (auto it = m_setTimers.begin(), end = m_setTimers.end();
       it != end;
@@ -395,17 +421,27 @@ bool CMockTimerQueue::CancelTimer(
       {
          m_setTimers.erase(it);
 
-         wasSet = true;
+         wasPending = true;
 
          break;
       }
    }
 
-   return wasSet;
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      // not currently supported...
+      // a pending timer may be cancelled and may not have affected
+      // the first timer set...
+
+      *pOptionalFirstToExpireHasChanged = wasPending;
+   }
+
+   return wasPending;
 }
 
 bool CMockTimerQueue::DestroyTimer(
-   Handle &handle)
+   Handle &handle,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
@@ -418,7 +454,7 @@ bool CMockTimerQueue::DestroyTimer(
       LogMessage(_T("DestroyTimer"));
    }
 
-   bool wasSet = false;
+   bool wasPending = false;
 
    for (auto it = m_setTimers.begin(), end = m_setTimers.end();
       it != end;
@@ -428,7 +464,7 @@ bool CMockTimerQueue::DestroyTimer(
       {
          m_setTimers.erase(it);
 
-         wasSet = true;
+         wasPending = true;
 
          break;
       }
@@ -436,52 +472,39 @@ bool CMockTimerQueue::DestroyTimer(
 
    handle = InvalidHandleValue;
 
-   return wasSet;
-}
-
-bool CMockTimerQueue::DestroyTimer(
-   const Handle &handle)
-{
-   CReentrantLockableObject::Owner lock(m_lock);
-
-   if (includeHandleValuesInLogs)
+   if (pOptionalFirstToExpireHasChanged)
    {
-      LogMessage(_T("DestroyTimer: ") + ToString(handle));
-   }
-   else
-   {
-      LogMessage(_T("DestroyTimer"));
+      // not currently supported...
+      // a pending timer may be destroyed and may not have affected
+      // the first timer set...
+
+      *pOptionalFirstToExpireHasChanged = wasPending;
    }
 
-   bool wasSet = false;
 
-   for (auto it = m_setTimers.begin(), end = m_setTimers.end();
-      it != end;
-      ++it)
-   {
-      if (it->handle == handle)
-      {
-         m_setTimers.erase(it);
-
-         wasSet = true;
-
-         break;
-      }
-   }
-
-   return wasSet;
+   return wasPending;
 }
 
 void CMockTimerQueue::SetTimer(
    Timer &timer,
    const Milliseconds timeout,
-   const UserData userData)
+   const UserData userData,
+   bool *pOptionalFirstToExpireHasChanged)
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
    LogMessage(_T("SetTimer: ") + ToString(timeout));
 
    m_setTimers.push_back(TimerDetails(InvalidHandleValue, timer, timeout, userData));
+
+   if (pOptionalFirstToExpireHasChanged)
+   {
+      // not currently supported...
+      // a timer may be set and may not have affected
+      // the first timer set...
+
+      *pOptionalFirstToExpireHasChanged = true;;
+   }
 }
 
 Milliseconds CMockTimerQueue::GetMaximumTimeout() const
@@ -513,7 +536,7 @@ CMockTimerQueue::TimerExpiryThread::TimerExpiryThread(
    :  m_thread(*this),
       m_timerQueue(timerQueue)
 {
-   m_thread.Start();
+   m_thread.Start(_T("CMockTimerQueue::TimerExpiryThread"));
 }
 
 unsigned int CMockTimerQueue::TimerExpiryThread::Run()

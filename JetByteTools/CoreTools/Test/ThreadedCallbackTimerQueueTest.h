@@ -76,6 +76,10 @@ class CThreadedCallbackTimerQueueTest
       static void TestMultipleTimersTimerWheel();
 
       static void TestMonitorTimer();
+
+      static void TestSetTimerAgainChangesFirstTimerSet();
+      static void TestSetTimerChangesFirstTimerSet();
+      static void TestSetTimerDoesNotChangeFirstTimerSet();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

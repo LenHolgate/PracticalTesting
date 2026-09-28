@@ -79,14 +79,14 @@ class CCallbackTimerQueue : public IManageTimerQueue
       explicit CCallbackTimerQueue(
          IMonitorCallbackTimerQueue &monitor);
 
-      /// Create a timer queue that uses the provdided instance of
+      /// Create a timer queue that uses the provided instance of
       /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system.
 
       explicit CCallbackTimerQueue(
          const IProvideTickCount64 &tickProvider);
 
-      /// Create a timer queue that uses the provdided instance of
+      /// Create a timer queue that uses the provided instance of
       /// IProvideTickCount64 to obtain its tick counts rather than getting
       /// them directly from the system. Monitor it with the supplied monitor.
 
@@ -108,7 +108,7 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       bool BeginTimeoutHandling() override;
 
-      void HandleTimeout() override;
+      size_t HandleTimeout() override;
 
       void EndTimeoutHandling() override;
 
@@ -122,39 +122,41 @@ class CCallbackTimerQueue : public IManageTimerQueue
          const Handle &handle) const override;
 
       bool SetTimer(
-         const IQueueTimers::Handle &handle,
-         IQueueTimers::Timer &timer,
-         const Milliseconds timeout,
-         const IQueueTimers::UserData userData,
-         const SetTimerIf setTimerIf = SetTimerAlways) override;
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool UpdateTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const UpdateTimerIf updateIf = UpdateAlways,
-         bool *pWasUpdated = nullptr) override;
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf = UpdateAlways,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool CancelTimer(
-         const Handle &handle) override;
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool DestroyTimer(
-         Handle &handle) override;
+         Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
-      bool DestroyTimer(
-         const Handle &handle) override;
+      using IQueueTimers::DestroyTimer;
 
       void SetTimer(
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
    private :
-
-      class TimerDataSetNodeAccessor;
 
       class TimerData;
 
@@ -187,8 +189,6 @@ class CCallbackTimerQueue : public IManageTimerQueue
          std::less<>,
          TimerDataIntrusiveMultiMapNodeAccessor> TimerQueue;
 
-      typedef TIntrusiveSet<TimerData> ActiveHandles;
-
       TimerData *ValidateHandle(
          const Handle &handle) const;
 
@@ -197,7 +197,7 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       ULONGLONG GetAbsoluteTimeout(
          TimerData &data,
-         const Milliseconds timeout) const;
+         Milliseconds timeout) const;
 
       void InsertTimer(
          TimerData *pData,
@@ -209,7 +209,11 @@ class CCallbackTimerQueue : public IManageTimerQueue
 
       TimerQueue m_queue;
 
+      #if (JETBYTE_PERF_TIMER_QUEUE_VALIDATE_HANDLES == 1)
+      typedef TIntrusiveSet<TimerData> ActiveHandles;
+
       ActiveHandles m_activeHandles;
+      #endif
 
       const IProvideTickCount64 &m_tickProvider;
 

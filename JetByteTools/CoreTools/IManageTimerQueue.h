@@ -74,7 +74,7 @@ class IManageTimerQueue : public IQueueTimers
       /// is NOT acceptable to hold a lock that will prevent concurrent calls
       /// to any of the methods on IQueueTimers.
 
-      virtual void HandleTimeout() = 0;
+      virtual size_t HandleTimeout() = 0;
 
       /// Complete the handling of a timeout that was started with
       /// BeginTimeoutHandling(). Note that in an implementation that is safe for

@@ -33,6 +33,7 @@
 #include "Thread.h"
 #include "IRunnable.h"
 #include "AutoResetEvent.h"
+#include "ManualResetEvent.h"
 #include "LockableObject.h"
 #include "ConditionalSmartPointer.h"
 
@@ -80,13 +81,13 @@ class CThreadedCallbackTimerQueue :
       explicit CThreadedCallbackTimerQueue(
          IMonitorThreadedCallbackTimerQueue &monitor);
 
-      /// Create a timer queue that uses the provdided instance of IProvideTickCount64 to
+      /// Create a timer queue that uses the provided instance of IProvideTickCount64 to
       /// obtain its tick counts rather than getting them directly from the system.
 
       explicit CThreadedCallbackTimerQueue(
          const IProvideTickCount64 &tickProvider);
 
-      /// Create a timer queue that uses the provdided instance of IProvideTickCount64 to
+      /// Create a timer queue that uses the provided instance of IProvideTickCount64 to
       /// obtain its tick counts rather than getting them directly from the system.
       /// Monitor it with the supplied monitor.
 
@@ -94,14 +95,14 @@ class CThreadedCallbackTimerQueue :
          IMonitorThreadedCallbackTimerQueue &monitor,
          const IProvideTickCount64 &tickProvider);
 
-      /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its
+      /// Create a timer queue that uses the supplied instance of IHandleTimerQueueTimeouts as its
       /// implementation. Note that we don't take ownership of the implementation, it's up
       /// to you to manage its lifetime.
 
       explicit CThreadedCallbackTimerQueue(
          IManageTimerQueue &impl);
 
-      /// Create a timer queue that uses the supplied instance of IManageTimerQueue as its
+      /// Create a timer queue that uses the supplied instance of IHandleTimerQueueTimeouts as its
       /// implementation. Note that we don't take ownership of the implementation, it's up
       /// to you to manage its lifetime. Monitor it with the supplied monitor.
 
@@ -128,12 +129,15 @@ class CThreadedCallbackTimerQueue :
 
       void BeginShutdown();
 
-      /// Initiates a shutdown (if one isn't already in progresss) and then waits
+      /// Initiates a shutdown (if one isn't already in progress) and then waits
       /// for it to complete. Does not return until the shutdown has completed or
       /// the timeout has expired. Returns true if the shutdown is complete.
 
       bool WaitForShutdownToComplete(
          Milliseconds timeout = INFINITE);
+
+      void DumpStats(
+         const JetByteTools::Core::_tstring &message) const;
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
@@ -147,31 +151,35 @@ class CThreadedCallbackTimerQueue :
       bool SetTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const SetTimerIf setTimerIf = SetTimerAlways) override;
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool UpdateTimer(
          const Handle &handle,
          Timer &timer,
-         const Milliseconds timeout,
-         const UserData userData,
-         const UpdateTimerIf updateIf,
-         bool *pWasUpdated = nullptr) override;
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool CancelTimer(
-         const Handle &handle) override;
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool DestroyTimer(
-         Handle &handle) override;
+         Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
-      bool DestroyTimer(
-         const Handle &handle) override;
+      using IQueueTimers::DestroyTimer;
 
       void SetTimer(
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -196,6 +204,8 @@ class CThreadedCallbackTimerQueue :
 
       bool BeginTimeoutHandling();
 
+      void EndTimeoutHandling();
+
       void SignalStateChange();
 
       // Implement IRunnable
@@ -206,13 +216,40 @@ class CThreadedCallbackTimerQueue :
 
       mutable CLockableObject m_lock;
 
+      CManualResetEvent m_shutdownEvent;
+
       CAutoResetEvent m_stateChangeEvent;
 
       CThread m_thread;
 
       TConditionalSmartPointer<IManageTimerQueue> m_spTimerQueue;
 
-      volatile bool m_shutdown;
+      #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
+      struct Stats
+      {
+         size_t timeoutsProcessed = 0;
+         size_t stateChanges = 0;
+         size_t totalTimersProcessed = 0;
+         size_t maxTimersProcessed = 0;
+         size_t totalProcessingLoops = 0;
+         size_t maxLoopIterations = 0;
+
+         size_t createTimer = 0;
+         size_t timerIsSet = 0;
+         size_t setTimer1 = 0;
+         size_t setTimer2= 0;
+         size_t setTimer3 = 0;
+         size_t setTimer4 = 0;
+         size_t updateTimer1= 0;
+         size_t updateTimer2 = 0;
+         size_t cancelTimer1 = 0;
+         size_t cancelTimer2 = 0;
+         size_t destroyTimer1 = 0;
+         size_t destroyTimer2 = 0;
+      };
+
+      mutable Stats m_stats;
+      #endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////

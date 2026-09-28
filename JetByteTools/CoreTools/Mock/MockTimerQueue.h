@@ -132,7 +132,7 @@ class CMockTimerQueue :
 
       bool BeginTimeoutHandling() override;
 
-      void HandleTimeout() override;
+      size_t HandleTimeout() override;
 
       void EndTimeoutHandling() override;
 
@@ -148,7 +148,8 @@ class CMockTimerQueue :
          Timer &timer,
          Milliseconds timeout,
          UserData userData,
-         SetTimerIf setTimerIf = SetTimerAlways) override;
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool UpdateTimer(
          const Handle &handle,
@@ -156,21 +157,24 @@ class CMockTimerQueue :
          Milliseconds timeout,
          UserData userData,
          UpdateTimerIf updateIf,
-         bool *pWasUpdated = nullptr) override;
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool CancelTimer(
-         const Handle &handle) override;
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       bool DestroyTimer(
-         Handle &handle) override;
+         Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
-      bool DestroyTimer(
-         const Handle &handle) override;
+      using IQueueTimers::DestroyTimer;
 
       void SetTimer(
          Timer &timer,
          Milliseconds timeout,
-         UserData userData) override;
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
 
       Milliseconds GetMaximumTimeout() const override;
 
@@ -193,8 +197,8 @@ class CMockTimerQueue :
          TimerDetails(
             const Handle &handle_,
             Timer &timer_,
-            Milliseconds timeout_,
-            UserData userData_)
+            const Milliseconds timeout_,
+            const UserData userData_)
             :  handle(handle_),
                timer(timer_),
                timeout(timeout_),

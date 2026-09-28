@@ -58,7 +58,8 @@ CLoggingCallbackTimer::CLoggingCallbackTimer()
       m_numTimerEvents(0),
       m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
-      m_timeout(INFINITE),
+      m_timeout1(INFINITE),
+      m_timeout2(INFINITE),
       m_userData(0)
 {
 }
@@ -71,7 +72,8 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
       m_numTimerEvents(0),
       m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
-      m_timeout(INFINITE),
+      m_timeout1(INFINITE),
+      m_timeout2(INFINITE),
       m_userData(0)
 {
 }
@@ -84,7 +86,8 @@ void CLoggingCallbackTimer::DestroyTimerInOnTimer(
 
    m_handle = handle;
 
-   m_timeout = INFINITE;
+   m_timeout1 = INFINITE;
+   m_timeout2 = INFINITE;
 
    m_userData = 0;
 }
@@ -99,7 +102,25 @@ void CLoggingCallbackTimer::SetTimerInOnTimer(
 
    m_handle = handle;
 
-   m_timeout = timeout;
+   m_timeout1 = timeout;
+   m_timeout2 = INFINITE;
+
+   m_userData = userData;
+}
+
+void CLoggingCallbackTimer::SetTimerTwiceInOnTimer(
+   IQueueTimers &timerQueue,
+   IQueueTimers::Handle &handle,
+   const Milliseconds timeout1,
+   const Milliseconds timeout2,
+   const UserData userData)
+{
+   m_pTimerQueue = &timerQueue;
+
+   m_handle = handle;
+
+   m_timeout1 = timeout1;
+   m_timeout2 = timeout2;
 
    m_userData = userData;
 }
@@ -132,16 +153,32 @@ void CLoggingCallbackTimer::OnTimer(
 
    if (m_pTimerQueue)
    {
-      if (m_timeout != INFINITE)
+      if (m_timeout1 != INFINITE)
       {
-         m_pTimerQueue->SetTimer(m_handle, *this, m_timeout, m_userData);
+         const Milliseconds timeout1 = m_timeout1;
 
-         m_timeout = INFINITE;
+         IQueueTimers *pTimerQueue = m_pTimerQueue;
+
          m_pTimerQueue = nullptr;
-         m_handle = IQueueTimers::InvalidHandleValue;
-         m_userData = 0;
+         m_timeout1 = INFINITE;
+
+         pTimerQueue->SetTimer(m_handle, *this, timeout1, m_userData);
 
          LogMessage(_T("TimerSet"));
+
+         if (m_timeout2 != INFINITE)
+         {
+            const Milliseconds timeout2 = m_timeout2;
+         
+            m_timeout2 = INFINITE;
+
+            pTimerQueue->SetTimer(m_handle, *this, timeout2, m_userData);
+
+            LogMessage(_T("TimerSet"));
+         }
+
+         m_handle = IQueueTimers::InvalidHandleValue;
+         m_userData = 0;
       }
       else
       {

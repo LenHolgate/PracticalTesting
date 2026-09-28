@@ -54,6 +54,9 @@ class CMockThreadedCallbackTimerQueueMonitor :
 
       CMockThreadedCallbackTimerQueueMonitor() = default;
 
+      explicit CMockThreadedCallbackTimerQueueMonitor(
+         JetByteTools::Test::CTestLog *pLinkedLog);
+
       CMockThreadedCallbackTimerQueueMonitor(
          const CMockThreadedCallbackTimerQueueMonitor &rhs) = delete;
 

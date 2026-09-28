@@ -132,6 +132,8 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestCancelTimerNotSet();
       static void TestCancelTimerInvalidHandle();
       static void TestCancelTimer();
+      static void TestCancelTimerFirstToExpire();
+      static void TestCancelTimerNotFirstToExpire();
       static void TestUpdateTimer();
       static void TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsSooner();
       static void TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsNotSooner();
@@ -150,11 +152,15 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail();
       static void TestMultipleCallsToEndTimeoutHandlingFail();
       static void TestMultipleCallsToHandleTimeoutFail();
-      static void TestBeginTimeoutHandlingSetTimer();
+      static void TestBeginTimeoutHandlingSetTimerSameTimerNow();
+      static void TestBeginTimeoutHandlingSetTimerSameTimerLater();
+      static void TestBeginTimeoutHandlingSetTimerNewTimerNow();
+      static void TestBeginTimeoutHandlingSetTimerNewTimerLater();
       static void TestBeginTimeoutHandlingCancelTimer();
       static void TestBeginTimeoutHandlingDestroyTimer();
       static void TestHandleTimeoutSetTimer();
       static void TestHandleTimeoutSetTimerInOnTimer();
+      static void TestHandleTimeoutSetTimerTwiceInOnTimer();
       static void TestHandleTimeoutCancelTimer();
       static void TestHandleTimeoutDestroyTimer();
       static void TestMultipleTimers();
@@ -170,6 +176,11 @@ class TCallbackTimerQueueTestBase : protected CCallbackTimerQueueTestBase
       static void TestCancelOneOfManyTimersAndThenBeginTimeoutHandling();
 
       static void TestDestroyTimerDuringOnTimerInHandleTimeouts();
+
+      static void TestSetTimerFirstTimerChanged();
+      static void TestSetTimerFirstTimerNotChanged();
+
+      static void TestCancelTimerFirstTimerChanged();
 
       static void PerfTestCreateTimer();
       static void PerfTestSetTimer();
@@ -256,6 +267,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerNotSet);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerInvalidHandle);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerFirstToExpire);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerNotFirstToExpire);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsSooner);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestUpdateTimerUpdateTimerIfNewTimeIsSoonerAndNewTimeIsNotSooner);
@@ -274,11 +287,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMultipleCallsToEndTimeoutHandlingFail);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestMultipleCallsToHandleTimeoutFail);
-   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingSetTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingSetTimerSameTimerNow);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingSetTimerSameTimerLater);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingSetTimerNewTimerNow);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingSetTimerNewTimerLater);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingCancelTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestBeginTimeoutHandlingDestroyTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutSetTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutSetTimerInOnTimer);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutSetTimerTwiceInOnTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutCancelTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestHandleTimeoutDestroyTimer);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelExpiredTimer);
@@ -294,6 +311,9 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestAll(
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelOneOfManyTimersAndThenBeginTimeoutHandling);
    RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestDestroyTimerDuringOnTimerInHandleTimeouts);
 
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerFirstTimerChanged);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestSetTimerFirstTimerNotChanged);
+   RUN_TEMPLATE_TEST_EX_3(monitor, TCallbackTimerQueueTestBase, Q, T, P, className, TestCancelTimerFirstTimerChanged);
 
    const Milliseconds timeout = INFINITE;    // Don't time out the perf tests
 
@@ -359,7 +379,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCreateTimer()
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -380,7 +403,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimer()
 
       THROW_ON_FAILURE_EX(IQueueTimers::InvalidHandleValue != handle);
 
-      IQueueTimers::Handle handleCopy = T::handleValidationEnabled ? handle : 0;
+      const IQueueTimers::Handle handleCopy = T::handleValidationEnabled ? handle : 0;
 
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
 
@@ -487,12 +510,19 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimer()
 
       const IQueueTimers::UserData userData = 1;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, userData));
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer, 1000, userData, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
 
       CheckTickProviderSetTimerResults(tickProvider);
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -654,7 +684,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestGetNextTimeoutWithTimerSet()
       tickProvider.CheckResult(_T("|GetTickCount|"));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -817,12 +850,19 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerNotSet()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(false == firstToExpireHasChanged);
 
       tickProvider.CheckNoResults();
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -852,7 +892,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerInvalidHandle()
          tickProvider.CheckNoResults();
       }
 
-      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+      if (T::handleValidationEnabled && T::monitoringEnabled)
+      {
+         THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+      }
    }
    else
    {
@@ -878,14 +921,106 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimer()
 
       IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
 
-      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle));
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
 
       timer.CheckNoResults();
 
       tickProvider.CheckNoResults();
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerFirstToExpire()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, 1200, userData);
+
+      (void)handle2;
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle1, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerNotFirstToExpire()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, 1000, userData);
+
+      (void)handle1;
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, 1200, userData);
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle2, &firstToExpireHasChanged));
+
+      if (T::supportsStateChangeOptimisation)
+      {
+         THROW_ON_FAILURE_EX(false == firstToExpireHasChanged);
+      }
+      else
+      {
+         THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+      }
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -1465,7 +1600,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -1541,7 +1679,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -1634,7 +1775,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -1816,9 +1960,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
-
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHandling()
@@ -1914,7 +2060,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -1964,7 +2113,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2020,11 +2172,14 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail(
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
-void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimerSameTimerNow()
 {
    Mock::CMockTimerQueueMonitor monitor;
 
@@ -2067,7 +2222,129 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
 
       Mock::CLoggingCallbackTimer timer2;
 
-      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2));
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, 0, 2, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+      expectedTimeout = CalculateExpectedTimeout(0, now, now);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckNoResults();
+      timer2.CheckResult(_T("|OnTimer: 2|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimerSameTimerLater()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      // now call set timer to set a new timer whilst the current time is going off...
+      // note that this should return false (not currently set) and the new timer and
+      // user data should not affect the timer that is in the process of going off.
+
+      Mock::CLoggingCallbackTimer timer2;
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle, timer2, timeout, 2, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
 
       expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
 
@@ -2131,7 +2408,256 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimerNewTimerNow()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      // now call set timer to set a new timer whilst the current time is going off...
+      // note that this should return false (not currently set) and the new timer and
+      // user data should not affect the timer that is in the process of going off.
+
+      Mock::CLoggingCallbackTimer timer2;
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle2, timer2, 0, 2, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+      expectedTimeout = CalculateExpectedTimeout(0, now, now);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckNoResults();
+      timer2.CheckResult(_T("|OnTimer: 2|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle1));
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingSetTimerNewTimerLater()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      IQueueTimers::Handle handle2 = timerQueue.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      // now call set timer to set a new timer whilst the current time is going off...
+      // note that this should return false (not currently set) and the new timer and
+      // user data should not affect the timer that is in the process of going off.
+
+      Mock::CLoggingCallbackTimer timer2;
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.SetTimer(handle2, timer2, timeout, 2, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout, now, now);
+
+      CheckTickProviderSetTimerResults(tickProvider, now);
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|"));
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckNoResults();
+      timer2.CheckResult(_T("|OnTimer: 2|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+      timer2.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle1));
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle2));
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2193,7 +2719,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingCancelTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2237,11 +2766,20 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
       // affect the timer that is in the process of going off, but SHOULD result
       // in all resources being cleaned up when the time has gone off.
 
+      IQueueTimers::Handle handleCopy = handle;
+
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+
+      // This will always fail as the first call sets the handle to zero...
+
+      THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
 
       if (T::handleValidationEnabled)
       {
-         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+         // This fails because although the handle is still in the valid handles map
+         // it has already been flagged as deleted, and so is no longer valid...
+
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handleCopy);
       }
 
       tickProvider.CheckNoResults();
@@ -2260,11 +2798,14 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingDestroyTimer(
 
       if (T::handleValidationEnabled)
       {
-         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handle);
+         THROW_ON_NO_EXCEPTION_EX_1(timerQueue.DestroyTimer, handleCopy);
       }
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2376,7 +2917,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2478,7 +3022,115 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerInOnTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutSetTimerTwiceInOnTimer()
+{
+   Mock::CMockTimerQueueMonitor monitor;
+
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(tickProvider);
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout = 100;
+
+      const IQueueTimers::UserData userData = 1;
+
+      IQueueTimers::Handle handle = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout, userData);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout);
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      Milliseconds now = expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      // Set up so that set timer is called from within OnTimer and it resets the current timer
+      // note that this should return false (not currently set) and the new timer and
+      // user data should not affect the timer that is in the process of going off.
+
+      timer.SetTimerTwiceInOnTimer(timerQueue, handle, 500, 100, 2);
+
+      expectedTimeout = CalculateExpectedTimeout(100, now, now);
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 1|TimerSet|TimerSet|"));
+
+      tickProvider.CheckResult(_T("|GetTickCount|GetTickCount|"));
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_IF_NOT_EQUAL_EX(expectedTimeout, timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now += expectedTimeout;
+
+      tickProvider.SetTickCount(now);
+
+      THROW_ON_FAILURE_EX(0 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      THROW_ON_FAILURE_EX(true == timerQueue.BeginTimeoutHandling());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      timer.CheckNoResults();
+
+      timerQueue.HandleTimeout();
+
+      timer.CheckResult(_T("|OnTimer: 2|"));
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      timerQueue.EndTimeoutHandling();
+
+      timer.CheckNoResults();
+
+      tickProvider.CheckNoResults();
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2540,7 +3192,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutCancelTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2611,9 +3266,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestHandleTimeoutDestroyTimer()
       }
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
-
 
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
@@ -2661,7 +3318,11 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle));
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(false == timerQueue.CancelTimer(handle, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(false == firstToExpireHasChanged);
 
       timer.CheckNoResults();
 
@@ -2669,10 +3330,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelExpiredTimer()
 
       tickProvider.CheckNoResults();
 
-      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
+      THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle, &firstToExpireHasChanged));
+
+      THROW_ON_FAILURE_EX(false == firstToExpireHasChanged);
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2741,7 +3407,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMaxTimeout()
       tickProvider.CheckNoResults();
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -2807,7 +3476,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
+      HandleTimeouts(timerQueue, !T::beginTimeoutHandlesAllInOneCall);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now);
 
@@ -2832,7 +3501,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
+      HandleTimeouts(timerQueue, !T::beginTimeoutHandlesAllInOneCall);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now);
 
@@ -2859,7 +3528,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
+      HandleTimeouts(timerQueue, !T::beginTimeoutHandlesAllInOneCall);
 
       CheckTickProviderHandleTimeoutsResults(2, tickProvider, now);
 
@@ -2884,7 +3553,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
 
       tickProvider.CheckResult(_T("|GetTickCount|"));
 
-      HandleTimeouts(timerQueue, T::handleTimeoutQueriesTicksPerTimer);
+      HandleTimeouts(timerQueue, !T::beginTimeoutHandlesAllInOneCall);
 
       CheckTickProviderHandleTimeoutsResults(1, tickProvider, now, false);
 
@@ -2907,7 +3576,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleTimers()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle6));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3001,7 +3673,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestResetTimer()
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3063,7 +3738,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestOneShotTimer()
       tickProvider.CheckNoResults();
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3142,7 +3820,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingHandleTimeout
 
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3178,7 +3859,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestActiveTimersAtDestructionTime()
       timer.CheckNoResults();
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3289,11 +3973,15 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMonitoring()
       monitor.CheckResult(_T("|OnTimerCreated|OnOneOffTimerSet|"));
    }
 
-   CheckDestructionResults(
-      monitor,
-      _T("|OnTimerDeleted|"));       // The pending 'one off' timer is deleted in the destructor
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      CheckDestructionResults(
+         monitor,
+         _T("|OnTimerDeleted|"));       // The pending 'one off' timer is deleted in the destructor
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());
+
+   }
 }
 
 template <class Q, class T, class P>
@@ -3368,7 +4056,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenHandl
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle3));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3449,7 +4140,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelOneOfManyTimersAndThenBegin
       THROW_ON_FAILURE_EX(false == timerQueue.DestroyTimer(handle3));
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3498,7 +4192,241 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestDestroyTimerDuringOnTimerInHandle
       }
    }
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerFirstTimerChanged()
+{
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   Mock::CMockTimerQueueMonitor monitor;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout1 = 1000;
+
+      Milliseconds now = 0;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout1, 1, now);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now = 200;
+
+      tickProvider.SetTickCount(now);        // time moves on
+
+      expectedTimeout = CalculateExpectedTimeout(timeout1, now, 0);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
+      // though the timer wheel thinks that the current time is 0.
+
+      const Milliseconds timeout2 = 500;
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout2, 2, now);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout2, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now the test..
+
+      // set timer 2 again and it should say that the first timer was changed... Note that it MUST change by more than
+      // the granularity and move slots in the wheel...
+
+      bool firstToExpireHasChanged = false;
+
+      timerQueue.SetTimer(handle2, timer, timeout2 - 100, 1, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged);
+
+      THROW_IF_NOT_EQUAL_EX(firstToExpireHasChanged, true);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout2 - 100, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      (void)handle1;
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestSetTimerFirstTimerNotChanged()
+{
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   Mock::CMockTimerQueueMonitor monitor;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout1 = 1000;
+
+      Milliseconds now = 0;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout1, 1, now);
+
+      Milliseconds expectedTimeout = CalculateExpectedTimeout(timeout1);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now = 200;
+
+      tickProvider.SetTickCount(now);        // time moves on
+
+      expectedTimeout = CalculateExpectedTimeout(timeout1, now, 0);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
+      // though the timer wheel thinks that the current time is 0.
+
+      const Milliseconds timeout2 = 500;
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout2, 2, now);
+
+      expectedTimeout = CalculateExpectedTimeout(timeout2, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now the test..
+
+      // set timer 1 again and it should say that the first timer was not changed...
+
+      bool firstToExpireHasChanged = false;
+
+      timerQueue.SetTimer(handle1, timer, timeout1 - 10, 1, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged);
+
+      THROW_IF_NOT_EQUAL_EX(firstToExpireHasChanged, false);
+
+      THROW_ON_FAILURE_EX(expectedTimeout == timerQueue.GetNextTimeout());
+
+      (void)handle2;
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
+
+template <class Q, class T, class P>
+void TCallbackTimerQueueTestBase<Q, T, P>::TestCancelTimerFirstTimerChanged()
+{
+   P tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   Mock::CMockTimerQueueMonitor monitor;
+
+   {
+      Q timerQueue(monitor, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckNoResults();
+
+      Mock::CLoggingCallbackTimer timer;
+
+      const Milliseconds timeout1 = 1000;
+
+      Milliseconds now = 0;
+
+      IQueueTimers::Handle handle1 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout1, 1, now);
+
+      Milliseconds expectedTimeout1 = CalculateExpectedTimeout(timeout1);
+
+      THROW_ON_FAILURE_EX(expectedTimeout1 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      now = 200;
+
+      tickProvider.SetTickCount(now);        // time moves on
+
+      expectedTimeout1 = CalculateExpectedTimeout(timeout1, now, 0);
+
+      THROW_ON_FAILURE_EX(expectedTimeout1 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now set another timer for the timeout, this should be set for now + timeout NOT 0 + timeout even
+      // though the timer wheel thinks that the current time is 0.
+
+      const Milliseconds timeout2 = 500;
+
+      IQueueTimers::Handle handle2 = CreateAndSetTimer(tickProvider, timerQueue, timer, timeout2, 2, now);
+
+      Milliseconds expectedTimeout2 = CalculateExpectedTimeout(timeout2, now, now);
+
+      THROW_ON_FAILURE_EX(expectedTimeout2 == timerQueue.GetNextTimeout());
+
+      tickProvider.CheckResult(_T("|GetTickCount|"));
+
+      // Now the test..
+
+      // Cancel timer 2 and it should say that the first timer was changed...
+
+      bool firstToExpireHasChanged = false;
+
+      THROW_ON_FAILURE_EX(true == timerQueue.CancelTimer(handle2, &firstToExpireHasChanged));
+
+      THROW_IF_NOT_EQUAL_EX(firstToExpireHasChanged, true);
+
+      THROW_ON_FAILURE_EX(expectedTimeout1 == timerQueue.GetNextTimeout());
+
+      (void)handle1;
+   }
+
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 // Performance tests
@@ -3542,7 +4470,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestCreateTimer()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - CreateTimer (100,000 calls - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3586,7 +4517,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetTimer()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - SetTimer (100,000 calls - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3648,7 +4582,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimers()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - SetTimer (Different timers) (100,000 calls - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3713,7 +4650,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestSetDifferentTimersSameTimes()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - SetTimer (Different timers, same times) (100,000 calls - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3795,7 +4735,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestHandleTimeouts()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - HandleTimeouts (100,000 timers - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -3882,7 +4825,10 @@ void TCallbackTimerQueueTestBase<Q, T, P>::PerfTestBeginTimeoutHandling()
 
    OutputEx(T::shortName + ToString(totalTime/numRuns) + _T("ms - BeginTimeoutHandling (100,000 timers - average of ") + ToString(numRuns) + _T(" runs)"));
 
-   THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   if (T::handleValidationEnabled && T::monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
 }
 
 template <class Q, class T, class P>
@@ -4006,7 +4952,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderHandleTimeoutsResult
    const Milliseconds expectedTickCount,
    const bool moreTimersSet)
 {
-   if (T::handleTimeoutQueriesTicksPerTimer)
+   if (!T::beginTimeoutHandlesAllInOneCall)
    {
       if (numDifferentTimes)
       {
@@ -4039,13 +4985,20 @@ void TCallbackTimerQueueTestBase<Q, T, P>::CheckTickProviderHandleTimeoutsResult
    }
    else
    {
-      if (tickProvider.logTickCount)
+      if (numDifferentTimes)
       {
-         tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
+         if (tickProvider.logTickCount)
+         {
+            tickProvider.CheckResult(_T("|GetTickCount: ") + ToString(expectedTickCount) + _T("|"));
+         }
+         else
+         {
+            tickProvider.CheckResult(_T("|GetTickCount|"));
+         }
       }
       else
       {
-         tickProvider.CheckResult(_T("|GetTickCount|"));
+         tickProvider.CheckNoResults();
       }
    }
 }
