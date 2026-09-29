@@ -1,10 +1,11 @@
+#pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: TestThreadedCallbackTimerQueue.cpp
+// File: ISupportTimerQueueFacade.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2016 JetByte Limited.
+// Copyright (c) 2026 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -26,56 +27,71 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools/Admin/Admin.h"
-
-#include "TestThreadedCallbackTimerQueue.h"
-
-#pragma hdrstop
+#include "IHandleTimerQueueTimeouts.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
-///////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Core::Mock
+// Namespace: JetByteTools::Core
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Core {
-namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CTestThreadedCallbackTimerQueue
+// ISupportTimerQueueFacade
 ///////////////////////////////////////////////////////////////////////////////
 
-CTestThreadedCallbackTimerQueue::CTestThreadedCallbackTimerQueue(
-   ISupportTimerQueueFacade &impl)
-   :  CThreadedCallbackTimerQueue(impl)
+class ISupportTimerQueueFacade : public IHandleTimerQueueTimeouts
 {
-}
+   public :
 
-void CTestThreadedCallbackTimerQueue::OnThreadTerminationException(
-   const _tstring &message)
-{
-   LogMessage(_T("OnThreadTerminationException: ") + message);
+      /// Get the number of milliseconds until the next timer is due to fire.
+      /// Or INFINITE if no timer is set.
 
-   m_exceptionEvent.Set();
-}
+      virtual Milliseconds GetNextTimeout() = 0;
 
-bool CTestThreadedCallbackTimerQueue::WaitForThreadTerminationException(
-   const Milliseconds timeout) const
-{
-   return m_exceptionEvent.Wait(timeout);
-}
+      /// Handle the timeouts for any timers that were collected in a call
+      /// to IHandleTimerQueueTimeouts::BeginTimeoutHandling(). Note that in
+      /// an implementation that is safe for use in a multithreaded situation
+      /// it is NOT acceptable to hold a lock that will prevent concurrent
+      /// calls to any of the methods on IQueueTimers.
+
+      virtual size_t HandleTimeouts() = 0;
+
+      /// Start to handle timeouts due to shutdown. This call should not block.
+      /// The shutdown process MUST use the supplied interface and be
+      /// implemented in terms of calls to BeginTimeoutHandling(), HandleTimeouts()
+      /// and EndTimeoutHandling().
+      
+      virtual void BeginShutdown(
+         IHandleTimerQueueTimeouts &handler) = 0;
+
+      /// Avoid ambiguity
+
+      using IHandleTimerQueueTimeouts::BeginShutdown;
+
+      /// End the handling of timeouts due to shutdown. This call CAN block.
+      /// The shutdown process MUST use the supplied interface and be
+      /// implemented in terms of calls to BeginTimeoutHandling(), HandleTimeouts()
+      /// and EndTimeoutHandling().
+
+      virtual bool WaitForShutdownToComplete(
+         IHandleTimerQueueTimeouts &handler,
+         Milliseconds timeout = INFINITE) = 0;
+
+      /// Avoid ambiguity
+
+      using IHandleTimerQueueTimeouts::WaitForShutdownToComplete;
+
+      ~ISupportTimerQueueFacade() override = default;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Core::Mock
+// Namespace: JetByteTools::Core
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Mock
 } // End of namespace Core
 } // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: TestThreadedCallbackTimerQueue.cpp
+// End of file: ISupportTimerQueueFacade.h
 ///////////////////////////////////////////////////////////////////////////////

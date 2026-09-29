@@ -29,7 +29,7 @@
 
 #include "Types.h"
 
-#include "IManageTimerQueue.h"
+#include "ISupportTimerQueueFacade.h"
 
 #include "IntrusiveSet.h"
 
@@ -51,7 +51,7 @@ class IMonitorCallbackTimerQueue;
 // CCallbackTimerWheel
 ///////////////////////////////////////////////////////////////////////////////
 
-class CCallbackTimerWheel : public IManageTimerQueue
+class CCallbackTimerWheel : public ISupportTimerQueueFacade
 {
    public :
 
@@ -99,15 +99,22 @@ class CCallbackTimerWheel : public IManageTimerQueue
       CCallbackTimerWheel &operator=(
          const CCallbackTimerWheel &rhs) = delete;
 
-      // Implement IManageTimerQueue
+      // Implement IHandleTimerQueueTimeouts
 
       Milliseconds GetNextTimeout() override;
 
       bool BeginTimeoutHandling() override;
 
-      size_t HandleTimeout() override;
+      size_t HandleTimeouts() override;
 
       void EndTimeoutHandling() override;
+
+      // Implement IManageTimerQueue
+
+      void BeginShutdown() override;
+
+      bool WaitForShutdownToComplete(
+         Milliseconds timeout = INFINITE) override;
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
@@ -154,6 +161,15 @@ class CCallbackTimerWheel : public IManageTimerQueue
       Milliseconds GetMaximumTimeout() const override;
 
    private :
+
+      // Implement ISupportTimerQueueFacade
+
+      void BeginShutdown(
+         IHandleTimerQueueTimeouts &timeoutHandler) override;
+
+      bool WaitForShutdownToComplete(
+         IHandleTimerQueueTimeouts &timeoutHandler,
+         Milliseconds timeout = INFINITE) override;
 
       class TimerData;
 

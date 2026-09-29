@@ -29,7 +29,7 @@
 
 #include "JetByteTools/TestTools/TestLog.h"
 
-#include "JetByteTools/CoreTools/IManageTimerQueue.h"
+#include "JetByteTools/CoreTools/ISupportTimerQueueFacade.h"
 #include "JetByteTools/CoreTools/AutoResetEvent.h"
 #include "JetByteTools/CoreTools/AtomicLong.h"
 #include "JetByteTools/CoreTools/IRunnable.h"
@@ -55,7 +55,7 @@ namespace Mock {
 /// \ingroup Win32ToolsMocks
 
 class CMockTimerQueue :
-   public IManageTimerQueue,
+   public ISupportTimerQueueFacade,
    public JetByteTools::Test::CTestLog
 {
    public :
@@ -99,6 +99,14 @@ class CMockTimerQueue :
       CMockTimerQueue &operator=(
          const CMockTimerQueue &rhs) = delete;
 
+      enum class ShutdownTimersHandledIn
+      {
+         BeginShutdown,
+         WaitForShutdownToComplete
+      };
+
+      ShutdownTimersHandledIn shutdownTimersHandledIn;
+
       bool waitForOnTimerWaitComplete;
 
       bool includeHandleValuesInLogs;
@@ -128,11 +136,27 @@ class CMockTimerQueue :
 
       // Implement IManageTimerQueue
 
+      void BeginShutdown() override;
+
+      bool WaitForShutdownToComplete(
+         Milliseconds timeout = INFINITE) override;
+
+      // Implement ISupportTimerQueueFacade
+
+      void BeginShutdown(
+         IHandleTimerQueueTimeouts &timeoutHandler) override;
+
+      bool WaitForShutdownToComplete(
+         IHandleTimerQueueTimeouts &timeoutHandler,
+         Milliseconds timeout = INFINITE) override;
+
+      // Implement IHandleTimerQueueTimeouts
+
       Milliseconds GetNextTimeout() override;
 
       bool BeginTimeoutHandling() override;
 
-      size_t HandleTimeout() override;
+      size_t HandleTimeouts() override;
 
       void EndTimeoutHandling() override;
 
@@ -218,6 +242,12 @@ class CMockTimerQueue :
       typedef std::list<TimerDetails> SetTimers;
 
       SetTimers m_setTimers;
+
+      SetTimers m_timeoutsBeingHandled;
+
+      bool m_handlingTimeouts;
+
+      bool m_shuttingDown;
 
       const Milliseconds m_maxTimeout;
 

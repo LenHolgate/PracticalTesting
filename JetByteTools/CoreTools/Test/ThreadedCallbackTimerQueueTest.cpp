@@ -99,7 +99,7 @@ void CThreadedCallbackTimerQueueTest::TestAll(
 void CThreadedCallbackTimerQueueTest::TestConstruct()
 {
    {
-      CThreadedCallbackTimerQueue timerQueue;
+      CThreadedCallbackTimerQueue timerQueue;\
    }
 
    CMockThreadedCallbackTimerQueueMonitor monitor;
@@ -137,7 +137,7 @@ void CThreadedCallbackTimerQueueTest::TestConstructCustomQueue()
       THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
    }
 
-   queue.CheckResult(_T("|GetNextTimeout|"));
+   queue.CheckResult(_T("|GetNextTimeout|BeginShutdown|BeginTimeoutHandling|WaitForShutdownToComplete|EndTimeoutHandling|"));
 }
 
 void CThreadedCallbackTimerQueueTest::TestConstructWithTimerWheel()
@@ -207,7 +207,7 @@ void CThreadedCallbackTimerQueueTest::TestTimer()
    THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
    THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
-   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|EndTimeoutHandling|BeginTimeoutHandling|GetNextTimeout|"));
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeouts|EndTimeoutHandling|BeginTimeoutHandling|GetNextTimeout|"));
    timer.CheckResult(_T("|OnTimer: 1|"));
 }
 
@@ -381,7 +381,7 @@ void CThreadedCallbackTimerQueueTest::TestMonitorTimer()
    THROW_ON_FAILURE_EX(true == queue.WaitForOnTimer(REASONABLE_TIME));
    THROW_ON_FAILURE_EX(true == queue.WaitForNextTimeout(REASONABLE_TIME));
 
-   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeout|EndTimeoutHandling|BeginTimeoutHandling|GetNextTimeout|"));
+   queue.CheckResult(_T("|SetTimer: 1: 500|GetNextTimeout|BeginTimeoutHandling|HandleTimeouts|EndTimeoutHandling|BeginTimeoutHandling|GetNextTimeout|"));
    timer.CheckResult(_T("|OnTimer: 1|"));
 
 #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
@@ -405,7 +405,7 @@ void CThreadedCallbackTimerQueueTest::TestSetTimerAgainChangesFirstTimerSet()
 
    // By setting waitForOnTimerWaitComplete we cause the OnTimer call to wait
    // for the WaitForOnTimer call before continuing, this guarantees that both
-   // calls to NextTimeout do not occur before we wait on the first one.below.
+   // calls to NextTimeout do not occur before we wait on the first one below.
 
    queue.waitForOnTimerWaitComplete = true;
    queue.returnCorrectTimeoutSetForNextTimeout = true;

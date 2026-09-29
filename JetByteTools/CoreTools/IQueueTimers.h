@@ -502,6 +502,19 @@ class IQueueTimers::Timer
 
       /// Called after the timer expires.
 
+      virtual void OnTimerEx(
+         Handle handle,
+         UserData userData,
+         const bool shuttingDownWhenSet)
+      {
+         (void)handle;
+
+         if (!shuttingDownWhenSet)
+         {
+            OnTimer(userData);
+         }
+      }
+
       virtual void OnTimer(
          UserData userData) = 0;
 

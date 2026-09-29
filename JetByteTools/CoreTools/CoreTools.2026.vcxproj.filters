@@ -343,6 +343,12 @@
     <ClInclude Include="NullMessageLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IHandleTimerQueueTimeouts.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ISupportTimerQueueFacade.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CallbackTimerQueue.cpp">

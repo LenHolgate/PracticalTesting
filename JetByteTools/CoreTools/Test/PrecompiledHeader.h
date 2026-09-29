@@ -5,7 +5,7 @@
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2021 JetByte Limited.
+// Copyright (c) 2026 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -29,6 +29,7 @@
 // This file was automatically generated. Do not edit.
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "CallbackTimerFacadeTest.h"
 #include "CallbackTimerQueueTest.h"
 #include "CallbackTimerQueueTestBase.h"
 #include "CallbackTimerWheelTest.h"

@@ -101,11 +101,10 @@ class CCallbackTimerQueue::TimerData : private CIntrusiveRedBlackTreeNode
 
       void ClearTimer();
 
-      void OnTimer();
-
       void PrepareForHandleTimeout();
 
-      void HandleTimeout();
+      void HandleTimeout(
+         bool shuttingDownWhenSet);
 
       bool DeleteAfterTimeout() const;
 
@@ -724,6 +723,33 @@ bool CCallbackTimerQueue::CancelTimer(
    return wasPending;
 }
 
+void CCallbackTimerQueue::BeginShutdown()
+{
+   BeginShutdown(*this);
+}
+
+bool CCallbackTimerQueue::WaitForShutdownToComplete(
+   const Milliseconds timeout)
+{
+   return WaitForShutdownToComplete(*this, timeout);
+}
+
+void CCallbackTimerQueue::BeginShutdown(
+   IHandleTimerQueueTimeouts &timeoutHandler)
+{
+   (void)timeoutHandler;
+}
+
+bool CCallbackTimerQueue::WaitForShutdownToComplete(
+   IHandleTimerQueueTimeouts &timeoutHandler,
+   const Milliseconds timeout)
+{
+   (void)timeoutHandler;
+   (void)timeout;
+
+   return true;
+}
+
 Milliseconds CCallbackTimerQueue::GetNextTimeout()
 {
    Milliseconds timeUntilTimeout = INFINITE;
@@ -805,12 +831,12 @@ bool CCallbackTimerQueue::BeginTimeoutHandling()
    return m_handlingTimeouts;
 }
 
-size_t CCallbackTimerQueue::HandleTimeout()
+size_t CCallbackTimerQueue::HandleTimeouts()
 {
    if (!m_handlingTimeouts)
    {
       throw CException(
-         _T("CCallbackTimerQueue::ValidateTimeoutHandle()"),
+         _T("CCallbackTimerQueue::HandleTimeouts()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
@@ -820,7 +846,7 @@ size_t CCallbackTimerQueue::HandleTimeout()
 
    while (pTimer)
    {
-      pTimer->HandleTimeout();
+      pTimer->HandleTimeout(false);
 
       #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
       m_monitor.OnTimer();
@@ -970,17 +996,6 @@ void CCallbackTimerQueue::TimerData::ClearTimer()
    m_active.Clear();
 }
 
-void CCallbackTimerQueue::TimerData::OnTimer()
-{
-   m_processingTimeout = true;
-
-   OnTimer(m_active);
-
-   m_active.Clear();
-
-   m_processingTimeout = false;
-}
-
 void CCallbackTimerQueue::TimerData::OnTimer(
    const Data &data)
 {
@@ -991,7 +1006,10 @@ void CCallbackTimerQueue::TimerData::OnTimer(
          _T("Internal Error: Timer not set"));
    }
 
-   data.pTimer->OnTimer(data.userData);
+   data.pTimer->OnTimerEx(
+      reinterpret_cast<Handle>(this),
+      data.userData,
+      false);                             // don't currently support firing set timers on shutdown
 }
 
 void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
@@ -1003,8 +1021,11 @@ void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
    m_active.Clear();
 }
 
-void CCallbackTimerQueue::TimerData::HandleTimeout()
+void CCallbackTimerQueue::TimerData::HandleTimeout(
+   const bool shuttingDownWhenSet)
 {
+   (void)shuttingDownWhenSet;
+
    OnTimer(m_timedout);
 
    m_timedout.Clear();

@@ -70,6 +70,8 @@ class CLoggingCallbackTimer :
 
       bool logUserData;
 
+      bool supportsTimersFiringDuringShutdown;
+
       void DestroyTimerInOnTimer(
          IQueueTimers &timerQueue,
          IQueueTimers::Handle &handle);
@@ -93,6 +95,11 @@ class CLoggingCallbackTimer :
       unsigned long GetNumTimerEvents() const;
 
       // Implement IQueueTimers::Timer
+
+      void OnTimerEx(
+         Handle handle,
+         UserData userData,
+         bool shuttingDownWhenSet) override;
 
       void OnTimer(
          UserData userData) override;

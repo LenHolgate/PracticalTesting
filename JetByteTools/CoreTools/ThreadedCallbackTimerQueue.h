@@ -28,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Types.h"
-#include "IManageTimerQueue.h"
+#include "IHandleTimerQueueTimeouts.h"
 #include "IProvideTickCount64.h"
 #include "Thread.h"
 #include "IRunnable.h"
@@ -48,6 +48,7 @@ namespace Core {
 // Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
+class ISupportTimerQueueFacade;
 class IMonitorThreadedCallbackTimerQueue;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,7 +68,7 @@ class IMonitorThreadedCallbackTimerQueue;
 /// \ingroup Threading
 
 class CThreadedCallbackTimerQueue :
-   public IQueueTimers,
+   public IHandleTimerQueueTimeouts,
    private IRunnable
 {
    public :
@@ -100,14 +101,14 @@ class CThreadedCallbackTimerQueue :
       /// to you to manage its lifetime.
 
       explicit CThreadedCallbackTimerQueue(
-         IManageTimerQueue &impl);
+         ISupportTimerQueueFacade &impl);
 
       /// Create a timer queue that uses the supplied instance of IHandleTimerQueueTimeouts as its
       /// implementation. Note that we don't take ownership of the implementation, it's up
       /// to you to manage its lifetime. Monitor it with the supplied monitor.
 
       CThreadedCallbackTimerQueue(
-         IManageTimerQueue &impl,
+         ISupportTimerQueueFacade &impl,
          IMonitorThreadedCallbackTimerQueue &monitor);
 
       CThreadedCallbackTimerQueue(
@@ -127,14 +128,14 @@ class CThreadedCallbackTimerQueue :
 
       /// Starts the shutdown process and returns immediately.
 
-      void BeginShutdown();
+      void BeginShutdown() override;
 
       /// Initiates a shutdown (if one isn't already in progress) and then waits
       /// for it to complete. Does not return until the shutdown has completed or
       /// the timeout has expired. Returns true if the shutdown is complete.
 
       bool WaitForShutdownToComplete(
-         Milliseconds timeout = INFINITE);
+         Milliseconds timeout = INFINITE) override;
 
       void DumpStats(
          const JetByteTools::Core::_tstring &message) const;
@@ -222,7 +223,7 @@ class CThreadedCallbackTimerQueue :
 
       CThread m_thread;
 
-      TConditionalSmartPointer<IManageTimerQueue> m_spTimerQueue;
+      TConditionalSmartPointer<ISupportTimerQueueFacade> m_spTimerQueue;
 
       #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
       struct Stats

@@ -27,7 +27,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IManageTimerQueue.h"
+#include "ISupportTimerQueueFacade.h"
 
 #include "IntrusiveMultiMap.h"
 #include "IntrusiveSet.h"
@@ -53,8 +53,8 @@ class IMonitorCallbackTimerQueue;
 /// A class that manages a group of timers that implement IQueueTimers::Timer
 /// and which have their IQueueTimers::Timer::OnTimer() method called when the
 /// timer expires. You must manually manage the handling and processing of
-/// timeouts by calling IManageTimerQueue::BeginTimeoutHandling() every
-/// IManageTimerQueue::GetNextTimeout() milliseconds.
+/// timeouts by calling IHandleTimerQueueTimeouts::BeginTimeoutHandling() every
+/// ISupportTimerQueueFacade::GetNextTimeout() milliseconds.
 /// See <a href="http://www.lenholgate.com/archives/000342.html">here</a> for
 /// more details.
 /// Note: the maximum timeout that you can set is 4294967294ms as 0xFFFFFFF is
@@ -66,7 +66,7 @@ class IMonitorCallbackTimerQueue;
 /// will always return 4294967294ms.
 /// \ingroup Timers
 
-class CCallbackTimerQueue : public IManageTimerQueue
+class CCallbackTimerQueue : public ISupportTimerQueueFacade
 {
    public :
 
@@ -102,15 +102,22 @@ class CCallbackTimerQueue : public IManageTimerQueue
       CCallbackTimerQueue &operator=(
          const CCallbackTimerQueue &rhs) = delete;
 
-      // Implement IManageTimerQueue
+      // Implement IHandleTimerQueueTimeouts
 
       Milliseconds GetNextTimeout() override;
 
       bool BeginTimeoutHandling() override;
 
-      size_t HandleTimeout() override;
+      size_t HandleTimeouts() override;
 
       void EndTimeoutHandling() override;
+
+      // Implement IManageTimerQueue
+
+      void BeginShutdown() override;
+
+      bool WaitForShutdownToComplete(
+         Milliseconds timeout = INFINITE) override;
 
       // Implement IQueueTimers
       // We need to fully specify the IQueueTimers types to get around a bug in
@@ -157,6 +164,15 @@ class CCallbackTimerQueue : public IManageTimerQueue
       Milliseconds GetMaximumTimeout() const override;
 
    private :
+
+      // Implement ISupportTimerQueueFacade
+
+      void BeginShutdown(
+         IHandleTimerQueueTimeouts &timeoutHandler) override;
+
+      bool WaitForShutdownToComplete(
+         IHandleTimerQueueTimeouts &timeoutHandler,
+         Milliseconds timeout = INFINITE) override;
 
       class TimerData;
 

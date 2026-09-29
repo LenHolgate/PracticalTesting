@@ -33,6 +33,9 @@
     <ClCompile Include="ThreadedCallbackTimerQueueTest.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="CallbackTimerFacadeTest.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CallbackTimerQueueTest.h">
@@ -54,6 +57,9 @@
       <Filter>Precompiled Header</Filter>
     </ClInclude>
     <ClInclude Include="ThreadedCallbackTimerQueueTest.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackTimerFacadeTest.h">
       <Filter>Tests</Filter>
     </ClInclude>
   </ItemGroup>

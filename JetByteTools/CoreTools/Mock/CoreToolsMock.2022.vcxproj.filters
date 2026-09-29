@@ -47,6 +47,9 @@
     <ClCompile Include="TestThreadedCallbackTimerQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestTimerQueueFacade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MockTickCount64Provider.h">
@@ -80,6 +83,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TestThreadedCallbackTimerQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestTimerQueueFacade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

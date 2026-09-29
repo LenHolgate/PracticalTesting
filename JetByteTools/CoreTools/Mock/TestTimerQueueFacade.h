@@ -1,11 +1,11 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: TestThreadedCallbackTimerQueue.h
+// File: TestTimerQueueFacade.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2016 JetByte Limited.
+// Copyright (c) 2026 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -28,9 +28,25 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "JetByteTools/CoreTools/ThreadedCallbackTimerQueue.h"
-#include "JetByteTools/CoreTools/AutoResetEvent.h"
 
 #include "JetByteTools/TestTools/TestLog.h"
+
+///////////////////////////////////////////////////////////////////////////////
+// Classes defined in other files...
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools
+{
+   namespace Core
+   {
+      class ISupportTimerQueueFacade;
+
+      namespace Mock
+      {
+         class CMockTimerQueue;
+      }
+   }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core::Mock
@@ -41,29 +57,88 @@ namespace Core {
 namespace Mock {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CTestThreadedCallbackTimerQueue
+// CTestTimerQueueFacade
 ///////////////////////////////////////////////////////////////////////////////
 
-/// \ingroup Win32ToolsMocks
-
-class CTestThreadedCallbackTimerQueue :
-   public CThreadedCallbackTimerQueue,
+class CTestTimerQueueFacade :
+   public IHandleTimerQueueTimeouts,
    public JetByteTools::Test::CTestLog
 {
    public :
 
-      explicit CTestThreadedCallbackTimerQueue(
+      explicit CTestTimerQueueFacade(
+         CMockTimerQueue &timerQueue);
+
+      CTestTimerQueueFacade(
+         JetByteTools::Test::CTestLog &log,
          ISupportTimerQueueFacade &impl);
 
-      void OnThreadTerminationException(
-         const _tstring &message) override;
+      ~CTestTimerQueueFacade() override;
 
-      bool WaitForThreadTerminationException(
-         Milliseconds timeout) const;
+      bool waitForShutdownDuringDestruction;
+
+      void HandleTimeouts();
+
+      // Implement IHandleTimerQueueTimeouts
+
+      bool BeginTimeoutHandling() override;
+
+      void EndTimeoutHandling() override;
+
+      // Iplement IManageTimerQueue
+
+      void BeginShutdown() override;
+
+      bool WaitForShutdownToComplete(
+         Milliseconds timeout = INFINITE) override;
+
+      // Implement IQueueTimers
+
+      Handle CreateTimer() override;
+
+      bool TimerIsSet(
+         const Handle &handle) const override;
+
+      bool SetTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         SetTimerIf setTimerIf = SetTimerAlways,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      bool UpdateTimer(
+         const Handle &handle,
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         UpdateTimerIf updateIf,
+         bool *pWasUpdated = nullptr,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      bool CancelTimer(
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      bool DestroyTimer(
+         Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      bool DestroyTimer(
+         const Handle &handle,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      void SetTimer(
+         Timer &timer,
+         Milliseconds timeout,
+         UserData userData,
+         bool *pOptionalFirstToExpireHasChanged = nullptr) override;
+
+      Milliseconds GetMaximumTimeout() const override;
 
    private :
 
-      CAutoResetEvent m_exceptionEvent;
+      ISupportTimerQueueFacade &m_impl;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,5 +150,5 @@ class CTestThreadedCallbackTimerQueue :
 } // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: TestThreadedCallbackTimerQueue.h
+// End of file: TestTimerQueueFacade.h
 ///////////////////////////////////////////////////////////////////////////////

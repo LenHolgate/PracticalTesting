@@ -96,7 +96,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   IManageTimerQueue &impl)
+   ISupportTimerQueueFacade &impl)
    :  m_monitor(s_monitor),
       m_thread(*this),
       m_spTimerQueue(&impl, false)
@@ -105,7 +105,7 @@ CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
 }
 
 CThreadedCallbackTimerQueue::CThreadedCallbackTimerQueue(
-   IManageTimerQueue &impl,
+   ISupportTimerQueueFacade &impl,
    IMonitorThreadedCallbackTimerQueue &monitor)
    :  m_monitor(monitor),
       m_thread(*this),
@@ -126,6 +126,7 @@ CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
 void CThreadedCallbackTimerQueue::BeginShutdown()
 {
    m_shutdownEvent.Set();
+   m_spTimerQueue->BeginShutdown(*this);
 }
 
 bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
@@ -133,9 +134,11 @@ bool CThreadedCallbackTimerQueue::WaitForShutdownToComplete(
 {
    BeginShutdown();
 
-   const bool complete = m_thread.Wait(timeout);
+   const bool threadComplete = m_thread.Wait(timeout);
 
-   return complete;
+   const bool queueComplete = m_spTimerQueue->WaitForShutdownToComplete(*this, timeout);
+
+   return queueComplete && threadComplete;
 }
 
 void CThreadedCallbackTimerQueue::DumpStats(
@@ -611,7 +614,7 @@ unsigned int CThreadedCallbackTimerQueue::Run()
 
                   do
                   {
-                     const size_t timersProcessed = m_spTimerQueue->HandleTimeout();
+                     const size_t timersProcessed = m_spTimerQueue->HandleTimeouts();
 
                      #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)
                      m_stats.totalTimersProcessed += timersProcessed;
@@ -626,7 +629,7 @@ unsigned int CThreadedCallbackTimerQueue::Run()
 
                      EndTimeoutHandling();
                   }
-                  while (BeginTimeoutHandling());
+                  while (!m_shutdownEvent.Wait(0) && BeginTimeoutHandling());
                }
 
                #if (JETBYTE_PERF_TIMER_COLLECT_STATS == 1)

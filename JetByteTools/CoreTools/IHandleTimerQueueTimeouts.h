@@ -1,11 +1,11 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: PrecompiledHeader.h
+// File: IHandleTimerQueueTimeouts.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2026 JetByte Limited.
+// Copyright (c) 2024 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -26,21 +26,48 @@
 // DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
-// This file was automatically generated. Do not edit.
-///////////////////////////////////////////////////////////////////////////////
 
-#include "LoggingCallbackTimer.h"
-#include "MockThreadedCallbackTimerQueueMonitor.h"
-#include "MockTickCount64Provider.h"
-#include "MockTickCountProvider.h"
-#include "MockTimerQueue.h"
-#include "MockTimerQueueMonitor.h"
-#include "TestCallbackTimerWheel.h"
-#include "TestIntrusiveMultiMapNode.h"
-#include "TestIntrusiveRedBlackTreeNode.h"
-#include "TestThreadedCallbackTimerQueue.h"
-#include "TestTimerQueueFacade.h"
+#include "IManageTimerQueue.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: PrecompiledHeader.h
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Core {
+
+///////////////////////////////////////////////////////////////////////////////
+// IHandleTimerQueueTimeouts
+///////////////////////////////////////////////////////////////////////////////
+
+class IHandleTimerQueueTimeouts : public IManageTimerQueue
+{
+   public :
+
+      /// Returns true if timers need to be handled. You should then call
+      /// ISupportTimerQueueFacade::HandleTimeouts() to handle the timeouts and
+      /// finally call EndTimeoutHandling() to tell the queue that you are done.
+
+      virtual bool BeginTimeoutHandling() = 0;
+
+      /// Complete the handling of a timeout that was started with
+      /// BeginTimeoutHandling(). Note that in an implementation that is safe for
+      /// use in a multithreaded situation it is acceptable to hold a lock whilst
+      /// this method is called to prevent concurrent calls to any of the methods
+      /// on IQueueTimers.
+
+      virtual void EndTimeoutHandling() = 0;
+
+      ~IHandleTimerQueueTimeouts() override = default;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Core
+} // End of namespace JetByteTools
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: IHandleTimerQueueTimeouts.h
 ///////////////////////////////////////////////////////////////////////////////

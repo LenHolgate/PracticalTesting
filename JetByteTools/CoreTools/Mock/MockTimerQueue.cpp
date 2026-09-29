@@ -56,25 +56,30 @@ namespace Mock {
 ///////////////////////////////////////////////////////////////////////////////
 
 CMockTimerQueue::CMockTimerQueue()
-   :  waitForOnTimerWaitComplete(false),
-      includeHandleValuesInLogs(true),
-      logSetTimerEvenIfNotSet(true),
-      returnCorrectTimeoutSetForNextTimeout(false),
-      m_nextTimer(0),
-      m_maxTimeout(0xFFFFFFFE),
-      m_nextTimeout(INFINITE)
-{
-
-}
-
-CMockTimerQueue::CMockTimerQueue(
-   CTestLog *pLinkedLog)
-   :  CTestLog(pLinkedLog),
+   :  shutdownTimersHandledIn(ShutdownTimersHandledIn::BeginShutdown),
       waitForOnTimerWaitComplete(false),
       includeHandleValuesInLogs(true),
       logSetTimerEvenIfNotSet(true),
       returnCorrectTimeoutSetForNextTimeout(false),
       m_nextTimer(0),
+      m_handlingTimeouts(false),
+      m_shuttingDown(false),
+      m_maxTimeout(0xFFFFFFFE),
+      m_nextTimeout(INFINITE)
+{
+}
+
+CMockTimerQueue::CMockTimerQueue(
+   CTestLog *pLinkedLog)
+   :  CTestLog(pLinkedLog),
+      shutdownTimersHandledIn(ShutdownTimersHandledIn::BeginShutdown),
+      waitForOnTimerWaitComplete(false),
+      includeHandleValuesInLogs(true),
+      logSetTimerEvenIfNotSet(true),
+      returnCorrectTimeoutSetForNextTimeout(false),
+      m_nextTimer(0),
+      m_handlingTimeouts(false),
+      m_shuttingDown(false),
       m_maxTimeout(0xFFFFFFFE),
       m_nextTimeout(INFINITE)
 {
@@ -124,7 +129,7 @@ void CMockTimerQueue::OnTimer()
 
    m_setTimers.pop_front();
 
-   details.timer.OnTimer(details.userData);
+   details.timer.OnTimerEx(details.handle, details.userData, false);
 
    m_onTimerEvent.Set();
 
@@ -139,6 +144,66 @@ bool CMockTimerQueue::IsTimerSet() const
    CReentrantLockableObject::Owner lock(m_lock);
 
    return !m_setTimers.empty();
+}
+
+void CMockTimerQueue::BeginShutdown()
+{
+   BeginShutdown(*this);
+}
+
+bool CMockTimerQueue::WaitForShutdownToComplete(
+   const Milliseconds timeout)
+{
+   return WaitForShutdownToComplete(*this, timeout);
+}
+
+void CMockTimerQueue::BeginShutdown(
+   IHandleTimerQueueTimeouts &timeoutHandler)
+{
+   LogMessage(_T("BeginShutdown"));
+
+   if (!m_shuttingDown)
+   {
+      m_shuttingDown = true;
+
+      timeoutHandler.BeginTimeoutHandling();
+
+      if (shutdownTimersHandledIn == ShutdownTimersHandledIn::BeginShutdown)
+      {
+         if (!m_timeoutsBeingHandled.empty())
+         {
+            HandleTimeouts();
+         }
+      }
+   }
+}
+
+bool CMockTimerQueue::WaitForShutdownToComplete(
+   IHandleTimerQueueTimeouts &timeoutHandler,
+   const Milliseconds timeout)
+{
+   (void)timeout;
+
+   if (!m_shuttingDown)
+   {
+      timeoutHandler.BeginShutdown();
+   }
+
+   LogMessage(_T("WaitForShutdownToComplete"));
+
+   if (shutdownTimersHandledIn == ShutdownTimersHandledIn::WaitForShutdownToComplete)
+   {
+      if (!m_timeoutsBeingHandled.empty())
+      {
+         HandleTimeouts();
+      }
+   }
+
+   timeoutHandler.EndTimeoutHandling();
+
+   m_shuttingDown = false;
+
+   return true;
 }
 
 Milliseconds CMockTimerQueue::GetNextTimeout()
@@ -158,25 +223,54 @@ bool CMockTimerQueue::BeginTimeoutHandling()
 
    LogMessage(_T("BeginTimeoutHandling"));
 
-   return !m_setTimers.empty();
+   if (!m_handlingTimeouts)
+   {
+      m_handlingTimeouts = true;
+
+      m_timeoutsBeingHandled.clear();
+
+      m_timeoutsBeingHandled.swap(m_setTimers);
+
+      m_nextTimeout = INFINITE;
+   }
+
+   return !m_timeoutsBeingHandled.empty();
 }
 
-size_t CMockTimerQueue::HandleTimeout()
+size_t CMockTimerQueue::HandleTimeouts()
 {
    CReentrantLockableObject::Owner lock(m_lock);
 
-   LogMessage(_T("HandleTimeout"));
+   LogMessage(_T("HandleTimeouts"));
 
-   m_nextTimeout = INFINITE;
+   const auto numTimersHandled = m_timeoutsBeingHandled.size();
 
-   OnTimer();
+   while (!m_timeoutsBeingHandled.empty())
+   {
+      const TimerDetails details = m_timeoutsBeingHandled.front();
 
-   return 1;
+      m_timeoutsBeingHandled.pop_front();
+
+      details.timer.OnTimerEx(details.handle, details.userData, m_shuttingDown);
+
+      m_onTimerEvent.Set();
+
+      if (waitForOnTimerWaitComplete && !m_shuttingDown)
+      {
+         m_onTimerWaitCompleteEvent.Wait();
+      }
+   }
+
+   return numTimersHandled;
 }
 
 void CMockTimerQueue::EndTimeoutHandling()
 {
    LogMessage(_T("EndTimeoutHandling"));
+
+   m_timeoutsBeingHandled.clear();
+
+   m_handlingTimeouts = false;
 }
 
 CMockTimerQueue::Handle CMockTimerQueue::CreateTimer()

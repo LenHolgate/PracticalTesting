@@ -42,47 +42,14 @@ namespace Core {
 // IManagerTimerQueue
 ///////////////////////////////////////////////////////////////////////////////
 
-/// An interface representing a class that manages timers that implement the
-/// IQueueTimers::Timer interface and and which have their
-/// IQueueTimers::Timer::OnTimer() method called when the the timer expires.
-/// See <a href="http://www.lenholgate.com/archives/000389.html">here</a>
-/// for more details. Note that this interface extends IQueueTimers to
-/// provide the ability to deal with the timer's timeouts via
-/// IManageTimerQueue::BeginTimeoutHandling(), etc. This interface is designed for
-/// composing timer queues, such as is done in CThreadedCallbackTimerQueue and
-/// not for passing to users of timer queues.
-/// \ingroup Timers
-/// \ingroup Interfaces
-
 class IManageTimerQueue : public IQueueTimers
 {
    public :
 
-      /// Get the number of milliseconds until the next timer is due to fire.
-      /// Or INFINITE if no timer is set.
+      virtual void BeginShutdown() = 0;
 
-      virtual Milliseconds GetNextTimeout() = 0;
-
-      /// Returns true if timers need to be handled. You should then call
-      /// HandleTimeout() to handle the timeouts and finally call
-      /// EndTimeoutHandling() to tell the queue that you are done.
-
-      virtual bool BeginTimeoutHandling() = 0;
-
-      /// Handle the timeout for the given timer handle. Note that in an
-      /// implementation that is safe for use in a multi-threaded situation it
-      /// is NOT acceptable to hold a lock that will prevent concurrent calls
-      /// to any of the methods on IQueueTimers.
-
-      virtual size_t HandleTimeout() = 0;
-
-      /// Complete the handling of a timeout that was started with
-      /// BeginTimeoutHandling(). Note that in an implementation that is safe for
-      /// use in a multi-threaded situation it is acceptable to hold a lock whilst
-      /// this method is called to prevent concurrent calls to any of the methods
-      /// on IQueueTimers.
-
-      virtual void EndTimeoutHandling() = 0;
+      virtual bool WaitForShutdownToComplete(
+         Milliseconds timeout = INFINITE) = 0;
 
       ~IManageTimerQueue() override = default;
 };

@@ -72,6 +72,7 @@
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="GlobalErrorHandler.h" />
     <ClInclude Include="IEvent.h" />
+    <ClInclude Include="IHandleTimerQueueTimeouts.h" />
     <ClInclude Include="IListenToThreadNaming.h" />
     <ClInclude Include="IListenToThreadStart.h" />
     <ClInclude Include="IListenToThreadStop.h" />
@@ -94,6 +95,7 @@
     <ClInclude Include="IQueueTimers.h" />
     <ClInclude Include="IReentrantLockableObject.h" />
     <ClInclude Include="IRunnable.h" />
+    <ClInclude Include="ISupportTimerQueueFacade.h" />
     <ClInclude Include="IUnlockableObject.h" />
     <ClInclude Include="IWaitable.h" />
     <ClInclude Include="LocalTime.h" />

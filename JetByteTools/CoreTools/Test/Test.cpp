@@ -40,6 +40,7 @@
 #include "IntrusiveMultiMapTest.h"
 #include "IntrusiveRedBlackTreeTest.h"
 #include "ThreadedCallbackTimerQueueTest.h"
+#include "CallbackTimerFacadeTest.h"
 
 #include "JetByteTools/CoreTools/DebugTrace.h"
 #include "JetByteTools/CoreTools/Exception.h"
@@ -93,9 +94,10 @@ int main(int /*argc*/, char ** /*argv*/)
 
       CCallbackTimerWheelTest::TestAll(monitor);
       CCallbackTimerQueueTest::TestAll(monitor);
+      CCallbackTimerFacadeTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
-      size_t expectedTests = 212;
+      size_t expectedTests = 226;
 
       ok = monitor.Report(expectedTests);
    }

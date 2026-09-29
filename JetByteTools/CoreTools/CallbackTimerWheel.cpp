@@ -126,7 +126,8 @@ class CCallbackTimerWheel::TimerData : private  CIntrusiveSetNode
 
       void SetDeleteAfterTimeout();
 
-      TimerData *OnTimer();
+      TimerData *OnTimer(
+         bool shuttingDownWhenSet);
 
       void Unlink();
 
@@ -135,7 +136,8 @@ class CCallbackTimerWheel::TimerData : private  CIntrusiveSetNode
 
       TimerData *PrepareForHandleTimeout();
 
-      TimerData *HandleTimeout();
+      TimerData *HandleTimeout(
+         bool shuttingDownWhenSet);
 
       TimerData *TimeoutHandlingComplete();
 
@@ -165,8 +167,9 @@ class CCallbackTimerWheel::TimerData : private  CIntrusiveSetNode
          UserData userData;
       };
 
-      TimerData * OnTimer(
-         const Data &data);
+      TimerData *OnTimer(
+         const Data &data,
+         bool shuttingDownWhenSet);
 
       Data m_active;
 
@@ -275,6 +278,33 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_END
 }
 
+void CCallbackTimerWheel::BeginShutdown()
+{
+   BeginShutdown(*this);
+}
+
+bool CCallbackTimerWheel::WaitForShutdownToComplete(
+   const Milliseconds timeout)
+{
+   return WaitForShutdownToComplete(*this, timeout);
+}
+
+void CCallbackTimerWheel::BeginShutdown(
+   IHandleTimerQueueTimeouts &timeoutHandler)
+{
+   (void)timeoutHandler;
+}
+
+bool CCallbackTimerWheel::WaitForShutdownToComplete(
+   IHandleTimerQueueTimeouts &timeoutHandler,
+   const Milliseconds timeout)
+{
+   (void)timeoutHandler;
+   (void)timeout;
+
+   return true;
+}
+
 Milliseconds CCallbackTimerWheel::GetNextTimeout()
 {
    Milliseconds nextTimeout = INFINITE;
@@ -372,7 +402,6 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
 
    if (m_numTimersSet)
    {
-
       #if (JETBYTE_PERF_TIMER_WHEEL_HANDLE_ALL_TIMERS_IN_BEGIN_TIMEOUT_HANDLING == 1)
 
       m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
@@ -389,12 +418,12 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
    return m_handlingTimeouts;
 }
 
-size_t CCallbackTimerWheel::HandleTimeout()
+size_t CCallbackTimerWheel::HandleTimeouts()
 {
    if (!m_handlingTimeouts)
    {
       throw CException(
-         _T("CCallbackTimerWheel::HandleTimeout()"),
+         _T("CCallbackTimerWheel::HandleTimeouts()"),
          _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
    }
 
@@ -404,7 +433,7 @@ size_t CCallbackTimerWheel::HandleTimeout()
 
    while (pTimers)
    {
-      pTimers = pTimers->HandleTimeout();
+      pTimers = pTimers->HandleTimeout(false);
 
       #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
       m_monitor.OnTimer();
@@ -1184,13 +1213,14 @@ void CCallbackTimerWheel::TimerData::SetTimer(
    *ppPrevious = this;
 }
 
-CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer()
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer(
+   bool shuttingDownWhenSet)
 {
    m_ppPrevious = nullptr;
 
    m_processingTimeout = true;
 
-   OnTimer(m_active);
+   OnTimer(m_active, shuttingDownWhenSet);
 
    m_processingTimeout = false;
 
@@ -1198,7 +1228,8 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer()
 }
 
 CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer(
-   const Data &data)
+   const Data &data,
+   const bool shuttingDownWhenSet)
 {
    if (!data.pTimer)
    {
@@ -1207,7 +1238,10 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::OnTimer(
          _T("Internal Error: Timer not set"));
    }
 
-   data.pTimer->OnTimer(data.userData);
+   data.pTimer->OnTimerEx(
+      reinterpret_cast<Handle>(this),
+      data.userData,
+      shuttingDownWhenSet);
 
    return m_processingTimeout ? m_pNextTimedout : m_pNext;
 }
@@ -1245,9 +1279,10 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::PrepareForHandle
    return m_pNextTimedout;
 }
 
-CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::HandleTimeout()
+CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::HandleTimeout(
+   const bool shuttingDownWhenSet)
 {
-   TimerData *pNextTimedout = OnTimer(m_timedout);
+   TimerData *pNextTimedout = OnTimer(m_timedout, shuttingDownWhenSet);
 
    m_timedout.Clear();
 

@@ -1,10 +1,11 @@
+#pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: TestThreadedCallbackTimerQueue.cpp
+// File: CallbackTimerFacadeTest.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2016 JetByte Limited.
+// Copyright (c) 2026 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -26,56 +27,61 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "JetByteTools/Admin/Admin.h"
-
-#include "TestThreadedCallbackTimerQueue.h"
-
-#pragma hdrstop
-
 ///////////////////////////////////////////////////////////////////////////////
-// Using directives
+// Classes defined in other files...
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace JetByteTools
+{
+   namespace Test
+   {
+      class CTestMonitor;
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Core::Mock
+// Namespace: JetByteTools::Core::Test
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace JetByteTools {
 namespace Core {
-namespace Mock {
+namespace Test {
 
 ///////////////////////////////////////////////////////////////////////////////
-// CTestThreadedCallbackTimerQueue
+// CCallbackTimerFacadeTest
 ///////////////////////////////////////////////////////////////////////////////
 
-CTestThreadedCallbackTimerQueue::CTestThreadedCallbackTimerQueue(
-   ISupportTimerQueueFacade &impl)
-   :  CThreadedCallbackTimerQueue(impl)
+class CCallbackTimerFacadeTest
 {
-}
+   public :
 
-void CTestThreadedCallbackTimerQueue::OnThreadTerminationException(
-   const _tstring &message)
-{
-   LogMessage(_T("OnThreadTerminationException: ") + message);
+      static void TestAll(
+         JetByteTools::Test::CTestMonitor &monitor);
 
-   m_exceptionEvent.Set();
-}
-
-bool CTestThreadedCallbackTimerQueue::WaitForThreadTerminationException(
-   const Milliseconds timeout) const
-{
-   return m_exceptionEvent.Wait(timeout);
-}
+      static void TestConstruct();
+      static void TestHandleTimeoutsNoTimeouts();
+      static void TestHandleTimeouts();
+      static void TestBeginShutdownNoTimeouts();
+      static void TestWaitForShutdownToCompleteNoTimeouts();
+      static void TestWaitForShutdownToCompleteAfterBeginShutdownNoTimeouts();
+      static void TestBeginShutdownTimersHandledInBeginShutdown();
+      static void TestWaitForShutdownToCompleteTimersHandledInBeginShutdown();
+      static void TestWaitForShutdownToCompleteAfterBeginShutdownTimersHandledInBeginShutdown();
+      static void TestBeginShutdownTimersHandledInWaitForShutdownToComplete();
+      static void TestWaitForShutdownToCompleteTimersHandledInWaitForShutdownToComplete();
+      static void TestWaitForShutdownToCompleteAfterBeginShutdownTimersHandledInWaitForShutdownToComplete();
+      static void TestWaitForShutdownDuringDestructionNoTimeouts();
+      static void TestWaitForShutdownDuringDestruction();
+};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Namespace: JetByteTools::Core::Mock
+// Namespace: JetByteTools::Core::Test
 ///////////////////////////////////////////////////////////////////////////////
 
-} // End of namespace Mock
+} // End of namespace Test
 } // End of namespace Core
 } // End of namespace JetByteTools
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: TestThreadedCallbackTimerQueue.cpp
+// End of file: CallbackTimerFacadeTest.h
 ///////////////////////////////////////////////////////////////////////////////

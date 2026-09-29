@@ -55,6 +55,7 @@ namespace Mock {
 CLoggingCallbackTimer::CLoggingCallbackTimer()
    :  logMessage(true),
       logUserData(true),
+      supportsTimersFiringDuringShutdown(false),
       m_numTimerEvents(0),
       m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
@@ -69,6 +70,7 @@ CLoggingCallbackTimer::CLoggingCallbackTimer(
    :  CTestLog(&linkedLog),
       logMessage(true),
       logUserData(true),
+      supportsTimersFiringDuringShutdown(false),
       m_numTimerEvents(0),
       m_pTimerQueue(nullptr),
       m_handle(IQueueTimers::InvalidHandleValue),
@@ -134,6 +136,19 @@ bool CLoggingCallbackTimer::WaitForTimer(
 unsigned long CLoggingCallbackTimer::GetNumTimerEvents() const
 {
    return m_numTimerEvents.Value();
+}
+
+void CLoggingCallbackTimer::OnTimerEx(
+   Handle handle,
+   UserData userData,
+   const bool shuttingDownWhenSet)
+{
+   (void)handle;
+
+   if (!shuttingDownWhenSet || supportsTimersFiringDuringShutdown)
+   {
+      OnTimer(userData);
+   }
 }
 
 void CLoggingCallbackTimer::OnTimer(
