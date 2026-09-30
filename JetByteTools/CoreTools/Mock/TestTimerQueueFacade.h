@@ -69,6 +69,9 @@ class CTestTimerQueueFacade :
       explicit CTestTimerQueueFacade(
          CMockTimerQueue &timerQueue);
 
+      explicit CTestTimerQueueFacade(
+         ISupportTimerQueueFacade &impl);
+
       CTestTimerQueueFacade(
          JetByteTools::Test::CTestLog &log,
          ISupportTimerQueueFacade &impl);
@@ -137,6 +140,11 @@ class CTestTimerQueueFacade :
       Milliseconds GetMaximumTimeout() const override;
 
    private :
+
+      void Log(
+         const JetByteTools::Core::_tstring &message) const;
+
+      bool m_sharedLog;
 
       ISupportTimerQueueFacade &m_impl;
 };

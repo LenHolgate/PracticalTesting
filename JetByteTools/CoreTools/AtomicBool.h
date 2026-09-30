@@ -1,11 +1,11 @@
 #pragma once
 ///////////////////////////////////////////////////////////////////////////////
-// File: PrecompiledHeader.h
+// File: AtomicBool.h
 ///////////////////////////////////////////////////////////////////////////////
 //
 // The code in this file is released under the The MIT License (MIT)
 //
-// Copyright (c) 2021 JetByte Limited.
+// Copyright (c) 2018 JetByte Limited.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the “Software”), to deal
@@ -26,21 +26,79 @@
 // DEALINGS IN THE SOFTWARE.
 //
 ///////////////////////////////////////////////////////////////////////////////
-// This file was automatically generated. Do not edit.
-///////////////////////////////////////////////////////////////////////////////
 
-#include "LoggingCallbackTimer.h"
-#include "MockThreadedCallbackTimerQueueMonitor.h"
-#include "MockTickCount64Provider.h"
-#include "MockTickCountProvider.h"
-#include "MockTimerQueue.h"
-#include "MockTimerQueueMonitor.h"
-#include "TestCallbackTimerWheel.h"
-#include "TestIntrusiveMultiMapNode.h"
-#include "TestIntrusiveRedBlackTreeNode.h"
-#include "TestThreadedCallbackTimerQueue.h"
-#include "TestTimerQueueFacade.h"
+#include "Atomic.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// End of file: PrecompiledHeader.h
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+namespace JetByteTools {
+namespace Core {
+
+///////////////////////////////////////////////////////////////////////////////
+// CAtomicBool
+///////////////////////////////////////////////////////////////////////////////
+
+class CAtomicBool
+{
+   public :
+
+      explicit CAtomicBool(
+         const bool value)
+         :  m_value(value)
+      {
+      }
+
+      CAtomicBool(
+         const CAtomicBool &rhs) = default;
+
+      CAtomicBool &operator=(
+         const CAtomicBool &rhs)
+      {
+         if (this != &rhs)
+         {
+            m_value.Set(rhs.m_value.AccessValue());
+         }
+
+         return *this;
+      }
+
+      CAtomicBool &operator=(
+         const bool value)
+      {
+         m_value.Set(value);
+
+         return *this;
+      }
+
+      operator bool() const
+      {
+         return 1 == m_value.AccessValue();
+      }
+
+      bool ToggleIfTrue()
+      {
+         return 1 == m_value.CompareExchange(0, 1);
+      }
+
+      bool ToggleIfFalse()
+      {
+         return 0 == m_value.CompareExchange(1, 0);
+      }
+
+   private :
+
+      TAtomic<long> m_value;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Namespace: JetByteTools::Core
+///////////////////////////////////////////////////////////////////////////////
+
+} // End of namespace Core
+} // End of namespace JetByteTools
+
+///////////////////////////////////////////////////////////////////////////////
+// End of file: AtomicBool.h
 ///////////////////////////////////////////////////////////////////////////////

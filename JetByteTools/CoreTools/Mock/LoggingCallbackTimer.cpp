@@ -147,68 +147,81 @@ void CLoggingCallbackTimer::OnTimerEx(
 
    if (!shuttingDownWhenSet || supportsTimersFiringDuringShutdown)
    {
-      OnTimer(userData);
+      const _tstring shutdownMessage(shuttingDownWhenSet ? _T(" [Shutdown]") : EmptyString);
+	  
+      if (logMessage)
+      {
+         if (logUserData)
+         {
+            LogMessage(_T("OnTimer: ") + ToString(userData) + shutdownMessage);
+         }
+         else
+         {
+            LogMessage(_T("OnTimer") + shutdownMessage);
+         }
+      }
+
+      if (m_pTimerQueue)
+      {
+         if (handle != m_handle)
+         {
+            throw CException(
+               _T("CLoggingCallbackTimer::OnTimerEx()"),
+               _T("Supplied handle is not as expected"));
+         }
+
+         if (m_timeout1 != INFINITE)
+         {
+            const Milliseconds timeout1 = m_timeout1;
+
+            IQueueTimers *pTimerQueue = m_pTimerQueue;
+
+            m_pTimerQueue = nullptr;
+            m_timeout1 = INFINITE;
+
+            pTimerQueue->SetTimer(m_handle, *this, timeout1, m_userData);
+
+            LogMessage(_T("TimerSet"));
+
+            if (m_timeout2 != INFINITE)
+            {
+               const Milliseconds timeout2 = m_timeout2;
+
+               m_timeout2 = INFINITE;
+
+               pTimerQueue->SetTimer(m_handle, *this, timeout2, m_userData);
+
+               LogMessage(_T("TimerSet"));
+            }
+
+            m_handle = IQueueTimers::InvalidHandleValue;
+            m_userData = 0;
+         }
+         else
+         {
+            m_pTimerQueue->DestroyTimer(m_handle);
+
+            m_pTimerQueue = nullptr;
+            m_handle = IQueueTimers::InvalidHandleValue;
+
+            LogMessage(_T("TimerDestroyed"));
+         }
+      }
+
+      m_numTimerEvents.Increment();
+
+      m_timerEvent.Set();
    }
 }
 
 void CLoggingCallbackTimer::OnTimer(
-   const UserData userData)
+   UserData userData)
 {
-   if (logMessage)
-   {
-      if (logUserData)
-      {
-         LogMessage(_T("OnTimer: ") + ToString(userData));
-      }
-      else
-      {
-         LogMessage(_T("OnTimer"));
-      }
-   }
+   (void)userData;
 
-   if (m_pTimerQueue)
-   {
-      if (m_timeout1 != INFINITE)
-      {
-         const Milliseconds timeout1 = m_timeout1;
-
-         IQueueTimers *pTimerQueue = m_pTimerQueue;
-
-         m_pTimerQueue = nullptr;
-         m_timeout1 = INFINITE;
-
-         pTimerQueue->SetTimer(m_handle, *this, timeout1, m_userData);
-
-         LogMessage(_T("TimerSet"));
-
-         if (m_timeout2 != INFINITE)
-         {
-            const Milliseconds timeout2 = m_timeout2;
-         
-            m_timeout2 = INFINITE;
-
-            pTimerQueue->SetTimer(m_handle, *this, timeout2, m_userData);
-
-            LogMessage(_T("TimerSet"));
-         }
-
-         m_handle = IQueueTimers::InvalidHandleValue;
-         m_userData = 0;
-      }
-      else
-      {
-         m_pTimerQueue->DestroyTimer(m_handle);
-
-         m_pTimerQueue = nullptr;
-         m_handle = IQueueTimers::InvalidHandleValue;
-
-         LogMessage(_T("TimerDestroyed"));
-      }
-   }
-
-   m_numTimerEvents.Increment();
-
-   m_timerEvent.Set();
+   throw CException(
+      _T("CLoggingCallbackTimer::OnTimer()"),
+      _T("Unexpected: should never be called as we override OnTimerEx()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

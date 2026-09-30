@@ -252,7 +252,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
       m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(nullptr)
+      m_pTimeoutsToBeHandled(nullptr),
+      m_shuttingDown(false)
 {
 }
 
@@ -292,15 +293,30 @@ bool CCallbackTimerWheel::WaitForShutdownToComplete(
 void CCallbackTimerWheel::BeginShutdown(
    IHandleTimerQueueTimeouts &timeoutHandler)
 {
-   (void)timeoutHandler;
+   if (m_shuttingDown.ToggleIfFalse())
+   {
+      // what happens if we start to shut down whilst we are handling timeouts
+      // will this result in an exception and failure? Ideally it should result
+      // in success...
+
+      timeoutHandler.BeginTimeoutHandling();
+   }
 }
 
 bool CCallbackTimerWheel::WaitForShutdownToComplete(
    IHandleTimerQueueTimeouts &timeoutHandler,
    const Milliseconds timeout)
 {
-   (void)timeoutHandler;
    (void)timeout;
+
+   BeginShutdown(timeoutHandler);
+
+   if (m_handlingTimeouts)
+   {
+      HandleTimeouts();
+
+      timeoutHandler.EndTimeoutHandling();
+   }
 
    return true;
 }
@@ -402,13 +418,15 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
 
    if (m_numTimersSet)
    {
+      const auto now = m_tickCountProvider.GetTickCount() + (m_shuttingDown ? m_maximumTimeout : 0);
+
       #if (JETBYTE_PERF_TIMER_WHEEL_HANDLE_ALL_TIMERS_IN_BEGIN_TIMEOUT_HANDLING == 1)
 
-      m_pTimeoutsToBeHandled = GetAllTimersToProcess(m_tickCountProvider.GetTickCount());
+      m_pTimeoutsToBeHandled = GetAllTimersToProcess(now);
 
       #else
 
-      m_pTimeoutsToBeHandled = GetTimersToProcess(m_tickCountProvider.GetTickCount());
+      m_pTimeoutsToBeHandled = GetTimersToProcess(now);
 
       #endif
    }
@@ -433,7 +451,7 @@ size_t CCallbackTimerWheel::HandleTimeouts()
 
    while (pTimers)
    {
-      pTimers = pTimers->HandleTimeout(false);
+      pTimers = pTimers->HandleTimeout(m_shuttingDown);
 
       #if (JETBYTE_PERF_TIMER_WHEEL_MONITORING == 1)
       m_monitor.OnTimer();
@@ -587,6 +605,13 @@ bool CCallbackTimerWheel::SetTimer(
    const SetTimerIf setTimerIf,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::SetTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    TimerData &data = ValidateHandle(handle);
 
    const bool wasPending = data.TimerIsSet();
@@ -629,6 +654,13 @@ void CCallbackTimerWheel::SetTimer(
    const UserData userData,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::SetTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    const Milliseconds actualTimeout = CalculateTimeout(timeout);
 
    #pragma warning(suppress: 28197) // Possibly leaking memory. No, we're not.
@@ -652,6 +684,13 @@ bool CCallbackTimerWheel::UpdateTimer(
    bool *pWasUpdated,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::UpdateTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    bool updated = false;
 
    TimerData &data = ValidateHandle(handle);
@@ -750,6 +789,13 @@ bool CCallbackTimerWheel::CancelTimer(
    const Handle &handle,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerWheel::CancelTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    TimerData &data = ValidateHandle(handle);
 
    bool wasSetAtThisOffset = false;

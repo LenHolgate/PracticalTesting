@@ -270,7 +270,7 @@ void CCallbackTimerFacadeTest::TestBeginShutdownTimersHandledInBeginShutdown()
             _T("|[BeginTimeoutHandling]")          // Facade         Can lock before calling into queue...
             _T("|BeginTimeoutHandling")            // TimerQueue
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0|"));                   // Timer
+            _T("|OnTimer: 0 [Shutdown]|"));        // Timer
       }
 
       log.CheckResult(_T("|[~CTestTimerQueueFacade]|"));
@@ -306,7 +306,7 @@ void CCallbackTimerFacadeTest::TestWaitForShutdownToCompleteTimersHandledInBegin
             _T("|[BeginTimeoutHandling]")          // Facade         Can lock before calling into queue...
             _T("|BeginTimeoutHandling")            // TimerQueue
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0")                      // Timer
+            _T("|OnTimer: 0 [Shutdown]")           // Timer
             _T("|WaitForShutdownToComplete")       // TimerQueue
             _T("|[EndTimeoutHandling]")            // Facade         Can lock before calling into queue...
             _T("|EndTimeoutHandling|"));           // TimerQueue
@@ -344,7 +344,7 @@ void CCallbackTimerFacadeTest::TestWaitForShutdownToCompleteAfterBeginShutdownTi
             _T("|[BeginTimeoutHandling]")          // Facade         Can lock before calling into queue...
             _T("|BeginTimeoutHandling")            // TimerQueue
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0|"));                   // Timer
+            _T("|OnTimer: 0 [Shutdown]|"));        // Timer
 
          facade.WaitForShutdownToComplete();
 
@@ -422,7 +422,7 @@ void CCallbackTimerFacadeTest::TestWaitForShutdownToCompleteTimersHandledInWaitF
             _T("|BeginTimeoutHandling")            // TimerQueue
             _T("|WaitForShutdownToComplete")       // TimerQueue
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0")                      // Timer
+            _T("|OnTimer: 0 [Shutdown]")           // Timer
             _T("|[EndTimeoutHandling]")            // Facade         Can lock before calling into queue...
             _T("|EndTimeoutHandling|"));           // TimerQueue
       }
@@ -465,7 +465,7 @@ void CCallbackTimerFacadeTest::TestWaitForShutdownToCompleteAfterBeginShutdownTi
             _T("|[WaitForShutdownToComplete]")     // Facade         Does not lock before calling into queue...
             _T("|WaitForShutdownToComplete")       // TimerQueue
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0")                      // Timer
+            _T("|OnTimer: 0 [Shutdown]")           // Timer
             _T("|[EndTimeoutHandling]")            // Facade         Can lock before calling into queue...
             _T("|EndTimeoutHandling|"));           // TimerQueue
       }
@@ -541,7 +541,7 @@ void CCallbackTimerFacadeTest::TestWaitForShutdownDuringDestruction()
             _T("|[BeginTimeoutHandling]")          // Facade         Can lock before calling into queue...
             _T("|BeginTimeoutHandling")            // Facade         Can lock before calling into queue...
             _T("|HandleTimeouts")                  // TimerQueue
-            _T("|OnTimer: 0")                      // Timer
+            _T("|OnTimer: 0 [Shutdown]")           // Timer
             _T("|WaitForShutdownToComplete")       // TimerQueue
             _T("|[EndTimeoutHandling]")            // Facade         Can lock before calling into queue...
             _T("|EndTimeoutHandling|"));           // TimerQueue

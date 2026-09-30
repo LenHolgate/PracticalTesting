@@ -39,7 +39,17 @@
 // Using directives
 ///////////////////////////////////////////////////////////////////////////////
 
+using JetByteTools::Core::_tstring;
+
 using JetByteTools::Test::CTestLog;
+
+///////////////////////////////////////////////////////////////////////////////
+// Constants
+///////////////////////////////////////////////////////////////////////////////
+
+static const _tstring s_startDelimiter(_T("["));
+
+static const _tstring s_endDelimiter(_T("]"));
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core::Mock
@@ -62,17 +72,26 @@ CTestTimerQueueFacade::CTestTimerQueueFacade(
 }
 
 CTestTimerQueueFacade::CTestTimerQueueFacade(
+   ISupportTimerQueueFacade &impl)
+   :  waitForShutdownDuringDestruction(false),
+      m_sharedLog(false),
+      m_impl(impl)
+{
+}
+
+CTestTimerQueueFacade::CTestTimerQueueFacade(
    CTestLog &log,
    ISupportTimerQueueFacade &impl)
    :  CTestLog(&log),
       waitForShutdownDuringDestruction(false),
+      m_sharedLog(true),
       m_impl(impl)
 {
 }
 
 CTestTimerQueueFacade::~CTestTimerQueueFacade()
 {
-   LogMessage(_T("[~CTestTimerQueueFacade]"));
+   Log(_T("~CTestTimerQueueFacade"));
 
    if (waitForShutdownDuringDestruction)
    {
@@ -80,15 +99,28 @@ CTestTimerQueueFacade::~CTestTimerQueueFacade()
    }
 }
 
+void CTestTimerQueueFacade::Log(
+   const _tstring &message) const
+{
+   if (m_sharedLog)
+   {
+      CTestLog::LogMessage(s_startDelimiter + message + s_endDelimiter);
+   }
+   else
+   {
+      CTestLog::LogMessage(message);
+   }
+}
+
 void CTestTimerQueueFacade::HandleTimeouts()
 {
-   LogMessage(_T("[HandleTimeouts]"));
+   Log(_T("HandleTimeouts"));
 
    if (BeginTimeoutHandling())
    {
       do
       {
-         LogMessage(_T("[HandleTimeouts]"));
+         Log(_T("HandleTimeouts"));
 
          m_impl.HandleTimeouts();
 
@@ -100,21 +132,21 @@ void CTestTimerQueueFacade::HandleTimeouts()
 
 bool CTestTimerQueueFacade::BeginTimeoutHandling()
 {
-   LogMessage(_T("[BeginTimeoutHandling]"));
+   Log(_T("BeginTimeoutHandling"));
 
    return m_impl.BeginTimeoutHandling();
 }
 
 void CTestTimerQueueFacade::EndTimeoutHandling()
 {
-   LogMessage(_T("[EndTimeoutHandling]"));
+   Log(_T("EndTimeoutHandling"));
 
    m_impl.EndTimeoutHandling();
 }
 
 void CTestTimerQueueFacade::BeginShutdown()
 {
-   LogMessage(_T("[BeginShutdown]"));
+   Log(_T("BeginShutdown"));
 
    m_impl.BeginShutdown(*this);
 }
@@ -122,14 +154,14 @@ void CTestTimerQueueFacade::BeginShutdown()
 bool CTestTimerQueueFacade::WaitForShutdownToComplete(
    const Milliseconds timeout)
 {
-   LogMessage(_T("[WaitForShutdownToComplete]"));
+   Log(_T("WaitForShutdownToComplete"));
 
    return m_impl.WaitForShutdownToComplete(*this, timeout);
 }
 
 CTestTimerQueueFacade::Handle CTestTimerQueueFacade::CreateTimer()
 {
-   LogMessage(_T("[CreateTimer]"));
+   Log(_T("CreateTimer"));
 
    return m_impl.CreateTimer();
 }
@@ -137,7 +169,7 @@ CTestTimerQueueFacade::Handle CTestTimerQueueFacade::CreateTimer()
 bool CTestTimerQueueFacade::TimerIsSet(
    const Handle &handle) const
 {
-   LogMessage(_T("[TimerIsSet]"));
+   Log(_T("TimerIsSet"));
 
    return m_impl.TimerIsSet(handle);
 }
@@ -150,7 +182,7 @@ bool CTestTimerQueueFacade::SetTimer(
    const SetTimerIf setTimerIf,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[SetTimer]"));
+   Log(_T("SetTimer"));
 
    return m_impl.SetTimer(
       handle,
@@ -170,7 +202,7 @@ bool CTestTimerQueueFacade::UpdateTimer(
    bool *pWasUpdated,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[UpdateTimer]"));
+   Log(_T("UpdateTimer"));
 
    return m_impl.UpdateTimer(
       handle,
@@ -186,7 +218,7 @@ bool CTestTimerQueueFacade::CancelTimer(
    const Handle &handle,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[CancelTimer]"));
+   Log(_T("CancelTimer"));
 
    return m_impl.CancelTimer(
       handle,
@@ -197,7 +229,7 @@ bool CTestTimerQueueFacade::DestroyTimer(
    Handle &handle,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[DestroyTimer]"));
+   Log(_T("DestroyTimer"));
 
    return m_impl.DestroyTimer(
       handle,
@@ -208,7 +240,7 @@ bool CTestTimerQueueFacade::DestroyTimer(
    const Handle &handle,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[DestroyTimer]"));
+   Log(_T("DestroyTimer"));
 
    return m_impl.DestroyTimer(
       handle,
@@ -221,7 +253,7 @@ void CTestTimerQueueFacade::SetTimer(
    const UserData userData,
    bool *pOptionalFirstToExpireHasChanged)
 {
-   LogMessage(_T("[SetTimer]"));
+   Log(_T("SetTimer"));
 
    return m_impl.SetTimer(
       timer,
@@ -232,7 +264,7 @@ void CTestTimerQueueFacade::SetTimer(
 
 Milliseconds CTestTimerQueueFacade::GetMaximumTimeout() const
 {
-   LogMessage(_T("[GetMaximumTimeout]"));
+   Log(_T("GetMaximumTimeout"));
 
    return m_impl.GetMaximumTimeout();
 }

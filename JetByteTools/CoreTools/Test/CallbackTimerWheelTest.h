@@ -66,13 +66,25 @@ class CCallbackTimerWheelTest :
       static void TestSetTimerWhenNowNotEqualToCurrent();
       static void TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrent();
       static void TestSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
-      static void TestOnShotTimerSetTimerWhenNowNotEqualToCurrent();
-      static void TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrent();
-      static void TestOnShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
+      static void TestOneShotTimerSetTimerWhenNowNotEqualToCurrent();
+      static void TestOneShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrent();
+      static void TestOneShotTimerSetTimerWhenNowMoreThanMaxTimeoutLargerThanCurrentNoOtherTimersSet();
       static void TestGetNextTimeoutWhenWheelWraps();
 
       static void TestSetTimerFirstTimerNotChangedMultipleTimersAtSameSlot();
       static void TestSetTimerFirstTimerNotChangedSetWithinSameSlot();
+
+      static void TestShutdown();
+      static void TestShutdownWithTimerSet();
+      static void TestSetTimerAfterBeginShutdown();
+      static void TestOneShotSetTimerAfterBeginShutdown();
+      static void TestUpdateTimerAfterBeginShutdown();
+      static void TestCancelTimerAfterBeginShutdown();
+
+      static void TestBeginShutdownAfterBeginTimeoutHandling();
+      static void TestBeginShutdownAfterBeginTimeoutHandlingWithTimerSet();
+      static void TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOut();
+
       // Test traits...
       enum traits
       {
