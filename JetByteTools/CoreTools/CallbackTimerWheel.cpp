@@ -141,6 +141,9 @@ class CCallbackTimerWheel::TimerData : private  CIntrusiveSetNode
 
       TimerData *TimeoutHandlingComplete();
 
+      void AddToEnd(
+         TimerData *pTimers);
+
    private :
 
       TimerData **m_ppPrevious;
@@ -251,8 +254,8 @@ CCallbackTimerWheel::CCallbackTimerWheel(
       m_pNow(m_pTimersStart),
       m_pFirstTimerSetHint(nullptr),
       m_numTimersSet(0),
-      m_handlingTimeouts(false),
       m_pTimeoutsToBeHandled(nullptr),
+      m_pTimeoutsThatHaveBeenHandled(nullptr),
       m_shuttingDown(false)
 {
 }
@@ -311,12 +314,9 @@ bool CCallbackTimerWheel::WaitForShutdownToComplete(
 
    BeginShutdown(timeoutHandler);
 
-   if (m_handlingTimeouts)
-   {
-      HandleTimeouts();
+   HandleTimeouts();
 
-      timeoutHandler.EndTimeoutHandling();
-   }
+   timeoutHandler.EndTimeoutHandling();
 
    return true;
 }
@@ -409,12 +409,9 @@ CCallbackTimerWheel::TimerData **CCallbackTimerWheel::GetFirstTimerSet() const
 
 bool CCallbackTimerWheel::BeginTimeoutHandling()
 {
-   if (m_handlingTimeouts)
-   {
-      throw CException(
-         _T("CCallbackTimerWheel::BeginTimeoutHandling()"),
-         _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
-   }
+   bool newTimeouts = false;
+
+   CLockableObject::Owner lock(m_lock);
 
    if (m_numTimersSet)
    {
@@ -422,32 +419,45 @@ bool CCallbackTimerWheel::BeginTimeoutHandling()
 
       #if (JETBYTE_PERF_TIMER_WHEEL_HANDLE_ALL_TIMERS_IN_BEGIN_TIMEOUT_HANDLING == 1)
 
-      m_pTimeoutsToBeHandled = GetAllTimersToProcess(now);
+      auto *pNewTimeouts = GetAllTimersToProcess(now);
 
       #else
 
-      m_pTimeoutsToBeHandled = GetTimersToProcess(now);
+      auto *pNewTimeouts = GetTimersToProcess(now);
 
       #endif
+
+      if (pNewTimeouts)
+      {
+         newTimeouts = true;
+
+         if (m_pTimeoutsToBeHandled)
+         {
+            m_pTimeoutsToBeHandled->AddToEnd(pNewTimeouts);
+         }
+         else
+         {
+            m_pTimeoutsToBeHandled = pNewTimeouts;
+         }
+      }
    }
 
-   m_handlingTimeouts = (m_pTimeoutsToBeHandled != nullptr);
-
-   return m_handlingTimeouts;
+   return newTimeouts;
 }
 
 size_t CCallbackTimerWheel::HandleTimeouts()
 {
-   if (!m_handlingTimeouts)
+   TimerData *pTimersToHandle = nullptr;
+
    {
-      throw CException(
-         _T("CCallbackTimerWheel::HandleTimeouts()"),
-         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
+      CLockableObject::Owner lock(m_lock);
+
+      std::swap(pTimersToHandle, m_pTimeoutsToBeHandled);
    }
 
    size_t timersHandled = 0;
 
-   TimerData *pTimers = m_pTimeoutsToBeHandled;
+   auto pTimers = pTimersToHandle;
 
    while (pTimers)
    {
@@ -460,23 +470,29 @@ size_t CCallbackTimerWheel::HandleTimeouts()
       timersHandled++;
    }
 
+   {
+      CLockableObject::Owner lock(m_lock);
+
+      if (m_pTimeoutsThatHaveBeenHandled)
+      {
+         m_pTimeoutsThatHaveBeenHandled->AddToEnd(pTimersToHandle);
+      }
+      else
+      {
+         m_pTimeoutsThatHaveBeenHandled = pTimersToHandle;
+      }
+   }
+
    return timersHandled;
 }
 
 void CCallbackTimerWheel::EndTimeoutHandling()
 {
-   if (!m_handlingTimeouts)
-   {
-      throw CException(
-         _T("CCallbackTimerWheel::EndTimeoutHandling()"),
-         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
-   }
+   CLockableObject::Owner lock(m_lock);
 
-   m_handlingTimeouts = false;
+   TimerData *pTimers = m_pTimeoutsThatHaveBeenHandled;
 
-   TimerData *pTimers = m_pTimeoutsToBeHandled;
-
-   m_pTimeoutsToBeHandled = nullptr;
+   m_pTimeoutsThatHaveBeenHandled = nullptr;
 
    const TimerData *pDeadTimer = nullptr;
 
@@ -1344,6 +1360,29 @@ CCallbackTimerWheel::TimerData *CCallbackTimerWheel::TimerData::TimeoutHandlingC
    m_pNextTimedout = nullptr;
 
    return pNext;
+}
+
+void CCallbackTimerWheel::TimerData::AddToEnd(
+   TimerData *pTimers)
+{
+   if (pTimers)
+   {
+      TimerData *pLast = nullptr;
+
+      TimerData *pThisTimer = this;
+
+      while (pThisTimer)
+      {
+         pLast = pThisTimer;
+
+         pThisTimer = pThisTimer->m_pNextTimedout;
+      }
+
+      if (pLast)
+      {
+         pLast->AddTimedOutTimers(pTimers);
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

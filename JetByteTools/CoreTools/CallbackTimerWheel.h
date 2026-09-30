@@ -28,12 +28,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "Types.h"
-
 #include "ISupportTimerQueueFacade.h"
-
 #include "IntrusiveSet.h"
-
 #include "AtomicBool.h"
+#include "LockableObject.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
@@ -238,11 +236,13 @@ class CCallbackTimerWheel : public ISupportTimerQueueFacade
       ActiveHandles m_activeHandles;
       #endif
 
-      bool m_handlingTimeouts;
-
       TimerData *m_pTimeoutsToBeHandled;
 
+      TimerData *m_pTimeoutsThatHaveBeenHandled;
+
       CAtomicBool m_shuttingDown;
+
+      CLockableObject m_lock;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

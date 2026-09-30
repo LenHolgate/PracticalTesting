@@ -110,6 +110,7 @@ void CCallbackTimerWheelTest::TestAll(
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestBeginShutdownAfterBeginTimeoutHandling);
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestBeginShutdownAfterBeginTimeoutHandlingWithTimerSet);
    RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOut);
+   RUN_TEST_EX(monitor, CCallbackTimerWheelTest, TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOutNewTimerAddedAfterBeginTimeoutHandling);
 }
 
 void CCallbackTimerWheelTest::TestConstruct()
@@ -933,7 +934,7 @@ void CCallbackTimerWheelTest::TestShutdown()
 
          THROW_ON_FAILURE_EX(true == facade.WaitForShutdownToComplete(INFINITE));
 
-         facade.CheckResult(_T("|WaitForShutdownToComplete|"));
+         facade.CheckResult(_T("|WaitForShutdownToComplete|EndTimeoutHandling|"));
       }
    }
 
@@ -1397,7 +1398,7 @@ void CCallbackTimerWheelTest::TestBeginShutdownAfterBeginTimeoutHandling()
 
          THROW_ON_FAILURE_EX(true == facade.WaitForShutdownToComplete(INFINITE));
 
-         facade.CheckResult(_T("|WaitForShutdownToComplete|"));
+         facade.CheckResult(_T("|WaitForShutdownToComplete|EndTimeoutHandling|"));
       }
    }
 
@@ -1538,7 +1539,7 @@ void CCallbackTimerWheelTest::TestBeginShutdownAfterBeginTimeoutHandlingSetTimer
 
          tickProvider.SetTickCount(timerExpiryTimeAllowingForGranularity);
 
-         facade.BeginTimeoutHandling();
+         facade.BeginTimeoutHandling();                                                      // Concurrent timer expiry...
 
          tickProvider.CheckResult(_T("|GetTickCount|"));
 
@@ -1546,13 +1547,19 @@ void CCallbackTimerWheelTest::TestBeginShutdownAfterBeginTimeoutHandlingSetTimer
 
          facade.BeginShutdown();
 
-         tickProvider.CheckResult(_T("|GetTickCount|"));
+         tickProvider.CheckNoResults();                                                      // no more timers to accumulate
 
          log.CheckResult(_T("|[BeginShutdown]|[BeginTimeoutHandling]|"));
 
          THROW_ON_FAILURE_EX(true == facade.WaitForShutdownToComplete(INFINITE));
 
          log.CheckResult(_T("|[WaitForShutdownToComplete]|OnTimer: 1 [Shutdown]|[EndTimeoutHandling]|"));
+
+         timerWheel.HandleTimeouts();                                                        // Concurrent timer expiry, facade would call wheel directly...
+
+         facade.EndTimeoutHandling();                                                        // Concurrent timer expiry...
+
+         log.CheckResult(_T("|[EndTimeoutHandling]|"));
       }
 
       log.CheckResult(_T("|[~CTestTimerQueueFacade]|"));
@@ -1565,6 +1572,109 @@ void CCallbackTimerWheelTest::TestBeginShutdownAfterBeginTimeoutHandlingSetTimer
    }
 }
 
+void CCallbackTimerWheelTest::TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOutNewTimerAddedAfterBeginTimeoutHandling()
+{
+   CMockTickCountProvider tickProvider;
+
+   tickProvider.logTickCount = false;
+
+   CMockTimerQueueMonitor monitor;
+
+   CTestLog log;
+
+   CLoggingCallbackTimer timer(log);
+
+   timer.supportsTimersFiringDuringShutdown = true;
+
+   {
+      static const Milliseconds maximumTimeout = 4000;
+
+      static const Milliseconds timerGranularity = 15;
+
+      CCallbackTimerWheel timerWheel(monitor, maximumTimeout, timerGranularity, tickProvider);
+
+      CheckConstructionResults(monitor, tickProvider);
+
+      THROW_ON_FAILURE_EX(INFINITE == timerWheel.GetNextTimeout());
+
+      IQueueTimers::Handle handle = timerWheel.CreateTimer();
+
+      tickProvider.CheckNoResults();
+
+      {
+         // We operate through the facade as it logs the calls made by the underlying timer wheel
+
+         CTestTimerQueueFacade facade(log, timerWheel);
+
+         const Milliseconds timeout = 1000;
+
+         {
+            const IQueueTimers::UserData userData = 1;
+
+            bool firstToExpireHasChanged = false;
+
+            THROW_ON_FAILURE_EX(false == facade.SetTimer(handle, timer, timeout, userData, IQueueTimers::SetTimerAlways, &firstToExpireHasChanged));
+
+            THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+            CheckTickProviderSetTimerResults(tickProvider);
+
+            log.CheckResult(_T("|[SetTimer]|"));
+         }
+
+         const Milliseconds timerExpiryTimeAllowingForGranularity = ((timeout / timerGranularity) * timerGranularity + timerGranularity);
+
+         tickProvider.SetTickCount(timerExpiryTimeAllowingForGranularity);
+
+         facade.BeginTimeoutHandling();                                                      // Concurrent timer expiry...
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         log.CheckResult(_T("|[BeginTimeoutHandling]|"));
+
+
+         {
+            const IQueueTimers::UserData userData = 2;
+
+            bool firstToExpireHasChanged = false;
+
+            facade.SetTimer(timer, timeout, userData, &firstToExpireHasChanged);
+
+            THROW_ON_FAILURE_EX(true == firstToExpireHasChanged);
+
+            CheckTickProviderSetTimerResults(tickProvider);
+
+            log.CheckResult(_T("|[SetTimer]|"));
+         }
+
+         facade.BeginShutdown();
+
+         tickProvider.CheckResult(_T("|GetTickCount|"));
+
+         log.CheckResult(_T("|[BeginShutdown]|[BeginTimeoutHandling]|"));
+
+         timerWheel.HandleTimeouts();                                                        // Concurrent timer expiry, facade would call wheel directly...
+
+         log.CheckResult(_T("|OnTimer: 1 [Shutdown]|OnTimer: 2 [Shutdown]|"));
+
+         facade.EndTimeoutHandling();                                                        // Concurrent timer expiry...
+
+         log.CheckResult(_T("|[EndTimeoutHandling]|"));
+
+         THROW_ON_FAILURE_EX(true == facade.WaitForShutdownToComplete(INFINITE));
+
+         log.CheckResult(_T("|[WaitForShutdownToComplete]|[EndTimeoutHandling]|"));
+      }
+
+      log.CheckResult(_T("|[~CTestTimerQueueFacade]|"));
+      tickProvider.CheckNoResults();
+   }
+
+   if (handleValidationEnabled && monitoringEnabled)
+   {
+      THROW_ON_FAILURE_EX(true == monitor.NoTimersAreActive());   // If monitoring is enabled, make sure all timers have been cleaned up
+   }
+}
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core::Test
 ///////////////////////////////////////////////////////////////////////////////

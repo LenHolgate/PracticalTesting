@@ -84,6 +84,7 @@ class CCallbackTimerWheelTest :
       static void TestBeginShutdownAfterBeginTimeoutHandling();
       static void TestBeginShutdownAfterBeginTimeoutHandlingWithTimerSet();
       static void TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOut();
+      static void TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOutNewTimerAddedAfterBeginTimeoutHandling();
 
       // Test traits...
       enum traits

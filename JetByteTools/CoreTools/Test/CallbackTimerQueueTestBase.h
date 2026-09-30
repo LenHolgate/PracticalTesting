@@ -2016,6 +2016,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestBeginTimeoutHandlingEndTimeoutHan
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandlingWithoutEndTimeoutHandlingFail()
 {
+   SKIP_TEST_EX(_T("CHANGE"));
+
    Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
@@ -2069,6 +2071,7 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToBeginTimeoutHandli
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandlingFail()
 {
+   SKIP_TEST_EX(_T("CHANGE"));
    Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
@@ -2122,6 +2125,8 @@ void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToEndTimeoutHandling
 template <class Q, class T, class P>
 void TCallbackTimerQueueTestBase<Q, T, P>::TestMultipleCallsToHandleTimeoutFail()
 {
+   SKIP_TEST_EX(_T("CHANGE"));
+
    Mock::CMockTimerQueueMonitor monitor;
 
    P tickProvider;
