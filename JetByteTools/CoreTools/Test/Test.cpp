@@ -97,7 +97,7 @@ int main(int /*argc*/, char ** /*argv*/)
       CCallbackTimerFacadeTest::TestAll(monitor);
       CThreadedCallbackTimerQueueTest::TestAll(monitor);
 
-      size_t expectedTests = 236;
+      size_t expectedTests = 250;
 
       ok = monitor.Report(expectedTests);
    }

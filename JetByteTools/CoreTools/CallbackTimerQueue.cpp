@@ -121,6 +121,9 @@ class CCallbackTimerQueue::TimerData : private CIntrusiveRedBlackTreeNode
 
       TimerData *PopNext();
 
+      void AddToEnd(
+         TimerData *pTimers);
+
    private :
 
       struct Data
@@ -141,7 +144,8 @@ class CCallbackTimerQueue::TimerData : private CIntrusiveRedBlackTreeNode
       };
 
       void OnTimer(
-         const Data &data);
+         const Data &data,
+         bool shuttingDownWhenSet);
 
       Data m_active;
 
@@ -172,31 +176,25 @@ class CCallbackTimerQueue::TimerData : private CIntrusiveRedBlackTreeNode
 ///////////////////////////////////////////////////////////////////////////////
 
 CCallbackTimerQueue::CCallbackTimerQueue()
-   :  m_tickProvider(s_tickProvider),
-      m_monitor(s_monitor),
-      m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(nullptr)
+   :  CCallbackTimerQueue(
+         s_monitor,
+         s_tickProvider)
 {
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
    IMonitorCallbackTimerQueue &monitor)
-   :  m_tickProvider(s_tickProvider),
-      m_monitor(monitor),
-      m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(nullptr)
+   :  CCallbackTimerQueue(
+         monitor,
+         s_tickProvider)
 {
 }
 
 CCallbackTimerQueue::CCallbackTimerQueue(
    const IProvideTickCount64 &tickProvider)
-   :  m_tickProvider(tickProvider),
-      m_monitor(s_monitor),
-      m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(nullptr)
+   :  CCallbackTimerQueue(
+         s_monitor,
+         tickProvider)
 {
 }
 
@@ -206,14 +204,17 @@ CCallbackTimerQueue::CCallbackTimerQueue(
    :  m_tickProvider(tickProvider),
       m_monitor(monitor),
       m_maxTimeout(s_timeoutMax),
-      m_handlingTimeouts(false),
-      m_pTimeoutsToBeHandled(nullptr)
+      m_pTimeoutsToBeHandled(nullptr),
+      m_pTimeoutsThatHaveBeenHandled(nullptr),
+      m_shuttingDown(false)
 {
 }
 
 CCallbackTimerQueue::~CCallbackTimerQueue()
 {
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
+
+   WaitForShutdownToComplete();
 
    m_queue.Clear(TimerQueue::ClearFlags::FastAndDirty);
 
@@ -284,6 +285,13 @@ bool CCallbackTimerQueue::SetTimer(
    const SetTimerIf setTimerIf,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::SetTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    if (timeout > m_maxTimeout)
    {
       throw CException(
@@ -350,6 +358,13 @@ bool CCallbackTimerQueue::UpdateTimer(
    bool *pOptionalFirstToExpireHasChanged)
 {
    bool updated = false;
+
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::UpdateTimer()"),
+         _T("Too late, shutting down"));
+   }
 
    if (timeout > m_maxTimeout)
    {
@@ -441,6 +456,13 @@ bool CCallbackTimerQueue::CancelTimer(
    const Handle &handle,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::CancelTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    const bool atLeastOneTimerWasSet = pOptionalFirstToExpireHasChanged ? !m_queue.IsEmpty() : false;
 
    const ULONGLONG firstTimeoutBeforeChange = atLeastOneTimerWasSet ? m_queue.Begin()->GetTimeout() : 0;
@@ -547,6 +569,13 @@ void CCallbackTimerQueue::SetTimer(
    const UserData userData,
    bool *pOptionalFirstToExpireHasChanged)
 {
+   if (m_shuttingDown)
+   {
+      throw CException(
+         _T("CCallbackTimerQueue::SetTimer()"),
+         _T("Too late, shutting down"));
+   }
+
    if (timeout > m_maxTimeout)
    {
       throw CException(
@@ -737,15 +766,23 @@ bool CCallbackTimerQueue::WaitForShutdownToComplete(
 void CCallbackTimerQueue::BeginShutdown(
    IHandleTimerQueueTimeouts &timeoutHandler)
 {
-   (void)timeoutHandler;
+   if (m_shuttingDown.ToggleIfFalse())
+   {
+      timeoutHandler.BeginTimeoutHandling();
+   }
 }
 
 bool CCallbackTimerQueue::WaitForShutdownToComplete(
    IHandleTimerQueueTimeouts &timeoutHandler,
    const Milliseconds timeout)
 {
-   (void)timeoutHandler;
    (void)timeout;
+
+   BeginShutdown(timeoutHandler);
+
+   HandleTimeouts();
+
+   timeoutHandler.EndTimeoutHandling();
 
    return true;
 }
@@ -779,74 +816,98 @@ Milliseconds CCallbackTimerQueue::GetNextTimeout()
 
 bool CCallbackTimerQueue::BeginTimeoutHandling()
 {
-   if (m_handlingTimeouts)
+   bool newTimeouts = false;
+
+   CLockableObject::Owner lock(m_lock);
+
+   if (0 == GetNextTimeout() || m_shuttingDown)
    {
-      throw CException(
-         _T("CCallbackTimerQueue::BeginTimeoutHandling()"),
-         _T("Already handling timeouts, you need to call EndTimeoutHandling()?"));
-   }
-
-   if (0 == GetNextTimeout())
-   {
-      TimerQueue::NodeCollection timers;
-
-      m_queue.RemoveAll(m_queue.Begin(), timers);
-
-      // Need to duplicate the timer data so that a call to SetTimer that occurs after
-      // this call returns but before a call to HandleTimeout with this timer doesn't
-      // cause the timer that is about to happen to be changed before it actually
-      // "goes off"...
-
-      // Need to remove all of these timers from the NodeCollection before traversing them and firing them
-      // as they cannot be set again if they are still in the collection...
+      // Scan to the end of any existing timers...
 
       TimerData *pLastTimer = nullptr;
 
-      TimerData *pTimer = timers.Pop();
+      TimerData *pTimer = m_pTimeoutsToBeHandled;
 
       while (pTimer)
       {
-         pTimer->PrepareForHandleTimeout();
-
-         // Store the timeouts that we need to handle in an invasive singly
-         // linked list of timers...
-
-         if (!m_pTimeoutsToBeHandled)
-         {
-            m_pTimeoutsToBeHandled = pTimer;
-         }
-         else
-         {
-            pLastTimer->PushNext(pTimer);
-         }
-
          pLastTimer = pTimer;
 
+         pTimer = pTimer->GetNext();
+      }
+
+      // collect any new timers that we should collect...
+
+      TimerQueue::NodeCollection timers;
+
+      while (!m_queue.IsEmpty())
+      {
+         m_queue.RemoveAll(m_queue.Begin(), timers);
+
+         // Need to duplicate the timer data so that a call to SetTimer that occurs after
+         // this call returns but before a call to HandleTimeout with this timer doesn't
+         // cause the timer that is about to happen to be changed before it actually
+         // "goes off"...
+
+         // Need to remove all of these timers from the NodeCollection before traversing them and firing them
+         // as they cannot be set again if they are still in the collection...
+
          pTimer = timers.Pop();
+
+         if (pTimer)
+         {
+            newTimeouts = true;
+         }
+
+         while (pTimer)
+         {
+            pTimer->PrepareForHandleTimeout();
+
+            // Store the timeouts that we need to handle in an invasive singly
+            // linked list of timers...
+
+            if (pLastTimer)
+            {
+               pLastTimer->PushNext(pTimer);
+            }
+            else
+            {
+               m_pTimeoutsToBeHandled = pTimer;
+            }
+
+            pLastTimer = pTimer;
+
+            pTimer = timers.Pop();
+         }
+
+         if (!m_shuttingDown)
+         {
+            // only take the current timers if we're not shutting down...
+
+            break;
+         }
       }
    }
 
-   m_handlingTimeouts = (m_pTimeoutsToBeHandled != nullptr);
-
-   return m_handlingTimeouts;
+   return newTimeouts;
 }
 
 size_t CCallbackTimerQueue::HandleTimeouts()
 {
-   if (!m_handlingTimeouts)
+   TimerData *pTimersToHandle = nullptr;
+
    {
-      throw CException(
-         _T("CCallbackTimerQueue::HandleTimeouts()"),
-         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
+      CLockableObject::Owner lock(m_lock);
+
+      std::swap(pTimersToHandle, m_pTimeoutsToBeHandled);
    }
 
    size_t timersHandled = 0;
 
-   TimerData *pTimer = m_pTimeoutsToBeHandled;
+   auto pTimers = pTimersToHandle;
 
-   while (pTimer)
+   while (pTimers)
    {
-      pTimer->HandleTimeout(false);
+      pTimers->HandleTimeout(m_shuttingDown);
 
       #if (JETBYTE_PERF_TIMER_QUEUE_MONITORING == 1)
       m_monitor.OnTimer();
@@ -854,7 +915,20 @@ size_t CCallbackTimerQueue::HandleTimeouts()
 
       timersHandled++;
 
-      pTimer = pTimer->GetNext();
+      pTimers = pTimers->GetNext();
+   }
+
+   {
+      CLockableObject::Owner lock(m_lock);
+
+      if (m_pTimeoutsThatHaveBeenHandled)
+      {
+         m_pTimeoutsThatHaveBeenHandled->AddToEnd(pTimersToHandle);
+      }
+      else
+      {
+         m_pTimeoutsThatHaveBeenHandled = pTimersToHandle;
+      }
    }
 
    return timersHandled;
@@ -862,18 +936,11 @@ size_t CCallbackTimerQueue::HandleTimeouts()
 
 void CCallbackTimerQueue::EndTimeoutHandling()
 {
-   if (!m_handlingTimeouts)
-   {
-      throw CException(
-         _T("CCallbackTimerQueue::EndTimeoutHandling()"),
-         _T("Not currently handling timeouts, you need to call BeginTimeoutHandling()?"));
-   }
+   CLockableObject::Owner lock(m_lock);
 
-   m_handlingTimeouts = false;
+   TimerData *pTimer = m_pTimeoutsThatHaveBeenHandled;
 
-   TimerData *pTimer = m_pTimeoutsToBeHandled;
-
-   m_pTimeoutsToBeHandled = nullptr;
+   m_pTimeoutsThatHaveBeenHandled = nullptr;
 
    while (pTimer)
    {
@@ -997,7 +1064,8 @@ void CCallbackTimerQueue::TimerData::ClearTimer()
 }
 
 void CCallbackTimerQueue::TimerData::OnTimer(
-   const Data &data)
+   const Data &data,
+   const bool shuttingDown)
 {
    if (!data.pTimer)
    {
@@ -1009,7 +1077,7 @@ void CCallbackTimerQueue::TimerData::OnTimer(
    data.pTimer->OnTimerEx(
       reinterpret_cast<Handle>(this),
       data.userData,
-      false);                             // don't currently support firing set timers on shutdown
+      shuttingDown);
 }
 
 void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
@@ -1024,9 +1092,7 @@ void CCallbackTimerQueue::TimerData::PrepareForHandleTimeout()
 void CCallbackTimerQueue::TimerData::HandleTimeout(
    const bool shuttingDownWhenSet)
 {
-   (void)shuttingDownWhenSet;
-
-   OnTimer(m_timedout);
+   OnTimer(m_timedout, shuttingDownWhenSet);
 
    m_timedout.Clear();
 }
@@ -1049,6 +1115,29 @@ bool CCallbackTimerQueue::TimerData::HasTimedOut() const
 void CCallbackTimerQueue::TimerData::SetDeleteAfterTimeout()
 {
    m_deleteAfterTimeout = true;
+}
+
+void CCallbackTimerQueue::TimerData::AddToEnd(
+   TimerData *pTimers)
+{
+   if (pTimers)
+   {
+      TimerData *pLast = nullptr;
+
+      TimerData *pThisTimer = this;
+
+      while (pThisTimer)
+      {
+         pLast = pThisTimer;
+
+         pThisTimer = pThisTimer->GetNext();
+      }
+
+      if (pLast)
+      {
+         pLast->PushNext(pTimers);
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -264,6 +264,8 @@ CCallbackTimerWheel::~CCallbackTimerWheel()
 {
    JETBYTE_CATCH_AND_LOG_ALL_IN_DESTRUCTORS_IF_ENABLED_START
 
+   WaitForShutdownToComplete();
+
    #if (JETBYTE_PERF_TIMER_WHEEL_VALIDATE_HANDLES == 1)
    // MUST use Erase as we delete the node and Fast/FastAndDirty both require the nodes
    // to continue to exist so that the iteration can continue.
@@ -298,10 +300,6 @@ void CCallbackTimerWheel::BeginShutdown(
 {
    if (m_shuttingDown.ToggleIfFalse())
    {
-      // what happens if we start to shut down whilst we are handling timeouts
-      // will this result in an exception and failure? Ideally it should result
-      // in success...
-
       timeoutHandler.BeginTimeoutHandling();
    }
 }

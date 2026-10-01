@@ -99,7 +99,7 @@ void CThreadedCallbackTimerQueueTest::TestAll(
 void CThreadedCallbackTimerQueueTest::TestConstruct()
 {
    {
-      CThreadedCallbackTimerQueue timerQueue;\
+      CThreadedCallbackTimerQueue timerQueue;
    }
 
    CMockThreadedCallbackTimerQueueMonitor monitor;

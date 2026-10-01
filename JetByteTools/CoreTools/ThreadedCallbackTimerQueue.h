@@ -203,9 +203,9 @@ class CThreadedCallbackTimerQueue :
 
       Milliseconds GetNextTimeout();
 
-      bool BeginTimeoutHandling();
+      bool BeginTimeoutHandling() override;
 
-      void EndTimeoutHandling();
+      void EndTimeoutHandling() override;
 
       void SignalStateChange();
 

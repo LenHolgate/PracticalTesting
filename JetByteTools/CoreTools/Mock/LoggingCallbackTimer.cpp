@@ -148,7 +148,7 @@ void CLoggingCallbackTimer::OnTimerEx(
    if (!shuttingDownWhenSet || supportsTimersFiringDuringShutdown)
    {
       const _tstring shutdownMessage(shuttingDownWhenSet ? _T(" [Shutdown]") : EmptyString);
-	  
+
       if (logMessage)
       {
          if (logUserData)

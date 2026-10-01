@@ -74,18 +74,6 @@ class CCallbackTimerWheelTest :
       static void TestSetTimerFirstTimerNotChangedMultipleTimersAtSameSlot();
       static void TestSetTimerFirstTimerNotChangedSetWithinSameSlot();
 
-      static void TestShutdown();
-      static void TestShutdownWithTimerSet();
-      static void TestSetTimerAfterBeginShutdown();
-      static void TestOneShotSetTimerAfterBeginShutdown();
-      static void TestUpdateTimerAfterBeginShutdown();
-      static void TestCancelTimerAfterBeginShutdown();
-
-      static void TestBeginShutdownAfterBeginTimeoutHandling();
-      static void TestBeginShutdownAfterBeginTimeoutHandlingWithTimerSet();
-      static void TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOut();
-      static void TestBeginShutdownAfterBeginTimeoutHandlingSetTimerIsTimingOutNewTimerAddedAfterBeginTimeoutHandling();
-
       // Test traits...
       enum traits
       {

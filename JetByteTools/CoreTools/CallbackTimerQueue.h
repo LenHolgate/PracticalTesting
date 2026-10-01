@@ -31,6 +31,8 @@
 
 #include "IntrusiveMultiMap.h"
 #include "IntrusiveSet.h"
+#include "AtomicBool.h"
+#include "LockableObject.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Namespace: JetByteTools::Core
@@ -237,9 +239,13 @@ class CCallbackTimerQueue : public ISupportTimerQueueFacade
 
       const Milliseconds m_maxTimeout;
 
-      bool m_handlingTimeouts;
-
       TimerData *m_pTimeoutsToBeHandled;
+
+      TimerData *m_pTimeoutsThatHaveBeenHandled;
+
+      CAtomicBool m_shuttingDown;
+
+      CLockableObject m_lock;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

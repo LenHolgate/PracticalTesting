@@ -126,6 +126,7 @@ CThreadedCallbackTimerQueue::~CThreadedCallbackTimerQueue()
 void CThreadedCallbackTimerQueue::BeginShutdown()
 {
    m_shutdownEvent.Set();
+
    m_spTimerQueue->BeginShutdown(*this);
 }
 
